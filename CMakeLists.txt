@@ -3,9 +3,10 @@ cmake_minimum_required(VERSION 3.10)
 # Enable C++17. You may raise the standard if you want
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # define project name, version
-project(PSEMolDyn VERSION 0.0.1 LANGUAGES CXX)
+project(MolSim_GroupD VERSION 0.0.1 LANGUAGES CXX)
 
 # let ccmake and cmake-gui offer the default build type options
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug;Release;RelWithDebInfo;MinSizeRel")
