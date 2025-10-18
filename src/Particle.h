@@ -56,12 +56,16 @@ class Particle {
   virtual ~Particle();
 
   const std::array<double, 3> &getX() const;
+  std::array<double, 3> &modX();
 
   const std::array<double, 3> &getV() const;
+  std::array<double, 3> &modV();
 
   const std::array<double, 3> &getF() const;
+  std::array<double, 3> &modF();
 
   const std::array<double, 3> &getOldF() const;
+  std::array<double, 3> &modOldF();
 
   double getM() const;
 

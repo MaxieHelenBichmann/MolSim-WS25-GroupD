@@ -76,21 +76,33 @@ void calculateF() {
   iterator = particles.begin();
 
   for (auto &p1 : particles) {
+    p1.modOldF() = {p1.getF()[0], p1.getF()[1], p1.getF()[2]};
+    p1.modF() = {0., 0., 0.};
     for (auto &p2 : particles) {
-      // @TODO: insert calculation of forces here!
+      if (p1 == p2) continue;
+      const std::array<double, 3> diff = {p2.getX()[0] - p1.getX()[0], p2.getX()[1] - p1.getX()[1],
+                                          p2.getX()[2] - p1.getX()[2]};
+      double coeff = p1.getM() * p2.getM() / std::pow(ArrayUtils::L2Norm<std::array<double, 3>>(diff), 3);
+      p1.modF() = {p1.getF()[0] + coeff * diff[0], p1.getF()[1] + coeff * diff[1], p1.getF()[2] + coeff * diff[2]};
     }
   }
 }
 
 void calculateX() {
   for (auto &p : particles) {
-    // @TODO: insert calculation of position updates here!
+    p.modX() = {p.getX()[0] + delta_t * p.getV()[0] + 0.5 * delta_t * delta_t * p.getF()[0] / p.getM(),
+                p.getX()[1] + delta_t * p.getV()[1] + 0.5 * delta_t * delta_t * p.getF()[1] / p.getM(),
+                p.getX()[2] + delta_t * p.getV()[2] + 0.5 * delta_t * delta_t * p.getF()[2] / p.getM()};
   }
 }
 
 void calculateV() {
   for (auto &p : particles) {
-    // @TODO: insert calculation of veclocity updates here!
+    p.modV() = {
+        p.getV()[0] + 0.5 * delta_t * (p.getOldF()[0] - p.getF()[0]) / p.getM(),
+        p.getV()[1] + 0.5 * delta_t * (p.getOldF()[1] - p.getF()[1]) / p.getM(),
+        p.getV()[2] + 0.5 * delta_t * (p.getOldF()[2] - p.getF()[2]) / p.getM(),
+    };
   }
 }
 
