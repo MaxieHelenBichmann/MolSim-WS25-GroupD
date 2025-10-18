@@ -99,9 +99,9 @@ void calculateX() {
 void calculateV() {
   for (auto &p : particles) {
     p.modV() = {
-        p.getV()[0] + 0.5 * delta_t * (p.getOldF()[0] - p.getF()[0]) / p.getM(),
-        p.getV()[1] + 0.5 * delta_t * (p.getOldF()[1] - p.getF()[1]) / p.getM(),
-        p.getV()[2] + 0.5 * delta_t * (p.getOldF()[2] - p.getF()[2]) / p.getM(),
+        p.getV()[0] + 0.5 * delta_t * (p.getOldF()[0] + p.getF()[0]) / p.getM(),
+        p.getV()[1] + 0.5 * delta_t * (p.getOldF()[1] + p.getF()[1]) / p.getM(),
+        p.getV()[2] + 0.5 * delta_t * (p.getOldF()[2] + p.getF()[2]) / p.getM(),
     };
   }
 }
