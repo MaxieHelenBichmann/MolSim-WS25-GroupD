@@ -24,6 +24,14 @@ file(GLOB_RECURSE MY_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h"
 )
 
+# add additional modules
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
+
+include(vtk)
+include(clang-format)
+include(doxygen)
+include(clang-tidy)
+
 # create make target
 add_executable(MolSim ${MY_SRC})
 
@@ -40,11 +48,3 @@ target_compile_options(MolSim
             # disable some spam warnings for icpc...
             $<$<CXX_COMPILER_ID:Intel>:-w3 -wd383,981,1418,1572,2259>
 )
-
-# add additional modules
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
-
-include(vtk)
-include(clang-format)
-include(doxygen)
-include(clang-tidy)

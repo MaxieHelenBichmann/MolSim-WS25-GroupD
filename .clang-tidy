@@ -1,14 +1,28 @@
-# Basic LLVM style checks + OpenMp checks for later Weeks + Specific Style checks
-Checks: 'clang-analyzer-*,performance-*,readability-*,modernize-*,bugprone-*, openmp-*, google-readability-casting, misc-definitions-in-headers'
+# All the checks executed by clang-tidy
+Checks: > 
+    # Basic LLVM style checks
+    clang-analyzer-*, 
+    performance-*, 
+    readability-*, 
+    modernize-*, 
+    bugprone-*, 
+    # OpenMP Checks for later weeks
+    openmp-*, 
+    # Specific Style and misc checks
+    google-readability-casting, 
+    misc-definitions-in-headers, 
+    llvm-namespace-comment,
+    misc-redundant-expression,
+    cppcoreguidelines-macro-usage
 
-# This treats all warnings as errors, if we only want specific warnings as errors do [name_of_error, ...] 
-WarningsAsErrors: '*'
+# If we want to use specific Warnings as Errors they are to be added here
+WarningsAsErrors: ""
+
+# So we can get colored output while using make, might have to change this later if we have problems with log files 
+UseColor: True
 
 # Use .clang-format file as basis for formatting checks
-FormatStyle = file
-
-# Exclude any Files outside of the src directory for checks
-HeaderFilterRegex: '^src/.*'
+FormatStyle: file
 
 # Styling Options
 CheckOptions:
