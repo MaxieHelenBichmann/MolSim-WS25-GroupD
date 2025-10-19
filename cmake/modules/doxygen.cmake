@@ -1,4 +1,4 @@
-option(ENABLE_DOXYGEN "Enable Doxygen generation" OFF)
+option(ENABLE_DOXYGEN "Enable Doxygen generation" ON)
 
 find_package(Doxygen)
 
