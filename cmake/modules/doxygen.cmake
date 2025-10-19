@@ -1,14 +1,16 @@
+option(ENABLE_DOXYGEN "Enable Doxygen generation" OFF)
+
 find_package(Doxygen)
 
-if(DOXYGEN_FOUND)
-    add_custom_target(doxygen
-        COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        COMMENT "Generating documentation with Doxygen"
-        VERBATIM
-    )
-    message(STATUS "Doxygen target created. Build it with 'make doxygen'.")
-else()
-    message(WARNING "Doxygen not found. The 'doxygen' target will not be available.")
+if(ENABLE_DOXYGEN)
+    message(STATUS "Doxygen generation enabled")
+    if(DOXYGEN_FOUND)
+        add_custom_target(doc_doxygen
+            COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        )
+        message(STATUS "Doxygen target created. Build it with 'make doc_doxygen'.")
+    else()
+        message(WARNING "Doxygen not found. The 'doxygen' target will not be available.")
+    endif()
 endif()
-
