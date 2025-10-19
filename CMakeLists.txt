@@ -27,7 +27,7 @@ file(GLOB_RECURSE MY_SRC
 # add additional modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
-include(vtk)
+
 include(clang-format)
 include(doxygen)
 include(clang-tidy)
@@ -48,3 +48,5 @@ target_compile_options(MolSim
             # disable some spam warnings for icpc...
             $<$<CXX_COMPILER_ID:Intel>:-w3 -wd383,981,1418,1572,2259>
 )
+
+include(vtk)
