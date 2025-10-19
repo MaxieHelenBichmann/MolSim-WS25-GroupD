@@ -1,0 +1,22 @@
+# Basic LLVM style checks + OpenMp checks for later Weeks + Specific Style checks
+Checks: 'clang-analyzer-*,performance-*,readability-*,modernize-*,bugprone-*, openmp-*, google-readability-casting, misc-definitions-in-headers'
+
+# This treats all warnings as errors, if we only want specific warnings as errors do [name_of_error, ...] 
+WarningsAsErrors: '*'
+
+# Use .clang-format file as basis for formatting checks
+FormatStyle = file
+
+# Exclude any Files outside of the src directory for checks
+HeaderFilterRegex: '^src/.*'
+
+# Styling Options
+CheckOptions:
+    readability-identifier-naming.ClassCase: CamelCase
+    readability-identifier-naming.ConstantCase: UPPER_CASE
+    readability-identifier-naming.EnumCase: CamelCase
+    readability-identifier-naming.FunctionCase: camelBack
+    readability-identifier-naming.LocalVariableCase: camelBack
+    readability-identifier-naming.MemberCase: camelBack
+    readability-identifier-naming.NamespaceCase: lower_case
+    portability-restrict-system-includes.Includes: '*'

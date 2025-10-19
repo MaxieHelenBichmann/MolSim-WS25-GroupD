@@ -4,4 +4,4 @@ BasedOnStyle: Google
 ColumnLimit: 120
 # ensure consistent pointer alignment
 DerivePointerAlignment: false
-PointerAlignment: Right
+PointerAlignment: Left
