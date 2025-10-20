@@ -3,7 +3,7 @@
 #include <list>
 
 #include "FileReader.h"
-#include "outputWriter/XYZWriter.h"
+#include "outputWriter/VTKWriter.h"
 #include "utils/ArrayUtils.h"
 
 /**** forward declaration of the calculation functions ****/
@@ -35,7 +35,7 @@ constexpr double delta_t = 0.014;
 // TODO: what data structure to pick?
 std::list<Particle> particles;
 
-int main(int argc, char *argsv[]) {
+int main(int argc, char* argsv[]) {
   std::cout << "Hello from MolSim for PSE!" << std::endl;
   if (argc != 2) {
     std::cout << "Erroneous programme call! " << std::endl;
@@ -75,10 +75,10 @@ void calculateF() {
   std::list<Particle>::iterator iterator;
   iterator = particles.begin();
 
-  for (auto &p1 : particles) {
+  for (auto& p1 : particles) {
     p1.modOldF() = {p1.getF()[0], p1.getF()[1], p1.getF()[2]};
     p1.modF() = {0., 0., 0.};
-    for (auto &p2 : particles) {
+    for (auto& p2 : particles) {
       if (p1 == p2) continue;
       const std::array<double, 3> diff = {p2.getX()[0] - p1.getX()[0], p2.getX()[1] - p1.getX()[1],
                                           p2.getX()[2] - p1.getX()[2]};
@@ -89,7 +89,7 @@ void calculateF() {
 }
 
 void calculateX() {
-  for (auto &p : particles) {
+  for (auto& p : particles) {
     p.modX() = {p.getX()[0] + delta_t * p.getV()[0] + 0.5 * delta_t * delta_t * p.getF()[0] / p.getM(),
                 p.getX()[1] + delta_t * p.getV()[1] + 0.5 * delta_t * delta_t * p.getF()[1] / p.getM(),
                 p.getX()[2] + delta_t * p.getV()[2] + 0.5 * delta_t * delta_t * p.getF()[2] / p.getM()};
@@ -97,7 +97,7 @@ void calculateX() {
 }
 
 void calculateV() {
-  for (auto &p : particles) {
+  for (auto& p : particles) {
     p.modV() = {
         p.getV()[0] + 0.5 * delta_t * (p.getOldF()[0] + p.getF()[0]) / p.getM(),
         p.getV()[1] + 0.5 * delta_t * (p.getOldF()[1] + p.getF()[1]) / p.getM(),
@@ -109,6 +109,6 @@ void calculateV() {
 void plotParticles(int iteration) {
   std::string out_name("MD_vtk");
 
-  outputWriter::XYZWriter writer;
+  outputWriter::VTKWriter writer;
   writer.plotParticles(particles, out_name, iteration);
 }
