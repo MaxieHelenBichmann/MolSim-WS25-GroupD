@@ -17,29 +17,29 @@ class Vector {
  public:
   // constructors
   Vector() { _data.fill(T(0)); };
-  Vector(std::array<T, N> init) : _data(init){};
+  Vector(std::array<T, N> init) : _data(init) {};
 
   // access
   T& operator[](size_t idx) { return _data[idx]; };
   const T& operator[](size_t idx) const { return _data[idx]; };
 
   // point-wise arithmetic operators
-  Vector operator+(const Vector& other) {
+  Vector operator+(const Vector& other) const {
     std::array<T, N> new_array;
     for (size_t i = 0; i < N; i++) new_array[i] = _data[i] + other._data[i];
     return Vector<T, N>(new_array);
   };
-  Vector operator-(const Vector& other) {
+  Vector operator-(const Vector& other) const {
     std::array<T, N> new_array;
     for (size_t i = 0; i < N; i++) new_array[i] = _data[i] - other._data[i];
     return Vector<T, N>(new_array);
   };
-  Vector operator*(const Vector& other) {
+  Vector operator*(const Vector& other) const {
     std::array<T, N> new_array;
     for (size_t i = 0; i < N; i++) new_array[i] = _data[i] * other._data[i];
     return Vector<T, N>(new_array);
   };
-  Vector operator/(const Vector& other) {
+  Vector operator/(const Vector& other) const {
     std::array<T, N> new_array;
     for (size_t i = 0; i < N; i++) new_array[i] = _data[i] / other._data[i];
     return Vector<T, N>(new_array);
@@ -49,7 +49,7 @@ class Vector {
   static T scalarProduct(const Vector& a, const Vector& b) {
     return std::inner_product(a._data.begin(), a._data.end(), b._data.begin(), T(0));
   }
-  T euclidNorm() {
+  T euclidNorm() const {
     return std::sqrt(std::accumulate(_data.begin(), _data.end(), T(0), [](auto a, auto b) { return a + b * b; }));
   }
 
@@ -58,8 +58,9 @@ class Vector {
 
   operator std::array<T, 3>() const { return _data; };
   std::array<T, 3>& operator*() { return _data; };
+  const std::array<T, 3>& operator*() const { return _data; };
 
-  std::ostream& operator<<(std::ostream& os) {
+  std::ostream& operator<<(std::ostream& os) const {
     os << "[";
     for (size_t i = 0; i < N; ++i) {
       if (i) os << ", ";
@@ -76,10 +77,10 @@ class Vector<T, 3> {
 
  public:
   // constructors
-  Vector() : _data({T(0), T(0), T(0)}){};
-  Vector(T x, T y, T z) : _data({x, y, z}){};
-  Vector(T val) : _data({val, val, val}){};
-  Vector(std::array<T, 3> init) : _data(init){};
+  Vector() : _data({T(0), T(0), T(0)}) {};
+  Vector(T x, T y, T z) : _data({x, y, z}) {};
+  Vector(T val) : _data({val, val, val}) {};
+  Vector(std::array<T, 3> init) : _data(init) {};
 
   // access
   T& operator[](size_t idx) { return _data[idx]; };
@@ -90,16 +91,16 @@ class Vector<T, 3> {
   T& z() { return _data[2]; };
 
   // point-wise arithmetic operators
-  Vector<T, 3> operator+(const Vector<T, 3>& other) {
+  Vector<T, 3> operator+(const Vector<T, 3>& other) const {
     return Vector<T, 3>(_data[0] + other._data[0], _data[1] + other._data[1], _data[2] + other._data[2]);
   };
-  Vector<T, 3> operator-(const Vector<T, 3>& other) {
+  Vector<T, 3> operator-(const Vector<T, 3>& other) const {
     return Vector<T, 3>(_data[0] - other._data[0], _data[1] - other._data[1], _data[2] - other._data[2]);
   };
-  Vector<T, 3> operator*(const Vector<T, 3>& other) {
+  Vector<T, 3> operator*(const Vector<T, 3>& other) const {
     return Vector<T, 3>(_data[0] * other._data[0], _data[1] * other._data[1], _data[2] * other._data[2]);
   };
-  Vector<T, 3> operator/(const Vector<T, 3>& other) {
+  Vector<T, 3> operator/(const Vector<T, 3>& other) const {
     return Vector<T, 3>(_data[0] / other._data[0], _data[1] / other._data[1], _data[2] / other._data[2]);
   };
 
@@ -107,15 +108,16 @@ class Vector<T, 3> {
   static T scalarProduct(const Vector<T, 3>& a, const Vector<T, 3>& b) {
     return a._data[0] * b._data[0] + a._data[1] * b._data[1] + a._data[2] * b._data[2];
   }
-  T euclidNorm() { return std::sqrt(_data[0] * _data[0] + _data[1] * _data[1] + _data[2] * _data[2]); };
+  T euclidNorm() const { return std::sqrt(_data[0] * _data[0] + _data[1] * _data[1] + _data[2] * _data[2]); };
 
   bool operator==(const Vector<T, 3>& other) const { return _data == other._data; };
   std::strong_ordering operator<=>(const Vector<T, 3>& other) const { return euclidNorm() <=> other.euclidNorm(); };
 
   operator std::array<T, 3>() const { return _data; };
-  std::array<T, 3> operator*() { return _data; };
+  std::array<T, 3>& operator*() { return _data; };
+  const std::array<T, 3>& operator*() const { return _data; };
 
-  std::ostream& operator<<(std::ostream& os) {
+  std::ostream& operator<<(std::ostream& os) const {
     os << "[" << _data[0] << ", " << _data[1] << ", " << _data[2] << "]";
     return os;
   }
@@ -128,10 +130,10 @@ class Vector<T, 2> {
 
  public:
   // constructors
-  Vector() : _data({T(0), T(0)}){};
-  Vector(T x, T y) : _data({x, y}){};
-  Vector(T val) : _data({val, val}){};
-  Vector(std::array<T, 2> init) : _data(init){};
+  Vector() : _data({T(0), T(0)}) {};
+  Vector(T x, T y) : _data({x, y}) {};
+  Vector(T val) : _data({val, val}) {};
+  Vector(std::array<T, 2> init) : _data(init) {};
 
   // access
   T& operator[](size_t idx) { return _data[idx]; };
@@ -141,16 +143,16 @@ class Vector<T, 2> {
   T& y() { return _data[1]; };
 
   // point-wise arithmetic operators
-  Vector<T, 2> operator+(const Vector<T, 2>& other) {
+  Vector<T, 2> operator+(const Vector<T, 2>& other) const {
     return Vector<T, 2>(_data[0] + other._data[0], _data[1] + other._data[1]);
   };
-  Vector<T, 2> operator-(const Vector<T, 2>& other) {
+  Vector<T, 2> operator-(const Vector<T, 2>& other) const {
     return Vector<T, 2>(_data[0] - other._data[0], _data[1] - other._data[1]);
   };
-  Vector<T, 2> operator*(const Vector<T, 2>& other) {
+  Vector<T, 2> operator*(const Vector<T, 2>& other) const {
     return Vector<T, 2>(_data[0] * other._data[0], _data[1] * other._data[1]);
   };
-  Vector<T, 2> operator/(const Vector<T, 2>& other) {
+  Vector<T, 2> operator/(const Vector<T, 2>& other) const {
     return Vector<T, 2>(_data[0] / other._data[0], _data[1] / other._data[1]);
   };
 
@@ -158,15 +160,16 @@ class Vector<T, 2> {
   static T scalarProduct(const Vector<T, 2>& a, const Vector<T, 2>& b) {
     return a._data[0] * b._data[0] + a._data[1] * b._data[1];
   }
-  T euclidNorm() { return std::sqrt(_data[0] * _data[0] + _data[1] * _data[1]); };
+  T euclidNorm() const { return std::sqrt(_data[0] * _data[0] + _data[1] * _data[1]); };
 
   bool operator==(const Vector<T, 2>& other) const { return _data == other._data; };
   std::strong_ordering operator<=>(const Vector<T, 2>& other) const { return euclidNorm() <=> other.euclidNorm(); };
 
   operator std::array<T, 2>() const { return _data; };
-  std::array<T, 2> operator*() { return _data; };
+  std::array<T, 2>& operator*() { return _data; };
+  const std::array<T, 2>& operator*() const { return _data; };
 
-  std::ostream& operator<<(std::ostream& os) {
+  std::ostream& operator<<(std::ostream& os) const {
     os << "[" << _data[0] << ", " << _data[1] << "]";
     return os;
   }
