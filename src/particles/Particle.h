@@ -10,27 +10,29 @@
 #include <array>
 #include <string>
 
+#include "Vector.h"
+
 class Particle {
  private:
   /**
    * Position of the particle
    */
-  std::array<double, 3> x;
+  Vector<double, 3> x;
 
   /**
    * Velocity of the particle
    */
-  std::array<double, 3> v;
+  Vector<double, 3> v;
 
   /**
    * Force effective on this particle
    */
-  std::array<double, 3> f;
+  Vector<double, 3> f;
 
   /**
    * Force which was effective on this particle
    */
-  std::array<double, 3> old_f;
+  Vector<double, 3> old_f;
 
   /**
    * Mass of this particle
@@ -46,34 +48,34 @@ class Particle {
  public:
   explicit Particle(int type = 0);
 
-  Particle(const Particle &other);
+  Particle(const Particle& other);
 
   Particle(
       // for visualization, we need always 3 coordinates
       // -> in case of 2d, we use only the first and the second
-      std::array<double, 3> x_arg, std::array<double, 3> v_arg, double m_arg, int type = 0);
+      Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, int type = 0);
 
   virtual ~Particle();
 
-  const std::array<double, 3> &getX() const;
-  std::array<double, 3> &modX();
+  const Vector<double, 3>& getX() const;
+  Vector<double, 3>& modX();
 
-  const std::array<double, 3> &getV() const;
-  std::array<double, 3> &modV();
+  const Vector<double, 3>& getV() const;
+  Vector<double, 3>& modV();
 
-  const std::array<double, 3> &getF() const;
-  std::array<double, 3> &modF();
+  const Vector<double, 3>& getF() const;
+  Vector<double, 3>& modF();
 
-  const std::array<double, 3> &getOldF() const;
-  std::array<double, 3> &modOldF();
+  const Vector<double, 3>& getOldF() const;
+  Vector<double, 3>& modOldF();
 
   double getM() const;
 
   int getType() const;
 
-  bool operator==(Particle &other);
+  bool operator==(Particle& other);
 
   std::string toString() const;
 };
 
-std::ostream &operator<<(std::ostream &stream, Particle &p);
+std::ostream& operator<<(std::ostream& stream, Particle& p);
