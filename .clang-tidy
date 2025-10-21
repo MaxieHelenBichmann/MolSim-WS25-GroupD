@@ -13,7 +13,8 @@ Checks: >
     misc-definitions-in-headers, 
     llvm-namespace-comment,
     misc-redundant-expression,
-    cppcoreguidelines-macro-usage
+    cppcoreguidelines-macro-usage,
+    -modernize-use-trailing-return-type
 
 # If we want to use specific Warnings as Errors they are to be added here
 WarningsAsErrors: ""

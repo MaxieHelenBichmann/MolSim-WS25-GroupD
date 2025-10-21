@@ -14,7 +14,7 @@
 #include <list>
 #include <string>
 
-#include "Particle.h"
+#include "particles/Particle.h"
 
 namespace outputWriter {
 

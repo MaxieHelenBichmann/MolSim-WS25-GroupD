@@ -9,7 +9,7 @@
 
 #include <list>
 
-#include "Particle.h"
+#include "particles/Particle.h"
 
 class FileReader {
  public:

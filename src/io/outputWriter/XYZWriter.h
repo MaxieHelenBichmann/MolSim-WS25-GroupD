@@ -10,7 +10,7 @@
 #include <fstream>
 #include <list>
 
-#include "Particle.h"
+#include "particles/Particle.h"
 
 namespace outputWriter {
 
