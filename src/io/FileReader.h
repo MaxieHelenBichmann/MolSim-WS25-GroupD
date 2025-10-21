@@ -10,11 +10,12 @@
 #include <list>
 
 #include "particles/Particle.h"
+#include "particles/ParticleContainer.h"
 
 class FileReader {
  public:
   FileReader();
   virtual ~FileReader();
 
-  void readFile(std::list<Particle> &particles, char *filename);
+  void readFile(particle_containers::ParticleContainer& particles, char* filename);
 };

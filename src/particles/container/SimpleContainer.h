@@ -6,7 +6,7 @@
 
 namespace particle_containers {
 
-class SimpleContainer : ParticleContainer {
+class SimpleContainer : public ParticleContainer {
   std::vector<Particle> _data;
 
  public:
@@ -27,29 +27,29 @@ class SimpleContainer : ParticleContainer {
   ~SimpleContainer();
 
   // retrieve data
-  Particle& operator[](size_t idx);
-  const Particle& operator[](size_t idx) const;
+  Particle& operator[](size_t idx) override;
+  const Particle& operator[](size_t idx) const override;
 
-  std::vector<Particle>& data();
-  const std::vector<Particle>& data() const;
+  std::vector<Particle>& data() override;
+  const std::vector<Particle>& data() const override;
 
-  bool empty() const;
-  size_t size() const;
+  bool empty() const override;
+  size_t size() const override;
 
   bool operator==(const SimpleContainer& other) const;
 
   // modify
-  void clear();
-  void reserve(size_t n);
-  void removeParticle(size_t idx);
-  void removeParticle(Particle& value);
-  void addParticle(Particle&& value);
-  void addParticle(const Particle& value);
+  void clear() override;
+  void reserve(size_t n) override;
+  void addParticle(Particle&& value) override;
+  void addParticle(const Particle& value) override;
+  void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg) override;
+  void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, int type) override;
 
   // iterators
-  std::vector<Particle>::iterator begin();
-  std::vector<Particle>::const_iterator begin() const;
-  std::vector<Particle>::iterator end();
-  std::vector<Particle>::const_iterator end() const;
+  std::vector<Particle>::iterator begin() override;
+  std::vector<Particle>::const_iterator begin() const override;
+  std::vector<Particle>::iterator end() override;
+  std::vector<Particle>::const_iterator end() const override;
 };
 }  // namespace particle_containers

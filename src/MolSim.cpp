@@ -5,6 +5,7 @@
 
 #include "io/FileReader.h"
 #include "io/outputWriter/VTKWriter.h"
+#include "particles/container/SimpleContainer.h"
 #include "physics/ForceSource.h"
 #include "physics/GravitationalForce.h"
 #include "utils/ArrayUtils.h"
@@ -36,7 +37,7 @@ constexpr double end_time = 1000;
 constexpr double delta_t = 0.014;
 
 // TODO: what data structure to pick?
-std::list<Particle> particles;
+particle_containers::SimpleContainer particles;
 std::unique_ptr<ForceSource> forceSource = std::make_unique<GravitationalForce>();
 
 int main(int argc, char* argsv[]) {
@@ -76,8 +77,7 @@ int main(int argc, char* argsv[]) {
 }
 
 void calculateF() {
-  std::list<Particle>::iterator iterator;
-  iterator = particles.begin();
+  auto iterator = particles.begin();
 
   for (auto& p1 : particles) {
     p1.modOldF() = {p1.getF()[0], p1.getF()[1], p1.getF()[2]};

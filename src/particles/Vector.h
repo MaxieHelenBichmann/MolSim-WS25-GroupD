@@ -23,6 +23,9 @@ class Vector {
   T& operator[](size_t idx) { return _data[idx]; };
   const T& operator[](size_t idx) const { return _data[idx]; };
 
+  T* data() { return _data.data(); }
+  const T* data() const { return _data.data(); }
+
   // point-wise arithmetic operators
   Vector operator+(const Vector& other) const {
     std::array<T, N> new_array;
@@ -86,9 +89,15 @@ class Vector<T, 3> {
   T& operator[](size_t idx) { return _data[idx]; };
   const T& operator[](size_t idx) const { return _data[idx]; };
 
+  T* data() { return _data.data(); }
+  const T* data() const { return _data.data(); }
+
   T& x() { return _data[0]; };
+  const T& x() const { return _data[0]; };
   T& y() { return _data[1]; };
+  const T& y() const { return _data[1]; };
   T& z() { return _data[2]; };
+  const T& z() const { return _data[2]; };
 
   // point-wise arithmetic operators
   Vector<T, 3> operator+(const Vector<T, 3>& other) const {
@@ -139,8 +148,13 @@ class Vector<T, 2> {
   T& operator[](size_t idx) { return _data[idx]; };
   const T& operator[](size_t idx) const { return _data[idx]; };
 
+  T* data() { return _data.data(); }
+  const T* data() const { return _data.data(); }
+
   T& x() { return _data[0]; };
+  const T& x() const { return _data[0]; };
   T& y() { return _data[1]; };
+  const T& y() const { return _data[1]; };
 
   // point-wise arithmetic operators
   Vector<T, 2> operator+(const Vector<T, 2>& other) const {
@@ -196,3 +210,11 @@ std::ostream& operator<<(std::ostream& os, const Vector<T, 2>& v) {
   os << "[" << v.x() << ", " << v.y() << "]";
   return os;
 }
+
+/**
+ *
+ * auto [x, y, z] = Vector<double, 3>()
+ *
+ * tuple_size , std::get
+ *
+ */
