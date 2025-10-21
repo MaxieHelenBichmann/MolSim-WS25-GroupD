@@ -37,6 +37,7 @@ constexpr double delta_t = 0.014;
 
 // TODO: what data structure to pick?
 std::list<Particle> particles;
+std::unique_ptr<ForceSource> forceSource = std::make_unique<GravitationalForce>();
 
 int main(int argc, char* argsv[]) {
   std::cout << "Hello from MolSim for PSE!" << std::endl;
@@ -77,13 +78,14 @@ int main(int argc, char* argsv[]) {
 void calculateF() {
   std::list<Particle>::iterator iterator;
   iterator = particles.begin();
-  std::unique_ptr<ForceSource> forceSource = std::make_unique<GravitationalForce>();
 
   for (auto& p1 : particles) {
     p1.modOldF() = {p1.getF()[0], p1.getF()[1], p1.getF()[2]};
     p1.modF() = {0., 0., 0.};
     for (auto& p2 : particles) {
-      if (p1 == p2) continue;
+      if (p1 == p2) {
+        continue;
+      }
       p1.modF() = forceSource->calculateForce(p1, p2);
     }
   }
