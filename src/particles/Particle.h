@@ -60,16 +60,16 @@ class Particle {
   virtual ~Particle();
 
   const R3& getX() const;
-  R3& modX();
+  R3& getX();
 
   const R3& getV() const;
-  R3& modV();
+  R3& getV();
 
   const R3& getF() const;
-  R3& modF();
+  R3& getF();
 
   const R3& getOldF() const;
-  R3& modOldF();
+  R3& getOldF();
 
   double getM() const;
 

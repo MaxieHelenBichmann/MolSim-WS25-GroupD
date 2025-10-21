@@ -44,16 +44,16 @@ Particle::Particle(R3 x_arg, R3 v_arg, double m_arg, int type_arg) {
 Particle::~Particle() { std::cout << "Particle destructed!" << std::endl; }
 
 const R3& Particle::getX() const { return x; }
-R3& Particle::modX() { return x; }
+R3& Particle::getX() { return x; }
 
 const R3& Particle::getV() const { return v; }
-R3& Particle::modV() { return v; }
+R3& Particle::getV() { return v; }
 
 const R3& Particle::getF() const { return f; }
-R3& Particle::modF() { return f; }
+R3& Particle::getF() { return f; }
 
 const R3& Particle::getOldF() const { return old_f; }
-R3& Particle::modOldF() { return old_f; }
+R3& Particle::getOldF() { return old_f; }
 
 double Particle::getM() const { return m; }
 
