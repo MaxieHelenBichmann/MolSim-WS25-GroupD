@@ -80,8 +80,8 @@ void calculateF() {
   auto iterator = particles.begin();
 
   for (auto& p1 : particles) {
-    p1.getOldF() = {p1.getF()[0], p1.getF()[1], p1.getF()[2]};
-    p1.getF() = {0., 0., 0.};
+    p1.getOldF() = p1.getF();
+    p1.getF() = Vector<double, 3>(0.);
     for (auto& p2 : particles) {
       if (p1 == p2) {
         continue;
@@ -93,19 +93,13 @@ void calculateF() {
 
 void calculateX() {
   for (auto& p : particles) {
-    p.getX() = {p.getX()[0] + delta_t * p.getV()[0] + 0.5 * delta_t * delta_t * p.getF()[0] / p.getM(),
-                p.getX()[1] + delta_t * p.getV()[1] + 0.5 * delta_t * delta_t * p.getF()[1] / p.getM(),
-                p.getX()[2] + delta_t * p.getV()[2] + 0.5 * delta_t * delta_t * p.getF()[2] / p.getM()};
+    p.getX() = p.getX() + delta_t * p.getV() + (0.5 * delta_t * delta_t / p.getM()) * p.getF();
   }
 }
 
 void calculateV() {
   for (auto& p : particles) {
-    p.getV() = {
-        p.getV()[0] + 0.5 * delta_t * (p.getOldF()[0] + p.getF()[0]) / p.getM(),
-        p.getV()[1] + 0.5 * delta_t * (p.getOldF()[1] + p.getF()[1]) / p.getM(),
-        p.getV()[2] + 0.5 * delta_t * (p.getOldF()[2] + p.getF()[2]) / p.getM(),
-    };
+    p.getV() = p.getV() + (0.5 * delta_t / p.getM()) * (p.getOldF() + p.getF());
   }
 }
 
