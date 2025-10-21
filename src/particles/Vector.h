@@ -1,5 +1,7 @@
 #pragma once
 
+#include <math.h>
+
 #include <array>
 #include <iostream>
 #include <numeric>
@@ -15,7 +17,7 @@ class Vector {
  public:
   // constructors
   Vector() { _data.fill(T(0)); };
-  Vector(std::array<T, N> init) : _data(init) {};
+  Vector(std::array<T, N> init) : _data(init){};
 
   // access
   T& operator[](size_t idx) { return _data[idx]; };
@@ -74,10 +76,10 @@ class Vector<T, 3> {
 
  public:
   // constructors
-  Vector() : _data({T(0), T(0), T(0)}) {};
-  Vector(T x, T y, T z) : _data({x, y, z}) {};
-  Vector(T val) : _data({val, val, val}) {};
-  Vector(std::array<T, 3> init) : _data(init) {};
+  Vector() : _data({T(0), T(0), T(0)}){};
+  Vector(T x, T y, T z) : _data({x, y, z}){};
+  Vector(T val) : _data({val, val, val}){};
+  Vector(std::array<T, 3> init) : _data(init){};
 
   // access
   T& operator[](size_t idx) { return _data[idx]; };
@@ -126,10 +128,10 @@ class Vector<T, 2> {
 
  public:
   // constructors
-  Vector() : _data({T(0), T(0)}) {};
-  Vector(T x, T y) : _data({x, y}) {};
-  Vector(T val) : _data({val, val}) {};
-  Vector(std::array<T, 2> init) : _data(init) {};
+  Vector() : _data({T(0), T(0)}){};
+  Vector(T x, T y) : _data({x, y}){};
+  Vector(T val) : _data({val, val}){};
+  Vector(std::array<T, 2> init) : _data(init){};
 
   // access
   T& operator[](size_t idx) { return _data[idx]; };

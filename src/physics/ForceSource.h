@@ -4,6 +4,7 @@
 #include <array>
 
 #include "particles/Particle.h"
+
 /**
  * @brief Interface for force source classes
  *
