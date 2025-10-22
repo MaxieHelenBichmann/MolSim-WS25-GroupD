@@ -1,6 +1,5 @@
 
 #include <iostream>
-#include <list>
 #include <memory>
 
 #include "io/FileReader.h"
@@ -40,10 +39,10 @@ particle_containers::SimpleContainer particles;
 std::unique_ptr<ForceSource> forceSource = std::make_unique<GravitationalForce>();
 
 int main(int argc, char* argsv[]) {
-  std::cout << "Hello from MolSim for PSE!" << std::endl;
+  std::cout << "Hello from MolSim for PSE!" << '\n';
   if (argc != 2) {
-    std::cout << "Erroneous programme call! " << std::endl;
-    std::cout << "./molsym filename" << std::endl;
+    std::cout << "Erroneous programme call! " << '\n';
+    std::cout << "./molsym filename" << '\n';
   }
 
   FileReader fileReader;
@@ -76,8 +75,6 @@ int main(int argc, char* argsv[]) {
 }
 
 void calculateF() {
-  auto iterator = particles.begin();
-
   for (auto& p1 : particles) {
     p1.getOldF() = p1.getF();
     p1.getF() = Vector<double, 3>(0.);

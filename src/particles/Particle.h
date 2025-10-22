@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include <array>
 #include <string>
 
 #include "../utils/Vector.h"
@@ -59,25 +58,25 @@ class Particle {
 
   virtual ~Particle();
 
-  const R3& getX() const;
+  [[nodiscard]] const R3& getX() const;
   R3& getX();
 
-  const R3& getV() const;
+  [[nodiscard]] const R3& getV() const;
   R3& getV();
 
-  const R3& getF() const;
+  [[nodiscard]] const R3& getF() const;
   R3& getF();
 
-  const R3& getOldF() const;
+  [[nodiscard]] const R3& getOldF() const;
   R3& getOldF();
 
-  double getM() const;
+  [[nodiscard]] double getM() const;
 
-  int getType() const;
+  [[nodiscard]] int getType() const;
 
   bool operator==(const Particle& other) const;
 
-  std::string toString() const;
+  [[nodiscard]] std::string toString() const;
 };
 
 std::ostream& operator<<(std::ostream& stream, Particle& p);

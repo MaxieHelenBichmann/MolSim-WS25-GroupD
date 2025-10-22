@@ -6,7 +6,9 @@ SimpleContainer::SimpleContainer() = default;
 SimpleContainer::SimpleContainer(size_t init_cap) { _data.reserve(init_cap); }
 SimpleContainer::SimpleContainer(std::initializer_list<Particle> init) {
   _data.reserve(init.size());
-  for (const Particle& elem : init) _data.push_back(elem);
+  for (const Particle& elem : init) {
+    _data.push_back(elem);
+  }
 }
 
 // cpy constr

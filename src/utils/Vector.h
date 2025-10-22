@@ -16,7 +16,7 @@ class Vector {
  public:
   // constructors
   Vector() { _data.fill(T(0)); };
-  Vector(std::array<T, N> init) : _data(init) {};
+  Vector(std::array<T, N> init) : _data(init){};
 
   // cpy constr
   Vector(const Vector<T, N>& other) = default;
@@ -101,10 +101,10 @@ class Vector<T, 3> {
 
  public:
   // constructors
-  Vector() : _data({T(0), T(0), T(0)}) {};
-  Vector(T x, T y, T z) : _data({x, y, z}) {};
-  Vector(T val) : _data({val, val, val}) {};
-  Vector(std::array<T, 3> init) : _data(init) {};
+  Vector() : _data({T(0), T(0), T(0)}){};
+  Vector(T x, T y, T z) : _data({x, y, z}){};
+  Vector(T val) : _data({val, val, val}){};
+  Vector(std::array<T, 3> init) : _data(init){};
 
   // cpy constr
   Vector(const Vector<T, 3>& other) = default;
@@ -154,9 +154,9 @@ class Vector<T, 3> {
   };
   friend Vector<T, 3> operator*(const T& s, const Vector<T, 3>& v) { return v * s; }  // Scalar * Vector
   static T scalarProduct(const Vector<T, 3>& a, const Vector<T, 3>& b) {
-    return a._data[0] * b._data[0] + a._data[1] * b._data[1] + a._data[2] * b._data[2];
+    return (a._data[0] * b._data[0]) + (a._data[1] * b._data[1]) + (a._data[2] * b._data[2]);
   }
-  T euclidNorm() const { return std::sqrt(_data[0] * _data[0] + _data[1] * _data[1] + _data[2] * _data[2]); };
+  T euclidNorm() const { return std::sqrt((_data[0] * _data[0]) + (_data[1] * _data[1]) + (_data[2] * _data[2])); };
 
   // conversion to array
   operator std::array<T, 3>() const { return _data; };
@@ -179,10 +179,10 @@ class Vector<T, 2> {
 
  public:
   // constructors
-  Vector() : _data({T(0), T(0)}) {};
-  Vector(T x, T y) : _data({x, y}) {};
-  Vector(T val) : _data({val, val}) {};
-  Vector(std::array<T, 2> init) : _data(init) {};
+  Vector() : _data({T(0), T(0)}){};
+  Vector(T x, T y) : _data({x, y}){};
+  Vector(T val) : _data({val, val}){};
+  Vector(std::array<T, 2> init) : _data(init){};
 
   // cpy constr
   Vector(const Vector<T, 2>& other) = default;

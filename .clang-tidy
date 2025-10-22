@@ -16,7 +16,7 @@ CheckOptions:
     readability-identifier-naming.ConstantCase: UPPER_CASE
     readability-identifier-naming.EnumCase: CamelCase
     readability-identifier-naming.FunctionCase: camelBack
-    readability-identifier-naming.LocalVariableCase: camelBack
-    readability-identifier-naming.MemberCase: camelBack
+    readability-identifier-naming.LocalVariableCase: lower_case
+    readability-identifier-naming.MemberCase: lower_case
     readability-identifier-naming.NamespaceCase: lower_case
     portability-restrict-system-includes.Includes: '*'

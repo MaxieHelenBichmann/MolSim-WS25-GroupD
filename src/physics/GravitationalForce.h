@@ -2,7 +2,6 @@
 #define GRAV_FORCE
 
 #include "physics/ForceSource.h"
-#include "utils/ArrayUtils.h"
 
 /**
  * @brief Class to calculate gravitational forces between two different objects. Implements the ForceSource interface
