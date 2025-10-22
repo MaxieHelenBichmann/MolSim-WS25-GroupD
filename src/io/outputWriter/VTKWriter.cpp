@@ -26,28 +26,28 @@ void VTKWriter::plotParticles(particle_containers::ParticleContainer& particles,
   auto points = vtkSmartPointer<vtkPoints>::New();
 
   // Create and configure data arrays
-  vtkNew<vtkFloatArray> massArray;
-  massArray->SetName("mass");
-  massArray->SetNumberOfComponents(1);
+  vtkNew<vtkFloatArray> mass_array;
+  mass_array->SetName("mass");
+  mass_array->SetNumberOfComponents(1);
 
-  vtkNew<vtkFloatArray> velocityArray;
-  velocityArray->SetName("velocity");
-  velocityArray->SetNumberOfComponents(3);
+  vtkNew<vtkFloatArray> velocity_array;
+  velocity_array->SetName("velocity");
+  velocity_array->SetNumberOfComponents(3);
 
-  vtkNew<vtkFloatArray> forceArray;
-  forceArray->SetName("force");
-  forceArray->SetNumberOfComponents(3);
+  vtkNew<vtkFloatArray> force_array;
+  force_array->SetName("force");
+  force_array->SetNumberOfComponents(3);
 
-  vtkNew<vtkIntArray> typeArray;
-  typeArray->SetName("type");
-  typeArray->SetNumberOfComponents(1);
+  vtkNew<vtkIntArray> type_array;
+  type_array->SetName("type");
+  type_array->SetNumberOfComponents(1);
 
   for (auto& p : particles) {
     points->InsertNextPoint(p.getX().data());
-    massArray->InsertNextValue(static_cast<float>(p.getM()));
-    velocityArray->InsertNextTuple(p.getV().data());
-    forceArray->InsertNextTuple(p.getF().data());
-    typeArray->InsertNextValue(p.getType());
+    mass_array->InsertNextValue(static_cast<float>(p.getM()));
+    velocity_array->InsertNextTuple(p.getV().data());
+    force_array->InsertNextTuple(p.getF().data());
+    type_array->InsertNextValue(p.getType());
   }
 
   // Set up the grid
@@ -55,10 +55,10 @@ void VTKWriter::plotParticles(particle_containers::ParticleContainer& particles,
   grid->SetPoints(points);
 
   // Add arrays to the grid
-  grid->GetPointData()->AddArray(massArray);
-  grid->GetPointData()->AddArray(velocityArray);
-  grid->GetPointData()->AddArray(forceArray);
-  grid->GetPointData()->AddArray(typeArray);
+  grid->GetPointData()->AddArray(mass_array);
+  grid->GetPointData()->AddArray(velocity_array);
+  grid->GetPointData()->AddArray(force_array);
+  grid->GetPointData()->AddArray(type_array);
 
   // Create filename with iteration number
   std::stringstream strstr;

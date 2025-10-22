@@ -27,18 +27,18 @@ void FileReader::readFile(particle_containers::ParticleContainer& particles, cha
 
   if (input_file.is_open()) {
     getline(input_file, tmp_string);
-    std::cout << "Read line: " << tmp_string << std::endl;
+    std::cout << "Read line: " << tmp_string << '\n';
 
     while (tmp_string.empty() or tmp_string[0] == '#') {
       getline(input_file, tmp_string);
-      std::cout << "Read line: " << tmp_string << std::endl;
+      std::cout << "Read line: " << tmp_string << '\n';
     }
 
     std::istringstream numstream(tmp_string);
     numstream >> num_particles;
-    std::cout << "Reading " << num_particles << "." << std::endl;
+    std::cout << "Reading " << num_particles << "." << '\n';
     getline(input_file, tmp_string);
-    std::cout << "Read line: " << tmp_string << std::endl;
+    std::cout << "Read line: " << tmp_string << '\n';
 
     particles.reserve(num_particles);
 
@@ -52,17 +52,17 @@ void FileReader::readFile(particle_containers::ParticleContainer& particles, cha
         datastream >> vj;
       }
       if (datastream.eof()) {
-        std::cout << "Error reading file: eof reached unexpectedly reading from line " << i << std::endl;
+        std::cout << "Error reading file: eof reached unexpectedly reading from line " << i << '\n';
         exit(-1);
       }
       datastream >> m;
       particles.addParticle(x, v, m);
 
       getline(input_file, tmp_string);
-      std::cout << "Read line: " << tmp_string << std::endl;
+      std::cout << "Read line: " << tmp_string << '\n';
     }
   } else {
-    std::cout << "Error: could not open file " << filename << std::endl;
+    std::cout << "Error: could not open file " << filename << '\n';
     exit(-1);
   }
 }

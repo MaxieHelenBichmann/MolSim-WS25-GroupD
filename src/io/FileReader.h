@@ -7,9 +7,6 @@
 
 #pragma once
 
-#include <list>
-
-#include "particles/Particle.h"
 #include "particles/ParticleContainer.h"
 
 class FileReader {
@@ -17,5 +14,5 @@ class FileReader {
   FileReader();
   virtual ~FileReader();
 
-  void readFile(particle_containers::ParticleContainer& particles, char* filename);
+  static void readFile(particle_containers::ParticleContainer& particles, char* filename);
 };

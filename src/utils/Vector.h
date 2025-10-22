@@ -1,6 +1,6 @@
 #pragma once
 
-#include <math.h>
+#include <cmath>
 
 #include <array>
 #include <iostream>
@@ -16,7 +16,7 @@ class Vector {
  public:
   // constructors
   Vector() { _data.fill(T(0)); };
-  Vector(std::array<T, N> init) : _data(init) {};
+  Vector(std::array<T, N> init) : _data(init){};
 
   template <typename... Ts>
     requires(... && (std::integral<Ts> || std::floating_point<Ts>))
@@ -46,29 +46,34 @@ class Vector {
   // point-wise arithmetic operators
   Vector<T, N> operator+(const Vector<T, N>& other) const {
     std::array<T, N> new_array;
-    for (size_t i = 0; i < N; i++) new_array[i] = _data[i] + other._data[i];
+    for (size_t i = 0; i < N; i++) { new_array[i] = _data[i] + other._data[i];
+}
     return Vector<T, N>(new_array);
   };
   Vector<T, N> operator-(const Vector<T, N>& other) const {
     std::array<T, N> new_array;
-    for (size_t i = 0; i < N; i++) new_array[i] = _data[i] - other._data[i];
+    for (size_t i = 0; i < N; i++) { new_array[i] = _data[i] - other._data[i];
+}
     return Vector<T, N>(new_array);
   };
   Vector<T, N> operator*(const Vector<T, N>& other) const {
     std::array<T, N> new_array;
-    for (size_t i = 0; i < N; i++) new_array[i] = _data[i] * other._data[i];
+    for (size_t i = 0; i < N; i++) { new_array[i] = _data[i] * other._data[i];
+}
     return Vector<T, N>(new_array);
   };
   Vector<T, N> operator/(const Vector<T, N>& other) const {
     std::array<T, N> new_array;
-    for (size_t i = 0; i < N; i++) new_array[i] = _data[i] / other._data[i];
+    for (size_t i = 0; i < N; i++) { new_array[i] = _data[i] / other._data[i];
+}
     return Vector<T, N>(new_array);
   };
 
   // other arithmetic operations
   Vector<T, N> operator*(const T scalar) const {  // Vector * Scalar
     std::array<T, N> new_array;
-    for (size_t i = 0; i < N; i++) new_array[i] = scalar * _data[i];
+    for (size_t i = 0; i < N; i++) { new_array[i] = scalar * _data[i];
+}
     return Vector<T, N>(new_array);
   }
   friend Vector<T, N> operator*(const T& s, const Vector<T, N>& v) { return v * s; }  // Scalar * Vector
@@ -76,7 +81,7 @@ class Vector {
     return std::inner_product(a._data.begin(), a._data.end(), b._data.begin(), T(0));
   }
   T euclidNorm() const {
-    return std::sqrt(std::accumulate(_data.begin(), _data.end(), T(0), [](auto a, auto b) { return a + b * b; }));
+    return std::sqrt(std::accumulate(_data.begin(), _data.end(), T(0), [](auto a, auto b) { return a + (b * b); }));
   }
 
   // conversions to arrays
@@ -87,14 +92,16 @@ class Vector {
   // output
   std::string toString(const std::string& delimiter = ", ",
                        const std::array<std::string, 2>& surround = {"[", "]"}) const {
-    std::stringstream strStream;
-    strStream << surround[0];
+    std::stringstream str_stream;
+    str_stream << surround[0];
     for (size_t i = 0; i < N; ++i) {
-      if (i) strStream << ", ";
-      strStream << _data[i];
+      if (i != 0U) {
+        str_stream << ", ";
+      }
+      str_stream << _data[i];
     }
-    strStream << surround[1];
-    return strStream.str();
+    str_stream << surround[1];
+    return str_stream.str();
   };
 };
 

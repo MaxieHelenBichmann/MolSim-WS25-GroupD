@@ -30,9 +30,9 @@ void calculateV();
  */
 void plotParticles(int iteration);
 
-constexpr double start_time = 0;
-constexpr double end_time = 1000;
-constexpr double delta_t = 0.014;
+constexpr double START_TIME = 0;
+constexpr double END_TIME = 1000;
+constexpr double DELTA_T = 0.014;
 
 // TODO: what data structure to pick?
 particle_containers::SimpleContainer particles;
@@ -45,15 +45,15 @@ int main(int argc, char* argsv[]) {
     std::cout << "./molsym filename" << '\n';
   }
 
-  FileReader fileReader;
-  fileReader.readFile(particles, argsv[1]);
+  FileReader file_reader;
+  FileReader::readFile(particles, argsv[1]);
 
-  double current_time = start_time;
+  double current_time = START_TIME;
 
   int iteration = 0;
 
   // for this loop, we assume: current x, current f and current v are known
-  while (current_time < end_time) {
+  while (current_time < END_TIME) {
     // calculate new x
     calculateX();
     // calculate new f
@@ -65,12 +65,12 @@ int main(int argc, char* argsv[]) {
     if (iteration % 10 == 0) {
       plotParticles(iteration);
     }
-    std::cout << "Iteration " << iteration << " finished." << std::endl;
+    std::cout << "Iteration " << iteration << " finished." << '\n';
 
-    current_time += delta_t;
+    current_time += DELTA_T;
   }
 
-  std::cout << "output written. Terminating..." << std::endl;
+  std::cout << "output written. Terminating..." << '\n';
   return 0;
 }
 
@@ -89,19 +89,17 @@ void calculateF() {
 
 void calculateX() {
   for (auto& p : particles) {
-    p.getX() = p.getX() + delta_t * p.getV() + (0.5 * delta_t * delta_t / p.getM()) * p.getF();
+    p.getX() = p.getX() + DELTA_T * p.getV() + (0.5 * DELTA_T * DELTA_T / p.getM()) * p.getF();
   }
 }
 
 void calculateV() {
   for (auto& p : particles) {
-    p.getV() = p.getV() + (0.5 * delta_t / p.getM()) * (p.getOldF() + p.getF());
+    p.getV() = p.getV() + (0.5 * DELTA_T / p.getM()) * (p.getOldF() + p.getF());
   }
 }
 
 void plotParticles(int iteration) {
   std::string out_name("MD_vtk");
-
-  outputWriter::VTKWriter writer;
-  writer.plotParticles(particles, out_name, iteration);
+  outputWriter::VTKWriter::plotParticles(particles, out_name, iteration);
 }
