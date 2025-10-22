@@ -5,6 +5,7 @@
 #include <array>
 #include <iostream>
 #include <numeric>
+#include <sstream>
 #include <string>
 
 template <class T, size_t N>
@@ -69,12 +70,13 @@ class Vector {
   const std::array<T, 3>& operator*() const { return _data; };
 
   // output
-  std::string toString(const std::string& delimiter = ", ", const std::array<std::string, 2>& surround = {"[", "]"}) {
-    std::ostringstream strStream;
+  std::string toString(const std::string& delimiter = ", ",
+                       const std::array<std::string, 2>& surround = {"[", "]"}) const {
+    std::stringstream strStream;
     strStream << surround[0];
     for (size_t i = 0; i < N; ++i) {
       if (i) strStream << ", ";
-      strStream << v._data[i];
+      strStream << _data[i];
     }
     strStream << surround[1];
     return strStream.str();
@@ -140,9 +142,10 @@ class Vector<T, 3> {
   const std::array<T, 3>& operator*() const { return _data; };
 
   // output
-  std::string toString(const std::string& delimiter = ", ", const std::array<std::string, 2>& surround = {"[", "]"}) {
-    std::ostringstream strStream;
-    strStream << surround[0] << v.x() << delimiter << v.y() << delimiter << v.z() << surround[1];
+  std::string toString(const std::string& delimiter = ", ",
+                       const std::array<std::string, 2>& surround = {"[", "]"}) const {
+    std::stringstream strStream;
+    strStream << surround[0] << x() << delimiter << y() << delimiter << z() << surround[1];
     return strStream.str();
   };
 };
@@ -205,9 +208,10 @@ class Vector<T, 2> {
   const std::array<T, 2>& operator*() const { return _data; };
 
   // output
-  std::string toString(const std::string& delimiter = ", ", const std::array<std::string, 2>& surround = {"[", "]"}) {
-    std::ostringstream strStream;
-    strStream << surround[0] << v.x() << delimiter << v.y() << surround[1];
+  std::string toString(const std::string& delimiter = ", ",
+                       const std::array<std::string, 2>& surround = {"[", "]"}) const {
+    std::stringstream strStream;
+    strStream << surround[0] << x() << delimiter << y() << surround[1];
     return strStream.str();
   };
 };
