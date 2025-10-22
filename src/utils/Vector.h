@@ -5,14 +5,12 @@
 #include <array>
 #include <iostream>
 #include <numeric>
+#include <string>
 
 template <class T, size_t N>
   requires std::integral<T> || std::floating_point<T>
 class Vector {
   std::array<T, N> _data;
-
-  template <class U, std::size_t M>
-  friend std::ostream& operator<<(std::ostream& os, const Vector<U, M>& v);
 
  public:
   // constructors
@@ -69,6 +67,18 @@ class Vector {
   operator std::array<T, 3>() const { return _data; };
   std::array<T, 3>& operator*() { return _data; };
   const std::array<T, 3>& operator*() const { return _data; };
+
+  // output
+  std::string toString(const std::string& delimiter = ", ", const std::array<std::string, 2>& surround = {"[", "]"}) {
+    std::ostringstream strStream;
+    strStream << surround[0];
+    for (size_t i = 0; i < N; ++i) {
+      if (i) strStream << ", ";
+      strStream << v._data[i];
+    }
+    strStream << surround[1];
+    return strStream.str();
+  };
 };
 
 template <class T>
@@ -128,6 +138,13 @@ class Vector<T, 3> {
   operator std::array<T, 3>() const { return _data; };
   std::array<T, 3>& operator*() { return _data; };
   const std::array<T, 3>& operator*() const { return _data; };
+
+  // output
+  std::string toString(const std::string& delimiter = ", ", const std::array<std::string, 2>& surround = {"[", "]"}) {
+    std::ostringstream strStream;
+    strStream << surround[0] << v.x() << delimiter << v.y() << delimiter << v.z() << surround[1];
+    return strStream.str();
+  };
 };
 
 template <class T>
@@ -186,28 +203,19 @@ class Vector<T, 2> {
   operator std::array<T, 2>() const { return _data; };
   std::array<T, 2>& operator*() { return _data; };
   const std::array<T, 2>& operator*() const { return _data; };
+
+  // output
+  std::string toString(const std::string& delimiter = ", ", const std::array<std::string, 2>& surround = {"[", "]"}) {
+    std::ostringstream strStream;
+    strStream << surround[0] << v.x() << delimiter << v.y() << surround[1];
+    return strStream.str();
+  };
 };
 
-// Output
+// output
 template <class T, size_t N>
 std::ostream& operator<<(std::ostream& os, const Vector<T, N>& v) {
-  os << "[";
-  for (size_t i = 0; i < N; ++i) {
-    if (i) os << ", ";
-    os << v._data[i];
-  }
-  return os << "]";
-}
-
-template <class T>
-std::ostream& operator<<(std::ostream& os, const Vector<T, 3>& v) {
-  os << "[" << v.x() << ", " << v.y() << ", " << v.z() << "]";
-  return os;
-}
-
-template <class T>
-std::ostream& operator<<(std::ostream& os, const Vector<T, 2>& v) {
-  os << "[" << v.x() << ", " << v.y() << "]";
+  os << v.toString();
   return os;
 }
 

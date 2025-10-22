@@ -10,7 +10,7 @@
 #include <array>
 #include <string>
 
-#include "Vector.h"
+#include "../utils/Vector.h"
 
 using R3 = Vector<double, 3>;
 
