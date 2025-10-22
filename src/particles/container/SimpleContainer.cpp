@@ -2,21 +2,23 @@
 
 namespace particle_containers {
 
-SimpleContainer::SimpleContainer() {}
+SimpleContainer::SimpleContainer() = default;
 SimpleContainer::SimpleContainer(size_t init_cap) { _data.reserve(init_cap); }
-SimpleContainer::SimpleContainer(std::initializer_list<Particle> init) {}
+SimpleContainer::SimpleContainer(std::initializer_list<Particle> init) {
+  _data.reserve(init.size());
+  for (const Particle& elem : init) _data.push_back(elem);
+}
 
 // cpy constr
-SimpleContainer::SimpleContainer(const SimpleContainer& other) {}
+SimpleContainer::SimpleContainer(const SimpleContainer& other) = default;
 // cpy assignment
-SimpleContainer& SimpleContainer::operator=(const SimpleContainer& other) {}
+SimpleContainer& SimpleContainer::operator=(const SimpleContainer& other) = default;
 // mv constr
-SimpleContainer::SimpleContainer(SimpleContainer&& other) : _data(std::move(other._data)) {}
+SimpleContainer::SimpleContainer(SimpleContainer&& other) = default;
 // mv assignment
-SimpleContainer& SimpleContainer::operator=(SimpleContainer&& other) { _data = std::move(other._data); }
+SimpleContainer& SimpleContainer::operator=(SimpleContainer&& other) = default;
 // dstr
-SimpleContainer::~SimpleContainer() {}
-// -> nothing of this has to be custom
+SimpleContainer::~SimpleContainer() = default;
 
 // retrieve data
 Particle& SimpleContainer::operator[](size_t idx) { return _data[idx]; }
@@ -33,10 +35,14 @@ bool SimpleContainer::operator==(const SimpleContainer& other) const { return _d
 // modify
 void SimpleContainer::clear() { _data.clear(); }
 void SimpleContainer::reserve(size_t n) { _data.reserve(n); }
-void SimpleContainer::removeParticle(size_t idx) {}
-void SimpleContainer::removeParticle(Particle& value) {}
-void SimpleContainer::addParticle(Particle&& value) {}
-void SimpleContainer::addParticle(const Particle& value) {}
+void SimpleContainer::addParticle(Particle&& value) { _data.push_back(value); }
+void SimpleContainer::addParticle(const Particle& value) { _data.push_back(value); }
+void SimpleContainer::addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg) {
+  _data.emplace_back(x_arg, v_arg, m_arg);
+};
+void SimpleContainer::addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, int type) {
+  _data.emplace_back(x_arg, v_arg, m_arg, type);
+};
 
 // iterators
 std::vector<Particle>::iterator SimpleContainer::begin() { return _data.begin(); }

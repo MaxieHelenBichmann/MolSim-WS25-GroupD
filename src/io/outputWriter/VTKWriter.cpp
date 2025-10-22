@@ -20,7 +20,8 @@
 
 namespace outputWriter {
 
-void VTKWriter::plotParticles(std::list<Particle> particles, const std::string &filename, int iteration) {
+void VTKWriter::plotParticles(particle_containers::ParticleContainer& particles, const std::string& filename,
+                              int iteration) {
   // Initialize points
   auto points = vtkSmartPointer<vtkPoints>::New();
 
@@ -41,7 +42,7 @@ void VTKWriter::plotParticles(std::list<Particle> particles, const std::string &
   typeArray->SetName("type");
   typeArray->SetNumberOfComponents(1);
 
-  for (auto &p : particles) {
+  for (auto& p : particles) {
     points->InsertNextPoint(p.getX().data());
     massArray->InsertNextValue(static_cast<float>(p.getM()));
     velocityArray->InsertNextTuple(p.getV().data());

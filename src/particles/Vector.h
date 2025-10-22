@@ -22,52 +22,53 @@ class Vector {
   // access
   T& operator[](size_t idx) { return _data[idx]; };
   const T& operator[](size_t idx) const { return _data[idx]; };
+  T* data() { return _data.data(); }
+  const T* data() const { return _data.data(); }
+
+  // comparison
+  bool operator==(const Vector<T, N>& other) const { return _data == other._data; };
+  std::strong_ordering operator<=>(const Vector<T, N>& other) const { return euclidNorm() <=> other.euclidNorm(); };
 
   // point-wise arithmetic operators
-  Vector operator+(const Vector& other) const {
+  Vector<T, N> operator+(const Vector<T, N>& other) const {
     std::array<T, N> new_array;
     for (size_t i = 0; i < N; i++) new_array[i] = _data[i] + other._data[i];
     return Vector<T, N>(new_array);
   };
-  Vector operator-(const Vector& other) const {
+  Vector<T, N> operator-(const Vector<T, N>& other) const {
     std::array<T, N> new_array;
     for (size_t i = 0; i < N; i++) new_array[i] = _data[i] - other._data[i];
     return Vector<T, N>(new_array);
   };
-  Vector operator*(const Vector& other) const {
+  Vector<T, N> operator*(const Vector<T, N>& other) const {
     std::array<T, N> new_array;
     for (size_t i = 0; i < N; i++) new_array[i] = _data[i] * other._data[i];
     return Vector<T, N>(new_array);
   };
-  Vector operator/(const Vector& other) const {
+  Vector<T, N> operator/(const Vector<T, N>& other) const {
     std::array<T, N> new_array;
     for (size_t i = 0; i < N; i++) new_array[i] = _data[i] / other._data[i];
     return Vector<T, N>(new_array);
   };
 
   // other arithmetic operations
-  static T scalarProduct(const Vector& a, const Vector& b) {
+  Vector<T, N> operator*(const T scalar) const {  // Vector * Scalar
+    std::array<T, N> new_array;
+    for (size_t i = 0; i < N; i++) new_array[i] = scalar * _data[i];
+    return Vector<T, N>(new_array);
+  }
+  friend Vector<T, N> operator*(const T& s, const Vector<T, N>& v) { return v * s; }  // Scalar * Vector
+  static T scalarProduct(const Vector& a, const Vector<T, N>& b) {
     return std::inner_product(a._data.begin(), a._data.end(), b._data.begin(), T(0));
   }
   T euclidNorm() const {
     return std::sqrt(std::accumulate(_data.begin(), _data.end(), T(0), [](auto a, auto b) { return a + b * b; }));
   }
 
-  bool operator==(const Vector& other) const { return _data == other._data; };
-  std::strong_ordering operator<=>(const Vector& other) const { return euclidNorm() <=> other.euclidNorm(); };
-
+  // conversions to arrays
   operator std::array<T, 3>() const { return _data; };
   std::array<T, 3>& operator*() { return _data; };
   const std::array<T, 3>& operator*() const { return _data; };
-
-  std::ostream& operator<<(std::ostream& os) const {
-    os << "[";
-    for (size_t i = 0; i < N; ++i) {
-      if (i) os << ", ";
-      os << _data[i];
-    }
-    return os << "]";
-  };
 };
 
 template <class T>
@@ -85,10 +86,19 @@ class Vector<T, 3> {
   // access
   T& operator[](size_t idx) { return _data[idx]; };
   const T& operator[](size_t idx) const { return _data[idx]; };
+  T* data() { return _data.data(); }
+  const T* data() const { return _data.data(); }
 
   T& x() { return _data[0]; };
+  const T& x() const { return _data[0]; };
   T& y() { return _data[1]; };
+  const T& y() const { return _data[1]; };
   T& z() { return _data[2]; };
+  const T& z() const { return _data[2]; };
+
+  // comparison
+  bool operator==(const Vector<T, 3>& other) const { return _data == other._data; };
+  std::strong_ordering operator<=>(const Vector<T, 3>& other) const { return euclidNorm() <=> other.euclidNorm(); };
 
   // point-wise arithmetic operators
   Vector<T, 3> operator+(const Vector<T, 3>& other) const {
@@ -105,22 +115,19 @@ class Vector<T, 3> {
   };
 
   // other arithmetic operations
+  Vector<T, 3> operator*(const T scalar) const {  // Vector * Scalar
+    return Vector<T, 3>(_data[0] * scalar, _data[1] * scalar, _data[2] * scalar);
+  };
+  friend Vector<T, 3> operator*(const T& s, const Vector<T, 3>& v) { return v * s; }  // Scalar * Vector
   static T scalarProduct(const Vector<T, 3>& a, const Vector<T, 3>& b) {
     return a._data[0] * b._data[0] + a._data[1] * b._data[1] + a._data[2] * b._data[2];
   }
   T euclidNorm() const { return std::sqrt(_data[0] * _data[0] + _data[1] * _data[1] + _data[2] * _data[2]); };
 
-  bool operator==(const Vector<T, 3>& other) const { return _data == other._data; };
-  std::strong_ordering operator<=>(const Vector<T, 3>& other) const { return euclidNorm() <=> other.euclidNorm(); };
-
+  // conversion to array
   operator std::array<T, 3>() const { return _data; };
   std::array<T, 3>& operator*() { return _data; };
   const std::array<T, 3>& operator*() const { return _data; };
-
-  std::ostream& operator<<(std::ostream& os) const {
-    os << "[" << _data[0] << ", " << _data[1] << ", " << _data[2] << "]";
-    return os;
-  }
 };
 
 template <class T>
@@ -139,8 +146,17 @@ class Vector<T, 2> {
   T& operator[](size_t idx) { return _data[idx]; };
   const T& operator[](size_t idx) const { return _data[idx]; };
 
+  T* data() { return _data.data(); }
+  const T* data() const { return _data.data(); }
+
   T& x() { return _data[0]; };
+  const T& x() const { return _data[0]; };
   T& y() { return _data[1]; };
+  const T& y() const { return _data[1]; };
+
+  // comparison
+  bool operator==(const Vector<T, 2>& other) const { return _data == other._data; };
+  std::strong_ordering operator<=>(const Vector<T, 2>& other) const { return euclidNorm() <=> other.euclidNorm(); };
 
   // point-wise arithmetic operators
   Vector<T, 2> operator+(const Vector<T, 2>& other) const {
@@ -157,24 +173,22 @@ class Vector<T, 2> {
   };
 
   // other arithmetic operations
+  Vector<T, 2> operator*(const T scalar) const {  // Vector * Scalar
+    return Vector<T, 2>(_data[0] * scalar, _data[1] * scalar);
+  };
+  friend Vector<T, 2> operator*(const T& s, const Vector<T, 2>& v) { return v * s; }  // Scalar * Vector
   static T scalarProduct(const Vector<T, 2>& a, const Vector<T, 2>& b) {
     return a._data[0] * b._data[0] + a._data[1] * b._data[1];
   }
   T euclidNorm() const { return std::sqrt(_data[0] * _data[0] + _data[1] * _data[1]); };
 
-  bool operator==(const Vector<T, 2>& other) const { return _data == other._data; };
-  std::strong_ordering operator<=>(const Vector<T, 2>& other) const { return euclidNorm() <=> other.euclidNorm(); };
-
+  // conversion to arrays
   operator std::array<T, 2>() const { return _data; };
   std::array<T, 2>& operator*() { return _data; };
   const std::array<T, 2>& operator*() const { return _data; };
-
-  std::ostream& operator<<(std::ostream& os) const {
-    os << "[" << _data[0] << ", " << _data[1] << "]";
-    return os;
-  }
 };
 
+// Output
 template <class T, size_t N>
 std::ostream& operator<<(std::ostream& os, const Vector<T, N>& v) {
   os << "[";
@@ -196,3 +210,11 @@ std::ostream& operator<<(std::ostream& os, const Vector<T, 2>& v) {
   os << "[" << v.x() << ", " << v.y() << "]";
   return os;
 }
+
+/**
+ *
+ * auto [x, y, z] = Vector<double, 3>()
+ *
+ * tuple_size , std::get
+ *
+ */

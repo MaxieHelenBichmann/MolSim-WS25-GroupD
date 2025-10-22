@@ -1,4 +1,4 @@
-/* 
+/*
  * Particle.cpp
  *
  *  Created on: 23.02.2010
@@ -10,6 +10,8 @@
 #include <iostream>
 
 #include "utils/ArrayUtils.h"
+
+using R3 = Vector<double, 3>;
 
 Particle::Particle(int type_arg) {
   type = type_arg;
@@ -29,7 +31,7 @@ Particle::Particle(const Particle& other) {
 }
 
 // Todo: maybe use initializater list instead of copy?
-Particle::Particle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, int type_arg) {
+Particle::Particle(R3 x_arg, R3 v_arg, double m_arg, int type_arg) {
   x = x_arg;
   v = v_arg;
   m = m_arg;
@@ -41,17 +43,17 @@ Particle::Particle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_ar
 
 Particle::~Particle() { std::cout << "Particle destructed!" << std::endl; }
 
-const Vector<double, 3>& Particle::getX() const { return x; }
-Vector<double, 3>& Particle::modX() { return x; }
+const R3& Particle::getX() const { return x; }
+R3& Particle::getX() { return x; }
 
-const Vector<double, 3>& Particle::getV() const { return v; }
-Vector<double, 3>& Particle::modV() { return v; }
+const R3& Particle::getV() const { return v; }
+R3& Particle::getV() { return v; }
 
-const Vector<double, 3>& Particle::getF() const { return f; }
-Vector<double, 3>& Particle::modF() { return f; }
+const R3& Particle::getF() const { return f; }
+R3& Particle::getF() { return f; }
 
-const Vector<double, 3>& Particle::getOldF() const { return old_f; }
-Vector<double, 3>& Particle::modOldF() { return old_f; }
+const R3& Particle::getOldF() const { return old_f; }
+R3& Particle::getOldF() { return old_f; }
 
 double Particle::getM() const { return m; }
 
@@ -63,7 +65,7 @@ std::string Particle::toString() const {
   return stream.str();
 }
 
-bool Particle::operator==(Particle& other) {
+bool Particle::operator==(const Particle& other) const {
   return (x == other.x) and (v == other.v) and (f == other.f) and (type == other.type) and (m == other.m) and
          (old_f == other.old_f);
 }

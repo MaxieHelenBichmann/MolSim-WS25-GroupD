@@ -12,27 +12,29 @@
 
 #include "Vector.h"
 
+using R3 = Vector<double, 3>;
+
 class Particle {
  private:
   /**
    * Position of the particle
    */
-  Vector<double, 3> x;
+  R3 x;
 
   /**
    * Velocity of the particle
    */
-  Vector<double, 3> v;
+  R3 v;
 
   /**
    * Force effective on this particle
    */
-  Vector<double, 3> f;
+  R3 f;
 
   /**
    * Force which was effective on this particle
    */
-  Vector<double, 3> old_f;
+  R3 old_f;
 
   /**
    * Mass of this particle
@@ -53,27 +55,27 @@ class Particle {
   Particle(
       // for visualization, we need always 3 coordinates
       // -> in case of 2d, we use only the first and the second
-      Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, int type = 0);
+      R3 x_arg, R3 v_arg, double m_arg, int type = 0);
 
   virtual ~Particle();
 
-  const Vector<double, 3>& getX() const;
-  Vector<double, 3>& modX();
+  const R3& getX() const;
+  R3& getX();
 
-  const Vector<double, 3>& getV() const;
-  Vector<double, 3>& modV();
+  const R3& getV() const;
+  R3& getV();
 
-  const Vector<double, 3>& getF() const;
-  Vector<double, 3>& modF();
+  const R3& getF() const;
+  R3& getF();
 
-  const Vector<double, 3>& getOldF() const;
-  Vector<double, 3>& modOldF();
+  const R3& getOldF() const;
+  R3& getOldF();
 
   double getM() const;
 
   int getType() const;
 
-  bool operator==(Particle& other);
+  bool operator==(const Particle& other) const;
 
   std::string toString() const;
 };
