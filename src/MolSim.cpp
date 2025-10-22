@@ -77,7 +77,7 @@ int main(int argc, char* argsv[]) {
 void calculateF() {
   for (auto& p1 : particles) {
     p1.getOldF() = p1.getF();
-    p1.getF() = Vector<double, 3>(0.);
+    p1.getF() = Vector<double, 3>();
     for (auto& p2 : particles) {
       if (p1 == p2) {
         continue;
