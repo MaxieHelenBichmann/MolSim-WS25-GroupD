@@ -85,7 +85,7 @@ void calculateF() {
       if (p1 == p2) {
         continue;
       }
-      p1.getF() = forceSource->calculateForce(p1, p2);
+      p1.getF() = p1.getF() + forceSource->calculateForce(p1, p2);
     }
   }
 }
