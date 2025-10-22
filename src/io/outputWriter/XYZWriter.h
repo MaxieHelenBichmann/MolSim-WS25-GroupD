@@ -12,16 +12,21 @@
 
 #include "particles/Particle.h"
 #include "particles/container/SimpleContainer.h"
+#include "io/OutputWriter.h"
 
 namespace outputWriter {
 
-class XYZWriter {
+/**
+ * @brief Writes the (x,y,z) position of the given set of particles into a .xyz file
+ *
+ * Writes the (x,y,z) position of the given set of particles into a .xyz file. The filename
+ * will consist of the provided filename + the current iteration.
+ */
+class XYZWriter : public OutputWriter {
  public:
   XYZWriter();
-
-  virtual ~XYZWriter();
-
-  void plotParticles(particle_containers::ParticleContainer& particles, const std::string& filename, int iteration);
+  ~XYZWriter() override;
+  void plotParticles(particle_containers::ParticleContainer& particles, const std::string& filename, int iteration) override;
 };
 
 }  // namespace outputWriter
