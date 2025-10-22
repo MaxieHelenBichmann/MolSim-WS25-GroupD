@@ -19,13 +19,13 @@ class Vector {
   Vector(std::array<T, N> init) : _data(init) {};
 
   // cpy constr
-  Vector(const Vector& other) = default;
+  Vector(const Vector<T, N>& other) = default;
   // cpy assignment
-  Vector& operator=(const Vector& other) = default;
+  Vector<T, N>& operator=(const Vector<T, N>& other) = default;
   // mv constr
-  Vector(Vector&& other) = default;
+  Vector(Vector<T, N>&& other) = default;
   // mv assignment
-  Vector& operator=(Vector&& other) = default;
+  Vector<T, N>& operator=(Vector<T, N>&& other) = default;
   // dstr
   ~Vector() = default;
 
@@ -107,13 +107,13 @@ class Vector<T, 3> {
   Vector(std::array<T, 3> init) : _data(init) {};
 
   // cpy constr
-  Vector(const Vector& other) = default;
+  Vector(const Vector<T, 3>& other) = default;
   // cpy assignment
-  Vector& operator=(const Vector& other) = default;
+  Vector<T, 3>& operator=(const Vector<T, 3>& other) = default;
   // mv constr
-  Vector(Vector&& other) = default;
+  Vector(Vector<T, 3>&& other) = default;
   // mv assignment
-  Vector& operator=(Vector&& other) = default;
+  Vector<T, 3>& operator=(Vector<T, 3>&& other) = default;
   // dstr
   ~Vector() = default;
 
@@ -185,13 +185,13 @@ class Vector<T, 2> {
   Vector(std::array<T, 2> init) : _data(init) {};
 
   // cpy constr
-  Vector(const Vector& other) = default;
+  Vector(const Vector<T, 2>& other) = default;
   // cpy assignment
-  Vector& operator=(const Vector& other) = default;
+  Vector<T, 2>& operator=(const Vector<T, 2>& other) = default;
   // mv constr
-  Vector(Vector&& other) = default;
+  Vector(Vector<T, 2>&& other) = default;
   // mv assignment
-  Vector& operator=(Vector&& other) = default;
+  Vector<T, 2>& operator=(Vector<T, 2>&& other) = default;
   // dstr
   ~Vector() = default;
 
