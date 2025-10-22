@@ -11,6 +11,8 @@
 
 #include "utils/ArrayUtils.h"
 
+using R3 = Vector<double, 3>;
+
 Particle::Particle(int type_arg) {
   type = type_arg;
   std::cout << "Particle generated!" << std::endl;
@@ -18,7 +20,7 @@ Particle::Particle(int type_arg) {
   old_f = {0., 0., 0.};
 }
 
-Particle::Particle(const Particle &other) {
+Particle::Particle(const Particle& other) {
   x = other.x;
   v = other.v;
   f = other.f;
@@ -29,7 +31,7 @@ Particle::Particle(const Particle &other) {
 }
 
 // Todo: maybe use initializater list instead of copy?
-Particle::Particle(std::array<double, 3> x_arg, std::array<double, 3> v_arg, double m_arg, int type_arg) {
+Particle::Particle(R3 x_arg, R3 v_arg, double m_arg, int type_arg) {
   x = x_arg;
   v = v_arg;
   m = m_arg;
@@ -41,13 +43,17 @@ Particle::Particle(std::array<double, 3> x_arg, std::array<double, 3> v_arg, dou
 
 Particle::~Particle() { std::cout << "Particle destructed!" << std::endl; }
 
-const std::array<double, 3> &Particle::getX() const { return x; }
+const R3& Particle::getX() const { return x; }
+R3& Particle::getX() { return x; }
 
-const std::array<double, 3> &Particle::getV() const { return v; }
+const R3& Particle::getV() const { return v; }
+R3& Particle::getV() { return v; }
 
-const std::array<double, 3> &Particle::getF() const { return f; }
+const R3& Particle::getF() const { return f; }
+R3& Particle::getF() { return f; }
 
-const std::array<double, 3> &Particle::getOldF() const { return old_f; }
+const R3& Particle::getOldF() const { return old_f; }
+R3& Particle::getOldF() { return old_f; }
 
 double Particle::getM() const { return m; }
 
@@ -59,12 +65,12 @@ std::string Particle::toString() const {
   return stream.str();
 }
 
-bool Particle::operator==(Particle &other) {
+bool Particle::operator==(const Particle& other) const {
   return (x == other.x) and (v == other.v) and (f == other.f) and (type == other.type) and (m == other.m) and
          (old_f == other.old_f);
 }
 
-std::ostream &operator<<(std::ostream &stream, Particle &p) {
+std::ostream& operator<<(std::ostream& stream, Particle& p) {
   stream << p.toString();
   return stream;
 }

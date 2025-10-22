@@ -14,7 +14,8 @@
 #include <list>
 #include <string>
 
-#include "Particle.h"
+#include "particles/Particle.h"
+#include "particles/container/SimpleContainer.h"
 
 namespace outputWriter {
 
@@ -28,8 +29,8 @@ class VTKWriter {
   ~VTKWriter() = default;
 
   // Delete copy constructor and assignment operator
-  VTKWriter(const VTKWriter &) = delete;
-  VTKWriter &operator=(const VTKWriter &) = delete;
+  VTKWriter(const VTKWriter&) = delete;
+  VTKWriter& operator=(const VTKWriter&) = delete;
 
   /**
    * Write VTK output of particles.
@@ -37,7 +38,7 @@ class VTKWriter {
    * @param filename Output filename
    * @param iteration Current iteration number
    */
-  void plotParticles(std::list<Particle> particles, const std::string &filename, int iteration);
+  void plotParticles(particle_containers::ParticleContainer& particles, const std::string& filename, int iteration);
 };
 
 }  // namespace outputWriter
