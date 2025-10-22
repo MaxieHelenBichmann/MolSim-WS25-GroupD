@@ -18,6 +18,17 @@ class Vector {
   Vector() { _data.fill(T(0)); };
   Vector(std::array<T, N> init) : _data(init) {};
 
+  // cpy constr
+  Vector(const Vector& other) = default;
+  // cpy assignment
+  Vector& operator=(const Vector& other) = default;
+  // mv constr
+  Vector(Vector&& other) = default;
+  // mv assignment
+  Vector& operator=(Vector&& other) = default;
+  // dstr
+  ~Vector() = default;
+
   // access
   T& operator[](size_t idx) { return _data[idx]; };
   const T& operator[](size_t idx) const { return _data[idx]; };
@@ -95,6 +106,17 @@ class Vector<T, 3> {
   Vector(T val) : _data({val, val, val}) {};
   Vector(std::array<T, 3> init) : _data(init) {};
 
+  // cpy constr
+  Vector(const Vector& other) = default;
+  // cpy assignment
+  Vector& operator=(const Vector& other) = default;
+  // mv constr
+  Vector(Vector&& other) = default;
+  // mv assignment
+  Vector& operator=(Vector&& other) = default;
+  // dstr
+  ~Vector() = default;
+
   // access
   T& operator[](size_t idx) { return _data[idx]; };
   const T& operator[](size_t idx) const { return _data[idx]; };
@@ -161,6 +183,17 @@ class Vector<T, 2> {
   Vector(T x, T y) : _data({x, y}) {};
   Vector(T val) : _data({val, val}) {};
   Vector(std::array<T, 2> init) : _data(init) {};
+
+  // cpy constr
+  Vector(const Vector& other) = default;
+  // cpy assignment
+  Vector& operator=(const Vector& other) = default;
+  // mv constr
+  Vector(Vector&& other) = default;
+  // mv assignment
+  Vector& operator=(Vector&& other) = default;
+  // dstr
+  ~Vector() = default;
 
   // access
   T& operator[](size_t idx) { return _data[idx]; };
