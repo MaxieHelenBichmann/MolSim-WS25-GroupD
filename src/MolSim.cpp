@@ -7,7 +7,6 @@
 #include "io/outputWriter/VTKWriter.h"
 #include "physics/ForceSource.h"
 #include "physics/GravitationalForce.h"
-#include "utils/ArrayUtils.h"
 
 /**** forward declaration of the calculation functions ****/
 
