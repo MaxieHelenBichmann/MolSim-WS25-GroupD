@@ -1,9 +1,9 @@
 /*
- * VTKWriter.h
- *
- *  Created on: 01.03.2010
- *      Author: eckhardw
- */
+* VTKWriter.h
+*
+*  Created on: 01.03.2010
+*      Author: eckhardw
+*/
 
 #pragma once
 /**
@@ -21,8 +21,7 @@
 #include <string>
 
 #include "particles/Particle.h"
-#include "particles/container/SimpleContainer.h"
-#include "io/OutputWriter.h"
+#include "particles/container/ContainerRef.h"
 
 namespace outputWriter {
 
@@ -30,10 +29,10 @@ namespace outputWriter {
  * This class implements the functionality to generate vtk output from
  * particles using the official VTK library.
  */
-class VTKWriter : public OutputWriter {
+class VTKWriter {
  public:
   VTKWriter() = default;
-  ~VTKWriter() override = default;
+  ~VTKWriter() = default;
 
   // Delete copy constructor and assignment operator
   VTKWriter(const VTKWriter&) = delete;
@@ -45,7 +44,7 @@ class VTKWriter : public OutputWriter {
    * @param filename Output filename
    * @param iteration Current iteration number
    */
-  void plotParticles(particle_containers::ParticleContainer& particles, const std::string& filename, int iteration);
+  static void plotParticles(particle_containers::ContainerRef particles, const std::string& filename, int iteration);
 };
 
 }  // namespace outputWriter

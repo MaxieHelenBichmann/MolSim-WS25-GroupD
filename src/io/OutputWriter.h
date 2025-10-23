@@ -1,6 +1,6 @@
 #pragma once
 
-#include "particles/container/SimpleContainer.h"
+#include "particles/container/ContainerRef.h"
 
 /**
  * @brief Interface for output writers.
@@ -11,5 +11,5 @@
 class OutputWriter {
  public:
   virtual ~OutputWriter() = default;
-  virtual void plotParticles(particle_containers::ParticleContainer& particles, const std::string& filename, int iteration) = 0;
+  virtual void plotParticles(particle_containers::ContainerRef& particles, const std::string& filename, int iteration) = 0;
 };

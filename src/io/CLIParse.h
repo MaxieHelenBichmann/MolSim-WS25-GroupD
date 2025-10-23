@@ -16,7 +16,7 @@
  * @param end_time The variable that will store the provided end time of the simulation
  * @param particles A ParticleContainer wherein the particles read from the input file will be stored
  */
-void cliParse(int argc, char* argsv[], FileReader& fileReader, double& delta_t, double& end_time, particle_containers::ParticleContainer& particles) {
+void cliParse(int argc, char* argsv[], FileReader& fileReader, double& delta_t, double& end_time, particle_containers::SimpleContainer& particles) {
   std::cout << "Hello from MolSim for PSE!" << '\n';
   if (argc != 4) {
     std::cout << "Erroneous programme call! " << '\n'

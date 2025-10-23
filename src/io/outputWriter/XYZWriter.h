@@ -1,9 +1,9 @@
 /*
- * XYZWriter.h
- *
- *  Created on: 01.03.2010
- *      Author: eckhardw
- */
+* XYZWriter.h
+*
+*  Created on: 01.03.2010
+*      Author: eckhardw
+*/
 
 #pragma once
 
@@ -11,22 +11,22 @@
 #include <list>
 
 #include "particles/Particle.h"
-#include "particles/container/SimpleContainer.h"
-#include "io/OutputWriter.h"
+#include "particles/container/ContainerRef.h"
 
 namespace outputWriter {
-
 /**
  * @brief Writes the (x,y,z) position of the given set of particles into a .xyz file
  *
  * Writes the (x,y,z) position of the given set of particles into a .xyz file. The filename
  * will consist of the provided filename + the current iteration.
  */
-class XYZWriter : public OutputWriter {
- public:
-  XYZWriter();
-  ~XYZWriter() override;
-  void plotParticles(particle_containers::ParticleContainer& particles, const std::string& filename, int iteration) override;
+class XYZWriter {
+public:
+ XYZWriter();
+
+ virtual ~XYZWriter();
+
+ static void plotParticles(particle_containers::ContainerRef particles, const std::string& filename, int iteration);
 };
 
 }  // namespace outputWriter
