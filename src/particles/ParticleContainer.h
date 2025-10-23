@@ -9,6 +9,30 @@ namespace particle_containers {
 
 using R3 = Vector<double, 3>;
 
+/**
+ * @brief Concept of a Particle Container
+ *
+ * This is a concept requiring all methods, that a arbitrary Particle Container should implement,
+ * including access possibilities, modifiers, and iterators.
+ * It functions like an interface or an abstract class, which specific particle containers should implement.
+ * However, this implementation is with some certainty more performant than virtual function calls,
+ * because their lookup happens at runtime, whereas this concepts makes lookup at compile time possible.
+ *
+ * To efficiently use this concept, the performance-relevant functions have to be templated:
+ * ```
+ * template<ParticleContainer containerType>
+ * frequently_used_func(containerType& particles) { ... }
+ * ```
+ *
+ * Then, this function can be called with any specific particle container, which fulfills this concept. For example:
+ * ```
+ * particle_containers::SimpleContainer cur_particles{p1, p2, p3};
+ * frequently_used_func<particle_containers::SimpleContainer>(cur_particles);
+ * ```
+ *
+ * For uncritical functions (e.g. Input/Output), a non-templated version can be used,
+ * see particle_containers::ContainerRef.
+ */
 template <typename C>
 concept ParticleContainer = requires(C c) {
   // retrieve data
@@ -34,36 +58,5 @@ concept ParticleContainer = requires(C c) {
   { (*static_cast<const C*>(&c)).end() } -> std::contiguous_iterator;
   { c.cend() } -> std::contiguous_iterator;
 };
-
-// template<ParticleContainer ty>
-// imp(ty cont) {}
-
-/*
-
-class ParticleContainer {
- public:
-  virtual ~ParticleContainer() = default;  // ?
-
-  // retrieve data
-  virtual Particle& operator[](size_t idx) = 0;
-  virtual const Particle& operator[](size_t idx) const = 0;
-
-  virtual bool empty() const = 0;
-  virtual size_t size() const = 0;
-
-  // modify
-  virtual void clear() = 0;
-  virtual void reserve(size_t n) = 0;
-  virtual void addParticle(Particle&& value) = 0;
-  virtual void addParticle(const Particle& value) = 0;
-  virtual void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg) = 0;
-  virtual void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, int type) = 0;
-
-  // iterators
-  virtual std::vector<Particle>::iterator begin() = 0;
-  virtual std::vector<Particle>::const_iterator begin() const = 0;
-  virtual std::vector<Particle>::iterator end() = 0;
-  virtual std::vector<Particle>::const_iterator end() const = 0;
-};*/
 
 }  // namespace particle_containers
