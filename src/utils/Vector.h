@@ -1,8 +1,7 @@
 #pragma once
 
-#include <cmath>
-
 #include <array>
+#include <cmath>
 #include <iostream>
 #include <numeric>
 #include <sstream>
@@ -46,34 +45,39 @@ class Vector {
   // point-wise arithmetic operators
   Vector<T, N> operator+(const Vector<T, N>& other) const {
     std::array<T, N> new_array;
-    for (size_t i = 0; i < N; i++) { new_array[i] = _data[i] + other._data[i];
-}
+    for (size_t i = 0; i < N; i++) {
+      new_array[i] = _data[i] + other._data[i];
+    }
     return Vector<T, N>(new_array);
   };
   Vector<T, N> operator-(const Vector<T, N>& other) const {
     std::array<T, N> new_array;
-    for (size_t i = 0; i < N; i++) { new_array[i] = _data[i] - other._data[i];
-}
+    for (size_t i = 0; i < N; i++) {
+      new_array[i] = _data[i] - other._data[i];
+    }
     return Vector<T, N>(new_array);
   };
   Vector<T, N> operator*(const Vector<T, N>& other) const {
     std::array<T, N> new_array;
-    for (size_t i = 0; i < N; i++) { new_array[i] = _data[i] * other._data[i];
-}
+    for (size_t i = 0; i < N; i++) {
+      new_array[i] = _data[i] * other._data[i];
+    }
     return Vector<T, N>(new_array);
   };
   Vector<T, N> operator/(const Vector<T, N>& other) const {
     std::array<T, N> new_array;
-    for (size_t i = 0; i < N; i++) { new_array[i] = _data[i] / other._data[i];
-}
+    for (size_t i = 0; i < N; i++) {
+      new_array[i] = _data[i] / other._data[i];
+    }
     return Vector<T, N>(new_array);
   };
 
   // other arithmetic operations
   Vector<T, N> operator*(const T scalar) const {  // Vector * Scalar
     std::array<T, N> new_array;
-    for (size_t i = 0; i < N; i++) { new_array[i] = scalar * _data[i];
-}
+    for (size_t i = 0; i < N; i++) {
+      new_array[i] = scalar * _data[i];
+    }
     return Vector<T, N>(new_array);
   }
   friend Vector<T, N> operator*(const T& s, const Vector<T, N>& v) { return v * s; }  // Scalar * Vector
