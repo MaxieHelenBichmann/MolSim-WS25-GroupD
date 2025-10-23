@@ -15,7 +15,7 @@
 #include <string>
 
 #include "particles/Particle.h"
-#include "particles/container/SimpleContainer.h"
+#include "particles/container/ContainerRef.h"
 
 namespace outputWriter {
 
@@ -38,8 +38,7 @@ class VTKWriter {
    * @param filename Output filename
    * @param iteration Current iteration number
    */
-  static void plotParticles(particle_containers::ParticleContainer& particles, const std::string& filename,
-                            int iteration);
+  static void plotParticles(particle_containers::ContainerRef particles, const std::string& filename, int iteration);
 };
 
 }  // namespace outputWriter

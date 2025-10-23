@@ -7,12 +7,12 @@
 
 #pragma once
 
-#include "particles/ParticleContainer.h"
+#include "particles/container/ContainerRef.h"
 
 class FileReader {
  public:
   FileReader();
   virtual ~FileReader();
 
-  static void readFile(particle_containers::ParticleContainer& particles, char* filename);
+  static void readFile(particle_containers::ContainerRef particles, char* filename);
 };
