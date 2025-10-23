@@ -6,15 +6,30 @@
 
 namespace particle_containers {
 
-// only used for IO operations, not (!) in performance relevant code segments, then use template!!!
-// has no ownership of container elements!!!
+/**
+ * @brief Container Reference for Particles
+ *
+ * This container implements the concept ParticleContainer.
+ * It essentially stores a pointer (not null) to an arbitrary ParticleContainer - currently only SimpleContainer
+ * possible - but does not gain ownership over the elements in the Container. It calls the methods of the actual
+ * SimpleContainer from which it was constructed. It is virtually a Generic Type for a ParticleContainer, which can be
+ * instantiated.
+ *
+ * Only use for UNCRITICAL functions/operations (e.g., IO). DO NOT USE IN PERFORMANCE-RELEVANT FUNCTIONS!
+ *
+ * Do not take References of a ContainerRef object, as it is a reference itself, and trivially copyable.
+ * Alway pass-by-value (copy) - similar to std::span.
+ *
+ * (maybe will get erased later, if IO functions will be templated as well)
+ *
+ */
 class ContainerRef {
   // more containers can be added in variant
   std::variant<SimpleContainer*> _instance;
 
  public:
+  // constructors
   ContainerRef(SimpleContainer& c);
-  operator SimpleContainer() const;
 
   // retrieve data
   Particle& operator[](size_t idx);
