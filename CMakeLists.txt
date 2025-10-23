@@ -33,7 +33,11 @@ include(doxygen)
 include(clang-tidy)
 
 # create make target
-add_executable(MolSim ${MY_SRC})
+add_executable(MolSim ${MY_SRC}
+        src/io/OutputWriter.h
+        src/io/fileReader/XVMReader.h
+        src/utils/Simulation.h
+        src/io/CLIParse.h)
 
 target_include_directories(MolSim
         PRIVATE
