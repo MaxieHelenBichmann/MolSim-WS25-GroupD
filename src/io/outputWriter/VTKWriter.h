@@ -6,6 +6,12 @@
  */
 
 #pragma once
+/**
+ * @brief Writes the (x,y,z) position of the given set of particles into a .vtu file
+ *
+ * Writes the (x,y,z) position of the given set of particles into a .vtu file.The filename
+ * will consist of the provided filename + the current iteration.
+ */
 #ifdef ENABLE_VTK_OUTPUT
 
 #include <vtkSmartPointer.h>

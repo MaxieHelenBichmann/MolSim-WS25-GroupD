@@ -30,4 +30,6 @@ class ForceSource {
   [[nodiscard]] virtual Vector<double, 3> calculateForce(const Particle& p1, const Particle& p2) const = 0;
 };
 
+enum Force { GRAVITATIONAL };
+
 #endif

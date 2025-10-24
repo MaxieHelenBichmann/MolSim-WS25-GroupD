@@ -5,18 +5,18 @@
  *      Author: eckhardw
  */
 
-#include "FileReader.h"
+#include "XVMReader.h"
 
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 
-FileReader::FileReader() = default;
+XVMReader::XVMReader() = default;
 
-FileReader::~FileReader() = default;
+XVMReader::~XVMReader() = default;
 
-void FileReader::readFile(particle_containers::ContainerRef particles, char* filename) {
+void XVMReader::readFile(particle_containers::ContainerRef particles, char* filename) {
   std::array<double, 3> x;
   std::array<double, 3> v;
   double m;
