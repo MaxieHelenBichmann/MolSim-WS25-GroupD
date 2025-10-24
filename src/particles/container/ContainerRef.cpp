@@ -20,21 +20,20 @@ bool ContainerRef::empty() const {
 
 // modify
 void ContainerRef::clear() {
-  return std::visit([](auto& c) { return c->clear(); }, _instance);
+  std::visit([](auto& c) { return c->clear(); }, _instance);
 }
 void ContainerRef::reserve(size_t n) {
-  return std::visit([n](auto& c) { return c->reserve(n); }, _instance);
+  std::visit([n](auto& c) { return c->reserve(n); }, _instance);
 }
 
 void ContainerRef::addParticle(Particle&& value) {
-  return std::visit([&value](auto& c) { return c->addParticle(value); }, _instance);
+  std::visit([&value](auto& c) { return c->addParticle(value); }, _instance);
 }
 void ContainerRef::addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg) {
-  return std::visit([&x_arg, &v_arg, m_arg](auto& c) { return c->addParticle(x_arg, v_arg, m_arg); }, _instance);
+  std::visit([&x_arg, &v_arg, m_arg](auto& c) { return c->addParticle(x_arg, v_arg, m_arg); }, _instance);
 }
 void ContainerRef::addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, int type) {
-  return std::visit([&x_arg, &v_arg, m_arg, type](auto& c) { return c->addParticle(x_arg, v_arg, m_arg, type); },
-                    _instance);
+  std::visit([&x_arg, &v_arg, m_arg, type](auto& c) { return c->addParticle(x_arg, v_arg, m_arg, type); }, _instance);
 }
 
 // iterators

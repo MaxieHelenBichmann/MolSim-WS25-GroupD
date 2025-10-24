@@ -10,7 +10,7 @@
 
 class Simulation {
  private:
-  particle_containers::SimpleContainer particles;
+  particle_containers::SimpleContainer& particles;
   std::unique_ptr<ForceSource> forceSource;
   double DELTA_T;
 
