@@ -32,7 +32,7 @@ class Vector {
   /**
    * @brief Constructor copies given array into the components of a Vector
    */
-  Vector(std::array<T, N> init) : _data(init) {};
+  Vector(std::array<T, N> init) : _data(init){};
 
   /**
    * @brief Constructor copies N given values into the components of a Vector

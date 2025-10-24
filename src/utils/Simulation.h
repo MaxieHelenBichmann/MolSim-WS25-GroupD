@@ -2,8 +2,8 @@
 
 #include <memory>
 
-#include "io/outputWriter/XYZWriter.h"
 #include "io/outputWriter/VTKWriter.h"
+#include "io/outputWriter/XYZWriter.h"
 #include "particles/ParticleContainer.h"
 #include "physics/ForceSource.h"
 #include "physics/GravitationalForce.h"
@@ -17,11 +17,12 @@ class Simulation {
  public:
   Simulation(particle_containers::SimpleContainer& particles, Force forceType, double DELTA_T)
       : particles(particles), DELTA_T(DELTA_T) {
-    switch(forceType) {
+    switch (forceType) {
       case GRAVITATIONAL:
         this->forceSource = std::make_unique<GravitationalForce>();
         break;
-      default: break;
+      default:
+        break;
     }
   }
 
@@ -52,11 +53,11 @@ class Simulation {
 
   void plotParticles(int iteration) {
     std::string out_name("MD_vtk");
-    #ifdef ENABLE_VTK_OUTPUT
+#ifdef ENABLE_VTK_OUTPUT
     outputWriter::VTKWriter writer;
-    #else
+#else
     outputWriter::XYZWriter writer;
-    #endif
+#endif
     writer.plotParticles(particles, out_name, iteration);
   }
 };

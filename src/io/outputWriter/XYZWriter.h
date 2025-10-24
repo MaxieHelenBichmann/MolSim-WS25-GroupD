@@ -1,9 +1,9 @@
 /*
-* XYZWriter.h
-*
-*  Created on: 01.03.2010
-*      Author: eckhardw
-*/
+ * XYZWriter.h
+ *
+ *  Created on: 01.03.2010
+ *      Author: eckhardw
+ */
 
 #pragma once
 
@@ -21,10 +21,10 @@ namespace outputWriter {
  * will consist of the provided filename + the current iteration.
  */
 class XYZWriter {
-public:
- XYZWriter();
+ public:
+  XYZWriter();
 
- virtual ~XYZWriter();
+  virtual ~XYZWriter();
 
   static void plotParticles(particle_containers::ContainerRef particles, const std::string& filename, int iteration);
 };

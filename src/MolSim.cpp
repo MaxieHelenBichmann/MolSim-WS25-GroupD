@@ -10,18 +10,18 @@ constexpr double START_TIME = 0;
 particle_containers::SimpleContainer particles;
 
 int main(int argc, char* argsv[]) {
-  double DELTA_T;
-  double END_TIME;
+  double delta_t;
+  double end_time;
   XVMReader file_reader;
 
-  cliParse(argc, argsv, file_reader, DELTA_T, END_TIME, particles);
-  Simulation simulation(particles, GRAVITATIONAL, DELTA_T);
+  cliParse(argc, argsv, file_reader, delta_t, end_time, particles);
+  Simulation simulation(particles, GRAVITATIONAL, delta_t);
 
   double current_time = START_TIME;
   int iteration = 0;
 
   // for this loop, we assume: current x, current f and current v are known
-  while (current_time < END_TIME) {
+  while (current_time < end_time) {
     // calculate new x
     simulation.calculateX();
     // calculate new f
@@ -35,11 +35,9 @@ int main(int argc, char* argsv[]) {
     }
     std::cout << "Iteration " << iteration << " finished." << '\n';
 
-    current_time += DELTA_T;
+    current_time += delta_t;
   }
 
   std::cout << "output written. Terminating..." << '\n';
   return 0;
 }
-
-

@@ -1,9 +1,9 @@
 /*
-* VTKWriter.h
-*
-*  Created on: 01.03.2010
-*      Author: eckhardw
-*/
+ * VTKWriter.h
+ *
+ *  Created on: 01.03.2010
+ *      Author: eckhardw
+ */
 
 #pragma once
 /**
