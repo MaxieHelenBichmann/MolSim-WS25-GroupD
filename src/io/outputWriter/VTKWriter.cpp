@@ -20,8 +20,7 @@
 
 namespace outputWriter {
 
-void VTKWriter::plotParticles(particle_containers::ParticleContainer& particles, const std::string& filename,
-                              int iteration) {
+void VTKWriter::plotParticles(particle_containers::ContainerRef particles, const std::string& filename, int iteration) {
   // Initialize points
   auto points = vtkSmartPointer<vtkPoints>::New();
 

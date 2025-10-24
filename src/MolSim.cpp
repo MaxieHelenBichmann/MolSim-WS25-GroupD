@@ -34,7 +34,6 @@ constexpr double START_TIME = 0;
 constexpr double END_TIME = 1000;
 constexpr double DELTA_T = 0.014;
 
-// TODO: what data structure to pick?
 particle_containers::SimpleContainer particles;
 std::unique_ptr<ForceSource> forceSource = std::make_unique<GravitationalForce>();
 

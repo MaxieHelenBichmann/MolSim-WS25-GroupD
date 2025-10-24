@@ -6,50 +6,38 @@
 
 namespace particle_containers {
 
-class SimpleContainer : public ParticleContainer {
-  std::vector<Particle> _data;
-
+/**
+ * @brief Simple Container for Particles
+ *
+ * This container implements the concept ParticleContainer.
+ * It essentially uses a simple std::vector<Particle> to store the Particles.
+ * Thus it is helpful for it to inherit all members (and constructors) directly from std::vector, immediately fulfilling
+ * large part of the ParticleContainer concept. It implements the remaining functions for adding a Particle.
+ *
+ */
+class SimpleContainer : public std::vector<Particle> {
  public:
   // constructors
-  SimpleContainer();
-  SimpleContainer(size_t init_cap);
-  SimpleContainer(std::initializer_list<Particle> init);
+  using std::vector<Particle>::vector;
 
-  // cpy constr
-  SimpleContainer(const SimpleContainer& other);
-  // cpy assignment
-  SimpleContainer& operator=(const SimpleContainer& other);
-  // mv constr
-  SimpleContainer(SimpleContainer&& other);
-  // mv assignment
-  SimpleContainer& operator=(SimpleContainer&& other);
-  // dstr
-  ~SimpleContainer();
+  /**
+   * @brief Adding an already existing Particle to the SimpleContainer by copying it.
+   */
+  void addParticle(Particle&& value);
 
-  // retrieve data
-  Particle& operator[](size_t idx) override;
-  const Particle& operator[](size_t idx) const override;
+  /**
+   * @brief Adding an already existing const Particle to the SimpleContainer by copying it.
+   */
+  void addParticle(const Particle& value);
 
-  std::vector<Particle>& data() override;
-  const std::vector<Particle>& data() const override;
+  /**
+   * @brief Directly constructing a Particle with its required parameters in-place.
+   */
+  void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg);
 
-  bool empty() const override;
-  size_t size() const override;
-
-  bool operator==(const SimpleContainer& other) const;
-
-  // modify
-  void clear() override;
-  void reserve(size_t n) override;
-  void addParticle(Particle&& value) override;
-  void addParticle(const Particle& value) override;
-  void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg) override;
-  void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, int type) override;
-
-  // iterators
-  std::vector<Particle>::iterator begin() override;
-  std::vector<Particle>::const_iterator begin() const override;
-  std::vector<Particle>::iterator end() override;
-  std::vector<Particle>::const_iterator end() const override;
+  /**
+   * @brief Directly constructing a Particle with its required parameters, including type, in-place.
+   */
+  void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, int type);
 };
 }  // namespace particle_containers
