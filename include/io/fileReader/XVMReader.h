@@ -1,4 +1,5 @@
-#pragma once
+#ifndef XVM_READER_H
+#define XVM_READER_H
 
 #include "io/FileReader.h"
 #include "particles/container/ContainerRef.h"
@@ -23,3 +24,5 @@ class XVMReader : public FileReader {
   ~XVMReader() override;
   void readFile(particle_containers::ContainerRef particles, const std::string& filename) override;
 };
+
+#endif

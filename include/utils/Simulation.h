@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SIMULATION_H
+#define SIMULATION_H
 
 #include <memory>
 
@@ -8,8 +9,7 @@
 #include "physics/ForceSource.h"
 #include "physics/GravitationalForce.h"
 
-
-template<particle_containers::ParticleContainer containerType>
+template <particle_containers::ParticleContainer containerType>
 class Simulation {
  private:
   containerType& particles;
@@ -17,9 +17,7 @@ class Simulation {
   double DELTA_T;
 
  public:
-  
-  Simulation(containerType& particles, Force forceType, double DELTA_T)
-      : particles(particles), DELTA_T(DELTA_T) {
+  Simulation(containerType& particles, Force forceType, double DELTA_T) : particles(particles), DELTA_T(DELTA_T) {
     switch (forceType) {
       case GRAVITATIONAL:
         this->forceSource = std::make_unique<GravitationalForce>();
@@ -64,3 +62,5 @@ class Simulation {
     writer.plotParticles(particles, out_name, iteration);
   }
 };
+
+#endif

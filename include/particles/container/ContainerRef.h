@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CONTAINER_REF_H
+#define CONTAINER_REF_H
 
 #include <variant>
 
@@ -57,3 +58,5 @@ class ContainerRef {
   std::vector<Particle>::const_iterator cend() const;
 };
 }  // namespace particle_containers
+
+#endif

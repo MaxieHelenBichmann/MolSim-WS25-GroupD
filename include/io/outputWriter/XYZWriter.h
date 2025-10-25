@@ -5,9 +5,11 @@
  *      Author: eckhardw
  */
 
-#pragma once
+#ifndef XYZ_WRITER_H
+#define XYZ_WRITER_H
 
 #include <fstream>
+
 #include "io/OutputWriter.h"
 #include "particles/container/ContainerRef.h"
 
@@ -18,7 +20,7 @@ namespace outputWriter {
  * Writes the (x,y,z) position of the given set of particles into a .xyz file. The filename
  * will consist of the provided filename + the current iteration.
  */
-class XYZWriter : public OutputWriter{
+class XYZWriter : public OutputWriter {
  public:
   XYZWriter();
 
@@ -28,3 +30,5 @@ class XYZWriter : public OutputWriter{
 };
 
 }  // namespace outputWriter
+
+#endif

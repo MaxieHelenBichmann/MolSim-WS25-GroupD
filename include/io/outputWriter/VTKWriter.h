@@ -5,7 +5,8 @@
  *      Author: eckhardw
  */
 
-#pragma once
+#ifndef VTK_WRITER_H
+#define VTK_WRITER_H
 /**
  * @brief Writes the (x,y,z) position of the given set of particles into a .vtu file
  *
@@ -28,7 +29,7 @@ namespace outputWriter {
  * This class implements the functionality to generate vtk output from
  * particles using the official VTK library.
  */
-class VTKWriter : public OutputWriter{
+class VTKWriter : public OutputWriter {
  public:
   VTKWriter() = default;
   ~VTKWriter() = default;
@@ -47,4 +48,5 @@ class VTKWriter : public OutputWriter{
 };
 
 }  // namespace outputWriter
+#endif
 #endif

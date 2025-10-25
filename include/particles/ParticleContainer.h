@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PARTICLE_CONTAINER_H
+#define PARTICLE_CONTAINER_H
 
 #include <concepts>
 
@@ -59,3 +60,5 @@ concept ParticleContainer = requires(C c) {
 };
 
 }  // namespace particle_containers
+
+#endif

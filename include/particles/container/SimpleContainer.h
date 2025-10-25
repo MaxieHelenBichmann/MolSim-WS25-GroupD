@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SIMPLE_CONTAINER_H
+#define SIMPLE_CONTAINER_H
 
 #include <vector>
 
@@ -41,3 +42,5 @@ class SimpleContainer : public std::vector<Particle> {
   void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, int type);
 };
 }  // namespace particle_containers
+
+#endif

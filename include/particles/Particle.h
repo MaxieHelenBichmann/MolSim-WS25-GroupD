@@ -5,7 +5,8 @@
  *      Author: eckhardw
  */
 
-#pragma once
+#ifndef PARTICLE_H
+#define PARTICLE_H
 
 #include <string>
 
@@ -80,3 +81,5 @@ class Particle {
 };
 
 std::ostream& operator<<(std::ostream& stream, Particle& p);
+
+#endif

@@ -4,7 +4,8 @@
  * @date 12/13/19
  */
 
-#pragma once
+#ifndef ARRAY_UTILS_H
+#define ARRAY_UTILS_H
 
 #include <array>
 #include <cmath>
@@ -265,3 +266,5 @@ std::enable_if_t<ArrayUtils::is_container<Container>::value, bool> operator==(co
   }
   return true;
 }
+
+#endif

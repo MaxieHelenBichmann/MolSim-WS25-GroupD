@@ -1,4 +1,5 @@
-#pragma once
+#ifndef OUTPUT_WRITER_H
+#define OUTPUT_WRITER_H
 
 #include "particles/container/ContainerRef.h"
 
@@ -14,3 +15,5 @@ class OutputWriter {
   virtual void plotParticles(particle_containers::ContainerRef particles, const std::string& filename,
                              int iteration) = 0;
 };
+
+#endif

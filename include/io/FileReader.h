@@ -5,7 +5,8 @@
  *      Author: eckhardw
  */
 
-#pragma once
+#ifndef FILE_READER_H
+#define FILE_READER_H
 
 #include "particles/container/ContainerRef.h"
 
@@ -26,3 +27,5 @@ class FileReader {
    */
   virtual void readFile(particle_containers::ContainerRef particles, const std::string& filename) = 0;
 };
+
+#endif

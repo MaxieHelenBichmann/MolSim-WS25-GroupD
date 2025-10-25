@@ -5,7 +5,8 @@
  * @Author: F. Gratl
  */
 
-#pragma once
+#ifndef MAXWELL_BOLTZMANN_DISTR_H
+#define MAXWELL_BOLTZMANN_DISTR_H
 
 #include <array>
 #include <random>
@@ -31,3 +32,5 @@ std::array<double, 3> maxwellBoltzmannDistributedVelocity(double averageVelocity
   }
   return randomVelocity;
 }
+
+#endif

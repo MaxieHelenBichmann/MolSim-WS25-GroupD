@@ -1,5 +1,5 @@
-#ifndef FORCE_SOURCE
-#define FORCE_SOURCE
+#ifndef FORCE_SOURCE_H
+#define FORCE_SOURCE_H
 
 #include <cstdint>
 

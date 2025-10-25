@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CLI_PARSE_H
+#define CLI_PARSE_H
 
 #include <iostream>
 #include <string>
@@ -36,3 +37,5 @@ void cliParse(int argc, char* argsv[], FileReader& fileReader, double& delta_t, 
     exit(-1);
   }
 }
+
+#endif
