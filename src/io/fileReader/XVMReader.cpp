@@ -5,7 +5,7 @@
  *      Author: eckhardw
  */
 
-#include "XVMReader.h"
+#include "io/fileReader/XVMReader.h"
 
 #include <cstdlib>
 #include <fstream>

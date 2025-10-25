@@ -1,4 +1,4 @@
-#include "GravitationalForce.h"
+#include "physics/GravitationalForce.h"
 #include "utils/Vector.h"
 
 Vector<double, 3> GravitationalForce::calculateForce(const Particle& p1, const Particle& p2) const {
