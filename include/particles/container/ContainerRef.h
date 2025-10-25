@@ -28,7 +28,7 @@ namespace mol_sim {
  */
 class ContainerRef {
   // more containers can be added in variant
-  std::variant<SimpleContainer*> _instance; //NOLINT
+  std::variant<SimpleContainer*> instance;  // NOLINT
 
  public:
   // constructors

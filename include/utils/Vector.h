@@ -24,26 +24,26 @@ class Vector {
   /**
    * Data of the Vector
    */
-  
-  std::array<T, N> _data; //NOLINT
+
+  std::array<T, N> data_;  // NOLINT
 
  public:
   /**
    * @brief Default constructor produces Zero-Vector of required type
    */
-  Vector() { _data.fill(T(0)); };
+  Vector() { data_.fill(T(0)); };
 
   /**
    * @brief Constructor copies given array into the components of a Vector
    */
-  Vector(std::array<T, N> init) : _data(init) {};
+  Vector(std::array<T, N> init) : data_(init) {};
 
   /**
    * @brief Constructor copies N given values into the components of a Vector
    */
   template <typename... Ts>
     requires(... && (std::integral<Ts> || std::floating_point<Ts>))
-  Vector(Ts&&... inits) : _data{inits...} {}
+  Vector(Ts&&... inits) : data_{inits...} {}
 
   // memory management
 
@@ -74,13 +74,13 @@ class Vector {
 
   // access
 
-  T& operator[](size_t idx) { return _data[idx]; };
-  const T& operator[](size_t idx) const { return _data[idx]; };
-  T* data() { return _data.data(); }
-  [[nodiscard]] const T* data() const { return _data.data(); }
+  T& operator[](size_t idx) { return data_[idx]; };
+  const T& operator[](size_t idx) const { return data_[idx]; };
+  T* data() { return data_.data(); }
+  [[nodiscard]] const T* data() const { return data_.data(); }
 
   // comparison
-  bool operator==(const Vector<T, N>& other) const { return _data == other._data; };
+  bool operator==(const Vector<T, N>& other) const { return data_ == other.data_; };
   std::strong_ordering operator<=>(const Vector<T, N>& other) const { return euclidNorm() <=> other.euclidNorm(); };
 
   // point-wise arithmetic operators
@@ -91,7 +91,7 @@ class Vector {
   Vector<T, N> operator+(const Vector<T, N>& other) const {
     std::array<T, N> new_array;
     for (size_t i = 0; i < N; i++) {
-      new_array[i] = _data[i] + other._data[i];
+      new_array[i] = data_[i] + other.data_[i];
     }
     return Vector<T, N>(new_array);
   };
@@ -102,7 +102,7 @@ class Vector {
   Vector<T, N> operator-(const Vector<T, N>& other) const {
     std::array<T, N> new_array;
     for (size_t i = 0; i < N; i++) {
-      new_array[i] = _data[i] - other._data[i];
+      new_array[i] = data_[i] - other.data_[i];
     }
     return Vector<T, N>(new_array);
   };
@@ -113,7 +113,7 @@ class Vector {
   Vector<T, N> operator*(const Vector<T, N>& other) const {
     std::array<T, N> new_array;
     for (size_t i = 0; i < N; i++) {
-      new_array[i] = _data[i] * other._data[i];
+      new_array[i] = data_[i] * other.data_[i];
     }
     return Vector<T, N>(new_array);
   };
@@ -124,7 +124,7 @@ class Vector {
   Vector<T, N> operator/(const Vector<T, N>& other) const {
     std::array<T, N> new_array;
     for (size_t i = 0; i < N; i++) {
-      new_array[i] = _data[i] / other._data[i];
+      new_array[i] = data_[i] / other.data_[i];
     }
     return Vector<T, N>(new_array);
   };
@@ -137,7 +137,7 @@ class Vector {
   Vector<T, N> operator*(const T scalar) const {
     std::array<T, N> new_array;
     for (size_t i = 0; i < N; i++) {
-      new_array[i] = scalar * _data[i];
+      new_array[i] = scalar * data_[i];
     }
     return Vector<T, N>(new_array);
   }
@@ -151,14 +151,14 @@ class Vector {
    * @brief Inner product of two Vectors < a | b >
    */
   static T scalarProduct(const Vector& a, const Vector<T, N>& b) {
-    return std::inner_product(a._data.begin(), a._data.end(), b._data.begin(), T(0));
+    return std::inner_product(a.data_.begin(), a.data_.end(), b.data_.begin(), T(0));
   }
 
   /**
    * @brief Euclidean Norm of a Vector (L2 norm)
    */
   [[nodiscard]] T euclidNorm() const {
-    return std::sqrt(std::accumulate(_data.begin(), _data.end(), T(0), [](auto a, auto b) { return a + (b * b); }));
+    return std::sqrt(std::accumulate(data_.begin(), data_.end(), T(0), [](auto a, auto b) { return a + (b * b); }));
   }
 
   // conversions to arrays
@@ -166,17 +166,17 @@ class Vector {
   /**
    * @brief Implicit comversion to a std::array<T, 3>
    */
-  operator std::array<T, 3>() const { return _data; };
+  operator std::array<T, 3>() const { return data_; };
 
   /**
    * @brief "Dereferencing" a Vector results in a std::array<T, 3>
    */
-  std::array<T, 3>& operator*() { return _data; };
+  std::array<T, 3>& operator*() { return data_; };
 
   /**
    * @brief "Dereferencing" a const Vector results in a const std::array<T, 3>
    */
-  const std::array<T, 3>& operator*() const { return _data; };
+  const std::array<T, 3>& operator*() const { return data_; };
 
   // output
 
@@ -191,7 +191,7 @@ class Vector {
       if (i != 0U) {
         str_stream << ", ";
       }
-      str_stream << _data[i];
+      str_stream << data_[i];
     }
     str_stream << surround[1];
     return str_stream.str();
