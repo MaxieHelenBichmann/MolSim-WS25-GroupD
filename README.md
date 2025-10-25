@@ -8,7 +8,61 @@ Contributors:
 
 ## Project Structure
 
-tba
+```
+.
+├── cmake
+│   └── modules
+│       ├── clang-format.cmake
+│       ├── clang-tidy.cmake
+│       ├── doxygen.cmake
+│       └── vtk.cmake
+├── CMakeLists.txt
+├── Doxyfile
+├── include
+│   ├── io
+│   │   ├── CLIParse.h
+│   │   ├── fileReader
+│   │   │   └── XVMReader.h
+│   │   ├── FileReader.h
+│   │   ├── outputWriter
+│   │   │   ├── VTKWriter.h
+│   │   │   └── XYZWriter.h
+│   │   └── OutputWriter.h
+│   ├── particles
+│   │   ├── container
+│   │   │   ├── ContainerRef.h
+│   │   │   └── SimpleContainer.h
+│   │   ├── ParticleContainer.h
+│   │   └── Particle.h
+│   ├── physics
+│   │   ├── ForceSource.h
+│   │   └── GravitationalForce.h
+│   └── utils
+│       ├── ArrayUtils.h
+│       ├── MaxwellBoltzmannDistribution.h
+│       ├── Simulation.h
+│       └── Vector.h
+├── input
+│   └── eingabe-sonne.txt
+├── README.md
+└── src
+    ├── io
+    │   ├── fileReader
+    │   │   └── XVMReader.cpp
+    │   └── outputWriter
+    │       ├── VTKWriter.cpp
+    │       └── XYZWriter.cpp
+    ├── MolSim.cpp
+    ├── particles
+    │   ├── container
+    │   │   ├── ContainerRef.cpp
+    │   │   └── SimpleContainer.cpp
+    │   └── Particle.cpp
+    └── physics
+        └── GravitationalSource.cpp
+
+19 directories, 32 files
+```
 
 ## Dependencies
 - **Essential:**
@@ -54,5 +108,5 @@ tba
 1. Run the executable with the given input file and optional desired delta T and end T:
 
     ```
-    ./build/MolSim ./input/eingabe-sonne.txt 0.014 1000
+    ./build/MolSim ../input/eingabe-sonne.txt 0.014 1000
     ```
