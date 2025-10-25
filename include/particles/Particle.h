@@ -10,7 +10,7 @@
 
 #include <string>
 
-#include "../utils/Vector.h"
+#include "utils/Vector.h"
 
 namespace mol_sim {
 

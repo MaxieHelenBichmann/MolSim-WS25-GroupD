@@ -21,9 +21,9 @@ if(ENABLE_VTK_OUTPUT)
         include(${VTK_USE_FILE})
     endif ()
 
-    target_link_libraries(MolSim
+    target_link_libraries(LibMolSim
             PRIVATE
             ${VTK_LIBRARIES}
     )
-    target_compile_definitions(MolSim PRIVATE "ENABLE_VTK_OUTPUT")
+    target_compile_definitions(LibMolSim PRIVATE "ENABLE_VTK_OUTPUT")
 endif()

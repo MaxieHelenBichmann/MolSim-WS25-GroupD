@@ -3,7 +3,7 @@
 
 #include <variant>
 
-#include "SimpleContainer.h"
+#include "particles/container/SimpleContainer.h"
 
 namespace mol_sim {
 

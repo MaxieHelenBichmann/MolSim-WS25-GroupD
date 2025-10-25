@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "../ParticleContainer.h"
+#include "particles/ParticleContainer.h"
 
 namespace mol_sim {
 

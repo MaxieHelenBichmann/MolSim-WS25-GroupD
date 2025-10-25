@@ -35,7 +35,7 @@ add_library(LibMolSim STATIC ${SRCS})
 # create make target
 add_executable(MolSim ${CMAKE_SOURCE_DIR}/src/MolSim.cpp)
 
-target_link_libraries(MolSim LibMolSim)
+target_link_libraries(MolSim PRIVATE LibMolSim)
 
 # activate all compiler warnings. Clean up your code :P
 # depending on the compiler different flags are used
