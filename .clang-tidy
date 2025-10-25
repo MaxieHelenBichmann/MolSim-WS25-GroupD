@@ -10,6 +10,7 @@ UseColor: True
 # Use .clang-format file as basis for formatting checks
 FormatStyle: file
 
+HeaderFilterRegex: "include/*"
 
 # Styling Options
 CheckOptions:
