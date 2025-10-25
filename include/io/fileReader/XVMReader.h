@@ -21,5 +21,5 @@ class XVMReader : public FileReader {
  public:
   XVMReader();
   ~XVMReader() override;
-  void readFile(particle_containers::ContainerRef particles, char* filename) override;
+  void readFile(particle_containers::ContainerRef particles, const std::string& filename) override;
 };

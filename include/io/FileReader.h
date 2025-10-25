@@ -24,5 +24,5 @@ class FileReader {
    * @param particles The ParticleContainer the particles contained in the file will be stored in.
    * @param filename The path to the file containing the particles to be stored in 'particles'.
    */
-  virtual void readFile(particle_containers::ContainerRef particles, char* filename) = 0;
+  virtual void readFile(particle_containers::ContainerRef particles, const std::string& filename) = 0;
 };
