@@ -19,6 +19,7 @@
 #include <vector>
 
 namespace mol_sim {
+
 /**
  * Collection of utility functions and operators for iterable data containers
  * like std::array, std::vector, etc.
@@ -267,5 +268,7 @@ std::enable_if_t<ArrayUtils::is_container<Container>::value, bool> operator==(co
   }
   return true;
 }
+
 }  // namespace mol_sim
+
 #endif

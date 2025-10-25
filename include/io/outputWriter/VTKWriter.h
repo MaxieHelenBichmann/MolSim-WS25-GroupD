@@ -22,6 +22,7 @@
 #include <string>
 
 #include "particles/container/ContainerRef.h"
+
 namespace mol_sim {
 
 /**
@@ -47,5 +48,6 @@ class VTKWriter : public OutputWriter {
 };
 
 }  // namespace mol_sim
+
 #endif
 #endif

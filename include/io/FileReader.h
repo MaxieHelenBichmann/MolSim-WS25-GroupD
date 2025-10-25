@@ -9,7 +9,9 @@
 #define FILE_READER_H
 
 #include "particles/container/ContainerRef.h"
+
 namespace mol_sim {
+
 /**
  * @brief Interface for file readers.
  *
@@ -27,5 +29,7 @@ class FileReader {
    */
   virtual void readFile(ContainerRef particles, const std::string& filename) = 0;
 };
+
 }  // namespace mol_sim
+
 #endif

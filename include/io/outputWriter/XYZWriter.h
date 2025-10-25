@@ -14,6 +14,7 @@
 #include "particles/container/ContainerRef.h"
 
 namespace mol_sim {
+
 /**
  * @brief Writes the (x,y,z) position of the given set of particles into a .xyz file
  *

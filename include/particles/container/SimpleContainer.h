@@ -41,6 +41,7 @@ class SimpleContainer : public std::vector<Particle> {
    */
   void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, int type);
 };
+
 }  // namespace mol_sim
 
 #endif

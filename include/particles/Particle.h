@@ -83,6 +83,7 @@ class Particle {
 };
 
 std::ostream& operator<<(std::ostream& stream, Particle& p);
+
 }  // namespace mol_sim
 
 #endif

@@ -35,5 +35,7 @@ class ForceSource {
 };
 
 enum Force : std::uint8_t { GRAVITATIONAL };
+
 }  // namespace mol_sim
+
 #endif

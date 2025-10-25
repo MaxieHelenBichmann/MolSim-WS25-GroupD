@@ -5,6 +5,7 @@
 #include "utils/Vector.h"
 
 namespace mol_sim {
+
 /**
  * @brief Class to calculate gravitational forces between two different objects. Implements the ForceSource interface
  *
@@ -24,5 +25,7 @@ class GravitationalForce : public ForceSource {
    */
   [[nodiscard]] Vector<double, 3> calculateForce(const Particle& p1, const Particle& p2) const override;
 };
+
 }  // namespace mol_sim
+
 #endif

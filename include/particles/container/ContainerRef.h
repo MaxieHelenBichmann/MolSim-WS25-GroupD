@@ -57,6 +57,7 @@ class ContainerRef {
   std::vector<Particle>::const_iterator end() const;
   std::vector<Particle>::const_iterator cend() const;
 };
+
 }  // namespace mol_sim
 
 #endif

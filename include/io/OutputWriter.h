@@ -4,6 +4,7 @@
 #include "particles/container/ContainerRef.h"
 
 namespace mol_sim {
+
 /**
  * @brief Interface for output writers.
  *
@@ -15,5 +16,7 @@ class OutputWriter {
   virtual ~OutputWriter() = default;
   virtual void plotParticles(ContainerRef particles, const std::string& filename, int iteration) = 0;
 };
+
 }  // namespace mol_sim
+
 #endif

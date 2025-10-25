@@ -7,6 +7,7 @@
 #include "io/FileReader.h"
 
 namespace mol_sim {
+
 /**
  * @brief Parses command line input.
  *
@@ -38,5 +39,7 @@ void cliParse(int argc, char* argsv[], FileReader& fileReader, double& delta_t, 
     exit(-1);
   }
 }
+
 }  // namespace mol_sim
+
 #endif

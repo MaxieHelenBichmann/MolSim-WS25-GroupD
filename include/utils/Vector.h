@@ -207,6 +207,7 @@ std::ostream& operator<<(std::ostream& os, const Vector<T, N>& v) {
   os << v.toString();
   return os;
 }
+
 }  // namespace mol_sim
 
 /**

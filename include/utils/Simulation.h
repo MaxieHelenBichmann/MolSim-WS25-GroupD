@@ -64,5 +64,7 @@ class Simulation {
     writer.plotParticles(particles, out_name, iteration);
   }
 };
+
 }  // namespace mol_sim
+
 #endif
