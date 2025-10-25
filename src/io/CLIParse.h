@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 
-#include "io/fileReader/XVMReader.h"
+#include "io/FileReader.h"
 
 /**
  * @brief Parses command line input.

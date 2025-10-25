@@ -8,9 +8,6 @@
 #pragma once
 
 #include <fstream>
-#include <list>
-
-#include "particles/Particle.h"
 #include "particles/container/ContainerRef.h"
 
 namespace outputWriter {

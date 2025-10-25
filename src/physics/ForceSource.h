@@ -1,6 +1,8 @@
 #ifndef FORCE_SOURCE
 #define FORCE_SOURCE
 
+#include <cstdint>
+
 #include "particles/Particle.h"
 #include "utils/Vector.h"
 
@@ -30,6 +32,6 @@ class ForceSource {
   [[nodiscard]] virtual Vector<double, 3> calculateForce(const Particle& p1, const Particle& p2) const = 0;
 };
 
-enum Force { GRAVITATIONAL };
+enum Force : std::uint8_t { GRAVITATIONAL };
 
 #endif

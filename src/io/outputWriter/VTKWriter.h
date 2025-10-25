@@ -17,10 +17,8 @@
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 
-#include <list>
 #include <string>
 
-#include "particles/Particle.h"
 #include "particles/container/ContainerRef.h"
 
 namespace outputWriter {
