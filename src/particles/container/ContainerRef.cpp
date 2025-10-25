@@ -1,6 +1,6 @@
 #include "particles/container/ContainerRef.h"
 
-namespace particle_containers {
+using namespace mol_sim;
 
 ContainerRef::ContainerRef(SimpleContainer& c) : _instance(&c) {}
 
@@ -57,5 +57,3 @@ std::vector<Particle>::const_iterator ContainerRef::cend() const {
 }
 
 static_assert(ParticleContainer<ContainerRef>);
-
-}  // namespace particle_containers

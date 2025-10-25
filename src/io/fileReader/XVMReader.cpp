@@ -12,11 +12,13 @@
 #include <iostream>
 #include <sstream>
 
+using namespace mol_sim;
+
 XVMReader::XVMReader() = default;
 
 XVMReader::~XVMReader() = default;
 
-void XVMReader::readFile(particle_containers::ContainerRef particles, const std::string& filename) {
+void XVMReader::readFile(ContainerRef particles, const std::string& filename) {
   std::array<double, 3> x;
   std::array<double, 3> v;
   double m;

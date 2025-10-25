@@ -5,7 +5,7 @@
 
 #include "SimpleContainer.h"
 
-namespace particle_containers {
+namespace mol_sim {
 
 /**
  * @brief Container Reference for Particles
@@ -57,6 +57,6 @@ class ContainerRef {
   std::vector<Particle>::const_iterator end() const;
   std::vector<Particle>::const_iterator cend() const;
 };
-}  // namespace particle_containers
+}  // namespace mol_sim
 
 #endif

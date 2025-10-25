@@ -6,6 +6,8 @@
 #include "particles/Particle.h"
 #include "utils/Vector.h"
 
+namespace mol_sim {
+
 /**
  * @brief Interface for force source classes
  *
@@ -33,5 +35,5 @@ class ForceSource {
 };
 
 enum Force : std::uint8_t { GRAVITATIONAL };
-
+}  // namespace mol_sim
 #endif

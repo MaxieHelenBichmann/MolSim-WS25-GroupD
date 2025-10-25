@@ -1,6 +1,6 @@
 #include "particles/container/SimpleContainer.h"
 
-namespace particle_containers {
+using namespace mol_sim;
 
 void SimpleContainer::addParticle(Particle&& value) { push_back(value); }
 void SimpleContainer::addParticle(const Particle& value) { push_back(value); }
@@ -12,5 +12,3 @@ void SimpleContainer::addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_a
 };
 
 static_assert(ParticleContainer<SimpleContainer>);
-
-}  // namespace particle_containers

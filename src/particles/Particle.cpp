@@ -9,7 +9,7 @@
 
 #include <iostream>
 
-using R3 = Vector<double, 3>;
+using namespace mol_sim;
 
 Particle::Particle(int type_arg) {
   type = type_arg;

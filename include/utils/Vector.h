@@ -8,6 +8,8 @@
 #include <sstream>
 #include <string>
 
+namespace mol_sim {
+
 /**
  * @brief Data type for Mathematical Vector
  *
@@ -205,6 +207,7 @@ std::ostream& operator<<(std::ostream& os, const Vector<T, N>& v) {
   os << v.toString();
   return os;
 }
+}  // namespace mol_sim
 
 /**
  * @brief Allows for structured bindings
@@ -215,22 +218,22 @@ std::ostream& operator<<(std::ostream& os, const Vector<T, N>& v) {
 namespace std {
 
 template <class T, size_t N>
-struct tuple_size<::Vector<T, N>> {
+struct tuple_size<mol_sim::Vector<T, N>> {
   static constexpr size_t value = N;
 };
 
 template <size_t I, class T, size_t N>
-constexpr T& get(Vector<T, N>&& v) {
+constexpr T& get(mol_sim::Vector<T, N>&& v) {
   return v[I];
 }
 
 template <size_t I, class T, size_t N>
-constexpr T get(const Vector<T, N>& v) {
+constexpr T get(const mol_sim::Vector<T, N>& v) {
   return v[I];
 }
 
 template <size_t I, class T, size_t N>
-struct tuple_element<I, ::Vector<T, N>> {
+struct tuple_element<I, mol_sim::Vector<T, N>> {
   using type = T;
 };
 

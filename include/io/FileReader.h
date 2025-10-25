@@ -9,7 +9,7 @@
 #define FILE_READER_H
 
 #include "particles/container/ContainerRef.h"
-
+namespace mol_sim {
 /**
  * @brief Interface for file readers.
  *
@@ -25,7 +25,7 @@ class FileReader {
    * @param particles The ParticleContainer the particles contained in the file will be stored in.
    * @param filename The path to the file containing the particles to be stored in 'particles'.
    */
-  virtual void readFile(particle_containers::ContainerRef particles, const std::string& filename) = 0;
+  virtual void readFile(ContainerRef particles, const std::string& filename) = 0;
 };
-
+}  // namespace mol_sim
 #endif

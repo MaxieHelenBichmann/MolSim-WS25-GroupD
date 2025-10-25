@@ -18,9 +18,9 @@
 #include <iomanip>
 #include <sstream>
 
-namespace outputWriter {
+using namespace mol_sim;
 
-void VTKWriter::plotParticles(particle_containers::ContainerRef particles, const std::string& filename, int iteration) {
+void VTKWriter::plotParticles(ContainerRef particles, const std::string& filename, int iteration) {
   // Initialize points
   auto points = vtkSmartPointer<vtkPoints>::New();
 
@@ -72,5 +72,5 @@ void VTKWriter::plotParticles(particle_containers::ContainerRef particles, const
   // Write the file
   writer->Write();
 }
-}  // namespace outputWriter
+
 #endif

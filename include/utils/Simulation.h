@@ -9,7 +9,9 @@
 #include "physics/ForceSource.h"
 #include "physics/GravitationalForce.h"
 
-template <particle_containers::ParticleContainer containerType>
+namespace mol_sim {
+
+template <ParticleContainer containerType>
 class Simulation {
  private:
   containerType& particles;
@@ -55,12 +57,12 @@ class Simulation {
   void plotParticles(int iteration) {
     std::string out_name("MD_vtk");
 #ifdef ENABLE_VTK_OUTPUT
-    outputWriter::VTKWriter writer;
+    VTKWriter writer;
 #else
-    outputWriter::XYZWriter writer;
+    XYZWriter writer;
 #endif
     writer.plotParticles(particles, out_name, iteration);
   }
 };
-
+}  // namespace mol_sim
 #endif

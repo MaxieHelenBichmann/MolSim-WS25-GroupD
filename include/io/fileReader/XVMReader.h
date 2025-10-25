@@ -3,7 +3,7 @@
 
 #include "io/FileReader.h"
 #include "particles/container/ContainerRef.h"
-
+namespace mol_sim {
 /**
  * @brief Reads the particles from a file that contains the initial position, force, and mass of particles.
  *
@@ -22,7 +22,7 @@ class XVMReader : public FileReader {
  public:
   XVMReader();
   ~XVMReader() override;
-  void readFile(particle_containers::ContainerRef particles, const std::string& filename) override;
+  void readFile(ContainerRef particles, const std::string& filename) override;
 };
-
+}  // namespace mol_sim
 #endif

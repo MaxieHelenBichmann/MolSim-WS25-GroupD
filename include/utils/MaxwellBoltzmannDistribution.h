@@ -10,7 +10,7 @@
 
 #include <array>
 #include <random>
-
+namespace mol_sim {
 /**
  * Generate a random velocity vector according to the Maxwell-Boltzmann distribution, with a given average velocity.
  *
@@ -32,5 +32,5 @@ std::array<double, 3> maxwellBoltzmannDistributedVelocity(double averageVelocity
   }
   return randomVelocity;
 }
-
+}  // namespace mol_sim
 #endif

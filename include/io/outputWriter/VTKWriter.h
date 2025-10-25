@@ -22,8 +22,7 @@
 #include <string>
 
 #include "particles/container/ContainerRef.h"
-
-namespace outputWriter {
+namespace mol_sim {
 
 /**
  * This class implements the functionality to generate vtk output from
@@ -44,9 +43,9 @@ class VTKWriter : public OutputWriter {
    * @param filename Output filename
    * @param iteration Current iteration number
    */
-  void plotParticles(particle_containers::ContainerRef particles, const std::string& filename, int iteration) override;
+  void plotParticles(ContainerRef particles, const std::string& filename, int iteration) override;
 };
 
-}  // namespace outputWriter
+}  // namespace mol_sim
 #endif
 #endif

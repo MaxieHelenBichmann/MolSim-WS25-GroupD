@@ -13,7 +13,7 @@
 #include "io/OutputWriter.h"
 #include "particles/container/ContainerRef.h"
 
-namespace outputWriter {
+namespace mol_sim {
 /**
  * @brief Writes the (x,y,z) position of the given set of particles into a .xyz file
  *
@@ -26,9 +26,9 @@ class XYZWriter : public OutputWriter {
 
   virtual ~XYZWriter();
 
-  void plotParticles(particle_containers::ContainerRef particles, const std::string& filename, int iteration) override;
+  void plotParticles(ContainerRef particles, const std::string& filename, int iteration) override;
 };
 
-}  // namespace outputWriter
+}  // namespace mol_sim
 
 #endif

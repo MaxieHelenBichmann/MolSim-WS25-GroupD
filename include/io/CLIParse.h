@@ -6,6 +6,7 @@
 
 #include "io/FileReader.h"
 
+namespace mol_sim {
 /**
  * @brief Parses command line input.
  *
@@ -18,7 +19,7 @@
  * @param particles A ParticleContainer wherein the particles read from the input file will be stored
  */
 void cliParse(int argc, char* argsv[], FileReader& fileReader, double& delta_t, double& end_time,
-              particle_containers::SimpleContainer& particles) {
+              SimpleContainer& particles) {
   std::cout << "Hello from MolSim for PSE!" << '\n';
   if (argc != 4) {
     std::cout << "Erroneous programme call! " << '\n' << "./MolSim filename delta_t end_time" << '\n';
@@ -37,5 +38,5 @@ void cliParse(int argc, char* argsv[], FileReader& fileReader, double& delta_t, 
     exit(-1);
   }
 }
-
+}  // namespace mol_sim
 #endif

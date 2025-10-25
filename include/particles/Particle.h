@@ -12,6 +12,8 @@
 
 #include "../utils/Vector.h"
 
+namespace mol_sim {
+
 using R3 = Vector<double, 3>;
 
 class Particle {
@@ -81,5 +83,6 @@ class Particle {
 };
 
 std::ostream& operator<<(std::ostream& stream, Particle& p);
+}  // namespace mol_sim
 
 #endif

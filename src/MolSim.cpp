@@ -6,8 +6,10 @@
 #include "physics/ForceSource.h"
 #include "utils/Simulation.h"
 
+using namespace mol_sim;
+
 constexpr double START_TIME = 0;
-particle_containers::SimpleContainer particles;
+SimpleContainer particles;
 
 int main(int argc, char* argsv[]) {
   double delta_t;
@@ -15,7 +17,7 @@ int main(int argc, char* argsv[]) {
   XVMReader file_reader;
 
   cliParse(argc, argsv, file_reader, delta_t, end_time, particles);
-  Simulation<particle_containers::SimpleContainer> simulation(particles, GRAVITATIONAL, delta_t);
+  Simulation<SimpleContainer> simulation(particles, GRAVITATIONAL, delta_t);
 
   double current_time = START_TIME;
   int iteration = 0;

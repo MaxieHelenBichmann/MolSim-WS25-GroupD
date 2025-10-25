@@ -5,9 +5,7 @@
 
 #include "particles/Particle.h"
 
-namespace particle_containers {
-
-using R3 = Vector<double, 3>;
+namespace mol_sim {
 
 /**
  * @brief Concept of a Particle Container
@@ -26,12 +24,12 @@ using R3 = Vector<double, 3>;
  *
  * Then, this function can be called with any specific particle container, which fulfills this concept. For example:
  * ```
- * particle_containers::SimpleContainer cur_particles{p1, p2, p3};
- * frequently_used_func<particle_containers::SimpleContainer>(cur_particles);
+ * SimpleContainer cur_particles{p1, p2, p3};
+ * frequently_used_func<SimpleContainer>(cur_particles);
  * ```
  *
  * For uncritical functions (e.g. Input/Output), a non-templated version can be used,
- * see particle_containers::ContainerRef.
+ * see ContainerRef.
  */
 template <typename C>
 concept ParticleContainer = requires(C c) {
@@ -59,6 +57,6 @@ concept ParticleContainer = requires(C c) {
   { c.cend() } -> std::contiguous_iterator;
 };
 
-}  // namespace particle_containers
+}  // namespace mol_sim
 
 #endif
