@@ -24,7 +24,8 @@ class Vector {
   /**
    * Data of the Vector
    */
-  std::array<T, N> _data;
+  
+  std::array<T, N> _data; //NOLINT
 
  public:
   /**

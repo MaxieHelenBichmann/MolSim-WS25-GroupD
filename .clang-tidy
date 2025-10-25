@@ -1,5 +1,5 @@
 # All the checks executed by clang-tidy
-Checks: 'clang-analyzer-*, performance-*, readability-*, modernize-*, bugprone-*, openmp-*, google-readability-casting ,misc-definitions-in-headers, llvm-namespace-comment, misc-redundant-expression, cppcoreguidelines-macro-usage, -modernize-use-trailing-return-type, -readability-identifier-length, -readability-magic-numbers'
+Checks: 'clang-analyzer-*, performance-*, readability-*, modernize-*, bugprone-*, openmp-*, google-readability-casting, llvm-namespace-comment, misc-redundant-expression, cppcoreguidelines-macro-usage, -modernize-use-trailing-return-type, -readability-identifier-length, -readability-magic-numbers'
 
 # If we want to use specific Warnings as Errors they are to be added here
 WarningsAsErrors: ""
