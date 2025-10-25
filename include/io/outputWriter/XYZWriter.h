@@ -25,7 +25,7 @@ class XYZWriter : public OutputWriter {
  public:
   XYZWriter();
 
-  virtual ~XYZWriter();
+  ~XYZWriter() override;
 
   void plotParticles(ContainerRef particles, const std::string& filename, int iteration) override;
 };

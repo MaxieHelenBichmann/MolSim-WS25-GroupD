@@ -32,7 +32,7 @@ namespace mol_sim {
 class VTKWriter : public OutputWriter {
  public:
   VTKWriter() = default;
-  ~VTKWriter() = default;
+  ~VTKWriter() override = default;
 
   // Delete copy constructor and assignment operator
   VTKWriter(const VTKWriter&) = delete;

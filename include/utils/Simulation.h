@@ -15,14 +15,14 @@ template <ParticleContainer containerType>
 class Simulation {
  private:
   containerType& particles;
-  std::unique_ptr<ForceSource> forceSource;
-  double DELTA_T;
+  std::unique_ptr<ForceSource> force_source;
+  double delta_t;
 
  public:
-  Simulation(containerType& particles, Force forceType, double DELTA_T) : particles(particles), DELTA_T(DELTA_T) {
+  Simulation(containerType& particles, Force forceType, double DELTA_T) : particles(particles), delta_t(DELTA_T) {
     switch (forceType) {
       case GRAVITATIONAL:
-        this->forceSource = std::make_unique<GravitationalForce>();
+        this->force_source = std::make_unique<GravitationalForce>();
         break;
       default:
         break;
@@ -37,20 +37,20 @@ class Simulation {
         if (p1 == p2) {
           continue;
         }
-        p1.getF() = p1.getF() + forceSource->calculateForce(p1, p2);
+        p1.getF() = p1.getF() + force_source->calculateForce(p1, p2);
       }
     }
   }
 
   void calculateX() {
     for (auto& p : particles) {
-      p.getX() = p.getX() + DELTA_T * p.getV() + (0.5 * DELTA_T * DELTA_T / p.getM()) * p.getF();
+      p.getX() = p.getX() + delta_t * p.getV() + (0.5 * delta_t * delta_t / p.getM()) * p.getF();
     }
   }
 
   void calculateV() {
     for (auto& p : particles) {
-      p.getV() = p.getV() + (0.5 * DELTA_T / p.getM()) * (p.getOldF() + p.getF());
+      p.getV() = p.getV() + (0.5 * delta_t / p.getM()) * (p.getOldF() + p.getF());
     }
   }
 

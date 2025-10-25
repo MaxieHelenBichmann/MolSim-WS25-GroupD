@@ -77,7 +77,7 @@ class Vector {
   T& operator[](size_t idx) { return _data[idx]; };
   const T& operator[](size_t idx) const { return _data[idx]; };
   T* data() { return _data.data(); }
-  const T* data() const { return _data.data(); }
+  [[nodiscard]] const T* data() const { return _data.data(); }
 
   // comparison
   bool operator==(const Vector<T, N>& other) const { return _data == other._data; };
@@ -157,7 +157,7 @@ class Vector {
   /**
    * @brief Euclidean Norm of a Vector (L2 norm)
    */
-  T euclidNorm() const {
+  [[nodiscard]] T euclidNorm() const {
     return std::sqrt(std::accumulate(_data.begin(), _data.end(), T(0), [](auto a, auto b) { return a + (b * b); }));
   }
 
@@ -183,8 +183,8 @@ class Vector {
   /**
    * @brief Conversion to a std::string with custom delimiter and brackets
    */
-  std::string toString(const std::string& delimiter = ", ",
-                       const std::array<std::string, 2>& surround = {"[", "]"}) const {
+  [[nodiscard]] std::string toString(const std::string& delimiter = ", ",
+                                     const std::array<std::string, 2>& surround = {"[", "]"}) const {
     std::stringstream str_stream;
     str_stream << surround[0];
     for (size_t i = 0; i < N; ++i) {
@@ -221,7 +221,7 @@ namespace std {
 
 template <class T, size_t N>
 struct tuple_size<mol_sim::Vector<T, N>> {
-  static constexpr size_t value = N;
+  static constexpr size_t VALUE = N;
 };
 
 template <size_t I, class T, size_t N>

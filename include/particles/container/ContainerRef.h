@@ -38,8 +38,8 @@ class ContainerRef {
   Particle& operator[](size_t idx);
   const Particle& operator[](size_t idx) const;
 
-  size_t size() const;
-  bool empty() const;
+  [[nodiscard]] size_t size() const;
+  [[nodiscard]] bool empty() const;
 
   // modify
   void clear();
@@ -51,11 +51,11 @@ class ContainerRef {
 
   // iterators
   std::vector<Particle>::iterator begin();
-  std::vector<Particle>::const_iterator begin() const;
-  std::vector<Particle>::const_iterator cbegin() const;
+  [[nodiscard]] std::vector<Particle>::const_iterator begin() const;
+  [[nodiscard]] std::vector<Particle>::const_iterator cbegin() const;
   std::vector<Particle>::iterator end();
-  std::vector<Particle>::const_iterator end() const;
-  std::vector<Particle>::const_iterator cend() const;
+  [[nodiscard]] std::vector<Particle>::const_iterator end() const;
+  [[nodiscard]] std::vector<Particle>::const_iterator cend() const;
 };
 
 }  // namespace mol_sim
