@@ -11,6 +11,6 @@
 class OutputWriter {
  public:
   virtual ~OutputWriter() = default;
-  virtual void plotParticles(particle_containers::ContainerRef& particles, const std::string& filename,
+  virtual void plotParticles(particle_containers::ContainerRef particles, const std::string& filename,
                              int iteration) = 0;
 };

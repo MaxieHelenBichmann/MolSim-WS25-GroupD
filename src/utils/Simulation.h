@@ -8,14 +8,17 @@
 #include "physics/ForceSource.h"
 #include "physics/GravitationalForce.h"
 
+
+template<particle_containers::ParticleContainer containerType>
 class Simulation {
  private:
-  particle_containers::SimpleContainer& particles;
+  containerType& particles;
   std::unique_ptr<ForceSource> forceSource;
   double DELTA_T;
 
  public:
-  Simulation(particle_containers::SimpleContainer& particles, Force forceType, double DELTA_T)
+  
+  Simulation(containerType& particles, Force forceType, double DELTA_T)
       : particles(particles), DELTA_T(DELTA_T) {
     switch (forceType) {
       case GRAVITATIONAL:

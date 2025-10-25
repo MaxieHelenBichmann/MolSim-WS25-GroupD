@@ -12,6 +12,7 @@
  * Writes the (x,y,z) position of the given set of particles into a .vtu file.The filename
  * will consist of the provided filename + the current iteration.
  */
+#include "io/OutputWriter.h"
 #ifdef ENABLE_VTK_OUTPUT
 
 #include <vtkSmartPointer.h>
@@ -27,7 +28,7 @@ namespace outputWriter {
  * This class implements the functionality to generate vtk output from
  * particles using the official VTK library.
  */
-class VTKWriter {
+class VTKWriter : public OutputWriter{
  public:
   VTKWriter() = default;
   ~VTKWriter() = default;
@@ -42,7 +43,7 @@ class VTKWriter {
    * @param filename Output filename
    * @param iteration Current iteration number
    */
-  static void plotParticles(particle_containers::ContainerRef particles, const std::string& filename, int iteration);
+  void plotParticles(particle_containers::ContainerRef particles, const std::string& filename, int iteration) override;
 };
 
 }  // namespace outputWriter

@@ -8,6 +8,7 @@
 #pragma once
 
 #include <fstream>
+#include "io/OutputWriter.h"
 #include "particles/container/ContainerRef.h"
 
 namespace outputWriter {
@@ -17,13 +18,13 @@ namespace outputWriter {
  * Writes the (x,y,z) position of the given set of particles into a .xyz file. The filename
  * will consist of the provided filename + the current iteration.
  */
-class XYZWriter {
+class XYZWriter : public OutputWriter{
  public:
   XYZWriter();
 
   virtual ~XYZWriter();
 
-  static void plotParticles(particle_containers::ContainerRef particles, const std::string& filename, int iteration);
+  void plotParticles(particle_containers::ContainerRef particles, const std::string& filename, int iteration) override;
 };
 
 }  // namespace outputWriter

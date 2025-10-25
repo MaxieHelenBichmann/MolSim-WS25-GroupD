@@ -15,7 +15,7 @@ int main(int argc, char* argsv[]) {
   XVMReader file_reader;
 
   cliParse(argc, argsv, file_reader, delta_t, end_time, particles);
-  Simulation simulation(particles, GRAVITATIONAL, delta_t);
+  Simulation<particle_containers::SimpleContainer> simulation(particles, GRAVITATIONAL, delta_t);
 
   double current_time = START_TIME;
   int iteration = 0;
