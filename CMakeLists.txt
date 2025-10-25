@@ -8,6 +8,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # define project name, version
 project(MolSim_GroupD VERSION 0.0.1 LANGUAGES CXX)
 
+include_directories(${CMAKE_SOURCE_DIR}/include)
+
 # let ccmake and cmake-gui offer the default build type options
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug;Release;RelWithDebInfo;MinSizeRel")
 
@@ -18,11 +20,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif(NOT CMAKE_BUILD_TYPE)
 
 # collect all cpp files
-file(GLOB_RECURSE MY_SRC
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
-    # header don't need to be included but this might be necessary for some IDEs
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h"
-)
+file(GLOB_RECURSE SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/*/*.cpp")
 
 # add additional modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
@@ -32,17 +30,12 @@ include(clang-format)
 include(doxygen)
 include(clang-tidy)
 
-# create make target
-add_executable(MolSim ${MY_SRC}
-        src/io/OutputWriter.h
-        src/io/fileReader/XVMReader.h
-        src/utils/Simulation.h
-        src/io/CLIParse.h)
+add_library(LibMolSim STATIC ${SRCS})
 
-target_include_directories(MolSim
-        PRIVATE
-            ${CMAKE_CURRENT_SOURCE_DIR}/src
-)
+# create make target
+add_executable(MolSim ${CMAKE_SOURCE_DIR}/src/MolSim.cpp)
+
+target_link_libraries(MolSim LibMolSim)
 
 # activate all compiler warnings. Clean up your code :P
 # depending on the compiler different flags are used
