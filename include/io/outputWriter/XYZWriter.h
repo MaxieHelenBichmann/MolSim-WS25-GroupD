@@ -8,8 +8,6 @@
 #ifndef XYZ_WRITER_H
 #define XYZ_WRITER_H
 
-#include <fstream>
-
 #include "io/OutputWriter.h"
 #include "particles/container/ContainerRef.h"
 

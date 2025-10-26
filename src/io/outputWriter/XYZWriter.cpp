@@ -7,6 +7,7 @@
 
 #include "io/outputWriter/XYZWriter.h"
 
+#include <fstream>
 #include <iomanip>
 #include <sstream>
 

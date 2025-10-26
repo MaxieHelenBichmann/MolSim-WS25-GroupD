@@ -11,6 +11,7 @@ if(ENABLE_CLANG_TIDY)
 
         file(GLOB_RECURSE ALL_CXX_SOURCES CONFIGURE_DEPENDS
             "${CMAKE_SOURCE_DIR}/src/*.cpp"
+            "${CMAKE_SOURCE_DIR}/include/*.h"
         )
 
         add_custom_target(
