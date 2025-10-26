@@ -20,7 +20,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif(NOT CMAKE_BUILD_TYPE)
 
 # collect all cpp files
-file(GLOB_RECURSE SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/*/*.cpp")
+file(GLOB_RECURSE SRCS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
 # add additional modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)

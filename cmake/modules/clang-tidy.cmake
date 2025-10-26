@@ -23,6 +23,7 @@ if(ENABLE_CLANG_TIDY)
             ${ALL_CXX_SOURCES}
             COMMENT "Running clang-tidy with fixes"
         )
+        message(STATUS "clang-tidy fix target created. Build it with 'make fix'.")
     else ()
         message(WARNING "clang-tidy not found, no static analysis")
     endif ()
