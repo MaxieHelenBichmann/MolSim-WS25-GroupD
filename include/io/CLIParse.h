@@ -42,28 +42,45 @@ void cliParse(int argc, char** argsv, FileReader& fileReader, double& delta_t, d
     std::cout << "Erroneous programme call! " << '\n' << HELP_MSG << '\n';
     exit(-1);
   }
-  fileReader.readFile(particles, argsv[1]);
+
+  int parsed_args = 2; //program name + assume file name is OK (bad files handled in fileReader.readfile)
   char** delta_t_opt = std::find(argsv, &argsv[argc], d);
   char** end_time_opt = std::find(argsv, &argsv[argc], t);
 
   try {
     if (delta_t_opt != &argsv[argc]) {
       delta_t = std::stod(*(++delta_t_opt));
+      parsed_args += 2;
     }
     if (end_time_opt != &argsv[argc]) {
       end_time = std::stod(*(++end_time_opt));
+      parsed_args += 2;
     }
   } catch (std::invalid_argument& e) {
     std::cout << "Erroneous programme call! " << '\n'
-              << "delta_t and end_time must be valid floating point numbers" << "\n"
+              << "delta_t and end_time must be valid floating point numbers!" << "\n"
               << HELP_MSG << '\n';
     exit(-1);
   } catch (std::out_of_range& e) {
     std::cout << "Erroneous programme call! " << '\n'
-              << "delta_t or end_time out of floating point range" << "\n"
+              << "delta_t or end_time out of floating point range!" << "\n"
+              << HELP_MSG << '\n';
+    exit(-1);
+  } catch (std::logic_error& e) {
+    std::cout << "Erroneous programme call! " << '\n'
+              << "flag -d or -t set but no value provided!" << "\n"
               << HELP_MSG << '\n';
     exit(-1);
   }
+
+  if (parsed_args - argc != 0) {
+    std::cout << "Erroneous programme call! " << '\n'
+              << "Unrecognized arguments in programme call!" << "\n"
+              << HELP_MSG << '\n';
+    exit(-1);
+  }
+
+  fileReader.readFile(particles, argsv[1]);
 }
 
 }  // namespace mol_sim
