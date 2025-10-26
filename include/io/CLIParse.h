@@ -1,9 +1,9 @@
 #ifndef CLI_PARSE_H
 #define CLI_PARSE_H
 
+#include <algorithm>
 #include <iostream>
 #include <string>
-#include <algorithm>
 
 #include "io/FileReader.h"
 
@@ -33,14 +33,13 @@ const std::string& t = "-t";
 void cliParse(int argc, char** argsv, FileReader& fileReader, double& delta_t, double& end_time,
               SimpleContainer& particles) {
   std::cout << "Hello from MolSim for PSE!" << '\n';
-  char** help = std::find(argsv, argsv+argc, h);
+  char** help = std::find(argsv, argsv + argc, h);
   if (help != &argsv[argc]) {
     std::cout << HELP_MSG << '\n';
     exit(0);
   }
   if (argc == 1) {
-    std::cout << "Erroneous programme call! " << '\n'
-              << HELP_MSG << '\n';
+    std::cout << "Erroneous programme call! " << '\n' << HELP_MSG << '\n';
     exit(-1);
   }
   fileReader.readFile(particles, argsv[1]);
