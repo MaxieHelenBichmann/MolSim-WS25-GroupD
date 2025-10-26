@@ -55,10 +55,11 @@ class Simulation {
   }
 
   void plotParticles(int iteration) {
-    std::string out_name("MD_vtk");
 #ifdef ENABLE_VTK_OUTPUT
+    std::string out_name("MD_vtk");
     VTKWriter writer;
 #else
+    std::string out_name("MD_xyz");
     XYZWriter writer;
 #endif
     writer.plotParticles(particles, out_name, iteration);

@@ -67,7 +67,7 @@ void VTKWriter::plotParticles(ContainerRef particles, const std::string& filenam
   vtkNew<vtkXMLUnstructuredGridWriter> writer;
   writer->SetFileName(strstr.str().c_str());
   writer->SetInputData(grid);
-  writer->SetDataModeToAscii();
+  writer->SetDataModeToBinary();
 
   // Write the file
   writer->Write();
