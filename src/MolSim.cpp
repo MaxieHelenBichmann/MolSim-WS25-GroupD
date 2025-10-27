@@ -33,7 +33,11 @@ int main(int argc, char* argsv[]) {
 
     iteration++;
     if (iteration % 10 == 0) {
-      simulation.plotParticles(iteration);
+      try {
+        simulation.plotParticles(iteration);
+      } catch (...) {
+        std::cout << "Something went wrong with plotting the Particles/" << '\n';
+      }
     }
     std::cout << "Iteration " << iteration << " finished." << '\n';
 

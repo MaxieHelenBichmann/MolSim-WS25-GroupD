@@ -44,13 +44,13 @@ class Simulation {
 
   void calculateX() {
     for (auto& p : particles) {
-      p.getX() = p.getX() + delta_t * p.getV() + (0.5 * delta_t * delta_t / p.getM()) * p.getF();
+      p.getX() = p.getX() + (delta_t * p.getV()) + ((0.5 * delta_t * delta_t / p.getM()) * p.getF());
     }
   }
 
   void calculateV() {
     for (auto& p : particles) {
-      p.getV() = p.getV() + (0.5 * delta_t / p.getM()) * (p.getOldF() + p.getF());
+      p.getV() = p.getV() + ((0.5 * delta_t / p.getM()) * (p.getOldF() + p.getF()));
     }
   }
 
