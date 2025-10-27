@@ -36,7 +36,7 @@ int main(int argc, char* argsv[]) {
       try {
         simulation.plotParticles(iteration);
       } catch (...) {
-        std::cout << "Something went wrong with plotting the Particles/" << '\n';
+        std::cout << "Something went wrong with plotting the Particles." << '\n';
       }
     }
     std::cout << "Iteration " << iteration << " finished." << '\n';
