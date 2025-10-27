@@ -6,64 +6,6 @@ Contributors:
 - Georg Sebastian Eisner
 - Henry Jacob Meyran
 
-## Project Structure
-
-```
-.
-├── cmake
-│   └── modules
-│       ├── clang-format.cmake
-│       ├── clang-tidy.cmake
-│       ├── doxygen.cmake
-│       └── vtk.cmake
-├── CMakeLists.txt
-├── Doxyfile
-├── include
-│   ├── io
-│   │   ├── CLIParse.h
-│   │   ├── fileReader
-│   │   │   └── XVMReader.h
-│   │   ├── FileReader.h
-│   │   ├── outputWriter
-│   │   │   ├── VTKWriter.h
-│   │   │   └── XYZWriter.h
-│   │   └── OutputWriter.h
-│   ├── particles
-│   │   ├── container
-│   │   │   ├── ContainerRef.h
-│   │   │   └── SimpleContainer.h
-│   │   ├── ParticleContainer.h
-│   │   └── Particle.h
-│   ├── physics
-│   │   ├── ForceSource.h
-│   │   └── GravitationalForce.h
-│   └── utils
-│       ├── ArrayUtils.h
-│       ├── MaxwellBoltzmannDistribution.h
-│       ├── Simulation.h
-│       └── Vector.h
-├── input
-│   └── eingabe-sonne.txt
-├── README.md
-└── src
-    ├── io
-    │   ├── fileReader
-    │   │   └── XVMReader.cpp
-    │   └── outputWriter
-    │       ├── VTKWriter.cpp
-    │       └── XYZWriter.cpp
-    ├── MolSim.cpp
-    ├── particles
-    │   ├── container
-    │   │   ├── ContainerRef.cpp
-    │   │   └── SimpleContainer.cpp
-    │   └── Particle.cpp
-    └── physics
-        └── GravitationalSource.cpp
-
-19 directories, 32 files
-```
-
 ## Dependencies
 - **Essential:**
     - CMake Version 3.10+
@@ -92,7 +34,7 @@ Contributors:
     ccmake ..
     ```
 
-2. Now you can interactively change the options (These include Doxygen generation clang-tidy integration and VTK output).
+2. Now you can interactively change the options (These include Doxygen generation, clang-tidy integration and VTK output).
 
 3. Build the executable with the Makefile by running the command:
     ```
