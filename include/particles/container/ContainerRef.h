@@ -65,7 +65,7 @@ class ContainerRef {
   void reserve(size_t n);
 
   /**
-   * @brief Adding an already existing Particle to the SimpleContainer by copying it.
+   * @brief Adding an already existing Particle to the container by copying it.
    */
   void addParticle(Particle&& value);
 
