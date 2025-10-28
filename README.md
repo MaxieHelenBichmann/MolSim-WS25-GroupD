@@ -47,8 +47,8 @@ Contributors:
 
 0. Make sure to be in the project root.
 
-1. Run the executable with the given input file and optional desired delta_ T ( -d) and end_T ( -t):
+1. Run the executable with the given input file and optional desired delta_T ( -d) and end_T ( -t):
 
     ```
-    ./build/MolSim ../input/eingabe-sonne.txt -d 0.014 -t 1000
+    ./build/MolSim ./input/eingabe-sonne.txt -d 0.014 -t 1000
     ```
