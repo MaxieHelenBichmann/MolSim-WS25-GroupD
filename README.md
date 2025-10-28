@@ -1,4 +1,54 @@
-MolSim
+MolSim Group D
 ===
 
-The Molecular Dynamics teaching code.
+Contributors:
+- Maxie Helen Bichmann
+- Georg Sebastian Eisner
+- Henry Jacob Meyran
+
+## Dependencies
+- **Essential:**
+    - CMake Version 3.10+
+    - Make 4.3+
+    - C++ compiler with C++20 support 
+- **VTK Output:**
+    - VTK Version 8.9+
+- **Optional Tools:**
+    - clang-format
+    - clang-tidy
+- **Doxygen Support:**
+    - Doxygen
+    - Graphviz 
+
+
+
+## Building the project
+
+**How do you build the project?**
+
+0. Make sure to be in the project root.
+
+1. Configure the project with cmake by running these commands:
+    ```
+    mkdir build && cd build
+    ccmake ..
+    ```
+
+2. Now you can interactively change the options (These include Doxygen generation, clang-tidy integration and VTK output).
+
+3. Build the executable with the Makefile by running the command:
+    ```
+    make -j $(nproc)
+    ```
+
+## Running the project
+
+**How do I run the project?**
+
+0. Make sure to be in the project root.
+
+1. Run the executable with the given input file and optional desired delta_ T ( -d) and end_T ( -t):
+
+    ```
+    ./build/MolSim ../input/eingabe-sonne.txt -d 0.014 -t 1000
+    ```
