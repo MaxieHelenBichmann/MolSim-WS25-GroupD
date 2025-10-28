@@ -17,29 +17,29 @@ namespace mol_sim {
  *
  */
 class SimpleContainer : public std::vector<Particle> {
- public:
-  // constructors
-  using std::vector<Particle>::vector;
+   public:
+    // constructors
+    using std::vector<Particle>::vector;
 
-  /**
-   * @brief Adding an already existing Particle to the SimpleContainer by copying it.
-   */
-  void addParticle(Particle&& value);
+    /**
+     * @brief Adding an already existing Particle to the SimpleContainer by copying it.
+     */
+    void addParticle(Particle&& value);
 
-  /**
-   * @brief Adding an already existing const Particle to the SimpleContainer by copying it.
-   */
-  void addParticle(const Particle& value);
+    /**
+     * @brief Adding an already existing const Particle to the SimpleContainer by copying it.
+     */
+    void addParticle(const Particle& value);
 
-  /**
-   * @brief Directly constructing a Particle with its required parameters in-place.
-   */
-  void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg);
+    /**
+     * @brief Directly constructing a Particle with its required parameters in-place.
+     */
+    void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg);
 
-  /**
-   * @brief Directly constructing a Particle with its required parameters, including type, in-place.
-   */
-  void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, int type);
+    /**
+     * @brief Directly constructing a Particle with its required parameters, including type, in-place.
+     */
+    void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, int type);
 };
 
 }  // namespace mol_sim

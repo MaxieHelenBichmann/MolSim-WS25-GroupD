@@ -12,9 +12,9 @@ namespace mol_sim {
  * These classes all implement the plotParticles method.
  */
 class OutputWriter {
- public:
-  virtual ~OutputWriter() = default;
-  virtual void plotParticles(ContainerRef particles, const std::string& filename, int iteration) = 0;
+   public:
+    virtual ~OutputWriter() = default;
+    virtual void plotParticles(ContainerRef particles, const std::string& filename, int iteration) = 0;
 };
 
 }  // namespace mol_sim

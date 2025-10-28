@@ -33,28 +33,28 @@ namespace mol_sim {
  */
 template <typename C>
 concept ParticleContainer = requires(C c) {
-  // retrieve data
-  { c[size_t()] } -> std::convertible_to<Particle>;
-  { (*static_cast<const C*>(&c))[size_t()] } -> std::convertible_to<const Particle>;
+    // retrieve data
+    { c[size_t()] } -> std::convertible_to<Particle>;
+    { (*static_cast<const C*>(&c))[size_t()] } -> std::convertible_to<const Particle>;
 
-  { c.size() } -> std::convertible_to<size_t>;
-  { c.empty() } -> std::convertible_to<bool>;
+    { c.size() } -> std::convertible_to<size_t>;
+    { c.empty() } -> std::convertible_to<bool>;
 
-  // modify
-  { c.clear() };
-  { c.reserve(size_t()) };
+    // modify
+    { c.clear() };
+    { c.reserve(size_t()) };
 
-  { c.addParticle(Particle(0)) };
-  { c.addParticle(R3(), R3(), 0.) };
-  { c.addParticle(R3(), R3(), 0., 0) };
+    { c.addParticle(Particle(0)) };
+    { c.addParticle(R3(), R3(), 0.) };
+    { c.addParticle(R3(), R3(), 0., 0) };
 
-  // iterators
-  { c.begin() } -> std::contiguous_iterator;
-  { (*static_cast<const C*>(&c)).begin() } -> std::contiguous_iterator;
-  { c.cbegin() } -> std::contiguous_iterator;
-  { c.end() } -> std::contiguous_iterator;
-  { (*static_cast<const C*>(&c)).end() } -> std::contiguous_iterator;
-  { c.cend() } -> std::contiguous_iterator;
+    // iterators
+    { c.begin() } -> std::contiguous_iterator;
+    { (*static_cast<const C*>(&c)).begin() } -> std::contiguous_iterator;
+    { c.cbegin() } -> std::contiguous_iterator;
+    { c.end() } -> std::contiguous_iterator;
+    { (*static_cast<const C*>(&c)).end() } -> std::contiguous_iterator;
+    { c.cend() } -> std::contiguous_iterator;
 };
 
 }  // namespace mol_sim

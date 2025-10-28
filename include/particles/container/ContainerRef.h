@@ -27,89 +27,89 @@ namespace mol_sim {
  *
  */
 class ContainerRef {
-  // more containers can be added in variant
-  std::variant<SimpleContainer*> instance;  // NOLINT
+    // more containers can be added in variant
+    std::variant<SimpleContainer*> instance;  // NOLINT
 
- public:
-  // constructors
+   public:
+    // constructors
 
-  /**
-   * @brief Constructor, initializing ContainerRef with a reference to a SimpleContainer.
-   */
-  ContainerRef(SimpleContainer& c);
+    /**
+     * @brief Constructor, initializing ContainerRef with a reference to a SimpleContainer.
+     */
+    ContainerRef(SimpleContainer& c);
 
-  // retrieve data
-  Particle& operator[](size_t idx);
-  const Particle& operator[](size_t idx) const;
+    // retrieve data
+    Particle& operator[](size_t idx);
+    const Particle& operator[](size_t idx) const;
 
-  /**
-   * @brief Returns number of Particles in the container.
-   */
-  [[nodiscard]] size_t size() const;
+    /**
+     * @brief Returns number of Particles in the container.
+     */
+    [[nodiscard]] size_t size() const;
 
-  /**
-   * @brief Return true of container contains no Particles.
-   */
-  [[nodiscard]] bool empty() const;
+    /**
+     * @brief Return true of container contains no Particles.
+     */
+    [[nodiscard]] bool empty() const;
 
-  // modify
+    // modify
 
-  /**
-   * @brief Clear the entire container, destructing the Particles.
-   */
-  void clear();
+    /**
+     * @brief Clear the entire container, destructing the Particles.
+     */
+    void clear();
 
-  /**
-   * @brief Reserve memory for n Particles, not yet constructing them.
-   */
-  void reserve(size_t n);
+    /**
+     * @brief Reserve memory for n Particles, not yet constructing them.
+     */
+    void reserve(size_t n);
 
-  /**
-   * @brief Adding an already existing Particle to the container by copying it.
-   */
-  void addParticle(Particle&& value);
+    /**
+     * @brief Adding an already existing Particle to the container by copying it.
+     */
+    void addParticle(Particle&& value);
 
-  /**
-   * @brief Directly constructing a Particle with its required parameters in-place.
-   */
-  void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg);
+    /**
+     * @brief Directly constructing a Particle with its required parameters in-place.
+     */
+    void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg);
 
-  /**
-   * @brief Directly constructing a Particle with its required parameters, including type, in-place.
-   */
-  void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, int type);
+    /**
+     * @brief Directly constructing a Particle with its required parameters, including type, in-place.
+     */
+    void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, int type);
 
-  // iterators
+    // iterators
 
-  /**
-   * @brief Mutable iterator to the first element of the container.
-   */
-  std::vector<Particle>::iterator begin();
+    /**
+     * @brief Mutable iterator to the first element of the container.
+     */
+    std::vector<Particle>::iterator begin();
 
-  /**
-   * @brief Const iterator to the first element of the container.
-   */
-  [[nodiscard]] std::vector<Particle>::const_iterator begin() const;
+    /**
+     * @brief Const iterator to the first element of the container.
+     */
+    [[nodiscard]] std::vector<Particle>::const_iterator begin() const;
 
-  /**
-   * @brief Const iterator to the first element of the container.
-   */
-  [[nodiscard]] std::vector<Particle>::const_iterator cbegin() const;
+    /**
+     * @brief Const iterator to the first element of the container.
+     */
+    [[nodiscard]] std::vector<Particle>::const_iterator cbegin() const;
 
-  /**
-   * @brief Mutable past-the-end iterator of the container.
-   */
-  std::vector<Particle>::iterator end();
+    /**
+     * @brief Mutable past-the-end iterator of the container.
+     */
+    std::vector<Particle>::iterator end();
 
-  /**
-   * @brief Const past-the-end iterator of the container.
-   */
-  [[nodiscard]] std::vector<Particle>::const_iterator end() const;
+    /**
+     * @brief Const past-the-end iterator of the container.
+     */
+    [[nodiscard]] std::vector<Particle>::const_iterator end() const;
 
-  /**
-   * @brief Const past-the-end iterator of the container
-   */
-  [[nodiscard]] std::vector<Particle>::const_iterator cend() const;
+    /**
+     * @brief Const past-the-end iterator of the container
+     */
+    [[nodiscard]] std::vector<Particle>::const_iterator cend() const;
 };
 
 }  // namespace mol_sim

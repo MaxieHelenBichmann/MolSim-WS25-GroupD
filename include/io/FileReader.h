@@ -19,15 +19,15 @@ namespace mol_sim {
  * These classes all implement the readFile method.
  */
 class FileReader {
- public:
-  virtual ~FileReader() = default;
-  /**
-   * @brief Reads the particles encoded in an appropriately formatted file into a ParticleContainer.
-   *
-   * @param particles The ParticleContainer the particles contained in the file will be stored in.
-   * @param filename The path to the file containing the particles to be stored in 'particles'.
-   */
-  virtual void readFile(ContainerRef particles, const std::string& filename) = 0;
+   public:
+    virtual ~FileReader() = default;
+    /**
+     * @brief Reads the particles encoded in an appropriately formatted file into a ParticleContainer.
+     *
+     * @param particles The ParticleContainer the particles contained in the file will be stored in.
+     * @param filename The path to the file containing the particles to be stored in 'particles'.
+     */
+    virtual void readFile(ContainerRef particles, const std::string& filename) = 0;
 };
 
 }  // namespace mol_sim

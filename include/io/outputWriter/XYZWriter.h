@@ -20,12 +20,12 @@ namespace mol_sim {
  * will consist of the provided filename + the current iteration.
  */
 class XYZWriter : public OutputWriter {
- public:
-  XYZWriter();
+   public:
+    XYZWriter();
 
-  ~XYZWriter() override;
+    ~XYZWriter() override;
 
-  void plotParticles(ContainerRef particles, const std::string& filename, int iteration) override;
+    void plotParticles(ContainerRef particles, const std::string& filename, int iteration) override;
 };
 
 }  // namespace mol_sim

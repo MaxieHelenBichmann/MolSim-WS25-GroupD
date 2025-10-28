@@ -16,22 +16,22 @@ namespace mol_sim {
  *
  */
 class ForceSource {
- public:
-  /**
-   * @brief Virtual destructor for cleanup of derived classes.
-   * Virtual destructor for cleanup of derived classes.
-   */
-  virtual ~ForceSource() = default;
-  /**
-   * @brief Calculates the force that a particle p1 exerts on a different particle p2.
-   *
-   * @param p1 Particle whos force is to be calculated.
-   * @param p2 Particle which exerts force on p1.
-   * @return Vector<double, 3> Force exerted on p1 by p2.
-   *
-   * Calculates the force that a particle p1 exerts on a different particle p2.
-   */
-  [[nodiscard]] virtual Vector<double, 3> calculateForce(const Particle& p1, const Particle& p2) const = 0;
+   public:
+    /**
+     * @brief Virtual destructor for cleanup of derived classes.
+     * Virtual destructor for cleanup of derived classes.
+     */
+    virtual ~ForceSource() = default;
+    /**
+     * @brief Calculates the force that a particle p1 exerts on a different particle p2.
+     *
+     * @param p1 Particle whos force is to be calculated.
+     * @param p2 Particle which exerts force on p1.
+     * @return Vector<double, 3> Force exerted on p1 by p2.
+     *
+     * Calculates the force that a particle p1 exerts on a different particle p2.
+     */
+    [[nodiscard]] virtual Vector<double, 3> calculateForce(const Particle& p1, const Particle& p2) const = 0;
 };
 
 /**

@@ -30,21 +30,21 @@ namespace mol_sim {
  * particles using the official VTK library.
  */
 class VTKWriter : public OutputWriter {
- public:
-  VTKWriter() = default;
-  ~VTKWriter() override = default;
+   public:
+    VTKWriter() = default;
+    ~VTKWriter() override = default;
 
-  // Delete copy constructor and assignment operator
-  VTKWriter(const VTKWriter&) = delete;
-  VTKWriter& operator=(const VTKWriter&) = delete;
+    // Delete copy constructor and assignment operator
+    VTKWriter(const VTKWriter&) = delete;
+    VTKWriter& operator=(const VTKWriter&) = delete;
 
-  /**
-   * Write VTK output of particles.
-   * @param particles Particles to add to the output
-   * @param filename Output filename
-   * @param iteration Current iteration number
-   */
-  void plotParticles(ContainerRef particles, const std::string& filename, int iteration) override;
+    /**
+     * Write VTK output of particles.
+     * @param particles Particles to add to the output
+     * @param filename Output filename
+     * @param iteration Current iteration number
+     */
+    void plotParticles(ContainerRef particles, const std::string& filename, int iteration) override;
 };
 
 }  // namespace mol_sim

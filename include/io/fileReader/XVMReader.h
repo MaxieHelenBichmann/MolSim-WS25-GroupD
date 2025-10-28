@@ -21,10 +21,10 @@ namespace mol_sim {
  * All these values are floats.
  */
 class XVMReader : public FileReader {
- public:
-  XVMReader();
-  ~XVMReader() override;
-  void readFile(ContainerRef particles, const std::string& filename) override;
+   public:
+    XVMReader();
+    ~XVMReader() override;
+    void readFile(ContainerRef particles, const std::string& filename) override;
 };
 
 }  // namespace mol_sim
