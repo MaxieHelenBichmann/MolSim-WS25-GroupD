@@ -10,7 +10,7 @@ Contributors:
 - **Essential:**
     - CMake Version 3.10+
     - Make 4.3+
-    - C++ compiler with C++20 support 
+    - C++ compiler with C++20 support (tested with g++ 14.2.0)
 - **VTK Output:**
     - VTK Version 8.9+
 - **Optional Tools:**
