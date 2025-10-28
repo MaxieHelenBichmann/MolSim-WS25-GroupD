@@ -36,7 +36,7 @@ class Vector {
   /**
    * @brief Constructor copies given array into the components of a Vector
    */
-  Vector(std::array<T, N> init) : data_(init){};
+  Vector(std::array<T, N> init) : data_(init) {};
 
   /**
    * @brief Constructor copies N given values into the components of a Vector
@@ -76,7 +76,13 @@ class Vector {
 
   T& operator[](size_t idx) { return data_[idx]; };
   const T& operator[](size_t idx) const { return data_[idx]; };
+  /**
+   * @brief Const pointer to the first element of the Vector
+   */
   T* data() { return data_.data(); }
+  /**
+   * @brief Pointer to the first element of the Vector
+   */
   [[nodiscard]] const T* data() const { return data_.data(); }
 
   // comparison
