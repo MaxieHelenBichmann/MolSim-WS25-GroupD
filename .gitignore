@@ -35,6 +35,7 @@
 .idea/
 .vscode/
 .cache/
+*.DS_Store
 
 # Build folders.
 # This rule ignores any folder in the project root that contains "build"
