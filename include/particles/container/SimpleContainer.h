@@ -22,22 +22,35 @@ class SimpleContainer : public std::vector<Particle> {
     using std::vector<Particle>::vector;
 
     /**
-     * @brief Adding an already existing Particle to the SimpleContainer by copying it.
+     * @brief Adding an already existing Particle to the container by copying it.
+     *
+     * @param value Already constructed Particle.
      */
     void addParticle(Particle&& value);
 
     /**
-     * @brief Adding an already existing const Particle to the SimpleContainer by copying it.
+     * @brief Adding an already existing const Particle to the container by copying it.
+     *
+     * @param value Already constructed Particle.
      */
     void addParticle(const Particle& value);
 
     /**
      * @brief Directly constructing a Particle with its required parameters in-place.
+     *
+     * @param x_arg Initial coordinates of the Particle.
+     * @param v_arg Initial velocities of the Particle.
+     * @param m_arg Mass of the Particle.
      */
     void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg);
 
     /**
      * @brief Directly constructing a Particle with its required parameters, including type, in-place.
+     *
+     * @param x_arg Initial coordinates of the Particle.
+     * @param v_arg Initial velocities of the Particle.
+     * @param m_arg Mass of the Particle.
+     * @param type Type of the Particle.
      */
     void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, int type);
 };
