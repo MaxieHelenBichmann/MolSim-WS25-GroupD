@@ -10,7 +10,14 @@
 #include "physics/ForceSource.h"
 #include "physics/GravitationalForce.h"
 
+/**
+ * @namespace mol_sim
+ * @brief Namespace encompassing the project.
+ *
+ * Avoids name clashes in the case, that this project would be included in other projects.
+ */
 namespace mol_sim {
+
 /**
  * @brief Class for running Simulation.
  * This Class implements a Builder Pattern. To run a full simulation, specify all needed parameters in the constructor
