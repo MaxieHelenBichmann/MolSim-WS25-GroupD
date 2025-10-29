@@ -97,7 +97,7 @@ class Simulation {
      * run the simulation.
      * @param particles Container of particles to be used in the simulation.
      * @param forceType Type of force to be used for calculation.
-     * @param DELTA_T Time step of simulation.
+     * @param delta_t Time step of simulation.
      * @param start_time Start time of simulation.
      * @param end_time End time of simulation.
      */
