@@ -12,7 +12,7 @@
 
 namespace mol_sim {
 /**
- * @brief Builder Pattern Simulation.
+ * @brief Class for running Simulation.
  * This Class implements a Builder Pattern. To run a full simulation, specify all needed parameters in the constructor
  * and then execute run().
  * @tparam containerType Type of container used for this simulation. Templated to work with Concept.

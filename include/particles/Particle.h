@@ -15,7 +15,10 @@
 namespace mol_sim {
 
 using R3 = Vector<double, 3>;
-
+/**
+ * @brief Stores all important attributes of a Particle.
+ *
+ */
 class Particle {
    private:
     /**
