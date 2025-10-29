@@ -15,6 +15,7 @@
 namespace mol_sim {
 
 using R3 = Vector<double, 3>;
+
 /**
  * @brief Stores all important attributes of a Particle.
  *
@@ -64,24 +65,79 @@ class Particle {
 
     virtual ~Particle();
 
+    /**
+     * @brief Access the current coordinates of a Particle.
+     *
+     * @return Const reference to the coordinates of the Particle.
+     */
     [[nodiscard]] const R3& getX() const;
+    /**
+     * @brief Access the current coordinates of a Particle.
+     *
+     * @return Reference to the coordinates of the Particle.
+     */
     R3& getX();
 
+    /**
+     * @brief Access the current velocity Vector of a Particle.
+     *
+     * @return Const reference to the velocity of the Particle.
+     */
     [[nodiscard]] const R3& getV() const;
+    /**
+     * @brief Access the current velocity Vector of a Particle.
+     *
+     * @return Reference to the velocity of the Particle.
+     */
     R3& getV();
 
+    /**
+     * @brief Access the current force acting on a Particle.
+     *
+     * @return Const reference to the force on the Particle.
+     */
     [[nodiscard]] const R3& getF() const;
+    /**
+     * @brief Access the current force acting on a Particle.
+     *
+     * @return Reference to the force on the Particle.
+     */
     R3& getF();
 
+    /**
+     * @brief Access the previous force acting on a Particle.
+     *
+     * @return Const reference to the previous force on the Particle.
+     */
     [[nodiscard]] const R3& getOldF() const;
+    /**
+     * @brief Access the previous force acting on a Particle.
+     *
+     * @return Reference to the previous force on the Particle.
+     */
     R3& getOldF();
 
+    /**
+     * @brief Access the mass of a Particle.
+     *
+     * @return Double of the mass of the Particle.
+     */
     [[nodiscard]] double getM() const;
 
+    /**
+     * @brief Access the type of a Particle.
+     *
+     * @return Int of the type of the Particle.
+     */
     [[nodiscard]] int getType() const;
 
     bool operator==(const Particle& other) const;
 
+    /**
+     * @brief Conversion to a std::string.
+     *
+     * @return String representation of the Particle.
+     */
     [[nodiscard]] std::string toString() const;
 };
 
