@@ -14,13 +14,21 @@ HeaderFilterRegex: "include/*"
 
 # Styling Options
 CheckOptions:
-    readability-identifier-naming.ClassCase: CamelCase
-    readability-identifier-naming.ConstantCase: UPPER_CASE
-    readability-identifier-naming.ConstantParameterCase: lower_case
-    readability-identifier-naming.EnumCase: CamelCase
-    readability-identifier-naming.FunctionCase: camelBack
-    readability-identifier-naming.LocalConstantCase: lower_case
-    readability-identifier-naming.LocalVariableCase: lower_case
-    readability-identifier-naming.MemberCase: lower_case
-    readability-identifier-naming.NamespaceCase: lower_case
-    portability-restrict-system-includes.Includes: '*'
+  - key: readability-identifier-naming.ConstantCase
+    value: UPPER_CASE
+  - key: readability-identifier-naming.ConstantParameterCase
+    value: lower_case
+  - key: readability-identifier-naming.EnumCase
+    value: CamelCase
+  - key: readability-identifier-naming.FunctionCase
+    value: camelBack
+  - key: readability-identifier-naming.LocalConstantCase
+    value: lower_case
+  - key: readability-identifier-naming.LocalVariableCase
+    value: lower_case
+  - key: readability-identifier-naming.MemberCase
+    value: lower_case
+  - key: readability-identifier-naming.NamespaceCase
+    value: lower_case
+  - key: portability-restrict-system-includes.Includes
+    value: '*'
