@@ -17,6 +17,8 @@ namespace mol_sim {
  * Enables access to all components (also via structured bindings), point-wise vector-vector operations, vector-scalar
  * (and scalar-vector) operations, other mathematical properties (euclidean norm, scalar product) and printing.
  *
+ * @tparam T Component type, has to fulfill either  `std::integral` or `std::floating_point`
+ * @tparam N Dimension of the Vector, meaning the number of components
  */
 template <class T, size_t N>
     requires std::integral<T> || std::floating_point<T>
@@ -36,7 +38,7 @@ class Vector {
     /**
      * @brief Constructor copies given array into the components of a Vector
      */
-    Vector(std::array<T, N> init) : data_(init){};
+    Vector(std::array<T, N> init) : data_(init) {};
 
     /**
      * @brief Constructor copies N given values into the components of a Vector

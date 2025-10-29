@@ -23,7 +23,8 @@ namespace mol_sim {
  * Do not take References of a ContainerRef object, as it is a reference itself, and trivially copyable.
  * Alway pass-by-value (copy) - similar to std::span.
  *
- * (maybe will get erased later, if IO functions will be templated as well and compile time and code size acceptable)
+ * @note maybe will get erased later, if IO functions will be templated as well and compile time and code size
+ * acceptable
  *
  */
 class ContainerRef {
