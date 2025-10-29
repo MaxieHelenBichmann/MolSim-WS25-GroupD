@@ -802,6 +802,10 @@ HTML_EXTRA_FILES       = doxygen/doxygen-awesome-interactive-toc.js doxygen/doxy
 
 FULL_SIDEBAR = NO
 
+HTML_COLORSTYLE_HUE    = 209
+HTML_COLORSTYLE_SAT    = 255
+HTML_COLORSTYLE_GAMMA  = 113
+
 # If the HTML_ALIGN_MEMBERS tag is set to YES, the members of classes,
 # files or namespaces will be aligned in HTML using tables. If set to
 # NO a bullet list will be used.
