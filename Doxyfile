@@ -794,11 +794,11 @@ HTML_FOOTER            =
 # the style sheet file to the HTML output directory, so don't put your own
 # stylesheet in the HTML output directory as well, or it will be erased!
 
-HTML_EXTRA_STYLESHEET  = doxygen/doxygen-awesome.css
+HTML_EXTRA_STYLESHEET  = doxygen/doxygen-awesome.css doxygen/custom.css
 
 HTML_COLORSTYLE        = LIGHT
 
-HTML_EXTRA_FILES       = doxygen/doxygen-awesome-interactive-toc.js doxygen/doxygen-awesome-fragment-copy-button.js doxygen/doxygen-awesome-darkmode-toggle.js doxygen/doxygen-awesome.css
+HTML_EXTRA_FILES       = doxygen/doxygen-awesome-interactive-toc.js doxygen/doxygen-awesome-fragment-copy-button.js doxygen/doxygen-awesome-darkmode-toggle.js doxygen/doxygen-awesome.css doxygen/custom.css
 
 FULL_SIDEBAR = NO
 
