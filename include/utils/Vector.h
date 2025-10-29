@@ -26,7 +26,6 @@ class Vector {
     /**
      * Data of the Vector
      */
-
     std::array<T, N> data_;  // NOLINT
 
    public:
@@ -37,11 +36,15 @@ class Vector {
 
     /**
      * @brief Constructor copies given array into the components of a Vector
+     *
+     * @param init array of fitting type and size, copied to the data of the Vector
      */
     Vector(std::array<T, N> init) : data_(init) {};
 
     /**
      * @brief Constructor copies N given values into the components of a Vector
+     *
+     * @param inits arbitrary number (smaller or equal N) of elements of fitting type
      */
     template <typename... Ts>
         requires(... && (std::integral<Ts> || std::floating_point<Ts>))
@@ -51,21 +54,29 @@ class Vector {
 
     /**
      * @brief Default Copy Constructor copies all components of a given Vector
+     *
+     * @param other Vector to copy
      */
     Vector(const Vector<T, N>& other) = default;
 
     /**
      * @brief Default Copy Assignment copies all components of a given Vector
+     *
+     * @param other Vector to copy
      */
     Vector<T, N>& operator=(const Vector<T, N>& other) = default;
 
     /**
      * @brief Default Move Constructor moves all components of a given Vector
+     *
+     * @param other Vector from which to move
      */
     Vector(Vector<T, N>&& other) = default;
 
     /**
      * @brief Default Move Assignment moves all components of a given Vector
+     *
+     * @param other Vector from which to move
      */
     Vector<T, N>& operator=(Vector<T, N>&& other) = default;
 
@@ -79,11 +90,15 @@ class Vector {
     T& operator[](size_t idx) { return data_[idx]; };
     const T& operator[](size_t idx) const { return data_[idx]; };
     /**
-     * @brief Const pointer to the first element of the Vector
+     * @brief Const pointer to the first element of the Vector, for usage as a C-style array
+     *
+     * @return Const pointer to the first element of the Vector
      */
     T* data() { return data_.data(); }
     /**
-     * @brief Pointer to the first element of the Vector
+     * @brief Pointer to the first element of the Vector, for usage as a C-style array
+     *
+     * @return Pointer to the first element of the Vector
      */
     [[nodiscard]] const T* data() const { return data_.data(); }
 
@@ -95,6 +110,10 @@ class Vector {
 
     /**
      * @brief Point-wise Addition of two Vectors
+     *
+     * @param other Vector of same type and dimension to add
+     *
+     * @return New Vector representing the sum of the two Vectors
      */
     Vector<T, N> operator+(const Vector<T, N>& other) const {
         std::array<T, N> new_array;
@@ -106,6 +125,10 @@ class Vector {
 
     /**
      * @brief Point-wise Subtraction of two Vectors
+     *
+     * @param other Vector of same type and dimension to subtract
+     *
+     * @return New Vector representing the difference of the two Vectors
      */
     Vector<T, N> operator-(const Vector<T, N>& other) const {
         std::array<T, N> new_array;
@@ -117,6 +140,10 @@ class Vector {
 
     /**
      * @brief Point-wise Multiplication of two Vectors (NOT INNER PRODUCT)
+     *
+     * @param other Vector of same type and dimension to multiply component-wise
+     *
+     * @return New Vector with the component-wise product of the two Vectors
      */
     Vector<T, N> operator*(const Vector<T, N>& other) const {
         std::array<T, N> new_array;
@@ -128,6 +155,10 @@ class Vector {
 
     /**
      * @brief Point-wise Division of two Vectors
+     *
+     * @param other Vector of same type and dimension to devise by
+     *
+     * @return New Vector representing the quotient of the two Vectors
      */
     Vector<T, N> operator/(const Vector<T, N>& other) const {
         std::array<T, N> new_array;
@@ -141,6 +172,10 @@ class Vector {
 
     /**
      * @brief Scalar Multiplication (Vector * Scalar)
+     *
+     * @param scalar Scalar value of same type
+     *
+     * @return New Vector representing the scaled Vector
      */
     Vector<T, N> operator*(const T scalar) const {
         std::array<T, N> new_array;
@@ -152,18 +187,30 @@ class Vector {
 
     /**
      * @brief Scalar Multiplication (Scalar * Vector)
+     *
+     * @param s Scalar value of same type as Vector
+     * @param v Vector
+     *
+     * @return New Vector representing the scaled Vector
      */
     friend Vector<T, N> operator*(const T& s, const Vector<T, N>& v) { return v * s; }
 
     /**
      * @brief Inner product of two Vectors < a | b >
+     *
+     * @param a Vector a on left-hand-side
+     * @param b Vector b on right-hand-side
+     *
+     * @return Scalar number of type T
      */
     static T scalarProduct(const Vector& a, const Vector<T, N>& b) {
         return std::inner_product(a.data_.begin(), a.data_.end(), b.data_.begin(), T(0));
     }
 
     /**
-     * @brief Euclidean Norm of a Vector (L2 norm)
+     * @brief Euclidean Norm of the Vector (L2 norm)
+     *
+     * @return Scalar number of type T
      */
     [[nodiscard]] T euclidNorm() const {
         return std::sqrt(std::accumulate(data_.begin(), data_.end(), T(0), [](auto a, auto b) { return a + (b * b); }));
@@ -190,6 +237,11 @@ class Vector {
 
     /**
      * @brief Conversion to a std::string with custom delimiter and brackets
+     *
+     * @param delimiter Custom delimiter between the components (default: `", "`)
+     * @param surround 2-element array containing the surrounding strings of the Vector (default: `{"[", "]"}`)
+     *
+     * @return String representation of the Vector
      */
     [[nodiscard]] std::string toString(const std::string& delimiter = ", ",
                                        const std::array<std::string, 2>& surround = {"[", "]"}) const {
@@ -210,6 +262,11 @@ class Vector {
 
 /**
  * @brief Allows for printing with streams
+ *
+ * @param os Output stream
+ * @param v Vector to print into the stream
+ *
+ * @return Output stream
  */
 template <class T, size_t N>
 std::ostream& operator<<(std::ostream& os, const Vector<T, N>& v) {
