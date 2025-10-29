@@ -7,12 +7,7 @@
 
 #ifndef VTK_WRITER_H
 #define VTK_WRITER_H
-/**
- * @brief Writes the (x,y,z) position of the given set of particles into a .vtu file
- *
- * Writes the (x,y,z) position of the given set of particles into a .vtu file. The filename
- * will consist of the provided filename + the current iteration.
- */
+
 #include "io/OutputWriter.h"
 #ifdef ENABLE_VTK_OUTPUT
 
@@ -26,6 +21,10 @@
 namespace mol_sim {
 
 /**
+ * @brief Writes the (x,y,z) position of the given set of particles into a .vtu file
+ *
+ * Writes the (x,y,z) position of the given set of particles into a .vtu file. The filename
+ * will consist of the provided filename + the current iteration.
  * This class implements the functionality to generate vtk output from
  * particles using the official VTK library.
  */
