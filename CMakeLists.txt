@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-# Enable C++17. You may raise the standard if you want
+# Enable C++20. You may raise the standard if you want
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -19,54 +19,15 @@ if(NOT CMAKE_BUILD_TYPE)
             "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
-# collect all cpp files
-file(GLOB_RECURSE SRCS 
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
-    "${CMAKE_SOURCE_DIR}/include/*.h"
-)
-file(GLOB_RECURSE TESTS "${CMAKE_CURRENT_SOURCE_DIR}/test/*.cpp")
+add_compile_options(-Ofast -march=native)
+
 # add additional modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
-include(FetchContent)
-FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/17d335d7c7f15d989516255471c3d7f5d204308d.zip
-)
-
-FetchContent_MakeAvailable(googletest)
-
 include(clang-format)
 include(doxygen)
-include(clang-tidy)
+include(gtest)
 
-add_library(LibMolSim STATIC ${SRCS})
-
-# create make target
-add_executable(MolSim ${CMAKE_SOURCE_DIR}/src/MolSim.cpp)
-
-target_link_libraries(MolSim PRIVATE LibMolSim)
-
-# activate all compiler warnings. Clean up your code :P
-# depending on the compiler different flags are used
-target_compile_options(MolSim
-        PRIVATE
-            $<$<CXX_COMPILER_ID:GNU>:-Wall>
-            # disable some spam warnings for icpc...
-            $<$<CXX_COMPILER_ID:Intel>:-w3 -wd383,981,1418,1572,2259>
-)
-
-include(vtk)
-
-enable_testing()
-
-add_executable(runTests ${TESTS})
-target_link_libraries(
-  runTests
-  GTest::gtest_main
-  LibMolSim
-)
-
-include(GoogleTest)
-gtest_discover_tests(runTests)
+add_subdirectory(src project)
+add_subdirectory(test)
 
