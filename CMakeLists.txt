@@ -24,10 +24,17 @@ file(GLOB_RECURSE SRCS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
     "${CMAKE_SOURCE_DIR}/include/*.h"
 )
-
+file(GLOB_RECURSE TESTS "${CMAKE_CURRENT_SOURCE_DIR}/test/*.cpp")
 # add additional modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/17d335d7c7f15d989516255471c3d7f5d204308d.zip
+)
+
+FetchContent_MakeAvailable(googletest)
 
 include(clang-format)
 include(doxygen)
@@ -50,3 +57,16 @@ target_compile_options(MolSim
 )
 
 include(vtk)
+
+enable_testing()
+
+add_executable(runTests ${TESTS})
+target_link_libraries(
+  runTests
+  GTest::gtest_main
+  LibMolSim
+)
+
+include(GoogleTest)
+gtest_discover_tests(runTests)
+
