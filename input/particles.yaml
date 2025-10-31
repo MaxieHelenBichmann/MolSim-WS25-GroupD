@@ -1,8 +1,7 @@
 format: Cuboid
 
 cuboids:
-  - id: 1
-    coordinates:
+  - coordinates:
       x: 0.0
       y: 0.0
       z: 0.0
@@ -17,8 +16,7 @@ cuboids:
     mass: 1.0
     distance: 1.1225
     mean_velo: 0.1
-  - id: 2
-    coordinates:
+  - coordinates:
       x: 15.0
       y: 15.0
       z: 0.0
