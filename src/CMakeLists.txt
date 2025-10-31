@@ -8,7 +8,7 @@ list(FILTER SRCS EXCLUDE REGEX ".*\/MolSim\.cpp")
 add_library(LibMolSim STATIC ${SRCS})
 
 include(vtk)
-include(clang-tidy)
+
 
 add_executable(MolSim MolSim.cpp)
 
