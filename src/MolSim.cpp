@@ -1,5 +1,6 @@
 #include "io/CLIParse.h"
 #include "io/fileReader/XVMReader.h"
+#include "io/fileReader/YAMLReader.h"
 #include "particles/container/SimpleContainer.h"
 #include "physics/ForceSource.h"
 #include "utils/Simulation.h"
