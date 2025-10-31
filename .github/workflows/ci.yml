@@ -18,6 +18,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Cache CMake build
+      uses: actions/cache@v4
+      with:
+        path: ${{ github.workspace }}/build/_deps
+        key: ${{ runner.os }}-cmake-${{ hashFiles('CMakeLists.txt', 'cmake/**') }}
+        restore-keys: |
+          ${{ runner.os }}-cmake-
+
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DENABLE_VTK_OUTPUT=ON
 
