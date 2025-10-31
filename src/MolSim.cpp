@@ -7,12 +7,12 @@
 using namespace mol_sim;
 
 constexpr double START_TIME = 0;
-SimpleContainer particles;
 
 int main(int argc, char* argsv[]) {
     double delta_t = 0.014;
     double end_time = 1000;
     XVMReader file_reader;
+    SimpleContainer particles;
 
     cliParse(argc, argsv, file_reader, delta_t, end_time, particles);
     Simulation<SimpleContainer> simulation(particles, GRAVITATIONAL, delta_t, START_TIME, end_time);
