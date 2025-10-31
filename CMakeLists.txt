@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.10)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 
 # define project name, version
 project(MolSim_GroupD VERSION 0.0.1 LANGUAGES CXX)
@@ -28,19 +29,32 @@ file(GLOB_RECURSE TESTS "${CMAKE_CURRENT_SOURCE_DIR}/test/*.cpp")
 # add additional modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
-include(FetchContent)
-FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/17d335d7c7f15d989516255471c3d7f5d204308d.zip
-)
-
-FetchContent_MakeAvailable(googletest)
-
 include(clang-format)
 include(doxygen)
 include(clang-tidy)
 
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG        v1.17.0
+)
+
+FetchContent_MakeAvailable(googletest)
+FetchContent_Declare(
+  yaml-cpp
+  GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+  GIT_TAG yaml-cpp-0.7.0
+  DOWNLOAD_EXTRACT_TIMESTAMP true
+)
+FetchContent_MakeAvailable(yaml-cpp)
+
+
+
+
 add_library(LibMolSim STATIC ${SRCS})
+target_link_libraries(LibMolSim PRIVATE yaml-cpp)
+
 
 # create make target
 add_executable(MolSim ${CMAKE_SOURCE_DIR}/src/MolSim.cpp)
