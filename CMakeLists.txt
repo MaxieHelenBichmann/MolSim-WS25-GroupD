@@ -29,5 +29,5 @@ include(doxygen)
 include(gtest)
 
 add_subdirectory(src project)
-add_subdirectory(test)
+add_subdirectory(tests)
 
