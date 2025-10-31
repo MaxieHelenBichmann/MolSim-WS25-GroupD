@@ -3,7 +3,6 @@
 
 #include "io/FileReader.h"
 #include "particles/container/ContainerRef.h"
-#include "yaml-cpp/yaml.h"
 
 namespace mol_sim {
 
