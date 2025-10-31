@@ -2,6 +2,8 @@ include_directories(
         ${PROJECT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_SOURCE_DIR})
 
+include("../CTestConfig.cmake")        
+
 file(GLOB_RECURSE TEST_SRC
         "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 

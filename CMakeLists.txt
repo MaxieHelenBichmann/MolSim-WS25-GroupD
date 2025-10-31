@@ -24,6 +24,7 @@ add_compile_options(-Ofast -march=native)
 # add additional modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
+include(CTest)
 include(clang-format)
 include(doxygen)
 include(gtest)
