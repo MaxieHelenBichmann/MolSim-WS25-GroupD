@@ -7,6 +7,8 @@ Contributors:
 - Georg Sebastian Eisner
 - Henry Jacob Meyran
 
+[![CI MolSim](https://github.com/MaxieHelenBichmann/MolSim-WS25-GroupD/actions/workflows/ci.yml/badge.svg)](https://github.com/MaxieHelenBichmann/MolSim-WS25-GroupD/actions/workflows/ci.yml)
+
 ## Dependencies
 
 - **Essential:**
@@ -53,6 +55,20 @@ Contributors:
 
     ```
     ./build/MolSim ./input/eingabe-sonne.txt -d 0.014 -t 1000
+    ```
+
+## Testing the project
+
+**How do I test the project?**
+
+0. Make sure to be in the project root.
+
+1. Run the test executable or use ctest:
+    ```
+    ./build/tests/tests
+    ```
+    ```
+    ctest --test-dir ./build/tests 
     ```
 
 ## Optional Tools
