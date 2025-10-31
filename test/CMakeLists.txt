@@ -7,7 +7,7 @@ file(GLOB_RECURSE TEST_SRC
 
 enable_testing()
 
-add_executable(tests EXCLUDE_FROM_ALL ${TEST_SRC})
+add_executable(tests ${TEST_SRC})
 
 target_link_libraries(
         tests
