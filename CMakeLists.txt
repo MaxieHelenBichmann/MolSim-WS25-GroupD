@@ -33,5 +33,5 @@ include(yaml-cpp)
 include(clang-tidy)
 
 add_subdirectory(src project)
-add_subdirectory(test)
+add_subdirectory(tests)
 

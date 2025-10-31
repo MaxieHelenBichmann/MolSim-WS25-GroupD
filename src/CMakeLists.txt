@@ -12,7 +12,6 @@ include(vtk)
 
 add_executable(MolSim MolSim.cpp)
 
-
 target_link_libraries(MolSim PRIVATE LibMolSim)
 
 
