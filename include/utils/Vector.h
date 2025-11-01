@@ -285,7 +285,7 @@ std::ostream& operator<<(std::ostream& os, const Vector<T, N>& v) {
 namespace std {
 
 template <class T, size_t N>
-struct tuple_size<mol_sim::Vector<T, N>> {
+struct tuple_size<mol_sim::Vector<T, N>> : std::integral_constant<std::size_t, N> {
     static constexpr size_t VALUE = N;
 };
 
