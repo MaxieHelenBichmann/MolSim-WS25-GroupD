@@ -1,4 +1,5 @@
 format: XVM
+num_particles: 4
 particles:
   - coordinates:
       x: 0.0
