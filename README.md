@@ -68,7 +68,7 @@ Contributors:
     ./build/tests/tests
     ```
     ```
-    ctest --test-dir ./build/tests 
+    ctest -V --test-dir ./build/tests 
     ```
 
 ## Optional Tools
