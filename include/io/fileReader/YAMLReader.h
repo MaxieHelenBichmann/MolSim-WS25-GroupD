@@ -1,8 +1,6 @@
 #ifndef YAML_READER_H
 #define YAML_READER_H
 
-#include <yaml-cpp/node/node.h>
-
 #include <cstddef>
 
 #include "io/FileReader.h"
