@@ -5,14 +5,15 @@ file(GLOB_RECURSE SRCS
     )
 list(FILTER SRCS EXCLUDE REGEX ".*\/MolSim\.cpp")
 
+
 add_library(LibMolSim STATIC ${SRCS})
-
+target_link_libraries(LibMolSim PUBLIC yaml-cpp::yaml-cpp)
 include(vtk)
-
 
 add_executable(MolSim MolSim.cpp)
 
 target_link_libraries(MolSim PRIVATE LibMolSim)
+
 
 target_compile_options(MolSim
         PRIVATE

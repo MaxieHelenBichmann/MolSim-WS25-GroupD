@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.10)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 
 # define project name, version
 project(MolSim_GroupD VERSION 0.0.1 LANGUAGES CXX)
@@ -28,6 +29,8 @@ include(CTest)
 include(clang-format)
 include(doxygen)
 include(gtest)
+include(clang-format)
+include(yaml-cpp)
 include(clang-tidy)
 
 add_subdirectory(src project)
