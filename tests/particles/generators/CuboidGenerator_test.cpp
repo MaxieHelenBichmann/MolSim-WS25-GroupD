@@ -34,9 +34,9 @@ TEST_F(CuboidGeneratorTest, testParticleCount) { EXPECT_EQ(particles.size(), 8);
 
 TEST_F(CuboidGeneratorTest, testParticlePositions) {
     // Check particle positions
-    for (size_t i = 0; i < num_particles[2]; i++) {
-        for (size_t j = 0; j < num_particles[1]; j++) {
-            for (size_t k = 0; k < num_particles[0]; k++) {
+    for (int i = 0; i < num_particles[2]; i++) {
+        for (int j = 0; j < num_particles[1]; j++) {
+            for (int k = 0; k < num_particles[0]; k++) {
                 R3 expected_pos = {k * distance, j * distance, i * distance};
                 bool found = false;
                 for (auto& p : particles) {

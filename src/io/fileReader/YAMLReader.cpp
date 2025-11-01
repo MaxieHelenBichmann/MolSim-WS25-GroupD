@@ -2,7 +2,6 @@
 
 #include <cstddef>
 #include <cstdlib>
-#include <iostream>
 #include <string>
 
 #include "particles/generators/CuboidGenerator.h"
