@@ -6,7 +6,7 @@
 namespace mol_sim {
 /**
  * @brief Test Fixture for testing the GravitationalForce
- * Base date/setup:
+ * Base data/setup:
  * p1:
  *  position: (0,0,0)
  *  velocity: (0,0,0)
