@@ -76,7 +76,7 @@ TEST_F(CuboidGeneratorTest, testVelocityDistribution) {
     for (auto& p : particles) {
         mean_velocity = mean_velocity + p.getV();
     }
-    mean_velocity = mean_velocity / static_cast<double>(particles.size());
+    mean_velocity = mean_velocity * (1.0 / static_cast<double>(particles.size()));
 
     // Check if mean velocity is close to initial velocity
     EXPECT_NEAR(mean_velocity[0], initial_velocity[0], 1e-1);
@@ -99,7 +99,7 @@ TEST_F(CuboidGeneratorTest, testAverageVelocity) {
     for (auto& p : particles) {
         mean_velocity = mean_velocity + p.getV();
     }
-    mean_velocity = mean_velocity / static_cast<double>(particles.size());
+    mean_velocity = mean_velocity * (1.0 / static_cast<double>(particles.size()));
     // Calculate variance
     R3 variance = {0.0, 0.0, 0.0};
     for (auto& p : particles) {
@@ -108,7 +108,7 @@ TEST_F(CuboidGeneratorTest, testAverageVelocity) {
         variance[1] += (v[1] - mean_velocity[1]) * (v[1] - mean_velocity[1]);
         variance[2] += (v[2] - mean_velocity[2]) * (v[2] - mean_velocity[2]);
     }
-    variance = variance / static_cast<double>(particles.size());
+    variance = variance * (1.0 / static_cast<double>(particles.size()));
 
     // Check if variance is close to avg_velo^2 for 2D, and 0 for the 3rd dimension
     EXPECT_NEAR(variance[0], avg_velo * avg_velo, 1e-1);
