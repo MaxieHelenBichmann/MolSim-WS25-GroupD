@@ -56,10 +56,10 @@ jobs:
     - name: Cache CMake build
       uses: actions/cache@v4
       with:
-        path: build
+        path: build-asan
         key: ${{ runner.os }}-cmake-asan-${{ hashFiles('CMakeLists.txt', 'cmake/**') }}
         restore-keys: |
-          ${{ runner.os }}-cmake-asan
+          ${{ runner.os }}-cmake-asan-
 
     - name: Configure (ASan, Clang)
       run: |
