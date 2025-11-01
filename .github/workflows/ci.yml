@@ -22,7 +22,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: build
-        key: ${{ runner.os }}-cmake-${{ hashFiles('CMakeLists.txt', 'cmake/**') }}
+        key: ${{ runner.os }}-cmake-${{ hashFiles('CMakeLists.txt') }}
         restore-keys: |
           ${{ runner.os }}-cmake-
 
@@ -34,4 +34,23 @@ jobs:
 
     - name: Test
       run: ctest --test-dir ${{github.workspace}}/build/tests --output-on-failure
+
+  sanitizer:
+    runs-on: ubuntu-latest
+    container:
+      image: mbichmann/molsim-vtk
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configure CMake with AddressSanitizer
+      run: cmake -G Ninja -S . -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer" -DENABLE_VTK_OUTPUT=ON
+
+    - name: Build with AddressSanitizer
+      run: cmake --build ${{github.workspace}}/build --config Debug
+
+    - name: Test with AddressSanitizer
+      run: ctest --test-dir ${{github.workspace}}/build/tests --output-on-failure
+      env:
+        ASAN_OPTIONS: halt_on_error=1
 
