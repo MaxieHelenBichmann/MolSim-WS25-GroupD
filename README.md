@@ -71,6 +71,17 @@ Contributors:
     ctest -V --test-dir ./build/tests 
     ```
 
+## Benchmarking the project
+
+**How do I benchmark the project?**
+
+0. Make sure to be in the project root.
+
+1. Run the benchmark executable:
+    ```
+    ./build/benchmarks/MolSimBench
+    ```
+
 ## Optional Tools
 
 **Doxygen:**  

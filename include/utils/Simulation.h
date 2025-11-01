@@ -146,8 +146,8 @@ class Simulation {
                     LOG_ERROR("Something went wrong with plotting the Particles.");
                 }
             }
-            LOG_INFO("Iteration {} finished.", iteration);
 #endif
+            LOG_INFO("Iteration {} finished.", iteration);
             current_time += delta_t;
         }
         LOG_INFO("Output written. Terminating...");
