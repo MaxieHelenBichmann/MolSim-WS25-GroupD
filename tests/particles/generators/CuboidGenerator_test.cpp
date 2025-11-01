@@ -6,7 +6,16 @@
 #include "particles/container/SimpleContainer.h"
 
 namespace mol_sim {
-
+/**
+ * @brief Test Fixture for testing the CuboidGenerator.
+ * Base Config/Data of the generator is as follow:
+ * Position: (0,0,0)
+ * Velocity: (0,0,0)
+ * Num_Particles: (2,2,2)
+ * mass: 1
+ * distance: 1
+ * average velocity: 0.1
+ */
 class CuboidGeneratorTest : public testing::Test {
    protected:
     SimpleContainer particle_container;
@@ -29,9 +38,15 @@ class CuboidGeneratorTest : public testing::Test {
         generator.generateParticles(particles);
     }
 };
-
+/**
+ * @brief Tests that the CuboidGenerator generates the correct number of particles.
+ *
+ */
 TEST_F(CuboidGeneratorTest, testParticleCount) { EXPECT_EQ(particles.size(), 8); }
-
+/**
+ * @brief Tests that the Particles are generated at the correct positions.
+ *
+ */
 TEST_F(CuboidGeneratorTest, testParticlePositions) {
     // Check particle positions
     for (int i = 0; i < num_particles[2]; i++) {
@@ -50,19 +65,28 @@ TEST_F(CuboidGeneratorTest, testParticlePositions) {
         }
     }
 }
-
+/**
+ * @brief Tests that the Particles have the correct mass.
+ *
+ */
 TEST_F(CuboidGeneratorTest, testParticleMass) {
     for (auto& p : particles) {
         EXPECT_EQ(p.getM(), mass);
     }
 }
-
+/**
+ * @brief Tests that the Particles have no velocity on the z-axis.
+ *
+ */
 TEST_F(CuboidGeneratorTest, testParticleVelocity) {
     for (auto& p : particles) {
         EXPECT_EQ(p.getV()[2], 0.0);
     }
 }
-
+/**
+ * @brief Tests that the Particles velocity are correctly distributed around the initial velocity. (mean)
+ *
+ */
 TEST_F(CuboidGeneratorTest, testVelocityDistribution) {
     // Redefine generator and particles for this test to have more particles
     SimpleContainer particle_container;
@@ -83,7 +107,11 @@ TEST_F(CuboidGeneratorTest, testVelocityDistribution) {
     EXPECT_NEAR(mean_velocity[1], initial_velocity[1], 1e-1);
     EXPECT_NEAR(mean_velocity[2], initial_velocity[2], 1e-1);
 }
-
+/**
+ * @brief Tests that the Particles velocity are correctly distributed around the initial velocity and take the avg_velo
+ * into account correctly. (variance)
+ *
+ */
 TEST_F(CuboidGeneratorTest, testAverageVelocity) {
     SimpleContainer particle_container;
     ContainerRef particles(particle_container);

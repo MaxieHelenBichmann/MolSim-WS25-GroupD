@@ -14,7 +14,10 @@
 namespace mol_sim {
 // The TEST_DATA_DIR macro is defined in CMakeLists.txt
 const std::string test_data_dir = TEST_DATA_DIR;
-
+/**
+ * @brief Test Fixture for YAMLReader tests.
+ * This is used to be able to easily reuse the data throughout the tests.
+ */
 class YAMLReaderTest : public testing::Test {
    protected:
     SimpleContainer part_container;
@@ -51,6 +54,10 @@ class YAMLReaderTest : public testing::Test {
         spdlog::set_default_logger(original_logger);
     }
 };
+/**
+ * @brief Tests the YAML Readers XVM Format support
+ * Tests this by reading in simple_XVM.yaml
+ */
 TEST_F(YAMLReaderTest, ReadSimpleXVM) {
     YAMLReader reader;
     reader.readFile(particles, test_data_dir + "/simple_XVM.yaml");
@@ -59,6 +66,10 @@ TEST_F(YAMLReaderTest, ReadSimpleXVM) {
     EXPECT_EQ(particles[0].getM(), 1.0);
     EXPECT_EQ(output.find("Error"), std::string::npos);
 }
+/**
+ * @brief Tests the YAML Readers Cuboid Format support.
+ * Tests this by reading in simple_cuboid.yaml
+ */
 TEST_F(YAMLReaderTest, ReadSimpleCuboid) {
     YAMLReader reader;
     reader.readFile(particles, test_data_dir + "/simple_cuboid.yaml");
@@ -69,12 +80,18 @@ TEST_F(YAMLReaderTest, ReadSimpleCuboid) {
     }
     EXPECT_EQ(output.find("Error"), std::string::npos);
 }
-
+/**
+ * @brief Tests the behaviour of YAMLReader when an invalid filepath is given
+ *
+ */
 TEST_F(YAMLReaderTest, ReadNonExistentFile) {
     YAMLReader reader;
     EXPECT_THROW(reader.readFile(particles, test_data_dir + "/bogus_file.yaml"), YAMLReaderException);
 }
-
+/**
+ * @brief Tests the behaviour of YAMLReader when an unknown format option is parsed
+ *
+ */
 TEST_F(YAMLReaderTest, ReadWrongFileFormat) {
     YAMLReader reader;
     EXPECT_THROW(reader.readFile(particles, test_data_dir + "/unknown_format.yaml"), YAMLReaderException);
