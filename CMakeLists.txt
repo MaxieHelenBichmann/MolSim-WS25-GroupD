@@ -38,8 +38,11 @@ include(gtest)
 include(clang-format)
 include(yaml-cpp)
 include(spdlog)
+include(benchmark)
 include(clang-tidy)
+
 
 add_subdirectory(src project)
 add_subdirectory(tests)
+add_subdirectory(benchmarks)
 
