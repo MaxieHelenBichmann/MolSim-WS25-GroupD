@@ -6,6 +6,7 @@
 #include <string>
 
 #include "particles/generators/CuboidGenerator.h"
+#include "utils/Logging.h"
 
 namespace mol_sim {
 YAMLReader::YAMLReader() = default;
@@ -20,10 +21,10 @@ void YAMLReader::readFile(ContainerRef particles, const std::string& filename) {
         } else if (format == "Cuboid") {
             readCube(particles, root);
         } else {
-            std::cerr << "Unknown YAML Format" << '\n';
+            LOG_ERROR("Unknown YAML Format");
         }
     } catch (const YAML::Exception& e) {
-        std::cerr << "Error parsing YAML: " << e.what() << '\n';
+        LOG_ERROR("Error parsing YAML: {}", e.what());
         exit(EXIT_FAILURE);
     }
 }
@@ -51,7 +52,7 @@ void YAMLReader::readXVM(ContainerRef particles, YAML::Node& node) {
             }
         }
     } catch (const YAML::Exception& e) {
-        std::cerr << "Error parsing YAML: " << e.what() << '\n';
+        LOG_ERROR("Error parsing YAML: {}", e.what());
         exit(EXIT_FAILURE);
     }
 }
@@ -88,7 +89,7 @@ void YAMLReader::readCube(ContainerRef particles, YAML::Node& node) {
             }
         }
     } catch (const YAML::Exception& e) {
-        std::cerr << "Error parsing YAML: " << e.what() << '\n';
+        LOG_ERROR("Error parsing YAML: {}", e.what());
         exit(EXIT_FAILURE);
     }
 }

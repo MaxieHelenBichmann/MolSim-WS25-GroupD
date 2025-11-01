@@ -14,7 +14,7 @@ int main(int argc, char* argsv[]) {
     logInit();
     double delta_t = 0.014;
     double end_time = 1000;
-    YAMLReader file_reader;
+    XVMReader file_reader;
     SimpleContainer particles;
 
     cliParse(argc, argsv, file_reader, delta_t, end_time, particles);

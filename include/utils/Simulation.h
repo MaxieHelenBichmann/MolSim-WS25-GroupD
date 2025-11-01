@@ -9,6 +9,7 @@
 #include "particles/ParticleContainer.h"
 #include "physics/ForceSource.h"
 #include "physics/GravitationalForce.h"
+#include "utils/Logging.h"
 
 /**
  * @namespace mol_sim
@@ -141,15 +142,14 @@ class Simulation {
 #endif
                     writer.plotParticles(particles, out_name, iteration);
                 } catch (...) {
-                    std::cout << "Something went wrong with plotting the Particles." << '\n';
+                    LOG_ERROR("Something went wrong with plotting the Particles.");
                 }
             }
-            std::cout << "Iteration " << iteration << " finished. " << '\r' << std::flush;
+            LOG_INFO("Iteration {} finished.", iteration);
 
             current_time += delta_t;
         }
-        std::cout << '\n';  // Final newline after loop
-        std::cout << "output written. Terminating..." << '\n';
+        LOG_INFO("Output written. Terminating...");
     }
 };
 

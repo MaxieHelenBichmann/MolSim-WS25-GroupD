@@ -12,6 +12,8 @@
 #include <iostream>
 #include <sstream>
 
+#include "utils/Logging.h"
+
 using namespace mol_sim;
 
 XVMReader::XVMReader() = default;
@@ -29,18 +31,19 @@ void XVMReader::readFile(ContainerRef particles, const std::string& filename) {
 
     if (input_file.is_open()) {
         getline(input_file, tmp_string);
-        std::cout << "Read line: " << tmp_string << '\n';
+
+        LOG_TRACE("Read line: {}", tmp_string);
 
         while (tmp_string.empty() or tmp_string[0] == '#') {
             getline(input_file, tmp_string);
-            std::cout << "Read line: " << tmp_string << '\n';
+            LOG_TRACE("Read line: {}", tmp_string);
         }
 
         std::istringstream numstream(tmp_string);
         numstream >> num_particles;
-        std::cout << "Reading " << num_particles << "." << '\n';
+        LOG_TRACE("Reading {} particles", num_particles);
         getline(input_file, tmp_string);
-        std::cout << "Read line: " << tmp_string << '\n';
+        LOG_TRACE("Read line: {}", tmp_string);
 
         particles.reserve(num_particles);
 
@@ -54,17 +57,17 @@ void XVMReader::readFile(ContainerRef particles, const std::string& filename) {
                 datastream >> vj;
             }
             if (datastream.eof()) {
-                std::cout << "Error reading file: eof reached unexpectedly reading from line " << i << '\n';
+                LOG_ERROR("Error reading file: eof reached unexpectedly reading from line {}", i);
                 exit(-1);
             }
             datastream >> m;
             particles.addParticle(x, v, m);
 
             getline(input_file, tmp_string);
-            std::cout << "Read line: " << tmp_string << '\n';
+            LOG_TRACE("Read line: {}", tmp_string);
         }
     } else {
-        std::cout << "Error: could not open file " << filename << '\n';
+        LOG_ERROR("Error: could not open file {}", filename);
         exit(-1);
     }
 }
