@@ -131,6 +131,7 @@ class Simulation {
             calculateV();
 
             iteration++;
+#ifndef DISABLE_IO
             if (iteration % 10 == 0) {
                 try {
 #ifdef ENABLE_VTK_OUTPUT
@@ -146,7 +147,7 @@ class Simulation {
                 }
             }
             LOG_INFO("Iteration {} finished.", iteration);
-
+#endif
             current_time += delta_t;
         }
         LOG_INFO("Output written. Terminating...");

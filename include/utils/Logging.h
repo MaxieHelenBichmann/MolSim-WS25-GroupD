@@ -58,6 +58,8 @@ inline void logInit() {
         spdlog::level::info;
 #elif defined(LOG_LEVEL_ERROR)
         spdlog::level::err;
+#elif defined(LOG_LEVEL_OFF)
+        spdlog::level::off;
 #else
         spdlog::level::info;
 #endif

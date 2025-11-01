@@ -1,9 +1,13 @@
 if(ENABLE_BENCHMARK)
-    set(BENCHMARK_EXECUTABLE_NAME MolSimBench)
     file(GLOB_RECURSE BENCHMARK_SOURCES "src/*.cpp")
 
-    add_executable(${BENCHMARK_EXECUTABLE_NAME} ${BENCHMARK_SOURCES})
+    add_executable(MolSimBench ${BENCHMARK_SOURCES})
 
-    target_link_libraries(${BENCHMARK_EXECUTABLE_NAME} PRIVATE LibMolSim benchmark::benchmark)
+    target_link_libraries(MolSimBench PRIVATE
+    LibMolSim
+    benchmark::benchmark
+    benchmark::benchmark_main
+    )   
+    target_compile_definitions(MolSimBench PRIVATE DISABLE_IO)
     message(STATUS "Benchmarking enabled and executable MolSimBench available")
 endif()
