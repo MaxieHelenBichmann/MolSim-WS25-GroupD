@@ -7,7 +7,7 @@ list(FILTER SRCS EXCLUDE REGEX ".*\/MolSim\.cpp")
 
 
 add_library(LibMolSim STATIC ${SRCS})
-target_link_libraries(LibMolSim PUBLIC yaml-cpp::yaml-cpp)
+target_link_libraries(LibMolSim PUBLIC yaml-cpp::yaml-cpp spdlog::spdlog)
 include(vtk)
 
 add_executable(MolSim MolSim.cpp)

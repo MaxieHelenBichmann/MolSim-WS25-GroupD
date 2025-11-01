@@ -20,7 +20,8 @@ if(NOT CMAKE_BUILD_TYPE)
             "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
-add_compile_options(-Ofast -march=native)
+add_compile_options(-O3 -march=native)
+add_compile_definitions(SPDLOG_USE_STD_FORMAT)
 
 # add additional modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
@@ -30,6 +31,7 @@ include(doxygen)
 include(gtest)
 include(clang-format)
 include(yaml-cpp)
+include(spdlog)
 include(clang-tidy)
 
 add_subdirectory(src project)

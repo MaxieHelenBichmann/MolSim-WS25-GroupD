@@ -1,3 +1,5 @@
+#include <spdlog/spdlog.h>
+
 #include "io/CLIParse.h"
 #include "io/fileReader/XVMReader.h"
 #include "io/fileReader/YAMLReader.h"
@@ -16,6 +18,8 @@ int main(int argc, char* argsv[]) {
     SimpleContainer particles;
 
     cliParse(argc, argsv, file_reader, delta_t, end_time, particles);
+    spdlog::info("Simulation configured with {} particles, delta_t={} end_time={}", particles.size(), delta_t,
+                 end_time);
     Simulation<SimpleContainer> simulation(particles, GRAVITATIONAL, delta_t, START_TIME, end_time);
     simulation.run();
 }
