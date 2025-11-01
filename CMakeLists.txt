@@ -39,7 +39,9 @@ include(clang-format)
 include(yaml-cpp)
 include(spdlog)
 include(clang-tidy)
+include(benchmark)
 
 add_subdirectory(src project)
 add_subdirectory(tests)
+add_subdirectory(benchmarks)
 
