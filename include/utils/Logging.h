@@ -4,8 +4,44 @@
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/spdlog.h"
 
+/**
+ * @brief Log a trace-level message.
+ *
+ * Accepts a format string followed by optional arguments.
+ */
+#define LOG_TRACE(...) spdlog::trace(__VA_ARGS__)  // NOLINT(cppcoreguidelines-macro-usage)
+
+/**
+ * @brief Log a debug-level message.
+ *
+ * Accepts a format string followed by optional arguments.
+ */
+#define LOG_DEBUG(...) spdlog::debug(__VA_ARGS__)  // NOLINT(cppcoreguidelines-macro-usage)
+
+/**
+ * @brief Log a info-level message.
+ *
+ * Accepts a format string followed by optional arguments.
+ */
+#define LOG_INFO(...) spdlog::info(__VA_ARGS__)  // NOLINT(cppcoreguidelines-macro-usage)
+
+/**
+ * @brief Log a error-level message.
+ *
+ * Accepts a format string followed by optional arguments.
+ */
+#define LOG_ERROR(...) spdlog::error(__VA_ARGS__)  // NOLINT(cppcoreguidelines-macro-usage)
+
 namespace mol_sim {
 
+/**
+ * @brief Initialize the global logger.
+ *
+ * Ensures that a colored stdout logger exists, installs it as the default
+ * logger if necessary, and applies the compile-time logging level configured via
+ * `LOG_LEVEL_DEBUG` (Debug), `LOG_LEVEL_TRACE` (RelWithDebInfo), `LOG_LEVEL_INFO` (Default), or `LOG_LEVEL_ERROR`
+ * (Release, MinSizeRel).
+ */
 inline void logInit() {
     auto logger = spdlog::default_logger();
     if (!logger) {
@@ -27,13 +63,8 @@ inline void logInit() {
 #endif
 
     logger->set_level(level);
-}
+};
 
 }  // namespace mol_sim
-
-#define LOG_TRACE(...) spdlog::trace(__VA_ARGS__)  // NOLINT(cppcoreguidelines-macro-usage)
-#define LOG_DEBUG(...) spdlog::debug(__VA_ARGS__)  // NOLINT(cppcoreguidelines-macro-usage)
-#define LOG_INFO(...) spdlog::info(__VA_ARGS__)    // NOLINT(cppcoreguidelines-macro-usage)
-#define LOG_ERROR(...) spdlog::error(__VA_ARGS__)  // NOLINT(cppcoreguidelines-macro-usage)
 
 #endif  // LOGGING_H
