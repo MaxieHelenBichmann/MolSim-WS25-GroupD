@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <string>
 
+#include "io/fileReader/YAMLReaderException.h"
 #include "particles/generators/CuboidGenerator.h"
 #include "utils/Logging.h"
 
@@ -21,10 +22,11 @@ void YAMLReader::readFile(ContainerRef particles, const std::string& filename) {
             readCube(particles, root);
         } else {
             LOG_ERROR("Unknown YAML Format");
+            throw YAMLReaderException("Unknown YAML Format");
         }
     } catch (const YAML::Exception& e) {
         LOG_ERROR("Error parsing YAML: {}", e.what());
-        exit(EXIT_FAILURE);
+        throw YAMLReaderException(e.what());
     }
 }
 void YAMLReader::readXVM(ContainerRef particles, YAML::Node& node) {
@@ -52,7 +54,7 @@ void YAMLReader::readXVM(ContainerRef particles, YAML::Node& node) {
         }
     } catch (const YAML::Exception& e) {
         LOG_ERROR("Error parsing YAML: {}", e.what());
-        exit(EXIT_FAILURE);
+        throw YAMLReaderException(e.what());
     }
 }
 void YAMLReader::readCube(ContainerRef particles, YAML::Node& node) {
@@ -75,9 +77,9 @@ void YAMLReader::readCube(ContainerRef particles, YAML::Node& node) {
 
                 N3 num_particles;
                 const YAML::Node& count_node = curr["particleNum"];
-                num_particles[0] = count_node["vx"].as<size_t>();
-                num_particles[1] = count_node["vy"].as<size_t>();
-                num_particles[2] = count_node["vz"].as<size_t>();
+                num_particles[0] = count_node["nx"].as<size_t>();
+                num_particles[1] = count_node["ny"].as<size_t>();
+                num_particles[2] = count_node["nz"].as<size_t>();
 
                 auto mass = curr["mass"].as<double>();
                 auto distance = curr["distance"].as<double>();
@@ -89,7 +91,7 @@ void YAMLReader::readCube(ContainerRef particles, YAML::Node& node) {
         }
     } catch (const YAML::Exception& e) {
         LOG_ERROR("Error parsing YAML: {}", e.what());
-        exit(EXIT_FAILURE);
+        throw YAMLReaderException(e.what());
     }
 }
 }  // namespace mol_sim

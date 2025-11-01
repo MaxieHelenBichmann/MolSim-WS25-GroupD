@@ -11,6 +11,8 @@ enable_testing()
 
 add_executable(tests ${TEST_SRC})
 
+target_compile_definitions(tests PRIVATE -DTEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
+
 target_link_libraries(
         tests
         LibMolSim

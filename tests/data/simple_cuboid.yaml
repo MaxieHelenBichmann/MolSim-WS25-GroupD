@@ -1,0 +1,18 @@
+format: Cuboid
+num_cuboids: 1
+cuboids:
+  - coordinates:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    velocity:
+      vx: 0.0
+      vy: 0.0
+      vz: 0.0
+    particleNum:
+      nx: 2
+      ny: 2
+      nz: 2
+    mass: 1.0
+    distance: 1.0
+    mean_velo: 0.1
