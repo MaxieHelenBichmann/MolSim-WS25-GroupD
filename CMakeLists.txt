@@ -21,7 +21,13 @@ if(NOT CMAKE_BUILD_TYPE)
 endif(NOT CMAKE_BUILD_TYPE)
 
 add_compile_options(-O3 -march=native)
-add_compile_definitions(SPDLOG_USE_STD_FORMAT)
+add_compile_definitions(
+    SPDLOG_USE_STD_FORMAT
+    $<$<CONFIG:Debug>:LOG_LEVEL_DEBUG>
+    $<$<CONFIG:RelWithDebInfo>:LOG_LEVEL_INFO>
+    $<$<CONFIG:Release>:LOG_LEVEL_ERROR>
+    $<$<CONFIG:MinSizeRel>:LOG_LEVEL_ERROR>
+)
 
 # add additional modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)

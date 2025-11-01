@@ -1,10 +1,9 @@
-#include <spdlog/spdlog.h>
-
 #include "io/CLIParse.h"
 #include "io/fileReader/XVMReader.h"
 #include "io/fileReader/YAMLReader.h"
 #include "particles/container/SimpleContainer.h"
 #include "physics/ForceSource.h"
+#include "utils/Logging.h"
 #include "utils/Simulation.h"
 
 using namespace mol_sim;
@@ -12,14 +11,14 @@ using namespace mol_sim;
 constexpr double START_TIME = 0;
 
 int main(int argc, char* argsv[]) {
+    logInit();
     double delta_t = 0.014;
     double end_time = 1000;
     YAMLReader file_reader;
     SimpleContainer particles;
 
     cliParse(argc, argsv, file_reader, delta_t, end_time, particles);
-    spdlog::info("Simulation configured with {} particles, delta_t={} end_time={}", particles.size(), delta_t,
-                 end_time);
+    LOG_INFO("Simulation configured with {} particles, delta_t={} end_time={}", particles.size(), delta_t, end_time);
     Simulation<SimpleContainer> simulation(particles, GRAVITATIONAL, delta_t, START_TIME, end_time);
     simulation.run();
 }
