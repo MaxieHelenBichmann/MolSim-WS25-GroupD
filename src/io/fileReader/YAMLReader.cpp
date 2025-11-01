@@ -5,6 +5,8 @@
 #include <iostream>
 #include <string>
 
+#include "particles/generators/CuboidGenerator.h"
+
 namespace mol_sim {
 YAMLReader::YAMLReader() = default;
 
@@ -46,7 +48,7 @@ void YAMLReader::readXVM(ContainerRef particles, YAML::Node& node) {
                 auto mass = curr["mass"].as<double>();
 
                 particles.addParticle(position, velocity, mass);
-            };
+            }
         }
     } catch (const YAML::Exception& e) {
         std::cerr << "Error parsing YAML: " << e.what() << '\n';
@@ -55,10 +57,10 @@ void YAMLReader::readXVM(ContainerRef particles, YAML::Node& node) {
 }
 void YAMLReader::readCube(ContainerRef particles, YAML::Node& node) {
     try {
-        if (node["particles"] && node["particles"].IsSequence()) {
-            auto num_part = node["num_particles"].as<size_t>();
-            particles.reserve(num_part);
-            for (const auto& curr : node["particles"]) {
+        if (node["cuboids"] && node["cuboids"].IsSequence()) {
+            auto num_cube = node["num_cuboids"].as<size_t>();
+            particles.reserve(num_cube);
+            for (const auto& curr : node["cuboids"]) {
                 R3 position;
                 const YAML::Node& coordinates = curr["coordinates"];
                 position[0] = coordinates["x"].as<double>();
@@ -71,10 +73,19 @@ void YAMLReader::readCube(ContainerRef particles, YAML::Node& node) {
                 velocity[1] = velocity_node["vy"].as<double>();
                 velocity[2] = velocity_node["vz"].as<double>();
 
-                auto mass = curr["mass"].as<double>();
+                N3 num_particles;
+                const YAML::Node& count_node = curr["particleNum"];
+                num_particles[0] = count_node["vx"].as<size_t>();
+                num_particles[1] = count_node["vy"].as<size_t>();
+                num_particles[2] = count_node["vz"].as<size_t>();
 
-                particles.addParticle(position, velocity, mass);
-            };
+                auto mass = curr["mass"].as<double>();
+                auto distance = curr["distance"].as<double>();
+                auto avg_velo = curr["mean_velo"].as<double>();
+
+                CuboidGenerator generator(position, velocity, num_particles, mass, distance, avg_velo);
+                generator.generateParticles(particles);
+            }
         }
     } catch (const YAML::Exception& e) {
         std::cerr << "Error parsing YAML: " << e.what() << '\n';

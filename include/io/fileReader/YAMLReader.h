@@ -3,6 +3,8 @@
 
 #include <yaml-cpp/node/node.h>
 
+#include <cstddef>
+
 #include "io/FileReader.h"
 #include "particles/container/ContainerRef.h"
 #include "utils/Vector.h"
@@ -10,6 +12,7 @@
 
 namespace mol_sim {
 using R3 = Vector<double, 3>;
+using N3 = Vector<size_t, 3>;
 class YAMLReader : public FileReader {
    public:
     YAMLReader();
