@@ -28,8 +28,8 @@ class YAMLReader : public FileReader {
     void readFile(ContainerRef particles, const std::string& filename) override;
 
    private:
-    void readXVM(ContainerRef particles, YAML::Node& node);
-    void readCube(ContainerRef particles, YAML::Node& node);
+    static void readXVM(ContainerRef particles, YAML::Node& node);
+    static void readCube(ContainerRef particles, YAML::Node& node);
 };
 
 }  // namespace mol_sim

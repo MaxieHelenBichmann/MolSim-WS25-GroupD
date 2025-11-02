@@ -17,7 +17,7 @@ namespace mol_sim {
  * @tparam containerType Type of container to be benchmarked
  */
 template <ParticleContainer containerType>
-void BM_TemplatedContainer(benchmark::State& state) {
+void bmTemplatedContainer(benchmark::State& state) {
     setUpLogging();
     containerType particles;
     size_t n = state.range(0);
@@ -31,12 +31,12 @@ void BM_TemplatedContainer(benchmark::State& state) {
         }
     }
 };
-BENCHMARK(BM_TemplatedContainer<SimpleContainer>)
+BENCHMARK(bmTemplatedContainer<SimpleContainer>)
     ->Range(8 << 0, 8 << 6)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kNanosecond);
-BENCHMARK(BM_TemplatedContainer<SimpleContainer>)
+BENCHMARK(bmTemplatedContainer<SimpleContainer>)
     ->Range(16 << 6, 16 << 10)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
@@ -48,7 +48,7 @@ BENCHMARK(BM_TemplatedContainer<SimpleContainer>)
  * @tparam containerType Type of container to be wrapped
  */
 template <ParticleContainer containerType>
-void BM_ContainerRef(benchmark::State& state) {
+void bmContainerRef(benchmark::State& state) {
     setUpLogging();
     containerType part_container;
     ContainerRef particles(part_container);
@@ -75,7 +75,7 @@ BENCHMARK(BM_ContainerRef<SimpleContainer>)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kMicrosecond);
 */
-void BM_AbstractContainer(benchmark::State& state) {
+void bmAbstractContainer(benchmark::State& state) {
     setUpLogging();
     std::unique_ptr<AbstractContainer> particles = std::make_unique<ContainerImpl>();
     size_t n = state.range(0);
@@ -89,12 +89,12 @@ void BM_AbstractContainer(benchmark::State& state) {
         }
     }
 };
-BENCHMARK(BM_AbstractContainer)
+BENCHMARK(bmAbstractContainer)
     ->Range(8 << 0, 8 << 6)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kNanosecond);
-BENCHMARK(BM_AbstractContainer)
+BENCHMARK(bmAbstractContainer)
     ->Range(16 << 6, 16 << 10)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)

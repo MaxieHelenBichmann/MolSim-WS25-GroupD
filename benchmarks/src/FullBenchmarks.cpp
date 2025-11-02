@@ -12,7 +12,7 @@ namespace mol_sim {
  * Particles range from 2x2x2 to 64x64x64
  *
  */
-static void BM_SimulationBig(benchmark::State& state) {
+static void bmSimulationBig(benchmark::State& state) {
     setUpLogging();
     SimpleContainer part_container;
     ContainerRef particles(part_container);
@@ -25,8 +25,6 @@ static void BM_SimulationBig(benchmark::State& state) {
         generator.generateParticles(particles);
         simulation.run();
     }
-    benchmark::DoNotOptimize(simulation);
-    benchmark::DoNotOptimize(generator);
 }
 // Register the function as a benchmark
 // BENCHMARK(BM_SimulationBig)->Range(2, 2 << 6)->Unit(benchmark::kMillisecond);
@@ -35,7 +33,7 @@ static void BM_SimulationBig(benchmark::State& state) {
  * Particle counts are 40x8x1 + 8x8x1
  *
  */
-static void BM_SimulationGiven(benchmark::State& state) {
+static void bmSimulationGiven(benchmark::State& state) {
     setUpLogging();
     SimpleContainer part_container;
     ContainerRef particles(part_container);
@@ -47,9 +45,6 @@ static void BM_SimulationGiven(benchmark::State& state) {
         generator2.generateParticles(particles);
         simulation.run();
     }
-    benchmark::DoNotOptimize(simulation);
-    benchmark::DoNotOptimize(generator1);
-    benchmark::DoNotOptimize(generator2);
 }
-BENCHMARK(BM_SimulationGiven)->Repetitions(10)->Unit(benchmark::kMillisecond);
+BENCHMARK(bmSimulationGiven)->Repetitions(10)->Unit(benchmark::kMillisecond);
 }  // namespace mol_sim

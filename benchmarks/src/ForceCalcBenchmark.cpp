@@ -14,7 +14,7 @@ namespace mol_sim {
  * @tparam containerType Type of container to be benchmarked
  */
 
-void BM_AbstractForce(benchmark::State& state) {
+void bmAbstractForce(benchmark::State& state) {
     std::unique_ptr<ForceSource> force = std::make_unique<GravitationalForce>();
     Particle p1 = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0};
     Particle p2 = {{1.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0};
@@ -26,7 +26,7 @@ void BM_AbstractForce(benchmark::State& state) {
     }
 };
 
-BENCHMARK(BM_AbstractForce)
+BENCHMARK(bmAbstractForce)
     ->RangeMultiplier(10)
     ->Range(1000, 1000000)
     ->Repetitions(10)
