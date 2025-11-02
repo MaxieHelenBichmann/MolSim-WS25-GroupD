@@ -14,11 +14,35 @@ using N3 = Vector<size_t, 3>;
  */
 class CuboidGenerator : public Generator {
    private:
+    /**
+     * @brief Postion of the lower left corner of the cube of particles.
+     *
+     */
     R3 position;
+    /**
+     * @brief Initial velocity of the cube of particles.
+     *
+     */
     R3 velocity;
+    /**
+     * @brief Number of particles per dimension.
+     *
+     */
     N3 num_particles;
+    /**
+     * @brief Mass of the particles.
+     *
+     */
     double mass;
+    /**
+     * @brief Mesh width of the grid of particles.
+     *
+     */
     double distance;
+    /**
+     * @brief ean value of velocity of the Brownian Motion.
+     *
+     */
     double avg_velo;
 
    public:
