@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 
+#include <compare>
 #include <limits>
 
 namespace mol_sim {
@@ -144,8 +145,8 @@ TEST(VectorTest, TestOrdering) {
     Vector<int, 2> b(6, 8);
     Vector<int, 2> c(4, 3);
 
-    EXPECT_LT((a <=> b), 0);
-    EXPECT_GT((b <=> a), 0);
+    EXPECT_EQ((a <=> b), std::strong_ordering::less);
+    EXPECT_EQ((b <=> a), std::strong_ordering::greater);
     EXPECT_EQ((a <=> c), std::strong_ordering::equal);
 }
 

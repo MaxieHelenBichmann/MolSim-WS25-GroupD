@@ -290,20 +290,34 @@ struct tuple_size<mol_sim::Vector<T, N>> : std::integral_constant<std::size_t, N
 };
 
 template <size_t I, class T, size_t N>
-constexpr T& get(mol_sim::Vector<T, N>&& v) {
-    return v[I];
-}
-
-template <size_t I, class T, size_t N>
-constexpr T get(const mol_sim::Vector<T, N>& v) {
-    return v[I];
-}
-
-template <size_t I, class T, size_t N>
 struct tuple_element<I, mol_sim::Vector<T, N>> {
     using type = T;
 };
 
 }  // namespace std
+
+namespace mol_sim {
+
+template <size_t I, class T, size_t N>
+constexpr T& get(Vector<T, N>& v) noexcept {
+    return v[I];
+}
+
+template <size_t I, class T, size_t N>
+constexpr const T& get(const Vector<T, N>& v) noexcept {
+    return v[I];
+}
+
+template <size_t I, class T, size_t N>
+constexpr T&& get(Vector<T, N>&& v) noexcept {
+    return std::move(v[I]);
+}
+
+template <size_t I, class T, size_t N>
+constexpr const T&& get(const Vector<T, N>&& v) noexcept {
+    return std::move(v[I]);
+}
+
+}  // namespace mol_sim
 
 #endif
