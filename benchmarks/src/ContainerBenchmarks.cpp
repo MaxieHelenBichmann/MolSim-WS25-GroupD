@@ -1,10 +1,13 @@
 #include <benchmark/benchmark.h>
 
-#include "benchmarkingUtils.h"
+#include <memory>
+
+#include "../code/AbstractContainer.h"
+#include "../code/ContainerImpl.h"
+#include "BenchmarkingUtils.h"
 #include "particles/ParticleContainer.h"
 #include "particles/container/ContainerRef.h"
 #include "particles/container/SimpleContainer.h"
-#include "particles/generators/CuboidGenerator.h"
 
 namespace mol_sim {
 /**
@@ -60,12 +63,38 @@ void BM_ContainerRef(benchmark::State& state) {
         }
     }
 };
+/*
 BENCHMARK(BM_ContainerRef<SimpleContainer>)
     ->Range(8 << 0, 8 << 6)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kNanosecond);
 BENCHMARK(BM_ContainerRef<SimpleContainer>)
+    ->Range(16 << 6, 16 << 10)
+    ->Repetitions(10)
+    ->DisplayAggregatesOnly(true)
+    ->Unit(benchmark::kMicrosecond);
+*/
+void BM_AbstractContainer(benchmark::State& state) {
+    setUpLogging();
+    std::unique_ptr<AbstractContainer> particles = std::make_unique<ContainerImpl>();
+    size_t n = state.range(0);
+    double res = 0;
+    for (auto i : state) {
+        for (size_t i = 0; i < n; i++) {
+            particles->addParticle({0.0 + i, 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0);
+        }
+        for (auto& p : *particles) {
+            res += p.getX()[0];
+        }
+    }
+};
+BENCHMARK(BM_AbstractContainer)
+    ->Range(8 << 0, 8 << 6)
+    ->Repetitions(10)
+    ->DisplayAggregatesOnly(true)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK(BM_AbstractContainer)
     ->Range(16 << 6, 16 << 10)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)

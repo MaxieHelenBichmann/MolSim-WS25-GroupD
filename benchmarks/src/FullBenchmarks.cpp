@@ -1,6 +1,6 @@
 #include <benchmark/benchmark.h>
 
-#include "benchmarkingUtils.h"
+#include "BenchmarkingUtils.h"
 #include "particles/container/ContainerRef.h"
 #include "particles/container/SimpleContainer.h"
 #include "particles/generators/CuboidGenerator.h"

@@ -1,5 +1,5 @@
 if(ENABLE_BENCHMARK)
-    file(GLOB_RECURSE BENCHMARK_SOURCES "src/*.cpp")
+    file(GLOB_RECURSE BENCHMARK_SOURCES "src/*.cpp" "code/*.cpp")
 
     add_executable(MolSimBench ${BENCHMARK_SOURCES})
 
