@@ -63,6 +63,8 @@ class Particle {
 
     Particle(const Particle& other);
 
+    Particle& operator=(const Particle& other);
+
     Particle(
         // for visualization, we need always 3 coordinates
         // -> in case of 2d, we use only the first and the second

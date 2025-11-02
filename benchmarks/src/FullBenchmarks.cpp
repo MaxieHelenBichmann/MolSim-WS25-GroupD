@@ -18,7 +18,7 @@ static void bmSimulationBig(benchmark::State& state) {
     ContainerRef particles(part_container);
     size_t n = state.range(0);
     CuboidGenerator generator({0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {std::move(n), std::move(n), std::move(n)}, 1.0, 1.0,
-                              0.5);
+                              0.5);  // NOLINT
     Simulation<SimpleContainer> simulation(part_container, GRAVITATIONAL, 0.1, 0, 1000);
     for ([[maybe_unused]] auto _ : state) {
         generator.generateParticles(particles);

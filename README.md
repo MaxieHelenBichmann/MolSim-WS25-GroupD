@@ -36,7 +36,14 @@ Contributors:
     mkdir build && cd build
     ccmake ..
     ```
+1.5 Configure Option:
+    - **ENABLE_TESTING** enables all tests.
+    - **ENABLE_BENCHMARK** enables benchmarking.
+    - **ENABLE_DOXYGEN** enables doxygen.
+    - **ENABLE_VTK_OUTPUT** enables output in the vtk format.
+    - **CMAKE_BUILD_TYPE** The build type (Debug, Release,...)
 
+ 
 2. Now you can interactively change the options (These include Doxygen generation, clang-tidy integration and VTK output).
 
 3. Build the executable with the Makefile by running the command:
@@ -64,7 +71,7 @@ Contributors:
 0. Make sure to be in the project root.
 
 1. Run the test executable or use ctest:
-    ```
+    ```e
     ./build/tests/tests
     ```
     ```

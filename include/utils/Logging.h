@@ -2,11 +2,10 @@
 #define LOGGING_H
 
 #ifndef LOG_LEVEL_DEBUG
-#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_ERROR
+#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_ERROR  // NOLINT
 #else
-#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
+#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE  // NOLINT
 #endif
-
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
