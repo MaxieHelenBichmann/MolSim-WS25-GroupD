@@ -22,9 +22,9 @@ void bmTemplatedContainer(benchmark::State& state) {
     containerType particles;
     size_t n = state.range(0);
     double res = 0;
-    for (auto i : state) {
+    for ([[maybe_unused]] auto _ : state) {
         for (size_t i = 0; i < n; i++) {
-            particles.addParticle({0.0 + i, 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0);
+            particles.addParticle({static_cast<double>(i), 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0);
         }
         for (auto& p : particles) {
             res += p.getX()[0];
@@ -54,9 +54,9 @@ void bmContainerRef(benchmark::State& state) {
     ContainerRef particles(part_container);
     size_t n = state.range(0);
     double res = 0;
-    for (auto i : state) {
+    for ([[maybe_unused]] auto _ : state) {
         for (size_t i = 0; i < n; i++) {
-            particles.addParticle({0.0 + i, 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0);
+            particles.addParticle({static_cast<double>(i), 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0);
         }
         for (auto& p : particles) {
             res += p.getX()[0];
@@ -80,9 +80,9 @@ void bmAbstractContainer(benchmark::State& state) {
     std::unique_ptr<AbstractContainer> particles = std::make_unique<ContainerImpl>();
     size_t n = state.range(0);
     double res = 0;
-    for (auto i : state) {
+    for ([[maybe_unused]] auto _ : state) {
         for (size_t i = 0; i < n; i++) {
-            particles->addParticle({0.0 + i, 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0);
+            particles->addParticle({static_cast<double>(i), 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0);
         }
         for (auto& p : *particles) {
             res += p.getX()[0];

@@ -19,9 +19,9 @@ void bmAbstractForce(benchmark::State& state) {
     Particle p1 = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0};
     Particle p2 = {{1.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0};
     size_t n = state.range(0);
-    for (auto i : state) {
+    for ([[maybe_unused]] auto _ : state) {
         for (size_t i = 0; i < n; i++) {
-            auto x = force->calculateForce(p1, p2);
+            [[maybe_unused]] auto x = force->calculateForce(p1, p2);
         }
     }
 };

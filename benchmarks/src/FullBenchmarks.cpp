@@ -17,11 +17,10 @@ static void bmSimulationBig(benchmark::State& state) {
     SimpleContainer part_container;
     ContainerRef particles(part_container);
     size_t n = state.range(0);
-
     CuboidGenerator generator({0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {std::move(n), std::move(n), std::move(n)}, 1.0, 1.0,
                               0.5);
     Simulation<SimpleContainer> simulation(part_container, GRAVITATIONAL, 0.1, 0, 1000);
-    for (auto i : state) {
+    for ([[maybe_unused]] auto _ : state) {
         generator.generateParticles(particles);
         simulation.run();
     }
@@ -40,7 +39,7 @@ static void bmSimulationGiven(benchmark::State& state) {
     CuboidGenerator generator1({0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {40U, 8U, 1U}, 1.0, 1.0, 0.1);
     CuboidGenerator generator2({15.0, 15.0, 0.0}, {0.0, -10.0, 0.0}, {8U, 8U, 1U}, 1.0, 1.0, 0.1);
     Simulation<SimpleContainer> simulation(part_container, GRAVITATIONAL, 0.014, 0, 1000);
-    for (auto i : state) {
+    for ([[maybe_unused]] auto _ : state) {
         generator1.generateParticles(particles);
         generator2.generateParticles(particles);
         simulation.run();

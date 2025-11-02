@@ -13,7 +13,7 @@
 
 namespace mol_sim {
 // The TEST_DATA_DIR macro is defined in CMakeLists.txt
-const std::string test_data_dir = TEST_DATA_DIR;
+const std::string test_data_dir = TEST_DATA_DIR;  // NOLINT
 /**
  * @brief Test Fixture for YAMLReader tests.
  * This is used to be able to easily reuse the data throughout the tests.

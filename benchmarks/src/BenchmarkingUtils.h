@@ -4,7 +4,6 @@
 
 #include "particles/Particle.h"
 #include "spdlog/spdlog.h"
-#include "utils/Vector.h"
 
 namespace mol_sim {
 inline R3 randomR3() {
