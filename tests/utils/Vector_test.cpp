@@ -24,7 +24,7 @@ TEST(VectorTest, TestConstructor) {
     std::array<double, 3> arr{1.5, -2.0, 3.25};
     Vector<double, 3> R3(arr);
 
-    for (size_t idx = 0; idx < 3; idx++) EXPECT_DOUBLE_EQ(Z4[idx], arr[idx]);
+    for (size_t idx = 0; idx < 3; idx++) EXPECT_DOUBLE_EQ(R3[idx], arr[idx]);
 
     // arbitrary argument list
     Vector<int, 10> Z10 = Vector<int, 10>(20502, 1301, 5, 0, 24, 66, 69, 74, 9, 10);
@@ -34,17 +34,17 @@ TEST(VectorTest, TestConstructor) {
     EXPECT_EQ(Z10[9], 10);
 
     Vector<int, 5> Z5 = Vector<int, 5>(69, 1337);
-    EXPECT_EQ(Z10[0], 69);
-    EXPECT_EQ(Z10[1], 1337);
-    EXPECT_EQ(Z10[2], 0);
-    EXPECT_EQ(Z10[3], 0);
-    EXPECT_EQ(Z10[4], 0);
+    EXPECT_EQ(Z5[0], 69);
+    EXPECT_EQ(Z5[1], 1337);
+    EXPECT_EQ(Z5[2], 0);
+    EXPECT_EQ(Z5[3], 0);
+    EXPECT_EQ(Z5[4], 0);
 
     Vector<double, 4> R4 = Vector<double, 4>(3., 4.);
-    EXPECT_DOUBLE_EQ(Z10[0], 3.);
-    EXPECT_DOUBLE_EQ(Z10[1], 4.);
-    EXPECT_DOUBLE_EQ(Z10[2], 0.);
-    EXPECT_DOUBLE_EQ(Z10[3], 0.);
+    EXPECT_DOUBLE_EQ(R4[0], 3.);
+    EXPECT_DOUBLE_EQ(R4[1], 4.);
+    EXPECT_DOUBLE_EQ(R4[2], 0.);
+    EXPECT_DOUBLE_EQ(R4[3], 0.);
 }
 
 /**
@@ -324,8 +324,8 @@ TEST(VectorTest, TestCustomStringRepresentation) {
     Vector<int, 3> Z3(1, 2, 3);
     Vector<double, 5> R5(3.9, 5.7);
 
-    EXPECT_STREQ(Z3.toString(";", {"{", "}"}).c_str(), "{1; 2; 3}");
-    EXPECT_STREQ(R5.toString(" |").c_str(), "[3.9 | 5.7 | 0 | 0 | 0]");
+    EXPECT_STREQ(Z3.toString("; ", {"{", "}"}).c_str(), "{1; 2; 3}");
+    EXPECT_STREQ(R5.toString(" | ").c_str(), "[3.9 | 5.7 | 0 | 0 | 0]");
 }
 
 /**
