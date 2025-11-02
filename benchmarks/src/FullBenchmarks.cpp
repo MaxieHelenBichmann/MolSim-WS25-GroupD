@@ -1,31 +1,17 @@
 #include <benchmark/benchmark.h>
 
-#include <random>
-
+#include "benchmarkingUtils.h"
 #include "particles/container/ContainerRef.h"
 #include "particles/container/SimpleContainer.h"
 #include "particles/generators/CuboidGenerator.h"
 #include "physics/ForceSource.h"
 #include "utils/Simulation.h"
 namespace mol_sim {
-R3 randomR3() {
-    std::random_device rd{};
-    std::mt19937 gen{rd()};
-    std::normal_distribution<double> dist{};
-
-    return {dist(gen), dist(gen), dist(gen)};
-}
-
-Particle randomParticle() {
-    std::random_device rd{};
-    std::mt19937 gen{rd()};
-    std::normal_distribution<double> dist{};
-
-    return {randomR3(), randomR3(), dist(gen)};
-}
-
-void setUpLogging() { spdlog::set_level(spdlog::level::warn); }
-
+/**
+ * @brief Tests the simulation function with a large number of particles.
+ * Particles range from 2x2x2 to 64x64x64
+ *
+ */
 static void BM_SimulationBig(benchmark::State& state) {
     setUpLogging();
     SimpleContainer part_container;
@@ -43,8 +29,12 @@ static void BM_SimulationBig(benchmark::State& state) {
     benchmark::DoNotOptimize(generator);
 }
 // Register the function as a benchmark
-// BENCHMARK(BM_SimulationBig)->Range(4, 4 << 5)->Unit(benchmark::kMillisecond);
-
+// BENCHMARK(BM_SimulationBig)->Range(2, 2 << 6)->Unit(benchmark::kMillisecond);
+/**
+ * @brief Teststhe simulation with the parameters given in Assignment 2
+ * Particle counts are 40x8x1 + 8x8x1
+ *
+ */
 static void BM_SimulationGiven(benchmark::State& state) {
     setUpLogging();
     SimpleContainer part_container;
@@ -61,7 +51,5 @@ static void BM_SimulationGiven(benchmark::State& state) {
     benchmark::DoNotOptimize(generator1);
     benchmark::DoNotOptimize(generator2);
 }
-BENCHMARK(BM_SimulationGiven)->Unit(benchmark::kMillisecond);
-;
-BENCHMARK_MAIN();  //(NOLINT)
+BENCHMARK(BM_SimulationGiven)->Repetitions(10)->Unit(benchmark::kMillisecond);
 }  // namespace mol_sim

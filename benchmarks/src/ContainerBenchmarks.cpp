@@ -1,0 +1,75 @@
+#include <benchmark/benchmark.h>
+
+#include "benchmarkingUtils.h"
+#include "particles/ParticleContainer.h"
+#include "particles/container/ContainerRef.h"
+#include "particles/container/SimpleContainer.h"
+#include "particles/generators/CuboidGenerator.h"
+
+namespace mol_sim {
+/**
+ * @brief Benchmarks a templated Container of Type ContainerType.
+ * Adds 8-8192 particles to the container, then iterates over all off them.
+ * Reruns this Benchmark 10 Times
+ * @tparam containerType Type of container to be benchmarked
+ */
+template <ParticleContainer containerType>
+void BM_TemplatedContainer(benchmark::State& state) {
+    setUpLogging();
+    containerType particles;
+    size_t n = state.range(0);
+    double res = 0;
+    for (auto i : state) {
+        for (size_t i = 0; i < n; i++) {
+            particles.addParticle({0.0 + i, 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0);
+        }
+        for (auto& p : particles) {
+            res += p.getX()[0];
+        }
+    }
+};
+BENCHMARK(BM_TemplatedContainer<SimpleContainer>)
+    ->Range(8 << 0, 8 << 6)
+    ->Repetitions(10)
+    ->DisplayAggregatesOnly(true)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK(BM_TemplatedContainer<SimpleContainer>)
+    ->Range(16 << 6, 16 << 10)
+    ->Repetitions(10)
+    ->DisplayAggregatesOnly(true)
+    ->Unit(benchmark::kMicrosecond);
+;
+/**
+ * @brief Benchmarks the ContainerRef.
+ * By running the same Benchmark as for the templated Container but wrapping the templated Container in a ContainerRef.
+ * @tparam containerType Type of container to be wrapped
+ */
+template <ParticleContainer containerType>
+void BM_ContainerRef(benchmark::State& state) {
+    setUpLogging();
+    containerType part_container;
+    ContainerRef particles(part_container);
+    size_t n = state.range(0);
+    double res = 0;
+    for (auto i : state) {
+        for (size_t i = 0; i < n; i++) {
+            particles.addParticle({0.0 + i, 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0);
+        }
+        for (auto& p : particles) {
+            res += p.getX()[0];
+        }
+    }
+};
+BENCHMARK(BM_ContainerRef<SimpleContainer>)
+    ->Range(8 << 0, 8 << 6)
+    ->Repetitions(10)
+    ->DisplayAggregatesOnly(true)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK(BM_ContainerRef<SimpleContainer>)
+    ->Range(16 << 6, 16 << 10)
+    ->Repetitions(10)
+    ->DisplayAggregatesOnly(true)
+    ->Unit(benchmark::kMicrosecond);
+
+BENCHMARK_MAIN();  //(NOLINT)
+}  // namespace mol_sim
