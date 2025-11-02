@@ -30,6 +30,7 @@ void bmTemplatedContainer(benchmark::State& state) {
             res += p.getX()[0];
         }
     }
+    benchmark::DoNotOptimize(res);
 };
 BENCHMARK(bmTemplatedContainer<SimpleContainer>)
     ->Range(8 << 0, 8 << 6)
@@ -62,6 +63,7 @@ void bmContainerRef(benchmark::State& state) {
             res += p.getX()[0];
         }
     }
+    benchmark::DoNotOptimize(res);
 };
 /*
 BENCHMARK(BM_ContainerRef<SimpleContainer>)
@@ -88,6 +90,7 @@ void bmAbstractContainer(benchmark::State& state) {
             res += p.getX()[0];
         }
     }
+    benchmark::DoNotOptimize(res);
 };
 BENCHMARK(bmAbstractContainer)
     ->Range(8 << 0, 8 << 6)

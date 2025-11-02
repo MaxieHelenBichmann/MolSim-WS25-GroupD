@@ -12,7 +12,7 @@ namespace mol_sim {
  * Particles range from 2x2x2 to 64x64x64
  *
  */
-static void bmSimulationBig(benchmark::State& state) {
+[[maybe_unused]] static void bmSimulationBig(benchmark::State& state) {
     setUpLogging();
     SimpleContainer part_container;
     ContainerRef particles(part_container);

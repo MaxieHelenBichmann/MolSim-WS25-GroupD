@@ -11,7 +11,6 @@
 #include "physics/ForceSource.h"
 #include "physics/GravitationalForce.h"
 
-
 /**
  * @namespace mol_sim
  * @brief Namespace encompassing the project.
@@ -120,7 +119,7 @@ class Simulation {
      */
     void run() {
         double current_time = start_time;
-        int iteration = 0;
+        [[maybe_unused]] int iteration = 0;
 
         // for this loop, we assume: current x, current f and current v are known
         while (current_time < end_time) {
