@@ -47,7 +47,7 @@ class Vector {
      * @param inits arbitrary number (smaller or equal N) of elements of fitting type
      */
     template <typename... Ts>
-        requires(... && (std::integral<Ts> || std::floating_point<Ts>))
+        requires(... && (std::integral<std::decay_t<Ts>> || std::floating_point<std::decay_t<Ts>>))
     Vector(Ts&&... inits) : data_{inits...} {}
 
     // memory management
