@@ -1,6 +1,7 @@
 #include "io/fileReader/YAMLReader.h"
 
 #include <gtest/gtest.h>
+#include <spdlog/spdlog.h>
 
 #include <string>
 
@@ -9,7 +10,6 @@
 #include "particles/container/ContainerRef.h"
 #include "particles/container/SimpleContainer.h"
 #include "spdlog/sinks/ostream_sink.h"
-#include "utils/Logging.h"
 
 namespace mol_sim {
 // The TEST_DATA_DIR macro is defined in CMakeLists.txt
