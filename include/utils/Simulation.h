@@ -1,6 +1,8 @@
 #ifndef SIMULATION_H
 #define SIMULATION_H
 
+#include <spdlog/spdlog.h>
+
 #include <memory>
 
 #include "utils/Logging.h"

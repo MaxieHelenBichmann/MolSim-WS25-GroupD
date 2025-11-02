@@ -31,7 +31,7 @@ const std::string HELP_MSG =
     "| -f {GRAV, LJ}            : sets the force-type (default = GRAV)\n"
     "| -e <DOUBLE>              : sets epsilon for Lennard-Jones force (default = 5)\n"
     "| -o <DOUBLE>              : sets sigma for Lennard-Jones force (default = 1)\n"
-#ifdef LOG_LEVEL_DEBUG
+#if SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_TRACE
     "| -l {Info, Debug, Trace}  : sets Log Level (default = Info)\n"
 #endif
     "| -h                       : displays this message";
@@ -40,7 +40,7 @@ const std::string& t = "-t";
 const std::string& f = "-f";
 const std::string& e = "-e";
 const std::string& o = "-o";
-#ifdef LOG_LEVEL_DEBUG
+#if SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_TRACE
 const std::string& l = "-l";
 #endif
 const std::string& h = "-h";
@@ -64,7 +64,7 @@ void cliParse(int argc, char** argsv, FileReader& fileReader, double& delta_t, d
     char** force_opt = std::find(argsv, &argsv[argc], f);
     char** epsilon_opt = std::find(argsv, &argsv[argc], e);
     char** sigma_opt = std::find(argsv, &argsv[argc], o);
-#ifdef LOG_LEVEL_DEBUG
+#if SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_TRACE
     char** log_opt = std::find(argsv, &argsv[argc], l);
 #endif
     try {
@@ -101,7 +101,7 @@ void cliParse(int argc, char** argsv, FileReader& fileReader, double& delta_t, d
                 params.push_back(sigma);
             }
         }
-#ifdef LOG_LEVEL_DEBUG
+#if SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_TRACE
         if (log_opt != &argsv[argc]) {
             logInit(*(++log_opt));
             parsed_args += 2;

@@ -1,8 +1,9 @@
+#include <spdlog/spdlog.h>
+
 #include "io/CLIParse.h"
 #include "io/fileReader/YAMLReader.h"
 #include "particles/container/SimpleContainer.h"
 #include "physics/ForceSource.h"
-#include "utils/Logging.h"
 #include "utils/Simulation.h"
 
 using namespace mol_sim;
