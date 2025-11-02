@@ -52,7 +52,8 @@ TEST_F(CuboidGeneratorTest, testParticlePositions) {
     for (size_t i = 0; i < num_particles[2]; i++) {
         for (size_t j = 0; j < num_particles[1]; j++) {
             for (size_t k = 0; k < num_particles[0]; k++) {
-                R3 expected_pos = {k * distance, j * distance, i * distance};
+                R3 expected_pos = {static_cast<double>(k) * distance, static_cast<double>(j) * distance,
+                                   static_cast<double>(i) * distance};
                 bool found = false;
                 for (auto& p : particles) {
                     if (p.getX() == expected_pos) {

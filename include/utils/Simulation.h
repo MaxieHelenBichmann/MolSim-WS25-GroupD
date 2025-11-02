@@ -1,6 +1,8 @@
 #ifndef SIMULATION_H
 #define SIMULATION_H
 
+#include <spdlog/spdlog.h>
+
 #include <memory>
 
 #include "io/outputWriter/VTKWriter.h"
@@ -8,7 +10,7 @@
 #include "particles/ParticleContainer.h"
 #include "physics/ForceSource.h"
 #include "physics/GravitationalForce.h"
-#include "utils/Logging.h"
+
 
 /**
  * @namespace mol_sim
