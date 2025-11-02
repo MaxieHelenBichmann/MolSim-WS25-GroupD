@@ -5,6 +5,7 @@
 
 #include "particles/Generator.h"
 #include "utils/Vector.h"
+
 namespace mol_sim {
 using R3 = Vector<double, 3>;
 using N3 = Vector<size_t, 3>;

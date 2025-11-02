@@ -1,12 +1,13 @@
 #include "io/fileReader/YAMLReader.h"
 
+#include <spdlog/spdlog.h>
+
 #include <cstddef>
 #include <cstdlib>
 #include <string>
 
 #include "io/fileReader/YAMLReaderException.h"
 #include "particles/generators/CuboidGenerator.h"
-#include "utils/Logging.h"
 
 namespace mol_sim {
 YAMLReader::YAMLReader() = default;

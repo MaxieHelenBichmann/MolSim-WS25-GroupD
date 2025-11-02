@@ -7,12 +7,12 @@
 
 #include "io/fileReader/XVMReader.h"
 
+#include <spdlog/spdlog.h>
+
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <sstream>
-
-#include "utils/Logging.h"
 
 using namespace mol_sim;
 
