@@ -243,8 +243,8 @@ class Vector {
      *
      * @return String representation of the Vector
      */
-    [[nodiscard]] std::string toString(const std::string& delimiter = ", ",
-                                       const std::array<std::string, 2>& surround = {"[", "]"}) const {
+    [[nodiscard]] const std::string toString(const std::string& delimiter = ", ",
+                                             const std::array<std::string, 2>& surround = {"[", "]"}) const {
         std::stringstream str_stream;
         str_stream << surround[0];
         for (size_t i = 0; i < N; ++i) {
