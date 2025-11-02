@@ -87,6 +87,8 @@ jobs:
 
   documentation:
     runs-on: ubuntu-latest
+    container:
+      image: mbichmann/molsim-vtk
 
     steps:
     - uses: actions/checkout@v4
