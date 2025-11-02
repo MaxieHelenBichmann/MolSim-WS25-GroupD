@@ -12,11 +12,13 @@ constexpr double START_TIME = 0;
 int main(int argc, char* argsv[]) {
     double delta_t = 0.014;
     double end_time = 1000;
+    Force force_type = GRAVITATIONAL;
     YAMLReader file_reader;
     SimpleContainer particles;
+    std::vector<double> params;
 
-    cliParse(argc, argsv, file_reader, delta_t, end_time, particles);
+    cliParse(argc, argsv, file_reader, delta_t, end_time, force_type, params, particles);
     SPDLOG_INFO("Simulation configured with {} particles, delta_t={} end_time={}", particles.size(), delta_t, end_time);
-    Simulation<SimpleContainer> simulation(particles, GRAVITATIONAL, delta_t, START_TIME, end_time);
+    Simulation<SimpleContainer> simulation(particles, force_type, delta_t, START_TIME, end_time, params);
     simulation.run();
 }

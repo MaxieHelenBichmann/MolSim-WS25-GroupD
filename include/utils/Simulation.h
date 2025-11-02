@@ -3,12 +3,13 @@
 
 #include <memory>
 
+#include "utils/Logging.h"
 #include "io/outputWriter/VTKWriter.h"
 #include "io/outputWriter/XYZWriter.h"
 #include "particles/ParticleContainer.h"
 #include "physics/ForceSource.h"
 #include "physics/GravitationalForce.h"
-#include "utils/Logging.h"
+#include "physics/LennardJonesForce.h"
 
 /**
  * @namespace mol_sim
@@ -91,8 +92,11 @@ class Simulation {
     }
 
    public:
+
     /**
-     * @brief Construct a new Simulation object and prepare for run() call
+     * @brief Construct a new Simulation object and prepare for run() call. 
+     * This constructor is currently exclusively used for benchmarks. Uses default values for epsilon and sigma for Lennard-Jones
+     * forces.
      * This class implements a Builder Pattern, meaning all parameters need to be set before the run() call, which will
      * run the simulation.
      * @param particles Container of particles to be used in the simulation.
@@ -107,6 +111,36 @@ class Simulation {
             case GRAVITATIONAL:
                 this->force_source = std::make_unique<GravitationalForce>();
                 break;
+            case LENNARDJONES:
+                this->force_source = std::make_unique<LennardJonesForce>(5, 1);
+            default:
+                break;
+        }
+    }
+
+
+    /**
+     * @brief Construct a new Simulation object and prepare for run() call
+     * This class implements a Builder Pattern, meaning all parameters need to be set before the run() call, which will
+     * run the simulation.
+     * @param particles Container of particles to be used in the simulation.
+     * @param forceType Type of force to be used for calculation.
+     * @param delta_t Time step of simulation.
+     * @param start_time Start time of simulation.
+     * @param end_time End time of simulation.
+     * @param params Additional parameters. For instance epsilon and sigma for Lennard-Jones.
+     */
+    Simulation(containerType& particles, Force forceType, double delta_t, double start_time, double end_time, std::vector<double>& params)
+        : particles(particles), delta_t(delta_t), start_time(start_time), end_time(end_time) {
+        switch (forceType) {
+            case GRAVITATIONAL:
+                this->force_source = std::make_unique<GravitationalForce>();
+                break;
+            case LENNARDJONES:
+                if (params.size() != 2) {
+                    std::cout << "Too little or too many args for Lennard-Jones force" << '\n';
+                }
+                this->force_source = std::make_unique<LennardJonesForce>(params[0], params[1]);
             default:
                 break;
         }
