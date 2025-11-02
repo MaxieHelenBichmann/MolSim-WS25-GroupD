@@ -1,7 +1,6 @@
 #ifndef SIMULATION_H
 #define SIMULATION_H
 
-#include <iostream>
 #include <memory>
 
 #include "io/outputWriter/VTKWriter.h"
