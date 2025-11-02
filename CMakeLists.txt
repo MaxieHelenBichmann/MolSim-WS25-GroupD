@@ -21,11 +21,15 @@ if(NOT CMAKE_BUILD_TYPE)
 endif(NOT CMAKE_BUILD_TYPE)
 
 add_compile_options(-O3)
+
 add_compile_definitions(
     SPDLOG_USE_STD_FORMAT
-    $<$<CONFIG:Debug>:LOG_LEVEL_DEBUG>
-    $<$<CONFIG:RelWithDebInfo>:LOG_LEVEL_DEBUG>
+    $<$<CONFIG:Debug>:SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE>
+    $<$<CONFIG:RelWithDebInfo>:SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE>
+    $<$<CONFIG:Release>:SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_ERROR>
+    $<$<CONFIG:MinSizeRel>:SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_ERROR>
 )
+
 
 # add additional modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)

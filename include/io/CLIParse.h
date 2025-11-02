@@ -26,14 +26,14 @@ const std::string HELP_MSG =
     "Usage: ./MolSim path/to/input/file <ARGS>\n"
     "| -d <DOUBLE>              : sets DELTA_T (default = 0.014)\n"
     "| -t <DOUBLE>              : sets END_TIME (default = 1000)\n"
-#ifdef LOG_LEVEL_DEBUG
+#if SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_TRACE
     "| -l {Info, Debug, Trace}  : sets Log Level (default = Info)\n"
 #endif
     "| -h                       : displays this message";
 const std::string& h = "-h";
 const std::string& d = "-d";
 const std::string& t = "-t";
-#ifdef LOG_LEVEL_DEBUG
+#if SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_TRACE
 const std::string& l = "-l";
 #endif
 void cliParse(int argc, char** argsv, FileReader& fileReader, double& delta_t, double& end_time,
@@ -52,7 +52,7 @@ void cliParse(int argc, char** argsv, FileReader& fileReader, double& delta_t, d
     int parsed_args = 2;  // program name + assume file name is OK (bad files handled in fileReader.readfile)
     char** delta_t_opt = std::find(argsv, &argsv[argc], d);
     char** end_time_opt = std::find(argsv, &argsv[argc], t);
-#ifdef LOG_LEVEL_DEBUG
+#if SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_TRACE
     char** log_opt = std::find(argsv, &argsv[argc], l);
 #endif
     try {
@@ -64,7 +64,7 @@ void cliParse(int argc, char** argsv, FileReader& fileReader, double& delta_t, d
             end_time = std::stod(*(++end_time_opt));
             parsed_args += 2;
         }
-#ifdef LOG_LEVEL_DEBUG
+#if SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_TRACE
         if (log_opt != &argsv[argc]) {
             logInit(*(++log_opt));
             parsed_args += 2;
