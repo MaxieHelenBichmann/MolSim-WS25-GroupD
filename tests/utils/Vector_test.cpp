@@ -10,10 +10,9 @@ namespace mol_sim {
 // Copy & Move semantics
 
 /**
- * @brief Tests different constructors of Vector.
+ * @brief Tests Default constructor of Vector.
  */
 TEST(VectorTest, TestDefaultConstructor) {
-    // default constructor
     Vector<double, 10> r10 = Vector<double, 10>();
     Vector<int, 4> z4 = Vector<int, 4>();
 
@@ -24,9 +23,10 @@ TEST(VectorTest, TestDefaultConstructor) {
         EXPECT_EQ(z4[idx], 0);
     }
 }
-
+/**
+ * @brief Tests Array constructor of Vector.
+ */
 TEST(VectorTest, TestArrayConstructor) {
-    // array init
     std::array<double, 3> arr{1.5, -2.0, 3.25};
     Vector<double, 3> r3(arr);
 
@@ -34,9 +34,10 @@ TEST(VectorTest, TestArrayConstructor) {
         EXPECT_DOUBLE_EQ(r3[idx], arr[idx]);
     }
 }
-
+/**
+ * @brief Tests constructors of Vector with different values.
+ */
 TEST(VectorTest, TestConstructorArbitraryValues) {
-    // arbitrary argument list
     Vector<int, 10> z10 = Vector<int, 10>(20502, 1301, 5, 0, 24, 66, 69, 74, 9, 10);
     EXPECT_EQ(z10[0], 20502);
     EXPECT_EQ(z10[1], 1301);
@@ -334,8 +335,8 @@ TEST(VectorTest, TestCustomStringRepresentation) {
     Vector<int, 3> z3(1, 2, 3);
     Vector<double, 5> r5(3.9, 5.7);
 
-    EXPECT_STREQ(z3.toString(";", {"{", "}"}).c_str(), "{1; 2; 3}");
-    EXPECT_STREQ(r5.toString(" |").c_str(), "[3.9 | 5.7 | 0 | 0 | 0]");
+    EXPECT_STREQ(z3.toString("; ", {"{", "}"}).c_str(), "{1; 2; 3}");
+    EXPECT_STREQ(r5.toString(" | ").c_str(), "[3.9 | 5.7 | 0 | 0 | 0]");
 }
 
 /**
