@@ -99,4 +99,31 @@ TEST_F(YAMLReaderTest, ReadWrongFileFormat) {
     EXPECT_NE(output.find("Unknown YAML Format"), std::string::npos);
 }
 
+/**
+ * @brief Tests the behaviour of YAMLReader when a malformed file is given
+ *
+ */
+TEST_F(YAMLReaderTest, ReadMalformedFile) {
+    YAMLReader reader;
+    EXPECT_THROW(reader.readFile(particles, test_data_dir + "/malformed.yaml"), YAMLReaderException);
+}
+
+/**
+ * @brief Tests the behaviour of YAMLReader when a file with missing fields is given
+ *
+ */
+TEST_F(YAMLReaderTest, ReadMissingFields) {
+    YAMLReader reader;
+    EXPECT_THROW(reader.readFile(particles, test_data_dir + "/missing_fields.yaml"), YAMLReaderException);
+}
+
+/**
+ * @brief Tests the behaviour of YAMLReader when an empty file is given
+ *
+ */
+TEST_F(YAMLReaderTest, ReadEmptyFile) {
+    YAMLReader reader;
+    EXPECT_THROW(reader.readFile(particles, test_data_dir + "/empty.yaml"), YAMLReaderException);
+}
+
 }  // namespace mol_sim

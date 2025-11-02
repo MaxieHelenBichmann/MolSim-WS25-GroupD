@@ -1,0 +1,5 @@
+format: cuboid
+data:
+  position: [0, 0, 0]
+  number_of_particles: [2, 2, 2]
+  mass: 1.0

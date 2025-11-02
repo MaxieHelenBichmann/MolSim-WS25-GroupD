@@ -144,4 +144,17 @@ TEST_F(CuboidGeneratorTest, testAverageVelocity) {
     EXPECT_NEAR(variance[2], 0.0, 1e-1);
 }
 
+/**
+ * @brief Tests that no particles are generated when one dimension is 0
+ *
+ */
+TEST_F(CuboidGeneratorTest, testZeroParticleGeneration) {
+    SimpleContainer particle_container;
+    ContainerRef particles(particle_container);
+    N3 num_particles = {10U, 0U, 10U};
+    CuboidGenerator generator(position, velocity, num_particles, mass, distance, avg_velo);
+    generator.generateParticles(particles);
+    EXPECT_EQ(particles.size(), 0);
+}
+
 }  // namespace mol_sim
