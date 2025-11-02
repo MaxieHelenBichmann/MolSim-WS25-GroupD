@@ -1,5 +1,11 @@
 #include <benchmark/benchmark.h>
 
+#include <memory>
+
+#include "particles/Particle.h"
+#include "physics/ForceSource.h"
+#include "physics/GravitationalForce.h"
+
 namespace mol_sim {
 /**
  * @brief Benchmarks a templated Container of Type ContainerType.
@@ -9,19 +15,22 @@ namespace mol_sim {
  */
 
 void BM_AbstractForce(benchmark::State& state) {
-
+    std::unique_ptr<ForceSource> force = std::make_unique<GravitationalForce>();
+    Particle p1 = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0};
+    Particle p2 = {{1.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0};
+    size_t n = state.range(0);
+    for (auto i : state) {
+        for (size_t i = 0; i < n; i++) {
+            auto x = force->calculateForce(p1, p2);
+        }
+    }
 };
-/*
+
 BENCHMARK(BM_AbstractForce)
-    ->Range(8 << 0, 8 << 6)
-    ->Repetitions(10)
-    ->DisplayAggregatesOnly(true)
-    ->Unit(benchmark::kNanosecond);
-BENCHMARK(BM_AbstractForce)
-    ->Range(16 << 6, 16 << 10)
+    ->RangeMultiplier(10)
+    ->Range(1000, 1000000)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kMicrosecond);
-*/
 
 }  // namespace mol_sim

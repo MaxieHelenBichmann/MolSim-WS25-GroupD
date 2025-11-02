@@ -1,0 +1,69 @@
+2025-11-02T12:04:17+01:00
+Running ./MolSimBench
+Run on (16 X 5134 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x8)
+  L1 Instruction 32 KiB (x8)
+  L2 Unified 1024 KiB (x8)
+  L3 Unified 16384 KiB (x1)
+Load Average: 1.46, 1.26, 1.03
+***WARNING*** CPU scaling is enabled, the benchmark real time measurements may be noisy and will incur extra overhead.
+-------------------------------------------------------------------------------------
+Benchmark                                           Time             CPU   Iterations
+-------------------------------------------------------------------------------------
+BM_AbstractForce/1000/repeats:10                 11.7 us         11.7 us        58260
+BM_AbstractForce/1000/repeats:10                 12.0 us         12.0 us        58260
+BM_AbstractForce/1000/repeats:10                 11.9 us         11.9 us        58260
+BM_AbstractForce/1000/repeats:10                 11.8 us         11.8 us        58260
+BM_AbstractForce/1000/repeats:10                 11.8 us         11.8 us        58260
+BM_AbstractForce/1000/repeats:10                 11.8 us         11.8 us        58260
+BM_AbstractForce/1000/repeats:10                 11.8 us         11.8 us        58260
+BM_AbstractForce/1000/repeats:10                 11.8 us         11.8 us        58260
+BM_AbstractForce/1000/repeats:10                 11.8 us         11.8 us        58260
+BM_AbstractForce/1000/repeats:10                 11.8 us         11.8 us        58260
+BM_AbstractForce/1000/repeats:10_mean            11.8 us         11.8 us           10
+BM_AbstractForce/1000/repeats:10_median          11.8 us         11.8 us           10
+BM_AbstractForce/1000/repeats:10_stddev         0.064 us        0.064 us           10
+BM_AbstractForce/1000/repeats:10_cv              0.54 %          0.54 %            10
+BM_AbstractForce/10000/repeats:10                 118 us          118 us         5813
+BM_AbstractForce/10000/repeats:10                 119 us          119 us         5813
+BM_AbstractForce/10000/repeats:10                 120 us          120 us         5813
+BM_AbstractForce/10000/repeats:10                 119 us          118 us         5813
+BM_AbstractForce/10000/repeats:10                 118 us          118 us         5813
+BM_AbstractForce/10000/repeats:10                 118 us          118 us         5813
+BM_AbstractForce/10000/repeats:10                 118 us          118 us         5813
+BM_AbstractForce/10000/repeats:10                 119 us          119 us         5813
+BM_AbstractForce/10000/repeats:10                 118 us          118 us         5813
+BM_AbstractForce/10000/repeats:10                 119 us          119 us         5813
+BM_AbstractForce/10000/repeats:10_mean            119 us          119 us           10
+BM_AbstractForce/10000/repeats:10_median          118 us          118 us           10
+BM_AbstractForce/10000/repeats:10_stddev        0.748 us        0.731 us           10
+BM_AbstractForce/10000/repeats:10_cv             0.63 %          0.62 %            10
+BM_AbstractForce/100000/repeats:10               1183 us         1183 us          574
+BM_AbstractForce/100000/repeats:10               1195 us         1194 us          574
+BM_AbstractForce/100000/repeats:10               1189 us         1189 us          574
+BM_AbstractForce/100000/repeats:10               1185 us         1185 us          574
+BM_AbstractForce/100000/repeats:10               1187 us         1187 us          574
+BM_AbstractForce/100000/repeats:10               1183 us         1182 us          574
+BM_AbstractForce/100000/repeats:10               1182 us         1182 us          574
+BM_AbstractForce/100000/repeats:10               1177 us         1176 us          574
+BM_AbstractForce/100000/repeats:10               1184 us         1184 us          574
+BM_AbstractForce/100000/repeats:10               1183 us         1183 us          574
+BM_AbstractForce/100000/repeats:10_mean          1185 us         1185 us           10
+BM_AbstractForce/100000/repeats:10_median        1184 us         1184 us           10
+BM_AbstractForce/100000/repeats:10_stddev        4.82 us         4.68 us           10
+BM_AbstractForce/100000/repeats:10_cv            0.41 %          0.39 %            10
+BM_AbstractForce/1000000/repeats:10             11786 us        11785 us           58
+BM_AbstractForce/1000000/repeats:10             11960 us        11955 us           58
+BM_AbstractForce/1000000/repeats:10             11879 us        11876 us           58
+BM_AbstractForce/1000000/repeats:10             11872 us        11869 us           58
+BM_AbstractForce/1000000/repeats:10             11857 us        11856 us           58
+BM_AbstractForce/1000000/repeats:10             11784 us        11783 us           58
+BM_AbstractForce/1000000/repeats:10             11824 us        11822 us           58
+BM_AbstractForce/1000000/repeats:10             11803 us        11802 us           58
+BM_AbstractForce/1000000/repeats:10             11841 us        11837 us           58
+BM_AbstractForce/1000000/repeats:10             11912 us        11910 us           58
+BM_AbstractForce/1000000/repeats:10_mean        11852 us        11849 us           10
+BM_AbstractForce/1000000/repeats:10_median      11849 us        11846 us           10
+BM_AbstractForce/1000000/repeats:10_stddev       56.3 us         55.3 us           10
+BM_AbstractForce/1000000/repeats:10_cv           0.47 %          0.47 %            10
