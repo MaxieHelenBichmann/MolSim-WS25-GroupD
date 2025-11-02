@@ -13,6 +13,7 @@ if(TEST_ENABLED)
         add_executable(tests ${TEST_SRC})
 
         target_compile_definitions(tests PRIVATE -DTEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
+        target_compile_options(tests PRIVATE -Wall -Wextra)
 
         target_link_libraries(
                 tests

@@ -142,14 +142,14 @@ class Simulation {
 #endif
                     writer.plotParticles(particles, out_name, iteration);
                 } catch (...) {
-                    LOG_ERROR("Something went wrong with plotting the Particles.");
+                    SPDLOG_ERROR("Something went wrong with plotting the Particles.");
                 }
             }
 #endif
-            LOG_INFO("Iteration {} finished.", iteration);
+            SPDLOG_INFO("Iteration {} finished.", iteration);
             current_time += delta_t;
         }
-        LOG_INFO("Output written. Terminating...");
+        SPDLOG_INFO("Output written. Terminating...");
     }
 };
 

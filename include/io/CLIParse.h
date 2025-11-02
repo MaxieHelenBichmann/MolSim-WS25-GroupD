@@ -6,6 +6,7 @@
 #include <string>
 
 #include "io/FileReader.h"
+#include "utils/Logging.h"
 
 namespace mol_sim {
 
@@ -25,11 +26,16 @@ const std::string HELP_MSG =
     "Usage: ./MolSim path/to/input/file <ARGS>\n"
     "| -d <DOUBLE>              : sets DELTA_T (default = 0.014)\n"
     "| -t <DOUBLE>              : sets END_TIME (default = 1000)\n"
+#ifdef LOG_LEVEL_DEBUG
+    "| -l {Info, Debug, Trace}  : sets Log Level (default = Info)\n"
+#endif
     "| -h                       : displays this message";
 const std::string& h = "-h";
 const std::string& d = "-d";
 const std::string& t = "-t";
-
+#ifdef LOG_LEVEL_DEBUG
+const std::string& l = "-l";
+#endif
 void cliParse(int argc, char** argsv, FileReader& fileReader, double& delta_t, double& end_time,
               SimpleContainer& particles) {
     std::cout << "Hello from MolSim for PSE!" << '\n';
@@ -46,7 +52,9 @@ void cliParse(int argc, char** argsv, FileReader& fileReader, double& delta_t, d
     int parsed_args = 2;  // program name + assume file name is OK (bad files handled in fileReader.readfile)
     char** delta_t_opt = std::find(argsv, &argsv[argc], d);
     char** end_time_opt = std::find(argsv, &argsv[argc], t);
-
+#ifdef LOG_LEVEL_DEBUG
+    char** log_opt = std::find(argsv, &argsv[argc], l);
+#endif
     try {
         if (delta_t_opt != &argsv[argc]) {
             delta_t = std::stod(*(++delta_t_opt));
@@ -56,9 +64,17 @@ void cliParse(int argc, char** argsv, FileReader& fileReader, double& delta_t, d
             end_time = std::stod(*(++end_time_opt));
             parsed_args += 2;
         }
+#ifdef LOG_LEVEL_DEBUG
+        if (log_opt != &argsv[argc]) {
+            logInit(*(++log_opt));
+            parsed_args += 2;
+        } else {
+            logInit("Default");
+        }
+#endif
     } catch (std::invalid_argument& e) {
         std::cout << "Erroneous programme call! " << '\n'
-                  << "delta_t and end_time must be valid floating point numbers!" << "\n"
+                  << "given options must be valid floating point numbers or strings!" << "\n"
                   << HELP_MSG << '\n';
         exit(-1);
     } catch (std::out_of_range& e) {

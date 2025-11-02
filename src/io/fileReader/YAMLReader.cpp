@@ -21,11 +21,11 @@ void YAMLReader::readFile(ContainerRef particles, const std::string& filename) {
         } else if (format == "Cuboid") {
             readCube(particles, root);
         } else {
-            LOG_ERROR("Unknown YAML Format");
+            SPDLOG_ERROR("Unknown YAML Format");
             throw YAMLReaderException("Unknown YAML Format");
         }
     } catch (const YAML::Exception& e) {
-        LOG_ERROR("Error parsing YAML: {}", e.what());
+        SPDLOG_ERROR("Error parsing YAML: {}", e.what());
         throw YAMLReaderException(e.what());
     }
 }
@@ -53,7 +53,7 @@ void YAMLReader::readXVM(ContainerRef particles, YAML::Node& node) {
             }
         }
     } catch (const YAML::Exception& e) {
-        LOG_ERROR("Error parsing YAML: {}", e.what());
+        SPDLOG_ERROR("Error parsing YAML: {}", e.what());
         throw YAMLReaderException(e.what());
     }
 }
@@ -90,7 +90,7 @@ void YAMLReader::readCube(ContainerRef particles, YAML::Node& node) {
             }
         }
     } catch (const YAML::Exception& e) {
-        LOG_ERROR("Error parsing YAML: {}", e.what());
+        SPDLOG_ERROR("Error parsing YAML: {}", e.what());
         throw YAMLReaderException(e.what());
     }
 }

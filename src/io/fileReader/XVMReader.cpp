@@ -32,18 +32,18 @@ void XVMReader::readFile(ContainerRef particles, const std::string& filename) {
     if (input_file.is_open()) {
         getline(input_file, tmp_string);
 
-        LOG_TRACE("Read line: {}", tmp_string);
+        SPDLOG_TRACE("Read line: {}", tmp_string);
 
         while (tmp_string.empty() or tmp_string[0] == '#') {
             getline(input_file, tmp_string);
-            LOG_TRACE("Read line: {}", tmp_string);
+            SPDLOG_TRACE("Read line: {}", tmp_string);
         }
 
         std::istringstream numstream(tmp_string);
         numstream >> num_particles;
-        LOG_TRACE("Reading {} particles", num_particles);
+        SPDLOG_TRACE("Reading {} particles", num_particles);
         getline(input_file, tmp_string);
-        LOG_TRACE("Read line: {}", tmp_string);
+        SPDLOG_TRACE("Read line: {}", tmp_string);
 
         particles.reserve(num_particles);
 
@@ -57,17 +57,17 @@ void XVMReader::readFile(ContainerRef particles, const std::string& filename) {
                 datastream >> vj;
             }
             if (datastream.eof()) {
-                LOG_ERROR("Error reading file: eof reached unexpectedly reading from line {}", i);
+                SPDLOG_ERROR("Error reading file: eof reached unexpectedly reading from line {}", i);
                 exit(-1);
             }
             datastream >> m;
             particles.addParticle(x, v, m);
 
             getline(input_file, tmp_string);
-            LOG_TRACE("Read line: {}", tmp_string);
+            SPDLOG_TRACE("Read line: {}", tmp_string);
         }
     } else {
-        LOG_ERROR("Error: could not open file {}", filename);
+        SPDLOG_ERROR("Error: could not open file {}", filename);
         exit(-1);
     }
 }

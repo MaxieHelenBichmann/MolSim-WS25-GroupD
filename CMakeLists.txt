@@ -24,9 +24,7 @@ add_compile_options(-O3 -march=native)
 add_compile_definitions(
     SPDLOG_USE_STD_FORMAT
     $<$<CONFIG:Debug>:LOG_LEVEL_DEBUG>
-    $<$<CONFIG:RelWithDebInfo>:LOG_LEVEL_TRACE>
-    $<$<CONFIG:Release>:LOG_LEVEL_ERROR>
-    $<$<CONFIG:MinSizeRel>:LOG_LEVEL_ERROR>
+    $<$<CONFIG:RelWithDebInfo>:LOG_LEVEL_DEBUG>
 )
 
 # add additional modules
