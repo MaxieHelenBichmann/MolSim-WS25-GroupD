@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: mini-arc-runner-set
     container:
       image: mbichmann/molsim-vtk
     env:
@@ -48,7 +48,7 @@ jobs:
       run: ctest --test-dir "$BUILD_DIR/tests" --output-on-failure
 
   sanitizer:
-    runs-on: ubuntu-latest
+    runs-on: mini-arc-runner-set
     container:
       image: mbichmann/molsim-vtk
     env:
@@ -86,7 +86,7 @@ jobs:
         ASAN_OPTIONS: halt_on_error=1
 
   documentation:
-    runs-on: ubuntu-latest
+    runs-on: mini-arc-runner-set
     container:
       image: mbichmann/molsim-vtk
 
