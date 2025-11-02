@@ -27,7 +27,7 @@ jobs:
           ${{ runner.os }}-cmake-
 
     - name: Configure CMake
-      run: cmake -G Ninja -S . -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" -DENABLE_VTK_OUTPUT=ON
+      run: cmake -G Ninja -S . -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" -DENABLE_VTK_OUTPUT=ON -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
 
     - name: Build
       run: cmake --build "$BUILD_DIR" --config "${BUILD_TYPE}"
