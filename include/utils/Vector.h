@@ -276,6 +276,8 @@ std::ostream& operator<<(std::ostream& os, const Vector<T, N>& v) {
 
 }  // namespace mol_sim
 
+// --------------------  STRUCTURED BINDINGS  --------------------
+
 /**
  * @brief Allows for structured bindings
  * The following partial specializations of std templates allow for
@@ -319,5 +321,7 @@ constexpr const T&& get(const Vector<T, N>&& v) noexcept {
 }
 
 }  // namespace mol_sim
+
+// --------------------  STRUCTURED BINDINGS  --------------------
 
 #endif
