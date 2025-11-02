@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include "../code/ConceptGrav.h"
+#include "../code/ForceConcept.h"
 #include "particles/Particle.h"
 #include "physics/ForceSource.h"
 #include "physics/GravitationalForce.h"
@@ -27,6 +29,26 @@ void bmAbstractForce(benchmark::State& state) {
 };
 
 BENCHMARK(bmAbstractForce)
+    ->RangeMultiplier(10)
+    ->Range(1000, 1000000)
+    ->Repetitions(10)
+    ->DisplayAggregatesOnly(true)
+    ->Unit(benchmark::kMicrosecond);
+
+template <ForceConcept forceType>
+void bmConceptForce(benchmark::State& state) {
+    forceType force;
+    Particle p1 = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0};
+    Particle p2 = {{1.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0};
+    size_t n = state.range(0);
+    for ([[maybe_unused]] auto _ : state) {
+        for (size_t i = 0; i < n; i++) {
+            [[maybe_unused]] auto x = force.calculateForce(p1, p2);
+        }
+    }
+};
+
+BENCHMARK(bmConceptForce<GravitationalConcept>)
     ->RangeMultiplier(10)
     ->Range(1000, 1000000)
     ->Repetitions(10)
