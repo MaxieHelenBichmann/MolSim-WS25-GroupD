@@ -124,7 +124,7 @@ jobs:
 
   upload-codecov:
     runs-on: mini-arc-runner-set
-    requires: build
+    needs: build
     steps:
     - name: Download sanitizer coverage artifact
       uses: actions/download-artifact@v5
