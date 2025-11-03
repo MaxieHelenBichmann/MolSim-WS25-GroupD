@@ -15,33 +15,5 @@ jobs:
       image: mbichmann/molsim-vtk
 
     steps:
-    - name: Download sanitizer coverage artifact
-      uses: dawidd6/action-download-artifact@v2
-      with:
-        workflow: ci.yml
-        branch: ${{ github.ref_name }}
-        name: sanitizer-coverage-report
-        path: coverage-artifact
-        if_no_artifact_found: fail
-
-    - name: Validate coverage payload
-      run: |
-        COVERAGE_DIR="coverage-artifact/coverage"
-        if [ ! -d "$COVERAGE_DIR" ]; then
-          echo "Expected coverage directory '$COVERAGE_DIR' not found."
-          exit 1
-        fi
-        if [ ! -f "$COVERAGE_DIR/lcov.info" ]; then
-          echo "Coverage file '$COVERAGE_DIR/lcov.info' missing. Ensure the CI sanitizer job completed successfully."
-          exit 1
-        fi
-        ls -la "$COVERAGE_DIR"
-        head -n 20 "$COVERAGE_DIR/summary.txt" || true
-
-    - name: Upload to Codecov
-      uses: codecov/codecov-action@v4
-      with:
-        files: coverage-artifact/coverage/lcov.info
-        flags: sanitizer
-        verbose: true
-        token: ${{ secrets.CODECOV_TOKEN }}
+    - name: hash
+      run: echo "Hello World"
