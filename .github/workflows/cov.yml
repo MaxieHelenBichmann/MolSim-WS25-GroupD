@@ -2,6 +2,7 @@ name: Coverage Upload
 
 on:
   workflow_dispatch:
+    inputs: []
 
 permissions:
   contents: read
