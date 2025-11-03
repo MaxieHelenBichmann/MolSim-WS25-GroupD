@@ -35,7 +35,7 @@ jobs:
       run: cmake -G Ninja -S . -B "$BUILD_DIR" \
                   -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" \
                   -DENABLE_VTK_OUTPUT=ON \
-                  -DCOVERAGE_ENABLED=ON \
+                  -DCOVERAGE=ON \
                   -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
 
     - name: Build
@@ -124,6 +124,7 @@ jobs:
 
   upload-codecov:
     runs-on: mini-arc-runner-set
+    requires: build
     steps:
     - name: Download sanitizer coverage artifact
       uses: actions/download-artifact@v5
