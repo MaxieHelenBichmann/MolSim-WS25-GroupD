@@ -72,8 +72,9 @@ jobs:
             -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" \
             -DCMAKE_C_COMPILER=clang \
             -DCMAKE_CXX_COMPILER=clang++ \
-            -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fsanitize=address -fno-omit-frame-pointer" \
-            -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer" \
+            -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fsanitize=address -fno-omit-frame-pointer -fprofile-instr-generate -fcoverage-mapping" \
+            -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer -fprofile-instr-generate -fcoverage-mapping" \
+            -DCMAKE_EXE_LINKER_FLAGS="${CMAKE_EXE_LINKER_FLAGS} -fprofile-instr-generate" \
             -DENABLE_VTK_OUTPUT=ON \
             -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
 
@@ -84,6 +85,53 @@ jobs:
       run: ctest --test-dir "$BUILD_DIR/tests" --output-on-failure
       env:
         ASAN_OPTIONS: halt_on_error=1
+        LLVM_PROFILE_FILE: ${{ env.BUILD_DIR }}/%p-%m.profraw
+
+    - name: Merge coverage data
+      if: ${{ always() }}
+      run: |
+          shopt -s nullglob
+          PROFRAW_FILES=("$BUILD_DIR"/*.profraw)
+          if [ ${#PROFRAW_FILES[@]} -eq 0 ]; then
+            echo "No coverage data generated; skipping merge."
+            exit 0
+          fi
+          llvm-profdata merge -sparse "${PROFRAW_FILES[@]}" -o "$BUILD_DIR/coverage.profdata"
+
+    - name: Generate coverage report
+      if: ${{ always() }}
+      run: |
+          if [ ! -f "$BUILD_DIR/coverage.profdata" ]; then
+            echo "No coverage.profdata found; skipping report generation."
+            exit 0
+          fi
+          mkdir -p "$BUILD_DIR/coverage"
+          mapfile -t COVERAGE_TARGETS < <(find "$BUILD_DIR" -maxdepth 3 -type f -perm -111 \( -name 'MolSim' -o -name 'tests' \))
+          if [ ${#COVERAGE_TARGETS[@]} -eq 0 ]; then
+            echo "No instrumented binaries found for coverage reporting."
+            exit 0
+          fi
+          llvm-cov show "${COVERAGE_TARGETS[@]}" \
+            -instr-profile="$BUILD_DIR/coverage.profdata" \
+            -format=html \
+            -output-dir="$BUILD_DIR/coverage" \
+            -path-equivalence="$GITHUB_WORKSPACE=."
+          llvm-cov report "${COVERAGE_TARGETS[@]}" \
+            -instr-profile="$BUILD_DIR/coverage.profdata" \
+            > "$BUILD_DIR/coverage/summary.txt"
+          cp "$BUILD_DIR/coverage.profdata" "$BUILD_DIR/coverage/coverage.profdata"
+          llvm-cov export "${COVERAGE_TARGETS[@]}" \
+            -instr-profile="$BUILD_DIR/coverage.profdata" \
+            -format=lcov \
+            > "$BUILD_DIR/coverage/lcov.info"
+
+    - name: Upload coverage artifact
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: sanitizer-coverage-report
+        path: ${{ env.BUILD_DIR }}/coverage
+        if-no-files-found: ignore
 
   documentation:
     runs-on: mini-arc-runner-set
