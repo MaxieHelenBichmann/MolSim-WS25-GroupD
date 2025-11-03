@@ -1,19 +1,9 @@
-name: Coverage Upload
-
-on:
-  workflow_dispatch:
-  push:
-    branches: [ "main" ]
-
-permissions:
-  contents: read
-
+name: GitHub Actions Demo
+run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+on: [workflow_dispatch]
 jobs:
-  upload-codecov:
-    runs-on: mini-arc-runner-set
-    container:
-      image: mbichmann/molsim-vtk
-
+  Explore-GitHub-Actions:
+    runs-on: ubuntu-latest
     steps:
-    - name: hash
-      run: echo "Hello World"
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+
