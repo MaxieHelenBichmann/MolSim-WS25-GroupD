@@ -100,7 +100,8 @@ jobs:
     needs: build
     container:
       image: mbichmann/molsim-vtk
-    if: github.event_name == 'workflow_dispatch'
+    # disable conditional execution until workflow is merged into main, so that gh actually renders the button
+    # if: github.event_name == 'workflow_dispatch'
     steps:
     - name: Download sanitizer coverage artifact
       uses: actions/download-artifact@v5
