@@ -10,6 +10,7 @@
 #include "particles/container/ContainerRef.h"
 #include "particles/container/SimpleContainer.h"
 #include "spdlog/sinks/ostream_sink.h"
+#include "utils/Settings.h"
 
 namespace mol_sim {
 // The TEST_DATA_DIR macro is defined in CMakeLists.txt
@@ -22,6 +23,7 @@ class YAMLReaderTest : public testing::Test {
    protected:
     SimpleContainer part_container;
     ContainerRef particles;
+    SettingsParam settings;
     YAMLReaderTest() : part_container(), particles(part_container) {}
     // This string stream will capture all log output during a test.
     std::shared_ptr<std::ostringstream> log_stream;
@@ -60,7 +62,7 @@ class YAMLReaderTest : public testing::Test {
  */
 TEST_F(YAMLReaderTest, ReadSimpleXVM) {
     YAMLReader reader;
-    reader.readFile(particles, test_data_dir + "/simple_XVM.yaml");
+    reader.readFile(particles, settings, test_data_dir + "/simple_XVM.yaml");
     std::string output = log_stream->str();
     EXPECT_EQ(particles.size(), 1);
     EXPECT_EQ(particles[0].getM(), 1.0);
@@ -72,7 +74,7 @@ TEST_F(YAMLReaderTest, ReadSimpleXVM) {
  */
 TEST_F(YAMLReaderTest, ReadSimpleCuboid) {
     YAMLReader reader;
-    reader.readFile(particles, test_data_dir + "/simple_cuboid.yaml");
+    reader.readFile(particles, settings, test_data_dir + "/simple_cuboid.yaml");
     std::string output = log_stream->str();
     EXPECT_EQ(particles.size(), 8);
     for (auto& p : particles) {
@@ -86,7 +88,7 @@ TEST_F(YAMLReaderTest, ReadSimpleCuboid) {
  */
 TEST_F(YAMLReaderTest, ReadNonExistentFile) {
     YAMLReader reader;
-    EXPECT_THROW(reader.readFile(particles, test_data_dir + "/bogus_file.yaml"), YAMLReaderException);
+    EXPECT_THROW(reader.readFile(particles, settings, test_data_dir + "/bogus_file.yaml"), YAMLReaderException);
 }
 /**
  * @brief Tests the behaviour of YAMLReader when an unknown format option is parsed
@@ -94,7 +96,8 @@ TEST_F(YAMLReaderTest, ReadNonExistentFile) {
  */
 TEST_F(YAMLReaderTest, ReadWrongFileFormat) {
     YAMLReader reader;
-    EXPECT_THROW(reader.readFile(particles, test_data_dir + "/unknown_format.yaml"), YAMLReaderException);
+    EXPECT_THROW(reader.readFile(particles, settings, test_data_dir + "/unknown_format.yaml"),
+                 YAMLReaderException);
     std::string output = log_stream->str();
     EXPECT_NE(output.find("Unknown YAML Format"), std::string::npos);
 }
@@ -105,7 +108,7 @@ TEST_F(YAMLReaderTest, ReadWrongFileFormat) {
  */
 TEST_F(YAMLReaderTest, ReadMalformedFile) {
     YAMLReader reader;
-    EXPECT_THROW(reader.readFile(particles, test_data_dir + "/malformed.yaml"), YAMLReaderException);
+    EXPECT_THROW(reader.readFile(particles, settings, test_data_dir + "/malformed.yaml"), YAMLReaderException);
 }
 
 /**
@@ -114,7 +117,8 @@ TEST_F(YAMLReaderTest, ReadMalformedFile) {
  */
 TEST_F(YAMLReaderTest, ReadMissingFields) {
     YAMLReader reader;
-    EXPECT_THROW(reader.readFile(particles, test_data_dir + "/missing_fields.yaml"), YAMLReaderException);
+    EXPECT_THROW(reader.readFile(particles, settings, test_data_dir + "/missing_fields.yaml"),
+                 YAMLReaderException);
 }
 
 /**
@@ -123,7 +127,7 @@ TEST_F(YAMLReaderTest, ReadMissingFields) {
  */
 TEST_F(YAMLReaderTest, ReadEmptyFile) {
     YAMLReader reader;
-    EXPECT_THROW(reader.readFile(particles, test_data_dir + "/empty.yaml"), YAMLReaderException);
+    EXPECT_THROW(reader.readFile(particles, settings, test_data_dir + "/empty.yaml"), YAMLReaderException);
 }
 
 /**
@@ -132,9 +136,32 @@ TEST_F(YAMLReaderTest, ReadEmptyFile) {
  */
 TEST_F(YAMLReaderTest, ReadMultipleObjects) {
     YAMLReader reader;
-    reader.readFile(particles, test_data_dir + "/multiple_objects.yaml");
+    reader.readFile(particles, settings, test_data_dir + "/multiple_objects.yaml");
     std::string output = log_stream->str();
     EXPECT_EQ(particles.size(), 5);
+    EXPECT_EQ(output.find("Error"), std::string::npos);
+}
+
+/**
+ * @brief Tests the behaviour of YAMLReader when a file with only settings is given
+ *
+ */
+TEST_F(YAMLReaderTest, ReadFileWithOnlySettings) {
+    YAMLReader reader;
+    EXPECT_THROW(reader.readFile(particles, settings, test_data_dir + "/only_settings.yaml"), YAMLReaderException);
+}
+
+/**
+ * @brief Tests the YAML Readers ability to read a full config file with settings and multiple objects
+ *
+ */
+TEST_F(YAMLReaderTest, ReadFullConfigFile) {
+    YAMLReader reader;
+    reader.readFile(particles, settings, test_data_dir + "/full_config.yaml");
+    std::string output = log_stream->str();
+    EXPECT_EQ(particles.size(), 5);
+    EXPECT_EQ(settings.delta_t.value(), 0.005);
+    EXPECT_EQ(settings.end_time.value(), 500.0);
     EXPECT_EQ(output.find("Error"), std::string::npos);
 }
 

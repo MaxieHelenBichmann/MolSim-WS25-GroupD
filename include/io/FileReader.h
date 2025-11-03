@@ -26,6 +26,7 @@ class FileReader {
      * @brief Reads the particles encoded in an appropriately formatted file into a ParticleContainer.
      *
      * @param particles The ParticleContainer the particles contained in the file will be stored in.
+     * @param settings SettingParam where read in settings are stored.
      * @param filename The path to the file containing the particles to be stored in 'particles'.
      */
     virtual void readFile(ContainerRef particles, SettingsParam& settings, const std::string& filename) = 0;

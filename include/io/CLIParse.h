@@ -1,13 +1,13 @@
 #ifndef CLI_PARSE_H
 #define CLI_PARSE_H
 
+#include <spdlog/spdlog.h>
+
 #include <algorithm>
 #include <iostream>
-#include <set>
 #include <string>
 
 #include "io/FileReader.h"
-#include "utils/Logging.h"
 #include "utils/Settings.h"
 
 namespace mol_sim {
@@ -19,9 +19,8 @@ namespace mol_sim {
  * @param argc Number of arguments including the program name
  * @param argsv Array of arguments
  * @param fileReader The FileReader that will read the input file
- * @param delta_t The variable that will store the provided timestep interval
- * @param end_time The variable that will store the provided end time of the simulation
- * @param particles A ParticleContainer wherein the particles read from the input file will be stored
+ * @param particles Container to place the generated particles in.
+ * @param settings SettingsParam where options for the simulation are stored.
  */
 
 const std::string HELP_MSG =

@@ -18,14 +18,17 @@ YAMLReader::~YAMLReader() = default;
 void YAMLReader::readFile(ContainerRef particles, SettingsParam& settings, const std::string& filename) {
     try {
         YAML::Node root = YAML::LoadFile(filename);
+        bool has_particle_definition = false;
         for (YAML::const_iterator it = root.begin(); it != root.end(); ++it) {
             const auto& name = it->first.as<std::string>();
             const YAML::Node& node = it->second;
             if (node["format"]) {
                 auto format = node["format"].as<std::string>();
                 if (format == "XVM") {
+                    has_particle_definition = true;
                     readXVM(particles, node);
                 } else if (format == "Cuboid") {
+                    has_particle_definition = true;
                     readCube(particles, node);
                 } else if (format == "Settings") {
                     readSettings(settings, node);
@@ -33,6 +36,10 @@ void YAMLReader::readFile(ContainerRef particles, SettingsParam& settings, const
                     SPDLOG_WARN("Unknown format '{}' for entry '{}'", name, format);
                 }
             }
+        }
+
+        if (!has_particle_definition) {
+            throw YAMLReaderException("No particle definitions (XVM or Cuboid) found in the input file.");
         }
     } catch (const YAML::Exception& e) {
         SPDLOG_ERROR("Error parsing YAML: {}", e.what());
@@ -105,13 +112,13 @@ void YAMLReader::readCube(ContainerRef particles, const YAML::Node& node) {
     }
 }
 void YAMLReader::readSettings(SettingsParam& settings, const YAML::Node& node) {
-    if (node["double_t"]) {
+    if (node["delta_t"] && !settings.delta_t.has_value()) {
         settings.delta_t = node["delta_t"].as<double>();
     }
-    if (node["end_time"]) {
+    if (node["end_time"] && !settings.end_time.has_value()) {
         settings.end_time = node["end_time"].as<double>();
     }
-    if (node["start_time"]) {
+    if (node["start_time"] && !settings.start_time.has_value()) {
         settings.start_time = node["start_time"].as<double>();
     }
 }

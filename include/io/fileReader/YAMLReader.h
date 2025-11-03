@@ -26,6 +26,7 @@ class YAMLReader : public FileReader {
      * @brief function that reads in parameters from .yaml files
      *
      * @param particles Container to place particles in.
+     * @param settings SettingsParam where Simulation parameters are stored.
      * @param filename Path to input file.
      */
     void readFile(ContainerRef particles, SettingsParam& settings, const std::string& filename) override;
