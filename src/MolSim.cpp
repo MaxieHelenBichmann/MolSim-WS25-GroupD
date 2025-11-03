@@ -43,6 +43,7 @@ int main(int argc, char* argsv[]) {
 
     SPDLOG_INFO("Simulation configured with {} particles, delta_t={} end_time={}", particles.size(),
                 settings.delta_t.value(), settings.end_time.value());
-    Simulation<SimpleContainer> simulation(particles, GRAVITATIONAL, settings);
+    Simulation<SimpleContainer> simulation(particles, GRAVITATIONAL, settings.delta_t.value(),
+                                           settings.start_time.value(), settings.end_time.value());
     simulation.run();
 }

@@ -33,7 +33,7 @@ void YAMLReader::readFile(ContainerRef particles, SettingsParam& settings, const
                 } else if (format == "Settings") {
                     readSettings(settings, node);
                 } else {
-                    SPDLOG_WARN("Unknown format '{}' for entry '{}'", name, format);
+                    SPDLOG_WARN("Unknown Format '{}' for entry '{}'", format, name);
                 }
             }
         }

@@ -10,7 +10,6 @@
 #include "particles/ParticleContainer.h"
 #include "physics/ForceSource.h"
 #include "physics/GravitationalForce.h"
-#include "utils/Settings.h"
 
 /**
  * @namespace mol_sim
@@ -39,7 +38,21 @@ class Simulation {
      * Pointer to our force source, for easy switching, force Source determined by forceType in constructor.
      */
     std::unique_ptr<ForceSource> force_source;
-    SettingsParam& settings;
+    /**
+     * @brief Time step of simulation.
+     * Default value is 0.014.
+     */
+    double delta_t;
+    /**
+     * @brief Start time of simulation.
+     * Default value is 0.
+     */
+    double start_time;
+    /**
+     * @brief End time of simulation.
+     * Default value is 1000.
+     */
+    double end_time;
 
     /**
      * @brief Calculates the forces of every particle for the next time step.
@@ -64,8 +77,7 @@ class Simulation {
      */
     void calculateX() {
         for (auto& p : particles) {
-            p.getX() = p.getX() + (settings.delta_t.value() * p.getV()) +
-                       ((0.5 * settings.delta_t.value() * settings.delta_t.value() / p.getM()) * p.getF());
+            p.getX() = p.getX() + (delta_t * p.getV()) + ((0.5 * delta_t * delta_t / p.getM()) * p.getF());
         }
     }
 
@@ -75,7 +87,7 @@ class Simulation {
      */
     void calculateV() {
         for (auto& p : particles) {
-            p.getV() = p.getV() + ((0.5 * settings.delta_t.value() / p.getM()) * (p.getOldF() + p.getF()));
+            p.getV() = p.getV() + ((0.5 * delta_t / p.getM()) * (p.getOldF() + p.getF()));
         }
     }
 
@@ -86,10 +98,12 @@ class Simulation {
      * run the simulation.
      * @param particles Container of particles to be used in the simulation.
      * @param forceType Type of force to be used for calculation.
-     * @param settings Settings for the simulation.
+     * @param delta_t Time step of simulation.
+     * @param start_time Start time of simulation.
+     * @param end_time End time of simulation.
      */
-    Simulation(containerType& particles, Force forceType, SettingsParam& settings)
-        : particles(particles), settings(settings) {
+    Simulation(containerType& particles, Force forceType, double delta_t, double start_time, double end_time)
+        : particles(particles), delta_t(delta_t), start_time(start_time), end_time(end_time) {
         switch (forceType) {
             case GRAVITATIONAL:
                 this->force_source = std::make_unique<GravitationalForce>();
@@ -104,11 +118,11 @@ class Simulation {
      * Performs a full simulation run, using the specified delta_t and end_time.
      */
     void run() {
-        double current_time = settings.start_time.value();
+        double current_time = start_time;
         [[maybe_unused]] int iteration = 0;
 
         // for this loop, we assume: current x, current f and current v are known
-        while (current_time < settings.end_time.value()) {
+        while (current_time < end_time) {
             // calculate new x
             calculateX();
             // calculate new f
@@ -134,7 +148,7 @@ class Simulation {
             }
 #endif
             SPDLOG_INFO("Iteration {} finished.", iteration);
-            current_time += settings.delta_t.value();
+            current_time += delta_t;
         }
         SPDLOG_INFO("Output written. Terminating...");
     }

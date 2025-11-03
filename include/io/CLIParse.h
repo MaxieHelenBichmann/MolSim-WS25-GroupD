@@ -8,7 +8,9 @@
 #include <string>
 
 #include "io/FileReader.h"
+#include "utils/Logging.h"
 #include "utils/Settings.h"
+
 
 namespace mol_sim {
 

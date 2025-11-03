@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 #include <spdlog/spdlog.h>
 
+#include <iostream>
 #include <string>
 
 #include "io/fileReader/YAMLReaderException.h"
@@ -39,7 +40,7 @@ class YAMLReaderTest : public testing::Test {
         log_stream = std::make_shared<std::ostringstream>();
 
         // 3. Create a sink that writes to our stringstream.
-        auto ostream_sink = std::make_shared<spdlog::sinks::ostream_sink_st>(*log_stream);
+        auto ostream_sink = std::make_shared<spdlog::sinks::ostream_sink_st>(*log_stream, true);
 
         // 4. Create a new logger with our sink.
         auto test_logger = std::make_shared<spdlog::logger>("test_logger", ostream_sink);
@@ -96,10 +97,10 @@ TEST_F(YAMLReaderTest, ReadNonExistentFile) {
  */
 TEST_F(YAMLReaderTest, ReadWrongFileFormat) {
     YAMLReader reader;
-    EXPECT_THROW(reader.readFile(particles, settings, test_data_dir + "/unknown_format.yaml"),
-                 YAMLReaderException);
+    EXPECT_THROW(reader.readFile(particles, settings, test_data_dir + "/unknown_format.yaml"), YAMLReaderException);
+    spdlog::default_logger()->flush();
     std::string output = log_stream->str();
-    EXPECT_NE(output.find("Unknown YAML Format"), std::string::npos);
+    EXPECT_NE(output.find("Unknown Format"), std::string::npos);
 }
 
 /**
@@ -117,8 +118,7 @@ TEST_F(YAMLReaderTest, ReadMalformedFile) {
  */
 TEST_F(YAMLReaderTest, ReadMissingFields) {
     YAMLReader reader;
-    EXPECT_THROW(reader.readFile(particles, settings, test_data_dir + "/missing_fields.yaml"),
-                 YAMLReaderException);
+    EXPECT_THROW(reader.readFile(particles, settings, test_data_dir + "/missing_fields.yaml"), YAMLReaderException);
 }
 
 /**

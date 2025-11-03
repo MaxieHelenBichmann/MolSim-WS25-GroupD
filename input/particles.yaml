@@ -1,10 +1,10 @@
--settings:
+settings:
   format: Settings
   delta_t: 0.014
   end_time: 1000.0
   start_time: 0.0
 
--cube:
+cube:
   format: Cuboid
   num_cuboids: 2
   cuboids:

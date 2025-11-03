@@ -3,12 +3,14 @@
 
 This document describes the YAML format for defining a collection of particles.
 
-## General Structure
+To define a set of particles, you create a top-level block with the `format` key set to `"XVM"`.
 
-The YAML file has the following top-level keys:
+## XVM Block
+
+The XVM block has the following keys:
 
 - `format`: A string describing the format, in this case `"XVM"`.
-- `num_particles`: An integer specifying the number of particle objects defined in the file.
+- `num_particles`: An integer specifying the number of particle objects defined in this block.
 - `particles`: A list of particle objects.
 
 ## Particle Object
@@ -28,46 +30,27 @@ Each object in the `particles` list defines a single particle and has the follow
 ## Example
 
 ```yaml
-format: XVM
-num_particles: 4
-particles:
-  - coordinates:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-    velocity:
-      vx: 0.0
-      vy: 0.0
-      vz: 0.0
-    mass: 1.0
+my_particles:
+    format: XVM
+    num_particles: 2
+    particles:
+      - coordinates:
+          x: 0.0
+          y: 0.0
+          z: 0.0
+        velocity:
+          vx: 0.0
+          vy: 0.0
+          vz: 0.0
+        mass: 1.0
 
-  - coordinates:
-      x: 0.0
-      y: 1.0
-      z: 0.0
-    velocity:
-      vx: -1.0
-      vy: 0.0
-      vz: 0.0
-    mass: 3.0e-6
-
-  - coordinates:
-      x: 0.0
-      y: 5.36
-      z: 0.0
-    velocity:
-      vx: -0.425
-      vy: 0.0
-      vz: 0.0
-    mass: 9.55e-4
-
-  - coordinates:
-      x: 34.75
-      y: 0.0
-      z: 0.0
-    velocity:
-      vx: 0.0
-      vy: 0.0296
-      vz: 0.0
-    mass: 1.0e-14
+      - coordinates:
+          x: 0.0
+          y: 1.0
+          z: 0.0
+        velocity:
+          vx: -1.0
+          vy: 0.0
+          vz: 0.0
+        mass: 3.0e-6
 ```
