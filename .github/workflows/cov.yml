@@ -1,13 +1,13 @@
 name: Coverage Upload
 
 on:
-	workflow_dispatch:
+  workflow_dispatch:
 
 permissions:
-	contents: read
+  contents: read
 
 jobs:
-	upload-codecov:
+  upload-codecov:
     runs-on: mini-arc-runner-set
     container:
       image: mbichmann/molsim-vtk
