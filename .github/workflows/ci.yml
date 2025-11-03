@@ -23,14 +23,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Cache CMake build
-      uses: actions/cache@v4
-      with:
-        path: build
-        key: ${{ runner.os }}-cmake-${{ hashFiles('CMakeLists.txt', 'cmake/**') }}
-        restore-keys: |
-          ${{ runner.os }}-cmake-
-
     - name: Configure CMake
       run: cmake -G Ninja -S . -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" -DENABLE_VTK_OUTPUT=ON -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCOVERAGE=ON -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
 
@@ -64,14 +56,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-
-    - name: Cache CMake build
-      uses: actions/cache@v4
-      with:
-        path: build-asan
-        key: ${{ runner.os }}-cmake-asan-${{ hashFiles('CMakeLists.txt', 'cmake/**') }}
-        restore-keys: |
-          ${{ runner.os }}-cmake-asan-
 
     - name: Configure (ASan, Clang)
       run: cmake -G Ninja -S . -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DENABLE_VTK_OUTPUT=ON -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
