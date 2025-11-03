@@ -86,4 +86,5 @@ function(add_coverage_report_target)
     COMMENT "Generating LLVM coverage"
     VERBATIM
   )
+  message(STATUS "Added coverage_report target to generate coverage data for targets: ${_targets}")
 endfunction()
