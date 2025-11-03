@@ -5,6 +5,7 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -97,6 +98,9 @@ jobs:
   upload-codecov:
     runs-on: mini-arc-runner-set
     needs: build
+    container:
+      image: mbichmann/molsim-vtk
+    if: github.event_name == 'workflow_dispatch'
     steps:
     - name: Download sanitizer coverage artifact
       uses: actions/download-artifact@v5
