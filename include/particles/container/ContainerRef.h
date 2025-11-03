@@ -82,6 +82,13 @@ class ContainerRef {
     void addParticle(Particle&& value);
 
     /**
+     * @brief Adding an already existing const Particle to the container by copying it.
+     *
+     * @param value Already constructed Particle.
+     */
+    void addParticle(const Particle& value);
+
+    /**
      * @brief Directly constructing a Particle with its required parameters in-place.
      *
      * @param x_arg Initial coordinates of the Particle.

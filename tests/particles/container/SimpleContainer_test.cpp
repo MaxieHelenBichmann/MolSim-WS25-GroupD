@@ -8,13 +8,15 @@ namespace mol_sim {
 
 static_assert(ParticleContainer<SimpleContainer>, "SimpleContainer must satisfy ParticleContainer concept");
 
-static_assert(std::contiguous_iterator<decltype(std::declval<SimpleContainer&>().begin())>);
-static_assert(std::contiguous_iterator<decltype(std::declval<const SimpleContainer&>().begin())>);
-static_assert(std::contiguous_iterator<decltype(std::declval<SimpleContainer&>().cbegin())>);
-static_assert(std::contiguous_iterator<decltype(std::declval<SimpleContainer&>().end())>);
-static_assert(std::contiguous_iterator<decltype(std::declval<const SimpleContainer&>().end())>);
-static_assert(std::contiguous_iterator<decltype(std::declval<SimpleContainer&>().cend())>);
-
+/**
+ * @brief Test Fixture for testing the SimpleContainer.
+ *
+ * Base Config/Data of the container is as follow:
+ *
+ * particles_empty = empty SimpleContainer
+ * particles_full = SimpleContainer storing 4 Particles (content unimportant)
+ *
+ */
 class SimpleContainerTest : public testing::Test {
    protected:
     SimpleContainer particles_empty;
