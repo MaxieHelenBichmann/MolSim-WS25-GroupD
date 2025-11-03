@@ -22,5 +22,11 @@ if(TEST_ENABLED)
 
         include(GoogleTest)
         gtest_discover_tests(tests)
+
+        if(COVERAGE)
+                include(GenerateCoverage)
+                enable_coverage(tests)
+        endif()
+
         message(STATUS "Testing enabled an tests executable created")
 endif()

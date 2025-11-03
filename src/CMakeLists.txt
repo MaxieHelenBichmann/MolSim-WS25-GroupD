@@ -22,3 +22,9 @@ target_compile_options(MolSim
             # disable some spam warnings for icpc...
             $<$<CXX_COMPILER_ID:Intel>:-w3 -wd383,981,1418,1572,2259>
 )
+
+
+if(COVERAGE)
+    include(GenerateCoverage)
+    enable_coverage(MolSim)
+endif()

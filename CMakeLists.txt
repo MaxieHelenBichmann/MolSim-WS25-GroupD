@@ -43,7 +43,14 @@ include(spdlog)
 include(benchmark)
 include(clang-tidy)
 
+option(COVERAGE "Enable generation of LLVM coverage artifacts" OFF)
+
 
 add_subdirectory(src project)
 add_subdirectory(tests)
 add_subdirectory(benchmarks)
+
+if(COVERAGE)
+    include(GenerateCoverage)
+    add_coverage_report_target()
+endif()
