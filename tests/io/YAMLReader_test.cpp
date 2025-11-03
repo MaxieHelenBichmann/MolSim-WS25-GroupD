@@ -3,7 +3,6 @@
 #include <gtest/gtest.h>
 #include <spdlog/spdlog.h>
 
-#include <iostream>
 #include <string>
 
 #include "io/fileReader/YAMLReaderException.h"
@@ -98,7 +97,6 @@ TEST_F(YAMLReaderTest, ReadNonExistentFile) {
 TEST_F(YAMLReaderTest, ReadWrongFileFormat) {
     YAMLReader reader;
     EXPECT_THROW(reader.readFile(particles, settings, test_data_dir + "/unknown_format.yaml"), YAMLReaderException);
-    spdlog::default_logger()->flush();
     std::string output = log_stream->str();
     EXPECT_NE(output.find("Unknown Format"), std::string::npos);
 }
