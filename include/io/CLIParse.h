@@ -3,10 +3,12 @@
 
 #include <algorithm>
 #include <iostream>
+#include <set>
 #include <string>
 
 #include "io/FileReader.h"
 #include "utils/Logging.h"
+#include "utils/Settings.h"
 
 namespace mol_sim {
 
@@ -36,8 +38,7 @@ const std::string& t = "-t";
 #if SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_TRACE
 const std::string& l = "-l";
 #endif
-void cliParse(int argc, char** argsv, FileReader& fileReader, double& delta_t, double& end_time,
-              SimpleContainer& particles) {
+void cliParse(int argc, char** argsv, FileReader& fileReader, SimpleContainer& particles, SettingsParam& settings) {
     std::cout << "Hello from MolSim for PSE!" << '\n';
     char** help = std::find(argsv, argsv + argc, h);
     if (help != &argsv[argc]) {
@@ -57,11 +58,11 @@ void cliParse(int argc, char** argsv, FileReader& fileReader, double& delta_t, d
 #endif
     try {
         if (delta_t_opt != &argsv[argc]) {
-            delta_t = std::stod(*(++delta_t_opt));
+            settings.delta_t = std::stod(*(++delta_t_opt));
             parsed_args += 2;
         }
         if (end_time_opt != &argsv[argc]) {
-            end_time = std::stod(*(++end_time_opt));
+            settings.end_time = std::stod(*(++end_time_opt));
             parsed_args += 2;
         }
 #if SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_TRACE
@@ -96,7 +97,7 @@ void cliParse(int argc, char** argsv, FileReader& fileReader, double& delta_t, d
         exit(-1);
     }
 
-    fileReader.readFile(particles, argsv[1]);
+    fileReader.readFile(particles, settings, argsv[1]);
 }
 
 }  // namespace mol_sim

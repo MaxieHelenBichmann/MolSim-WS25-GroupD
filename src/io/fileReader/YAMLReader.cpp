@@ -8,29 +8,38 @@
 
 #include "io/fileReader/YAMLReaderException.h"
 #include "particles/generators/CuboidGenerator.h"
+#include "utils/Settings.h"
 
 namespace mol_sim {
 YAMLReader::YAMLReader() = default;
 
 YAMLReader::~YAMLReader() = default;
-void YAMLReader::readFile(ContainerRef particles, const std::string& filename) {
+
+void YAMLReader::readFile(ContainerRef particles, SettingsParam& settings, const std::string& filename) {
     try {
         YAML::Node root = YAML::LoadFile(filename);
-        auto format = root["format"].as<std::string>();
-        if (format == "XVM") {
-            readXVM(particles, root);
-        } else if (format == "Cuboid") {
-            readCube(particles, root);
-        } else {
-            SPDLOG_ERROR("Unknown YAML Format");
-            throw YAMLReaderException("Unknown YAML Format");
+        for (YAML::const_iterator it = root.begin(); it != root.end(); ++it) {
+            const auto& name = it->first.as<std::string>();
+            const YAML::Node& node = it->second;
+            if (node["format"]) {
+                auto format = node["format"].as<std::string>();
+                if (format == "XVM") {
+                    readXVM(particles, node);
+                } else if (format == "Cuboid") {
+                    readCube(particles, node);
+                } else if (format == "Settings") {
+                    readSettings(settings, node);
+                } else {
+                    SPDLOG_WARN("Unknown format '{}' for entry '{}'", name, format);
+                }
+            }
         }
     } catch (const YAML::Exception& e) {
         SPDLOG_ERROR("Error parsing YAML: {}", e.what());
         throw YAMLReaderException(e.what());
     }
 }
-void YAMLReader::readXVM(ContainerRef particles, YAML::Node& node) {
+void YAMLReader::readXVM(ContainerRef particles, const YAML::Node& node) {
     try {
         if (node["particles"] && node["particles"].IsSequence()) {
             auto num_part = node["num_particles"].as<size_t>();
@@ -58,7 +67,7 @@ void YAMLReader::readXVM(ContainerRef particles, YAML::Node& node) {
         throw YAMLReaderException(e.what());
     }
 }
-void YAMLReader::readCube(ContainerRef particles, YAML::Node& node) {
+void YAMLReader::readCube(ContainerRef particles, const YAML::Node& node) {
     try {
         if (node["cuboids"] && node["cuboids"].IsSequence()) {
             auto num_cube = node["num_cuboids"].as<size_t>();
@@ -93,6 +102,17 @@ void YAMLReader::readCube(ContainerRef particles, YAML::Node& node) {
     } catch (const YAML::Exception& e) {
         SPDLOG_ERROR("Error parsing YAML: {}", e.what());
         throw YAMLReaderException(e.what());
+    }
+}
+void YAMLReader::readSettings(SettingsParam& settings, const YAML::Node& node) {
+    if (node["double_t"]) {
+        settings.delta_t = node["delta_t"].as<double>();
+    }
+    if (node["end_time"]) {
+        settings.end_time = node["end_time"].as<double>();
+    }
+    if (node["start_time"]) {
+        settings.start_time = node["start_time"].as<double>();
     }
 }
 }  // namespace mol_sim

@@ -14,13 +14,16 @@
 #include <iostream>
 #include <sstream>
 
+#include "utils/Settings.h"
+
 using namespace mol_sim;
 
 XVMReader::XVMReader() = default;
 
 XVMReader::~XVMReader() = default;
 
-void XVMReader::readFile(ContainerRef particles, const std::string& filename) {
+void XVMReader::readFile(ContainerRef particles, [[maybe_unused]] SettingsParam& settings,
+                         const std::string& filename) {
     std::array<double, 3> x;
     std::array<double, 3> v;
     double m;

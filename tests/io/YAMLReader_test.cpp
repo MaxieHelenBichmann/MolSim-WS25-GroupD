@@ -126,4 +126,16 @@ TEST_F(YAMLReaderTest, ReadEmptyFile) {
     EXPECT_THROW(reader.readFile(particles, test_data_dir + "/empty.yaml"), YAMLReaderException);
 }
 
+/**
+ * @brief Tests the YAML Readers ability to read multiple objects from a single file
+ *
+ */
+TEST_F(YAMLReaderTest, ReadMultipleObjects) {
+    YAMLReader reader;
+    reader.readFile(particles, test_data_dir + "/multiple_objects.yaml");
+    std::string output = log_stream->str();
+    EXPECT_EQ(particles.size(), 5);
+    EXPECT_EQ(output.find("Error"), std::string::npos);
+}
+
 }  // namespace mol_sim

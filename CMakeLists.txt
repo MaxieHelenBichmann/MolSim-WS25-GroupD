@@ -47,4 +47,3 @@ include(clang-tidy)
 add_subdirectory(src project)
 add_subdirectory(tests)
 add_subdirectory(benchmarks)
-
