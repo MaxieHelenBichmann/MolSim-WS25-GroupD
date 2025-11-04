@@ -21,7 +21,7 @@ void YAMLReader::readFile(ContainerRef particles, SettingsParam& settings, const
         bool has_particle_definition = false;
         for (YAML::const_iterator it = root.begin(); it != root.end(); ++it) {
             const auto& name = it->first.as<std::string>();
-            const YAML::Node& node = it->second;
+            YAML::Node node = it->second;
             if (node["format"]) {
                 auto format = node["format"].as<std::string>();
                 if (format == "XVM") {

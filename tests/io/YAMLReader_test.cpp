@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 #include <spdlog/spdlog.h>
 
+#include <mutex>
 #include <string>
 
 #include "io/fileReader/YAMLReaderException.h"
@@ -31,7 +32,10 @@ class YAMLReaderTest : public testing::Test {
     // Store the original logger to restore it after the test is done.
     std::shared_ptr<spdlog::logger> original_logger;
 
+    static std::mutex mtx;
+
     void SetUp() override {
+        std::lock_guard<std::mutex> lock(mtx);
         // 1. Save the existing default logger so we can restore it later.
         original_logger = spdlog::default_logger();
 
@@ -52,10 +56,14 @@ class YAMLReaderTest : public testing::Test {
     }
 
     void TearDown() override {
+        std::lock_guard<std::mutex> lock(mtx);
         // Restore the original logger to avoid side-effects between tests.
         spdlog::set_default_logger(original_logger);
     }
 };
+
+std::mutex YAMLReaderTest::mtx;
+
 /**
  * @brief Tests the YAML Readers XVM Format support
  * Tests this by reading in simple_XVM.yaml
