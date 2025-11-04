@@ -121,5 +121,11 @@ void YAMLReader::readSettings(SettingsParam& settings, const YAML::Node& node) {
     if (node["start_time"] && !settings.start_time.has_value()) {
         settings.start_time = node["start_time"].as<double>();
     }
+    if (node["sigma"] && !settings.sigma.has_value()) {
+        settings.sigma = node["sigma"].as<double>();
+    }
+    if (node["epsilon"] && !settings.epsilon.has_value()) {
+        settings.epsilon = node["epsilon"].as<double>();
+    }
 }
 }  // namespace mol_sim

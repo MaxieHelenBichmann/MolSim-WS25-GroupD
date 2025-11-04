@@ -5,15 +5,14 @@
 
 #include <memory>
 
-#include "utils/Logging.h"
 #include "io/outputWriter/VTKWriter.h"
 #include "io/outputWriter/XYZWriter.h"
 #include "particles/ParticleContainer.h"
 #include "physics/ForceSource.h"
 #include "physics/GravitationalForce.h"
 #include "physics/LennardJonesForce.h"
+#include "utils/Logging.h"
 #include "utils/Settings.h"
-#include "utils/Defaults.h"
 
 /**
  * @namespace mol_sim
@@ -96,32 +95,34 @@ class Simulation {
     }
 
    public:
-
     /**
      * @brief Construct a new Simulation object and prepare for run() call
      * This class implements a Builder Pattern, meaning all parameters need to be set before the run() call, which will
      * run the simulation.
      * @param particles Container of particles to be used in the simulation.
-     * @param settings Simulation parameters. If relevant values are not set their default values in include/utils/Default.h
-     * will be used instead.
+     * @param settings Simulation parameters. If relevant values are not set their default values in
+     * include/utils/Default.h will be used instead.
      */
-    Simulation(containerType& particles, SettingsParam& settings)
-        : particles(particles) {
-        delta_t = settings.delta_t.value_or(DELTA_T_DEFAULT);
-        start_time = settings.start_time.value_or(START_TIME_DEFAULT);
-        end_time = settings.end_time.value_or(END_TIME_DEFAULT);
-        switch (settings.force_type.value_or(FORCE_TYPE_DEFAULT)) {
+    Simulation(containerType& particles, SettingsParam& settings) : particles(particles) {
+        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+        delta_t = settings.delta_t.value();
+        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+        start_time = settings.start_time.value();
+        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+        end_time = settings.end_time.value();
+        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+        switch (settings.force_type.value()) {
             case GRAVITATIONAL:
                 this->force_source = std::make_unique<GravitationalForce>();
                 break;
             case LENNARDJONES:
-                this->force_source = std::make_unique<LennardJonesForce>
-                (settings.epsilon.value_or(EPSILON_DEFAULT), settings.sigma.value_or(SIGMA_DEFAULT));
+
+                this->force_source = std::make_unique<LennardJonesForce>(
+                    settings.epsilon.value(), settings.sigma.value());  // NOLINT(bugprone-unchecked-optional-access)
             default:
                 break;
         }
     }
-
 
     /**
      * HOT FIX FOR Simulation_test.cpp. NEED TO CHANGE THAT FILE CAUSE WE CANT KEEP THIS CONSTRUCTOR (its ugly)
