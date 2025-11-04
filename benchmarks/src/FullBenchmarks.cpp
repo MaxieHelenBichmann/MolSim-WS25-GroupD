@@ -17,8 +17,7 @@ static void bmSimulationBig(benchmark::State& state) {
     SimpleContainer part_container;
     ContainerRef particles(part_container);
     size_t n = state.range(0);
-    CuboidGenerator generator({0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {std::move(n), std::move(n), std::move(n)}, 1.0, 1.0,
-                              0.5);  // NOLINT
+    CuboidGenerator generator({0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {n, n, n}, 1.0, 1.0, 0.5);
     Simulation<SimpleContainer> simulation(part_container, GRAVITATIONAL, 0.1, 0, 1000);
     for ([[maybe_unused]] auto _ : state) {
         generator.generateParticles(particles);
@@ -28,7 +27,7 @@ static void bmSimulationBig(benchmark::State& state) {
 // Register the function as a benchmark
 // BENCHMARK(BM_SimulationBig)->Range(2, 2 << 6)->Unit(benchmark::kMillisecond);
 /**
- * @brief Teststhe simulation with the parameters given in Assignment 2
+ * @brief Tests the simulation with the parameters given in Assignment 2
  * Particle counts are 40x8x1 + 8x8x1
  *
  */

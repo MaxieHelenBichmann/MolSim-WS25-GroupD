@@ -7,9 +7,9 @@
 
 #include "particles/Particle.h"
 
-#include <iostream>
+#include <spdlog/spdlog.h>
 
-#include "utils/Logging.h"
+#include <iostream>
 
 using namespace mol_sim;
 
@@ -31,7 +31,7 @@ Particle::Particle(const Particle& other) {
 }
 
 Particle& Particle::operator=(const Particle& other) {
-    if (this == &other) { // handle self-assignment
+    if (this == &other) {  // handle self-assignment
         return *this;
     }
     x = other.x;
