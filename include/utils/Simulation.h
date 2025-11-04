@@ -62,6 +62,37 @@ class Simulation {
      * Calculates the forces of every particle. for the next time step. Using the specified force source and delta_t.
      */
     void calculateF() {
+        std::vector<Vector<double, 3>> forces(particles.size(), Vector<double,3>());
+
+        for (auto& p : particles) {
+            p.getOldF() = p.getF();
+            p.getF() = Vector<double, 3>();
+        }
+
+        for (size_t i = 0; i <= particles.size(); i++) {
+            Particle p1 = particles[i];
+            // compute row
+            for (size_t j = i+1; j < particles.size(); j++) {
+                Particle p2 = particles[j];
+                Vector<double, 3> force = force_source->calculateForce(p1, p2);
+                forces[j] = force;
+                p1.getF() = p1.getF() + force;
+            }
+            // apply row in column 
+            for (size_t j = i+1; j < particles.size(); j++) {
+                particles[j].getF() = particles[j].getF() - forces[j]; 
+            }
+        }
+    }
+
+
+    /**
+     * @brief Calculates the forces of every particle for the next time step.
+     * Calculates the forces of every particle. for the next time step. Using the specified force source and delta_t.
+     *
+     * ONLY HERE FOR BENCHMARKING REASONS.
+     */
+    void calculateFUnoptimized() {
         for (auto& p1 : particles) {
             p1.getOldF() = p1.getF();
             p1.getF() = Vector<double, 3>();
@@ -116,7 +147,6 @@ class Simulation {
                 this->force_source = std::make_unique<GravitationalForce>();
                 break;
             case LENNARDJONES:
-
                 this->force_source = std::make_unique<LennardJonesForce>(
                     settings.epsilon.value(), settings.sigma.value());  // NOLINT(bugprone-unchecked-optional-access)
             default:
