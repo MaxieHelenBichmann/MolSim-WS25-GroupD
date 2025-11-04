@@ -3,6 +3,8 @@
 
 #include <optional>
 
+#include "physics/ForceSource.h"
+
 namespace mol_sim {
 /**
  * @brief Provides a wrapper for settings of the simulation set during config
@@ -26,6 +28,21 @@ class SettingsParam {
      */
     std::optional<double> end_time;
     /**
+     * @brief Force type used in the simulation.
+     *
+     */
+    std::optional<Force> force_type;
+    /**
+     * @brief Force type used in the simulation.
+     *
+     */
+    std::optional<double> epsilon;
+    /**
+    * @brief Force type used in the simulation.
+    *
+    */
+    std::optional<double> sigma;
+    /**
      * @brief Construct new SettingsParam.
      * All values will be set to null_opt if not specified otherwise.
      * Default Values will be set in MolSim.cpp
@@ -34,8 +51,10 @@ class SettingsParam {
      * @param end_time
      */
     SettingsParam(std::optional<double> delta_t = std::nullopt, std::optional<double> start_time = std::nullopt,
-                  std::optional<double> end_time = std::nullopt)
-        : delta_t(delta_t), start_time(start_time), end_time(end_time) {}
+                  std::optional<double> end_time = std::nullopt, std::optional<Force> force_type = std::nullopt, 
+                  std::optional<double> epsilon = std::nullopt, std::optional<double> sigma = std::nullopt)
+        : delta_t(delta_t), start_time(start_time), end_time(end_time), force_type(force_type), 
+          epsilon(epsilon), sigma(sigma) {}
 };
 }  // namespace mol_sim
 #endif
