@@ -3,6 +3,7 @@
 
 #include "io/FileReader.h"
 #include "particles/container/ContainerRef.h"
+#include "utils/Settings.h"
 
 namespace mol_sim {
 
@@ -24,7 +25,7 @@ class XVMReader : public FileReader {
    public:
     XVMReader();
     ~XVMReader() override;
-    void readFile(ContainerRef particles, const std::string& filename) override;
+    void readFile(ContainerRef particles, SettingsParam& settings, const std::string& filename) override;
 };
 
 }  // namespace mol_sim

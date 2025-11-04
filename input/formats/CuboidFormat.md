@@ -3,12 +3,14 @@
 
 This document describes the YAML format for defining one or more cuboids of particles.
 
-## General Structure
+To define a cuboid, you create a top-level block with the `format` key set to `"Cuboid"`.
 
-The YAML file has the following top-level keys:
+## Cuboid Block
+
+The cuboid block has the following keys:
 
 - `format`: A string describing the format, in this case `"Cuboid"`.
-- `num_cuboids`: An integer specifying the number of cuboid objects defined in the file.
+- `num_cuboids`: An integer specifying the number of cuboid objects defined in this block.
 - `cuboids`: A list of cuboid objects.
 
 ## Cuboid Object
@@ -34,37 +36,23 @@ Each object in the `cuboids` list defines a single cuboid and has the following 
 ## Example
 
 ```yaml
-format: Cuboid
-num_cuboids: 2
-cuboids:
-  - coordinates:
-      x: 0.0
-      y: 0.0
-      z: 0.0
-    velocity:
-      vx: 0.0
-      vy: 0.0
-      vz: 0.0
-    particleNum:
-      nx: 40
-      ny: 8
-      nz: 1
-    mass: 1.0
-    distance: 1.1225
-    mean_velo: 0.1
-  - coordinates:
-      x: 15.0
-      y: 15.0
-      z: 0.0
-    velocity:
-      vx: 0.0
-      vy: -10.0
-      vz: 0.0
-    particleNum:
-      nx: 8
-      ny: 8
-      nz: 1
-    mass: 1.0
-    distance: 1.1225
-    mean_velo: 0.1
+my_cuboid:
+    format: Cuboid
+    num_cuboids: 1
+    cuboids:
+      - coordinates:
+          x: 0.0
+          y: 0.0
+          z: 0.0
+        velocity:
+          vx: 0.0
+          vy: 0.0
+          vz: 0.0
+        particleNum:
+          nx: 40
+          ny: 8
+          nz: 1
+        mass: 1.0
+        distance: 1.1225
+        mean_velo: 0.1
 ```

@@ -12,6 +12,8 @@
 #include "physics/ForceSource.h"
 #include "physics/GravitationalForce.h"
 #include "physics/LennardJonesForce.h"
+#include "utils/Settings.h"
+#include "utils/Defaults.h"
 
 /**
  * @namespace mol_sim
@@ -96,25 +98,25 @@ class Simulation {
    public:
 
     /**
-     * @brief Construct a new Simulation object and prepare for run() call. 
-     * This constructor is currently exclusively used for benchmarks. Uses default values for epsilon and sigma for Lennard-Jones
-     * forces.
+     * @brief Construct a new Simulation object and prepare for run() call
      * This class implements a Builder Pattern, meaning all parameters need to be set before the run() call, which will
      * run the simulation.
      * @param particles Container of particles to be used in the simulation.
-     * @param forceType Type of force to be used for calculation.
-     * @param delta_t Time step of simulation.
-     * @param start_time Start time of simulation.
-     * @param end_time End time of simulation.
+     * @param settings Simulation parameters. If relevant values are not set their default values in include/utils/Default.h
+     * will be used instead.
      */
-    Simulation(containerType& particles, Force forceType, double delta_t, double start_time, double end_time)
-        : particles(particles), delta_t(delta_t), start_time(start_time), end_time(end_time) {
-        switch (forceType) {
+    Simulation(containerType& particles, SettingsParam& settings)
+        : particles(particles) {
+        delta_t = settings.delta_t.value_or(DELTA_T_DEFAULT);
+        start_time = settings.start_time.value_or(START_TIME_DEFAULT);
+        end_time = settings.end_time.value_or(END_TIME_DEFAULT);
+        switch (settings.force_type.value_or(FORCE_TYPE_DEFAULT)) {
             case GRAVITATIONAL:
                 this->force_source = std::make_unique<GravitationalForce>();
                 break;
             case LENNARDJONES:
-                this->force_source = std::make_unique<LennardJonesForce>(5, 1);
+                this->force_source = std::make_unique<LennardJonesForce>
+                (settings.epsilon.value_or(EPSILON_DEFAULT), settings.sigma.value_or(SIGMA_DEFAULT));
             default:
                 break;
         }
@@ -122,27 +124,14 @@ class Simulation {
 
 
     /**
-     * @brief Construct a new Simulation object and prepare for run() call
-     * This class implements a Builder Pattern, meaning all parameters need to be set before the run() call, which will
-     * run the simulation.
-     * @param particles Container of particles to be used in the simulation.
-     * @param forceType Type of force to be used for calculation.
-     * @param delta_t Time step of simulation.
-     * @param start_time Start time of simulation.
-     * @param end_time End time of simulation.
-     * @param params Additional parameters. For instance epsilon and sigma for Lennard-Jones.
+     * HOT FIX FOR Simulation_test.cpp. NEED TO CHANGE THAT FILE CAUSE WE CANT KEEP THIS CONSTRUCTOR (its ugly)
      */
-    Simulation(containerType& particles, Force forceType, double delta_t, double start_time, double end_time, std::vector<double>& params)
+    Simulation(containerType& particles, Force forceType, double delta_t, double start_time, double end_time)
         : particles(particles), delta_t(delta_t), start_time(start_time), end_time(end_time) {
         switch (forceType) {
             case GRAVITATIONAL:
                 this->force_source = std::make_unique<GravitationalForce>();
                 break;
-            case LENNARDJONES:
-                if (params.size() != 2) {
-                    std::cout << "Too little or too many args for Lennard-Jones force" << '\n';
-                }
-                this->force_source = std::make_unique<LennardJonesForce>(params[0], params[1]);
             default:
                 break;
         }
@@ -154,7 +143,7 @@ class Simulation {
      */
     void run() {
         double current_time = start_time;
-        int iteration = 0;
+        [[maybe_unused]] int iteration = 0;
 
         // for this loop, we assume: current x, current f and current v are known
         while (current_time < end_time) {

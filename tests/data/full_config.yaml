@@ -1,0 +1,38 @@
+settings:
+    format: Settings
+    delta_t: 0.005
+    end_time: 500.0
+
+cuboid_1:
+    format: Cuboid
+    num_cuboids: 1
+    cuboids:
+      - coordinates:
+          x: 0.0
+          y: 0.0
+          z: 0.0
+        velocity:
+          vx: 0.0
+          vy: 0.0
+          vz: 0.0
+        particleNum:
+          nx: 2
+          ny: 2
+          nz: 1
+        mass: 1.0
+        distance: 1.0
+        mean_velo: 0.1
+
+xvm_1:
+    format: XVM
+    num_particles: 1
+    particles:
+        - coordinates:
+            x: 10.0
+            y: 10.0
+            z: 10.0
+          velocity:
+            vx: 0.0
+            vy: 0.0
+            vz: 0.0
+          mass: 2.0

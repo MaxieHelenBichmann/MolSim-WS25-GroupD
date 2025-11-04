@@ -3,23 +3,22 @@
 #include "io/CLIParse.h"
 #include "io/fileReader/YAMLReader.h"
 #include "particles/container/SimpleContainer.h"
-#include "physics/ForceSource.h"
+#include "utils/Settings.h"
 #include "utils/Simulation.h"
+#include "utils/Defaults.h"
 
 using namespace mol_sim;
 
-constexpr double START_TIME = 0;
-
 int main(int argc, char* argsv[]) {
-    double delta_t = 0.014;
-    double end_time = 1000;
-    Force force_type = GRAVITATIONAL;
     YAMLReader file_reader;
     SimpleContainer particles;
-    std::vector<double> params;
+    SettingsParam settings;
+    cliParse(argc, argsv, file_reader, particles, settings);
+    setDefaults(settings);
 
-    cliParse(argc, argsv, file_reader, delta_t, end_time, force_type, params, particles);
-    SPDLOG_INFO("Simulation configured with {} particles, delta_t={} end_time={}", particles.size(), delta_t, end_time);
-    Simulation<SimpleContainer> simulation(particles, force_type, delta_t, START_TIME, end_time, params);
+    //explicit .value_or despite call to setDefaults to make warnings disappear
+    SPDLOG_INFO("Simulation configured with {} particles, delta_t={} end_time={}", particles.size(),
+                settings.delta_t.value_or(DELTA_T_DEFAULT), settings.end_time.value_or(END_TIME_DEFAULT));
+    Simulation<SimpleContainer> simulation(particles, settings);
     simulation.run();
 }

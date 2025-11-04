@@ -13,7 +13,7 @@ if(TEST_ENABLED)
         add_executable(tests ${TEST_SRC})
 
         target_compile_definitions(tests PRIVATE -DTEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
-        target_compile_options(tests PRIVATE -Wall -Wextra)
+        target_compile_options(tests PRIVATE -Wall -Wextra -Werror)
 
         target_link_libraries(
                 tests
@@ -22,5 +22,11 @@ if(TEST_ENABLED)
 
         include(GoogleTest)
         gtest_discover_tests(tests)
+
+        if(COVERAGE)
+                include(GenerateCoverage)
+                enable_coverage(tests)
+        endif()
+
         message(STATUS "Testing enabled an tests executable created")
 endif()

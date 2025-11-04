@@ -44,7 +44,7 @@ class Vector {
     /**
      * @brief Constructor copies N given values into the components of a Vector
      *
-     * @param inits arbitrary number (smaller or equal N) of elements of fitting type
+     * @param inits arbitrary number (smaller or equal N) of elements or references of fitting type
      */
     template <typename... Ts>
         requires(... && (std::integral<std::decay_t<Ts>> || std::floating_point<std::decay_t<Ts>>))

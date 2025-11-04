@@ -1,6 +1,8 @@
 #ifndef CLI_PARSE_H
 #define CLI_PARSE_H
 
+#include <spdlog/spdlog.h>
+
 #include <algorithm>
 #include <iostream>
 #include <string>
@@ -9,6 +11,7 @@
 #include "io/FileReader.h"
 #include "utils/Logging.h"
 #include "physics/ForceSource.h"
+#include "utils/Settings.h"
 
 namespace mol_sim {
 
@@ -19,9 +22,8 @@ namespace mol_sim {
  * @param argc Number of arguments including the program name
  * @param argsv Array of arguments
  * @param fileReader The FileReader that will read the input file
- * @param delta_t The variable that will store the provided timestep interval
- * @param end_time The variable that will store the provided end time of the simulation
- * @param particles A ParticleContainer wherein the particles read from the input file will be stored
+ * @param particles Container to place the generated particles in.
+ * @param settings SettingsParam where options for the simulation are stored.
  */
 
 const std::string HELP_MSG =
@@ -45,8 +47,7 @@ const std::string& l = "-l";
 #endif
 const std::string& h = "-h";
 
-void cliParse(int argc, char** argsv, FileReader& fileReader, double& delta_t, double& end_time, 
-              Force& force, std::vector<double>& params, SimpleContainer& particles) {
+void cliParse(int argc, char** argsv, FileReader& fileReader, SimpleContainer& particles, SettingsParam& settings) {
     std::cout << "Hello from MolSim for PSE!" << '\n';
     char** help = std::find(argsv, argsv + argc, h);
     if (help != &argsv[argc]) {
@@ -69,11 +70,11 @@ void cliParse(int argc, char** argsv, FileReader& fileReader, double& delta_t, d
 #endif
     try {
         if (delta_t_opt != &argsv[argc]) {
-            delta_t = std::stod(*(++delta_t_opt));
+            settings.delta_t = std::stod(*(++delta_t_opt));
             parsed_args += 2;
         }
         if (end_time_opt != &argsv[argc]) {
-            end_time = std::stod(*(++end_time_opt));
+            settings.end_time = std::stod(*(++end_time_opt));
             parsed_args += 2;
         }
         if (force_opt != &argsv[argc]) {
@@ -82,23 +83,19 @@ void cliParse(int argc, char** argsv, FileReader& fileReader, double& delta_t, d
             bool lj   = !static_cast<bool>(std::strcmp(force_string, "LJ"));
             
             if (grav) { 
-                force = GRAVITATIONAL; 
+                settings.force_type = GRAVITATIONAL; 
                 parsed_args += 2;
             }
             else if (lj) { 
-                force = LENNARDJONES;
+                settings.force_type = LENNARDJONES;
                 parsed_args += 2;
-                double epsilon = 5;
-                double sigma = 1;
                 if (epsilon_opt != &argsv[argc]) {
-                    epsilon = std::stod(*(++epsilon_opt));
+                    settings.epsilon = std::stod(*(++epsilon_opt));
                     parsed_args += 2;
                 } else if (sigma_opt == &argsv[argc]) { 
-                    sigma = std::stod(*(++sigma_opt));
+                    settings.sigma = std::stod(*(++sigma_opt));
                     parsed_args += 2;
                 }
-                params.push_back(epsilon);
-                params.push_back(sigma);
             }
         }
 #if SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_TRACE
@@ -133,7 +130,7 @@ void cliParse(int argc, char** argsv, FileReader& fileReader, double& delta_t, d
         exit(-1);
     }
 
-    fileReader.readFile(particles, argsv[1]);
+    fileReader.readFile(particles, settings, argsv[1]);
 }
 
 }  // namespace mol_sim

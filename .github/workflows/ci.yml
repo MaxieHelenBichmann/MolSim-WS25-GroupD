@@ -5,10 +5,16 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # mini-arc-runner-set
     container:
       image: mbichmann/molsim-vtk
     env:
@@ -18,32 +24,31 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Cache CMake build
-      uses: actions/cache@v4
-      with:
-        path: build
-        key: ${{ runner.os }}-cmake-${{ hashFiles('CMakeLists.txt', 'cmake/**') }}
-        restore-keys: |
-          ${{ runner.os }}-cmake-
-
     - name: Configure CMake
-      run: cmake -G Ninja -S . -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" -DENABLE_VTK_OUTPUT=ON
+      run: cmake -G Ninja -S . -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" -DENABLE_VTK_OUTPUT=ON -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCOVERAGE=ON -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
 
     - name: Build
       run: cmake --build "$BUILD_DIR" --config "${BUILD_TYPE}"
 
-    - name: Debug cache path
-      run: |
-        echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
-        ls -la "$GITHUB_WORKSPACE"
-        ls -la build || true
-        find build -maxdepth 2 -type d -print
-
     - name: Test
       run: ctest --test-dir "$BUILD_DIR/tests" --output-on-failure
+      env:
+        LLVM_PROFILE_FILE: ${{ env.BUILD_DIR }}/%p-%m.profraw
+    
+    - name: Generate coverage report
+      if: ${{ always() }}
+      run: cmake --build "$BUILD_DIR" --target coverage_report
+
+    - name: Upload coverage artifact
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: ${{ env.BUILD_DIR }}/coverage
+        if-no-files-found: ignore
 
   sanitizer:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # mini-arc-runner-set
     container:
       image: mbichmann/molsim-vtk
     env:
@@ -53,23 +58,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Cache CMake build
-      uses: actions/cache@v4
-      with:
-        path: build-asan
-        key: ${{ runner.os }}-cmake-asan-${{ hashFiles('CMakeLists.txt', 'cmake/**') }}
-        restore-keys: |
-          ${{ runner.os }}-cmake-asan-
-
     - name: Configure (ASan, Clang)
-      run: |
-          cmake -G Ninja -S . -B "$BUILD_DIR" \
-            -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" \
-            -DCMAKE_C_COMPILER=clang \
-            -DCMAKE_CXX_COMPILER=clang++ \
-            -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fsanitize=address -fno-omit-frame-pointer" \
-            -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer" \
-            -DENABLE_VTK_OUTPUT=ON
+      run: cmake -G Ninja -S . -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fsanitize=address -fno-omit-frame-pointer" -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DENABLE_VTK_OUTPUT=ON -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
 
     - name: Build
       run: cmake --build "$BUILD_DIR" --config "${BUILD_TYPE}"
@@ -78,3 +68,50 @@ jobs:
       run: ctest --test-dir "$BUILD_DIR/tests" --output-on-failure
       env:
         ASAN_OPTIONS: halt_on_error=1
+
+  documentation:
+    runs-on: ubuntu-latest # mini-arc-runner-set
+    container:
+      image: mbichmann/molsim-vtk
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Pages
+      uses: actions/configure-pages@v5
+
+    - name: Configure
+      run: cmake -G Ninja -S . -B build
+      
+    - name: Build Documentation
+      run: cmake --build build --target doc_doxygen
+
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: './doxys_documentation/html'
+  
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
+
+  upload-codecov:
+    runs-on: ubuntu-latest # mini-arc-runner-set
+    needs: build
+    container:
+      image: mbichmann/molsim-vtk
+    # disable conditional execution until workflow is merged into main, so that gh actually renders the button
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+    - name: Download sanitizer coverage artifact
+      uses: actions/download-artifact@v5
+      with:
+        name: coverage-report
+
+    - name: Upload to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        files: coverage-artifact/coverage/lcov.info
+        flags: coverage
+        verbose: true
+        token: ${{ secrets.CODECOV_TOKEN }}

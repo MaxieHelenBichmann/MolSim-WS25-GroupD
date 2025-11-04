@@ -26,8 +26,8 @@ add_compile_definitions(
     SPDLOG_USE_STD_FORMAT
     $<$<CONFIG:Debug>:SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE>
     $<$<CONFIG:RelWithDebInfo>:SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE>
-    $<$<CONFIG:Release>:SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_ERROR>
-    $<$<CONFIG:MinSizeRel>:SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_ERROR>
+    $<$<CONFIG:Release>:SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_WARN>
+    $<$<CONFIG:MinSizeRel>:SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_WARN>
 )
 
 
@@ -43,8 +43,14 @@ include(spdlog)
 include(benchmark)
 include(clang-tidy)
 
+option(COVERAGE "Enable generation of LLVM coverage artifacts" OFF)
+
 
 add_subdirectory(src project)
 add_subdirectory(tests)
 add_subdirectory(benchmarks)
 
+if(COVERAGE)
+    include(GenerateCoverage)
+    add_coverage_report_target()
+endif()
