@@ -23,7 +23,7 @@ int main(int argc, char* argsv[]) {
 
     // explicit .value_or despite call to setDefaults to make warnings disappear
     SPDLOG_INFO("Simulation configured with {} particles, delta_t={} end_time={}", particles.size(),
-                settings.delta_t.value, settings.end_time.value);  // NOLINT((bugprone-unchecked-optional-access))
+                settings.delta_t.value(), settings.end_time.value());  // NOLINT((bugprone-unchecked-optional-access))
     Simulation<SimpleContainer> simulation(particles, settings);
     simulation.run();
 }
