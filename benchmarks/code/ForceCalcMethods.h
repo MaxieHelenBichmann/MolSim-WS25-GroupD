@@ -6,6 +6,15 @@
 #include "particles/ParticleContainer.h"
 #include "physics/ForceSource.h"
 namespace mol_sim {
+
+/**
+ * @deprecated ONLY USED FOR BENCHMARKING
+ * @brief Copy of the calculateF Method in Simulate.
+ *
+ * @tparam containerType Type of container used.
+ * @param particles Particle Container to calculate forces for.
+ * @param force_source Force source to be used for calculation
+ */
 template <ParticleContainer containerType>
 void calculateF(containerType& particles, std::unique_ptr<ForceSource>& force_source) {
     std::vector<Vector<double, 3>> forces(particles.size(), Vector<double, 3>());
@@ -32,10 +41,12 @@ void calculateF(containerType& particles, std::unique_ptr<ForceSource>& force_so
 }
 
 /**
- * @brief Calculates the forces of every particle for the next time step.
- * Calculates the forces of every particle. for the next time step. Using the specified force source and delta_t.
+ * @deprecated ONLY USED FOR BENCHMARKING
+ * @brief Old unoptimized version of the calculateF Method in Simulation.
  *
- * ONLY HERE FOR BENCHMARKING REASONS.
+ * @tparam containerType Type of container used.
+ * @param particles Particle Container to calculate forces for.
+ * @param force_source Force source to be used for calculation
  */
 template <ParticleContainer containerType>
 void calculateFUnoptimized(containerType& particles, std::unique_ptr<ForceSource>& force_source) {

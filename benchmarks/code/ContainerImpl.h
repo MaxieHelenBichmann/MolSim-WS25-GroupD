@@ -6,7 +6,10 @@
 #include "AbstractContainer.h"
 
 namespace mol_sim {
-
+/**
+ * @deprecated ONLY USED FOR BENCHMARKING
+ * @brief Concrete Implementation of abstract container.
+ */
 class ContainerImpl : public AbstractContainer {
    private:
     std::vector<Particle> particles;

@@ -6,7 +6,11 @@
 #include "particles/Particle.h"
 
 namespace mol_sim {
-
+/**
+ * @brief Concept of a ForceSource.
+ * fulfills the same function as the abstract Class approach.
+ * @tparam C
+ */
 template <typename C>
 concept ForceConcept = requires(C c, const Particle& p1, const Particle& p2) {
     { c.calculateForce(p1, p2) } -> std::same_as<Vector<double, 3>>;

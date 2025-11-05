@@ -4,7 +4,10 @@
 #include "particles/Particle.h"
 
 namespace mol_sim {
-
+/**
+ * @deprecated ONLY USED FOR BENCHMARKING
+ * @brief Abstract implementation of a Particle Container
+ */
 class AbstractContainer {
    public:
     virtual ~AbstractContainer() = default;

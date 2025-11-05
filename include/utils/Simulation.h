@@ -136,20 +136,6 @@ class Simulation {
     }
 
     /**
-     * HOT FIX FOR Simulation_test.cpp. NEED TO CHANGE THAT FILE CAUSE WE CANT KEEP THIS CONSTRUCTOR (its ugly)
-     */
-    Simulation(containerType& particles, Force forceType, double delta_t, double start_time, double end_time)
-        : particles(particles), delta_t(delta_t), start_time(start_time), end_time(end_time) {
-        switch (forceType) {
-            case GRAVITATIONAL:
-                this->force_source = std::make_unique<GravitationalForce>();
-                break;
-            default:
-                break;
-        }
-    }
-
-    /**
      * @brief Performs a full simulation run.
      * Performs a full simulation run, using the specified delta_t and end_time.
      */
