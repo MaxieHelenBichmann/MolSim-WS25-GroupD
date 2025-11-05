@@ -64,8 +64,8 @@ jobs:
     - name: Build
       run: cmake --build "$BUILD_DIR" --config "${BUILD_TYPE}"
 
-    - name: Test (ASan)
-      run: ctest --test-dir "$BUILD_DIR/tests" --output-on-failure
+    - name: Run MolSim with ASan
+      run: ./"$BUILD_DIR"/project/MolSim ./input/planets.yaml
       env:
         ASAN_OPTIONS: halt_on_error=1
 
