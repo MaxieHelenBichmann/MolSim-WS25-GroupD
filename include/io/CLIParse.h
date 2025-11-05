@@ -61,7 +61,7 @@ void cliParse(int argc, char** argsv, FileReader& fileReader, SimpleContainer& p
         exit(-2);
     }
 
-    int parsed_args = 1;  // program name + assume file name is OK (bad files handled in fileReader.readfile)
+    int parsed_args = 2;  // program name + assume file name is OK (bad files handled in fileReader.readfile)
     char** delta_t_opt = std::find(argsv, &argsv[argc], d);
     char** end_time_opt = std::find(argsv, &argsv[argc], t);
     char** force_opt = std::find(argsv, &argsv[argc], f);
