@@ -54,14 +54,14 @@ void cliParse(int argc, char** argsv, FileReader& fileReader, SimpleContainer& p
     char** help = std::find(argsv, argsv + argc, h);
     if (help != &argsv[argc]) {
         std::cout << HELP_MSG << '\n';
-        exit(0);
-    }
-    if (argc == 1) {
-        std::cout << "Erroneous programme call! " << '\n' << HELP_MSG << '\n';
         exit(-1);
     }
+    if (argc == 0) {
+        std::cout << "Erroneous programme call! " << '\n' << HELP_MSG << '\n';
+        exit(-2);
+    }
 
-    int parsed_args = 2;  // program name + assume file name is OK (bad files handled in fileReader.readfile)
+    int parsed_args = 1;  // program name + assume file name is OK (bad files handled in fileReader.readfile)
     char** delta_t_opt = std::find(argsv, &argsv[argc], d);
     char** end_time_opt = std::find(argsv, &argsv[argc], t);
     char** force_opt = std::find(argsv, &argsv[argc], f);

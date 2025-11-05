@@ -63,6 +63,9 @@ Contributors:
     ```
     ./build/project/MolSim ./input/planets.yaml -d 0.014 -t 1000
     ```
+    ```
+    ./build/project/MolSim ./input/particles.yaml -d 0.0002 -t 5
+    ```
 
 ## Testing the project
 
@@ -71,7 +74,7 @@ Contributors:
 0. Make sure to be in the project root.
 
 1. Run the test executable or use ctest:
-    ```e
+    ```
     ./build/tests/tests
     ```
     ```

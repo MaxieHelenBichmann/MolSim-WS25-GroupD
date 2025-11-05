@@ -128,6 +128,7 @@ class Simulation {
                 this->force_source = std::make_unique<GravitationalForce>();
                 break;
             case LENNARDJONES:
+                SPDLOG_INFO("HELLO");
                 this->force_source = std::make_unique<LennardJonesForce>(
                     settings.epsilon.value(), settings.sigma.value());  // NOLINT(bugprone-unchecked-optional-access)
             default:

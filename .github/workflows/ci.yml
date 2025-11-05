@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest # mini-arc-runner-set
+    runs-on: mini-arc-runner-set # ubuntu-latest 
     container:
       image: mbichmann/molsim-vtk
     env:
@@ -48,7 +48,7 @@ jobs:
         if-no-files-found: ignore
 
   sanitizer:
-    runs-on: ubuntu-latest # mini-arc-runner-set
+    runs-on: mini-arc-runner-set # ubuntu-latest
     container:
       image: mbichmann/molsim-vtk
     env:
@@ -64,13 +64,13 @@ jobs:
     - name: Build
       run: cmake --build "$BUILD_DIR" --config "${BUILD_TYPE}"
 
-    - name: Test (ASan)
-      run: ctest --test-dir "$BUILD_DIR/tests" --output-on-failure
+    - name: Run MolSim with ASan
+      run: ./"$BUILD_DIR"/project/MolSim ./input/particles.yaml -d 0.02 -t 1 # don't run for too long or create too many files
       env:
         ASAN_OPTIONS: halt_on_error=1
 
   documentation:
-    runs-on: ubuntu-latest # mini-arc-runner-set
+    runs-on: mini-arc-runner-set # ubuntu-latest
     container:
       image: mbichmann/molsim-vtk
 
@@ -96,7 +96,7 @@ jobs:
       uses: actions/deploy-pages@v4
 
   upload-codecov:
-    runs-on: ubuntu-latest # mini-arc-runner-set
+    runs-on: mini-arc-runner-set # ubuntu-latest
     needs: build
     container:
       image: mbichmann/molsim-vtk

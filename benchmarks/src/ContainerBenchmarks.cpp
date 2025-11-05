@@ -103,5 +103,5 @@ BENCHMARK(bmAbstractContainer)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kMicrosecond);
 
-BENCHMARK_MAIN();  //(NOLINT)
+BENCHMARK_MAIN();  // NOLINT
 }  // namespace mol_sim

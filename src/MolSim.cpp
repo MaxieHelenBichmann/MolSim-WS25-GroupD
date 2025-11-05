@@ -16,6 +16,7 @@ int main(int argc, char* argsv[]) {
     try {
         cliParse(argc, argsv, file_reader, particles, settings);
     } catch (YAMLReaderException& e) {
+        SPDLOG_ERROR("FAIL!!!");
         SPDLOG_ERROR("YAML Reader failed with: {}", e.what());
         exit(-1);
     }

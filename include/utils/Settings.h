@@ -30,7 +30,7 @@ class SettingsParam {
      * @brief Default value for the start_time parameter of the simulation.
      *
      */
-    constexpr static Force FORCE_TYPE_DEFAULT = GRAVITATIONAL;
+    constexpr static Force FORCE_TYPE_DEFAULT = LENNARDJONES;
     /**
      * @brief Default value for the epsilon parameter of the simulation if
      * the force_type is LJ (Lennard-Jones).

@@ -1,7 +1,7 @@
 settings:
   format: Settings
-  delta_t: 0.014
-  end_time: 1000.0
+  delta_t: 0.0002
+  end_time: 5.0
   start_time: 0.0
 
 cube:
