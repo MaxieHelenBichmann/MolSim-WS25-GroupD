@@ -46,6 +46,8 @@ const std::string& o = "-o";
 const std::string& l = "-l";
 #endif
 const std::string& h = "-h";
+const char* GRAV = "GRAV";
+const char* LJ = "LJ";
 
 void cliParse(int argc, char** argsv, FileReader& fileReader, SimpleContainer& particles, SettingsParam& settings) {
     std::cout << "Hello from MolSim for PSE!" << '\n';
@@ -79,8 +81,8 @@ void cliParse(int argc, char** argsv, FileReader& fileReader, SimpleContainer& p
         }
         if (force_opt != &argsv[argc]) {
             char* force_string = *(++force_opt);
-            bool grav = !static_cast<bool>(std::strcmp(force_string, "GRAV"));
-            bool lj   = !static_cast<bool>(std::strcmp(force_string, "LJ"));
+            bool grav = !static_cast<bool>(std::strcmp(force_string, GRAV));
+            bool lj   = !static_cast<bool>(std::strcmp(force_string, LJ));
             
             if (grav) { 
                 settings.force_type = GRAVITATIONAL; 
@@ -92,7 +94,8 @@ void cliParse(int argc, char** argsv, FileReader& fileReader, SimpleContainer& p
                 if (epsilon_opt != &argsv[argc]) {
                     settings.epsilon = std::stod(*(++epsilon_opt));
                     parsed_args += 2;
-                } else if (sigma_opt == &argsv[argc]) { 
+                }
+                if (sigma_opt != &argsv[argc]) { 
                     settings.sigma = std::stod(*(++sigma_opt));
                     parsed_args += 2;
                 }
