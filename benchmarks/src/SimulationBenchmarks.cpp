@@ -9,7 +9,11 @@
 #include "physics/GravitationalForce.h"
 
 namespace mol_sim {
-
+/**
+ * @brief Benchmarks the unoptimized Force Calculation
+ *
+ *
+ */
 void bmForceUnOptimized(benchmark::State& state) {
     SimpleContainer particles;
     size_t n = state.range(0);
@@ -24,7 +28,11 @@ void bmForceUnOptimized(benchmark::State& state) {
     }
 }
 BENCHMARK(bmForceUnOptimized)->RangeMultiplier(10)->Range(100, 1000)->Repetitions(10)->Unit(benchmark::kMicrosecond);
-
+/**
+ * @brief Benchmarks the optimized Force Calculation
+ *
+ *
+ */
 void bmForceOptimized(benchmark::State& state) {
     SimpleContainer particles;
     size_t n = state.range(0);
