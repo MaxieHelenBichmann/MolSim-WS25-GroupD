@@ -4,13 +4,17 @@
 #include <spdlog/spdlog.h>
 
 #include <algorithm>
-#include <iostream>
-#include <string>
 #include <cstring>
+#include <filesystem>
+#include <iostream>
+#include <memory>
+#include <string>
 
 #include "io/FileReader.h"
-#include "utils/Logging.h"
+#include "io/fileReader/XVMReader.h"
+#include "io/fileReader/YAMLReader.h"
 #include "physics/ForceSource.h"
+#include "utils/Logging.h"
 #include "utils/Settings.h"
 
 namespace mol_sim {
@@ -49,7 +53,7 @@ const std::string& h = "-h";
 const char* GRAV = "GRAV";
 const char* LJ = "LJ";
 
-void cliParse(int argc, char** argsv, FileReader& fileReader, SimpleContainer& particles, SettingsParam& settings) {
+void cliParse(int argc, char** argsv, SimpleContainer& particles, SettingsParam& settings) {
     std::cout << "Hello from MolSim for PSE!" << '\n';
     char** help = std::find(argsv, argsv + argc, h);
     if (help != &argsv[argc]) {
@@ -82,20 +86,19 @@ void cliParse(int argc, char** argsv, FileReader& fileReader, SimpleContainer& p
         if (force_opt != &argsv[argc]) {
             char* force_string = *(++force_opt);
             bool grav = !static_cast<bool>(std::strcmp(force_string, GRAV));
-            bool lj   = !static_cast<bool>(std::strcmp(force_string, LJ));
-            
-            if (grav) { 
-                settings.force_type = GRAVITATIONAL; 
+            bool lj = !static_cast<bool>(std::strcmp(force_string, LJ));
+
+            if (grav) {
+                settings.force_type = GRAVITATIONAL;
                 parsed_args += 2;
-            }
-            else if (lj) { 
+            } else if (lj) {
                 settings.force_type = LENNARDJONES;
                 parsed_args += 2;
                 if (epsilon_opt != &argsv[argc]) {
                     settings.epsilon = std::stod(*(++epsilon_opt));
                     parsed_args += 2;
                 }
-                if (sigma_opt != &argsv[argc]) { 
+                if (sigma_opt != &argsv[argc]) {
                     settings.sigma = std::stod(*(++sigma_opt));
                     parsed_args += 2;
                 }
@@ -132,8 +135,19 @@ void cliParse(int argc, char** argsv, FileReader& fileReader, SimpleContainer& p
                   << HELP_MSG << '\n';
         exit(-1);
     }
+    std::unique_ptr<FileReader> file_reader;
 
-    fileReader.readFile(particles, settings, argsv[1]);
+    std::filesystem::path path = argsv[1];
+    if (path.extension() == ".txt") {
+        file_reader = std::make_unique<XVMReader>();
+    } else if (path.extension() == ".yaml") {
+        file_reader = std::make_unique<YAMLReader>();
+    } else {
+        SPDLOG_ERROR("Unsupported File Extension");
+        exit(-1);
+    }
+
+    file_reader->readFile(particles, settings, argsv[1]);
 }
 
 }  // namespace mol_sim
