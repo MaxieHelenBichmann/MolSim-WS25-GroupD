@@ -63,6 +63,9 @@ Contributors:
     ```
     ./build/project/MolSim ./input/planets.yaml -d 0.014 -t 1000
     ```
+    ```
+    ./build/project/MolSim ./input/particles.yaml -d 0.0002 -t 5
+    ```
 
 ## Testing the project
 
