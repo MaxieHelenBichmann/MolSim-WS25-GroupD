@@ -112,10 +112,10 @@ class SettingsParam {
         if (!force_type.has_value()) {
             force_type = FORCE_TYPE_DEFAULT;
         }
-        if (!start_time.has_value()) {
+        if (!epsilon.has_value()) {
             epsilon = EPSILON_DEFAULT;
         }
-        if (!start_time.has_value()) {
+        if (!sigma.has_value()) {
             sigma = SIGMA_DEFAULT;
         }
     }
