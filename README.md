@@ -74,7 +74,7 @@ Contributors:
 0. Make sure to be in the project root.
 
 1. Run the test executable or use ctest:
-    ```e
+    ```
     ./build/tests/tests
     ```
     ```
