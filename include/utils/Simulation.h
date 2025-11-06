@@ -75,7 +75,7 @@ class Simulation {
             // compute row
             for (size_t j = i + 1; j < particles.size(); j++) {
                 Particle p2 = particles[j];
-                Vector<double, 3> force = force_source->calculateForce(p1, p2);
+                Vector<double, 3> force = force_source->applyForce(p1, p2);
                 forces[j] = force;
                 p1.getF() = p1.getF() + force;
             }

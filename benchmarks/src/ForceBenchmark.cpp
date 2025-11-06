@@ -23,7 +23,7 @@ void bmAbstractForce(benchmark::State& state) {
     size_t n = state.range(0);
     for ([[maybe_unused]] auto _ : state) {
         for (size_t i = 0; i < n; i++) {
-            [[maybe_unused]] auto x = force->calculateForce(p1, p2);
+            [[maybe_unused]] auto x = force->applyForce(p1, p2);
         }
     }
 };
@@ -43,7 +43,7 @@ void bmConceptForce(benchmark::State& state) {
     size_t n = state.range(0);
     for ([[maybe_unused]] auto _ : state) {
         for (size_t i = 0; i < n; i++) {
-            [[maybe_unused]] auto x = force.calculateForce(p1, p2);
+            [[maybe_unused]] auto x = force.applyForce(p1, p2);
         }
     }
 };

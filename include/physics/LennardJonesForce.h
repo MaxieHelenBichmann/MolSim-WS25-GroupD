@@ -14,7 +14,7 @@ namespace mol_sim {
  */
 class LennardJonesForce : public ForceSource {
    private:
-    double epsilon; 
+    double epsilon;
     double sigma;
 
    public:
@@ -24,9 +24,7 @@ class LennardJonesForce : public ForceSource {
      * @param epsilon Depth of the potential well
      * @param sigma Distance where Lennard-Jones force between two particles is 0
      */
-    LennardJonesForce(double epsilon, double sigma)
-        : epsilon(epsilon),
-          sigma(sigma) {};
+    LennardJonesForce(double epsilon, double sigma) : epsilon(epsilon), sigma(sigma) {};
     /**
      * @brief Calculates the Lennard-Jones force a particle p2 exerts on a different particle p1.
      *
@@ -36,7 +34,7 @@ class LennardJonesForce : public ForceSource {
      *
      * Calculates the Lennard-Jones force a particle p2 exerts on a different particle p1.
      */
-    [[nodiscard]] Vector<double, 3> calculateForce(const Particle& p1, const Particle& p2) const override;
+    [[nodiscard]] Vector<double, 3> applyForce(const Particle& p1, const Particle& p2) const override;
 };
 
 }  // namespace mol_sim

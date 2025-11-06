@@ -29,7 +29,7 @@ void calculateF(containerType& particles, std::unique_ptr<ForceSource>& force_so
         // compute row
         for (size_t j = i + 1; j < particles.size(); j++) {
             Particle& p2 = particles[j];
-            Vector<double, 3> force = force_source->calculateForce(p1, p2);
+            Vector<double, 3> force = force_source->applyForce(p1, p2);
             forces[j] = force;
             p1.getF() = p1.getF() + force;
         }
@@ -57,7 +57,7 @@ void calculateFUnoptimized(containerType& particles, std::unique_ptr<ForceSource
             if (p1 == p2) {
                 continue;
             }
-            p1.getF() = p1.getF() + force_source->calculateForce(p1, p2);
+            p1.getF() = p1.getF() + force_source->applyForce(p1, p2);
         }
     }
 }
