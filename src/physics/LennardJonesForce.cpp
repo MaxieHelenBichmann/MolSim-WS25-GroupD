@@ -11,7 +11,7 @@ Vector<double, 3> LennardJonesForce::applyForce(const Particle& p1, const Partic
         return {0.0, 0.0, 0.0};
     }
     const auto llj_force =
-        (((-24 * epsilon) / (distance * distance)) * (pow(sigma / distance, 6) - (2 * pow(sigma / distance, 12)))) *
-        -1 * difference;
+        (((-24 * epsilon) / (distance * distance)) * (pow(sigma / distance, 6.0) - (2.0 * pow(sigma / distance, 12.0)))) *
+        -1.0 * difference;
     return llj_force;
 }
