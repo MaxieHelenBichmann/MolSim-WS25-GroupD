@@ -12,7 +12,6 @@
 #include "physics/ForceSource.h"
 #include "physics/GravitationalForce.h"
 #include "physics/LennardJonesForce.h"
-#include "utils/Logging.h"
 #include "utils/Settings.h"
 
 /**
