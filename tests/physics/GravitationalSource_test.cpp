@@ -36,7 +36,7 @@ class GravitationalForceTest : public testing::Test {
  *
  */
 TEST_F(GravitationalForceTest, TestForceCalcUnaligned) {
-    R3 result = GravitationalForce().calculateForce(p1, p2);
+    R3 result = GravitationalForce().applyForce(p1, p2);
     R3 expected = {0.0, 0.192, 0.256};
     EXPECT_EQ(result, expected);
 }
@@ -45,8 +45,8 @@ TEST_F(GravitationalForceTest, TestForceCalcUnaligned) {
  * Force on particle1 = -Force on particle2
  */
 TEST_F(GravitationalForceTest, TestForceSymmetry) {
-    R3 result1 = GravitationalForce().calculateForce(p1, p2);
-    R3 result2 = GravitationalForce().calculateForce(p2, p1);
+    R3 result1 = GravitationalForce().applyForce(p1, p2);
+    R3 result2 = GravitationalForce().applyForce(p2, p1);
     EXPECT_EQ(result1, result2 * -1);
 }
 
@@ -56,7 +56,7 @@ TEST_F(GravitationalForceTest, TestForceSymmetry) {
  */
 TEST_F(GravitationalForceTest, TestForceCalcZeroDistance) {
     p2 = {p1_x, p2_v, p2_mass};
-    R3 result = GravitationalForce().calculateForce(p1, p2);
+    R3 result = GravitationalForce().applyForce(p1, p2);
     R3 expected = {0.0, 0.0, 0.0};
     EXPECT_EQ(result, expected);
 }
@@ -66,7 +66,7 @@ TEST_F(GravitationalForceTest, TestForceCalcZeroDistance) {
  */
 TEST_F(GravitationalForceTest, TestForceCalcZeroMass) {
     p1 = {p1_x, p1_v, 0.0};
-    R3 result = GravitationalForce().calculateForce(p1, p2);
+    R3 result = GravitationalForce().applyForce(p1, p2);
     R3 expected = {0.0, 0.0, 0.0};
     EXPECT_EQ(result, expected);
 }
@@ -77,7 +77,7 @@ TEST_F(GravitationalForceTest, TestForceCalcZeroMass) {
 TEST_F(GravitationalForceTest, TestForceCalcAligned) {
     p1 = {{0.0, 0.0, 0.0}, p1_v, 1.0};
     p2 = {{1.0, 0.0, 0.0}, p2_v, 1.0};
-    R3 result = GravitationalForce().calculateForce(p1, p2);
+    R3 result = GravitationalForce().applyForce(p1, p2);
     R3 expected = {1.0, 0.0, 0.0};
     EXPECT_EQ(result, expected);
 }

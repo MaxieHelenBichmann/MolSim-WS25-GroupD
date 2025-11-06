@@ -23,7 +23,7 @@ class GravitationalConcept {
      *
      * Calculates the gravitational force a particle p2 exerts on a different particle p1.
      */
-    [[nodiscard]] Vector<double, 3> calculateForce(const Particle& p1, const Particle& p2) const;
+    [[nodiscard]] Vector<double, 3> applyForce(const Particle& p1, const Particle& p2) const;
 };
 
 }  // namespace mol_sim

@@ -113,27 +113,22 @@ void cliParse(int argc, char** argsv, SimpleContainer& particles, SettingsParam&
         }
 #endif
     } catch (std::invalid_argument& e) {
-        std::cout << "Erroneous programme call! " << '\n'
-                  << "Given options must be valid floating point numbers or strings!" << "\n"
-                  << HELP_MSG << '\n';
+        SPDLOG_ERROR("Erroneous programme call!: Given options must be valid floating point numbers or strings!");
+        std::cout << HELP_MSG << '\n';
         exit(-1);
     } catch (std::out_of_range& e) {
-        std::cout << "Erroneous programme call! " << '\n'
-                  << "At least one floating point out of double precision floating point range!" << "\n"
-                  << HELP_MSG << '\n';
+        SPDLOG_ERROR(
+            "Erroneous programme call!: At least one floating point out of double precision floating point range!");
+        std::cout << HELP_MSG << '\n';
         exit(-1);
     } catch (std::logic_error& e) {
-        std::cout << "Erroneous programme call! " << '\n'
-                  << "Flag set but no value provided!" << "\n"
-                  << HELP_MSG << '\n';
+        SPDLOG_ERROR("Erroneous programme call!: Flag set but no value provided!");
+        std::cout << HELP_MSG << '\n';
         exit(-1);
     }
 
     if (parsed_args - argc != 0) {
-        std::cout << "Erroneous programme call! " << '\n'
-                  << "Unrecognized arguments in programme call!" << "\n"
-                  << HELP_MSG << '\n';
-        exit(-1);
+        SPDLOG_WARN("Erroneous programme call!: Unrecognized arguments in programme call!");
     }
     std::unique_ptr<FileReader> file_reader;
 
@@ -143,7 +138,7 @@ void cliParse(int argc, char** argsv, SimpleContainer& particles, SettingsParam&
     } else if (path.extension() == ".yaml") {
         file_reader = std::make_unique<YAMLReader>();
     } else {
-        SPDLOG_ERROR("Unsupported File Extension");
+        SPDLOG_ERROR("Unsupported File Extension!");
         exit(-1);
     }
 

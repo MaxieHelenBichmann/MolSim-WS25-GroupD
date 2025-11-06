@@ -4,7 +4,7 @@
 
 using namespace mol_sim;
 
-Vector<double, 3> GravitationalConcept::calculateForce(const Particle& p1, const Particle& p2) const {
+Vector<double, 3> GravitationalConcept::applyForce(const Particle& p1, const Particle& p2) const {
     const auto difference = p2.getX() - p1.getX();
     const double distance = difference.euclidNorm();
     if (distance == 0) {
