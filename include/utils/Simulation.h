@@ -29,7 +29,7 @@ namespace mol_sim {
  * and then execute run().
  * @tparam containerType Type of container used for this simulation. Templated to work with Concept.
  */
-template <ParticleContainer containerType>
+template <ParticleContainer containerType, ForceSource forceType>
 class Simulation {
    private:
     /**
@@ -41,7 +41,7 @@ class Simulation {
      * @brief Pointer to our force source.
      * Pointer to our force source, for easy switching, force Source determined by forceType in constructor.
      */
-    std::unique_ptr<ForceSource> force_source;
+    forceType force_source;
     /**
      * @brief Time step of simulation.
      * Default value is 0.014.
@@ -75,7 +75,7 @@ class Simulation {
             // compute row
             for (size_t j = i + 1; j < particles.size(); j++) {
                 Particle p2 = particles[j];
-                Vector<double, 3> force = force_source->applyForce(p1, p2);
+                Vector<double, 3> force = force_source.applyForce(p1, p2);
                 forces[j] = force;
                 p1.getF() = p1.getF() + force;
             }
@@ -125,7 +125,7 @@ class Simulation {
         // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
         switch (settings.force_type.value()) {
             case GRAVITATIONAL:
-                this->force_source = std::make_unique<GravitationalForce>();
+                this->force_source = GravitationalForce();
                 break;
             case LENNARDJONES:
                 this->force_source = std::make_unique<LennardJonesForce>(

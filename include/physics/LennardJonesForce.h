@@ -12,7 +12,7 @@ namespace mol_sim {
  * Class to calculate Lennard-Jones forces between two different objects.
  * Implements the ForceSource interface.
  */
-class LennardJonesForce : public ForceSource {
+class LennardJonesForce {
    private:
     double epsilon;
     double sigma;
@@ -34,7 +34,7 @@ class LennardJonesForce : public ForceSource {
      *
      * Calculates the Lennard-Jones force a particle p2 exerts on a different particle p1.
      */
-    [[nodiscard]] Vector<double, 3> applyForce(const Particle& p1, const Particle& p2) const override;
+    [[nodiscard]] Vector<double, 3> applyForce(const Particle& p1, const Particle& p2) const;
 };
 
 }  // namespace mol_sim
