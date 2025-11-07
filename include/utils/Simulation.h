@@ -122,17 +122,6 @@ class Simulation {
         start_time = settings.start_time.value();
         // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
         end_time = settings.end_time.value();
-        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-        switch (settings.force_type.value()) {
-            case GRAVITATIONAL:
-                this->force_source = GravitationalForce();
-                break;
-            case LENNARDJONES:
-                this->force_source = std::make_unique<LennardJonesForce>(
-                    settings.epsilon.value(), settings.sigma.value());  // NOLINT(bugprone-unchecked-optional-access)
-            default:
-                break;
-        }
     }
 
     /**

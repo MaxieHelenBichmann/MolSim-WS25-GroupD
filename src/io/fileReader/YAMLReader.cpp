@@ -66,7 +66,8 @@ void YAMLReader::readXVM(ContainerRef particles, const YAML::Node& node) {
 
                 auto mass = curr["mass"].as<double>();
 
-                particles.addParticle(position, velocity, mass);
+                particles.addParticle(position, velocity, mass, mol_sim::SettingsParam::EPSILON_DEFAULT,
+                                      mol_sim::SettingsParam::EPSILON_DEFAULT);
             }
         }
     } catch (const YAML::Exception& e) {
@@ -101,8 +102,10 @@ void YAMLReader::readCube(ContainerRef particles, const YAML::Node& node) {
                 auto mass = curr["mass"].as<double>();
                 auto distance = curr["distance"].as<double>();
                 auto avg_velo = curr["mean_velo"].as<double>();
+                auto epsilon = curr["epsilon"].as<double>();
+                auto sigma = curr["sigma"].as<double>();
 
-                CuboidGenerator generator(position, velocity, num_particles, mass, distance, avg_velo);
+                CuboidGenerator generator(position, velocity, num_particles, mass, distance, avg_velo, epsilon, sigma);
                 generator.generateParticles(particles);
             }
         }
@@ -120,12 +123,6 @@ void YAMLReader::readSettings(SettingsParam& settings, const YAML::Node& node) {
     }
     if (node["start_time"] && !settings.start_time.has_value()) {
         settings.start_time = node["start_time"].as<double>();
-    }
-    if (node["sigma"] && !settings.sigma.has_value()) {
-        settings.sigma = node["sigma"].as<double>();
-    }
-    if (node["epsilon"] && !settings.epsilon.has_value()) {
-        settings.epsilon = node["epsilon"].as<double>();
     }
 }
 }  // namespace mol_sim

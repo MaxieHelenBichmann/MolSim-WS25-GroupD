@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "../code/AbstractForce.h"
 #include "../code/ConceptGrav.h"
 #include "../code/ForceConcept.h"
 #include "particles/Particle.h"
@@ -17,7 +18,7 @@ namespace mol_sim {
  */
 
 void bmAbstractForce(benchmark::State& state) {
-    std::unique_ptr<ForceSource> force = std::make_unique<GravitationalForce>();
+    std::unique_ptr<ForceAbstract> force = std::make_unique<GravitationalForce>();
     Particle p1 = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0};
     Particle p2 = {{1.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0};
     size_t n = state.range(0);

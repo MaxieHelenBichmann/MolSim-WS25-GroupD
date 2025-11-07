@@ -13,7 +13,7 @@ void CuboidGenerator::generateParticles(ContainerRef particles) {
                                position[1] + (static_cast<double>(j) * distance),
                                position[2] + (static_cast<double>(i) * distance)};
                 R3 velo = maxwellBoltzmannDistributedVelocity(avg_velo, 2);
-                particles.addParticle(curr_pos, velocity + velo, mass);
+                particles.addParticle(curr_pos, velocity + velo, mass, epsilon, sigma);
             }
         }
     }

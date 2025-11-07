@@ -13,13 +13,13 @@ namespace mol_sim {
  * These classes all implement the calculateForce(p1, p2) function.
  *
  */
-class ForceSource {
+class ForceAbstract {
    public:
     /**
      * @brief Virtual destructor for cleanup of derived classes.
      * Virtual destructor for cleanup of derived classes.
      */
-    virtual ~ForceSource() = default;
+    virtual ~ForceAbstract() = default;
     /**
      * @brief Calculates the force that a particle p1 exerts on a different particle p2.
      *

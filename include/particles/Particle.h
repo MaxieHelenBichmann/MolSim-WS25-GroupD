@@ -52,6 +52,8 @@ class Particle {
      */
     double m;
 
+    double epsilon;
+    double sigma;
     /**
      * Type of the particle. Use it for whatever you want (e.g. to separate
      * molecules belonging to different bodies, matters, and so on)
@@ -69,6 +71,10 @@ class Particle {
         // for visualization, we need always 3 coordinates
         // -> in case of 2d, we use only the first and the second
         R3 x_arg, R3 v_arg, double m_arg, int type = 0);
+    Particle(
+        // for visualization, we need always 3 coordinates
+        // -> in case of 2d, we use only the first and the second
+        R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg = 0);
 
     virtual ~Particle();
 
@@ -137,6 +143,9 @@ class Particle {
      * @return Int of the type of the Particle.
      */
     [[nodiscard]] int getType() const;
+
+    double getSigma() const;
+    double getEpsilon() const;
 
     bool operator==(const Particle& other) const;
 

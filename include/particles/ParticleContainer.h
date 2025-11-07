@@ -47,6 +47,7 @@ concept ParticleContainer = requires(C c) {
     { c.addParticle(Particle(0)) };
     { c.addParticle(R3(), R3(), 0.) };
     { c.addParticle(R3(), R3(), 0., 0) };
+    { c.addParticle(R3(), R3(), 0., 0., 0., 0.) };
 
     // iterators
     { c.begin() } -> std::contiguous_iterator;

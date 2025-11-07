@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 
+#include "AbstractForce.h"
 #include "particles/ParticleContainer.h"
 #include "physics/ForceSource.h"
 namespace mol_sim {
@@ -16,7 +17,7 @@ namespace mol_sim {
  * @param force_source Force source to be used for calculation
  */
 template <ParticleContainer containerType>
-void calculateF(containerType& particles, std::unique_ptr<ForceSource>& force_source) {
+void calculateF(containerType& particles, std::unique_ptr<ForceAbstract>& force_source) {
     std::vector<Vector<double, 3>> forces(particles.size(), Vector<double, 3>());
 
     for (auto& p : particles) {
@@ -49,7 +50,7 @@ void calculateF(containerType& particles, std::unique_ptr<ForceSource>& force_so
  * @param force_source Force source to be used for calculation
  */
 template <ParticleContainer containerType>
-void calculateFUnoptimized(containerType& particles, std::unique_ptr<ForceSource>& force_source) {
+void calculateFUnoptimized(containerType& particles, std::unique_ptr<ForceAbstract>& force_source) {
     for (auto& p1 : particles) {
         p1.getOldF() = p1.getF();
         p1.getF() = Vector<double, 3>();

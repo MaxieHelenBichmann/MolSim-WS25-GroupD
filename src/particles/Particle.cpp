@@ -54,6 +54,17 @@ Particle::Particle(R3 x_arg, R3 v_arg, double m_arg, int type_arg) {
     old_f = {0., 0., 0.};
     SPDLOG_DEBUG("Particle generated!");
 }
+Particle::Particle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg) {
+    x = x_arg;
+    v = v_arg;
+    m = m_arg;
+    epsilon = epsilon_arg;
+    sigma = sigma_arg;
+    type = type_arg;
+    f = {0., 0., 0.};
+    old_f = {0., 0., 0.};
+    SPDLOG_DEBUG("Particle generated!");
+}
 
 Particle::~Particle() { SPDLOG_DEBUG("Particle destructed!"); }
 
@@ -72,6 +83,8 @@ R3& Particle::getOldF() { return old_f; }
 double Particle::getM() const { return m; }
 
 int Particle::getType() const { return type; }
+double Particle::getSigma() const { return sigma; }
+double Particle::getEpsilon() const { return epsilon; }
 
 std::string Particle::toString() const {
     std::stringstream stream;
