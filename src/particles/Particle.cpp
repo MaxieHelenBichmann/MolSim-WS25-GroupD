@@ -85,7 +85,8 @@ double Particle::getM() const { return m; }
 int Particle::getType() const { return type; }
 double Particle::getSigma() const { return sigma; }
 double Particle::getEpsilon() const { return epsilon; }
-
+void Particle::setEpsilon(double epsilon_arg) { epsilon = epsilon_arg; }
+void Particle::setSigma(double sigma_arg) { sigma = sigma_arg; }
 std::string Particle::toString() const {
     std::stringstream stream;
     stream << "Particle: X:" << x << " v: " << v << " f: " << f << " old_f: " << old_f << " type: " << type;

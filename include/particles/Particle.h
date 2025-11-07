@@ -147,6 +147,9 @@ class Particle {
     double getSigma() const;
     double getEpsilon() const;
 
+    void setSigma(double sigma_arg);
+    void setEpsilon(double epsilon_arg);
+
     bool operator==(const Particle& other) const;
 
     /**

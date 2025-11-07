@@ -13,18 +13,7 @@ namespace mol_sim {
  * Implements the ForceSource interface.
  */
 class LennardJonesForce {
-   private:
-    double epsilon;
-    double sigma;
-
    public:
-    /**
-     * @brief Construct a new LennardJonesForce object, setting all necessary parameters for generation.
-     *
-     * @param epsilon Depth of the potential well
-     * @param sigma Distance where Lennard-Jones force between two particles is 0
-     */
-    LennardJonesForce(double epsilon, double sigma) : epsilon(epsilon), sigma(sigma) {};
     /**
      * @brief Calculates the Lennard-Jones force a particle p2 exerts on a different particle p1.
      *

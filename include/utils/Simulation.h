@@ -122,6 +122,7 @@ class Simulation {
         start_time = settings.start_time.value();
         // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
         end_time = settings.end_time.value();
+        force_source = forceType();
     }
 
     /**
