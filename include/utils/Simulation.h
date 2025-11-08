@@ -3,17 +3,13 @@
 
 #include <spdlog/spdlog.h>
 
-#include <memory>
-
 #include "io/outputWriter/VTKWriter.h"
 #include "io/outputWriter/XYZWriter.h"
 #include "particles/Particle.h"
 #include "particles/ParticleContainer.h"
 #include "physics/ForceSource.h"
-#include "physics/GravitationalForce.h"
-#include "physics/LennardJonesForce.h"
-#include "utils/Logging.h"
 #include "utils/Settings.h"
+
 
 /**
  * @namespace mol_sim

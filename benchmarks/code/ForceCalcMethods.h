@@ -16,10 +16,10 @@ namespace mol_sim {
  * @param particles Particle Container to calculate forces for.
  * @param force_source Force source to be used for calculation
  */
-template <ParticleContainer containerType>
-void calculateF(containerType& particles, std::unique_ptr<ForceAbstract>& force_source) {
+template <ParticleContainer containerType, ForceSource forceType>
+void calculateF(containerType& particles) {
     std::vector<Vector<double, 3>> forces(particles.size(), Vector<double, 3>());
-
+    forceType force_source;
     for (auto& p : particles) {
         p.getOldF() = p.getF();
         p.getF() = Vector<double, 3>();
@@ -30,7 +30,7 @@ void calculateF(containerType& particles, std::unique_ptr<ForceAbstract>& force_
         // compute row
         for (size_t j = i + 1; j < particles.size(); j++) {
             Particle& p2 = particles[j];
-            Vector<double, 3> force = force_source->applyForce(p1, p2);
+            Vector<double, 3> force = force_source.applyForce(p1, p2);
             forces[j] = force;
             p1.getF() = p1.getF() + force;
         }
@@ -49,8 +49,9 @@ void calculateF(containerType& particles, std::unique_ptr<ForceAbstract>& force_
  * @param particles Particle Container to calculate forces for.
  * @param force_source Force source to be used for calculation
  */
-template <ParticleContainer containerType>
-void calculateFUnoptimized(containerType& particles, std::unique_ptr<ForceAbstract>& force_source) {
+template <ParticleContainer containerType, ForceSource forceType>
+void calculateFUnoptimized(containerType& particles) {
+    forceType force_source;
     for (auto& p1 : particles) {
         p1.getOldF() = p1.getF();
         p1.getF() = Vector<double, 3>();
@@ -58,7 +59,7 @@ void calculateFUnoptimized(containerType& particles, std::unique_ptr<ForceAbstra
             if (p1 == p2) {
                 continue;
             }
-            p1.getF() = p1.getF() + force_source->applyForce(p1, p2);
+            p1.getF() = p1.getF() + force_source.applyForce(p1, p2);
         }
     }
 }

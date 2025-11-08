@@ -144,8 +144,8 @@ class Particle {
      */
     [[nodiscard]] int getType() const;
 
-    double getSigma() const;
-    double getEpsilon() const;
+    [[nodiscard]] double getSigma() const;
+    [[nodiscard]] double getEpsilon() const;
 
     void setSigma(double sigma_arg);
     void setEpsilon(double epsilon_arg);

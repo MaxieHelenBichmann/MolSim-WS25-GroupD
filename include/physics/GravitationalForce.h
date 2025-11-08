@@ -1,7 +1,7 @@
 #ifndef GRAV_FORCE_H
 #define GRAV_FORCE_H
 
-#include "physics/ForceSource.h"
+#include "particles/Particle.h"
 #include "utils/Vector.h"
 
 namespace mol_sim {

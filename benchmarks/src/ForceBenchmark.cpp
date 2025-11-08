@@ -3,8 +3,7 @@
 #include <memory>
 
 #include "../code/AbstractForce.h"
-#include "../code/ConceptGrav.h"
-#include "../code/ForceConcept.h"
+#include "../code/GravtiationalAbstract.h"
 #include "particles/Particle.h"
 #include "physics/ForceSource.h"
 #include "physics/GravitationalForce.h"
@@ -18,7 +17,7 @@ namespace mol_sim {
  */
 
 void bmAbstractForce(benchmark::State& state) {
-    std::unique_ptr<ForceAbstract> force = std::make_unique<GravitationalForce>();
+    std::unique_ptr<ForceAbstract> force = std::make_unique<GravitationalAbstract>();
     Particle p1 = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0};
     Particle p2 = {{1.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0};
     size_t n = state.range(0);
@@ -36,7 +35,7 @@ BENCHMARK(bmAbstractForce)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kMicrosecond);
 
-template <ForceConcept forceType>
+template <ForceSource forceType>
 void bmConceptForce(benchmark::State& state) {
     forceType force;
     Particle p1 = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0};
@@ -49,7 +48,7 @@ void bmConceptForce(benchmark::State& state) {
     }
 };
 
-BENCHMARK(bmConceptForce<GravitationalConcept>)
+BENCHMARK(bmConceptForce<GravitationalForce>)
     ->RangeMultiplier(10)
     ->Range(1000, 1000000)
     ->Repetitions(10)
