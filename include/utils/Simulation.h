@@ -58,6 +58,43 @@ class Simulation {
      */
     double end_time;
 
+   public:
+    /**
+     * @brief Sets the force source
+     * @param force unique_ptr  to the new force_source
+     * Usage: setForceSource(std::move(force))
+     * where force is a unique_ptr.
+     * (Note: This function is currently exclusively used for Mock testing)
+     * */
+    void setForceSource(std::unique_ptr<ForceSource> force) { force_source = std::move(force); }
+    /**
+     * @brief Construct a new Simulation object and prepare for run() call
+     * This class implements a Builder Pattern, meaning all parameters need to be set before the run() call, which will
+     * run the simulation.
+     * @param particles Container of particles to be used in the simulation.
+     * @param settings Simulation parameters. If relevant values are not set their default values in
+     * include/utils/Default.h will be used instead.
+     */
+    Simulation(containerType& particles, SettingsParam& settings) : particles(particles) {
+        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+        delta_t = settings.delta_t.value();
+        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+        start_time = settings.start_time.value();
+        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+        end_time = settings.end_time.value();
+        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+        switch (settings.force_type.value()) {
+            case GRAVITATIONAL:
+                this->force_source = std::make_unique<GravitationalForce>();
+                break;
+            case LENNARDJONES:
+                this->force_source = std::make_unique<LennardJonesForce>(
+                    settings.epsilon.value(), settings.sigma.value());  // NOLINT(bugprone-unchecked-optional-access)
+            default:
+                break;
+        }
+    }
+
     /**
      * @brief Calculates the forces of every particle for the next time step.
      * Calculates the forces of every particle. for the next time step. Using the specified force source and delta_t.
@@ -103,35 +140,6 @@ class Simulation {
     void calculateV() {
         for (auto& p : particles) {
             p.getV() = p.getV() + ((0.5 * delta_t / p.getM()) * (p.getOldF() + p.getF()));
-        }
-    }
-
-   public:
-    /**
-     * @brief Construct a new Simulation object and prepare for run() call
-     * This class implements a Builder Pattern, meaning all parameters need to be set before the run() call, which will
-     * run the simulation.
-     * @param particles Container of particles to be used in the simulation.
-     * @param settings Simulation parameters. If relevant values are not set their default values in
-     * include/utils/Default.h will be used instead.
-     */
-    Simulation(containerType& particles, SettingsParam& settings) : particles(particles) {
-        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-        delta_t = settings.delta_t.value();
-        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-        start_time = settings.start_time.value();
-        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-        end_time = settings.end_time.value();
-        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-        switch (settings.force_type.value()) {
-            case GRAVITATIONAL:
-                this->force_source = std::make_unique<GravitationalForce>();
-                break;
-            case LENNARDJONES:
-                this->force_source = std::make_unique<LennardJonesForce>(
-                    settings.epsilon.value(), settings.sigma.value());  // NOLINT(bugprone-unchecked-optional-access)
-            default:
-                break;
         }
     }
 
