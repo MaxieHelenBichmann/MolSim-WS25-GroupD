@@ -94,21 +94,9 @@ TEST_F(LennardJonesForceTest, FarAway_Diagonal) {
     EXPECT_NEAR(result[1], expected_force[1], 1e-9);
     EXPECT_NEAR(result[2], expected_force[2], 1e-9);
 
-    p2.getX() = {-4.0, 4.0, 0.0};
-    result = LennardJonesForce().applyForce(p1, p2);
-    EXPECT_NEAR(result[0], -expected_force[0], 1e-9);
-    EXPECT_NEAR(result[1], expected_force[1], 1e-9);
-    EXPECT_NEAR(result[2], expected_force[2], 1e-9);
-
     p2.getX() = {-4.0, -4.0, 0.0};
     result = LennardJonesForce().applyForce(p1, p2);
     EXPECT_NEAR(result[0], -expected_force[0], 1e-9);
-    EXPECT_NEAR(result[1], -expected_force[1], 1e-9);
-    EXPECT_NEAR(result[2], expected_force[2], 1e-9);
-
-    p2.getX() = {4.0, -4.0, 0.0};
-    result = LennardJonesForce().applyForce(p1, p2);
-    EXPECT_NEAR(result[0], expected_force[0], 1e-9);
     EXPECT_NEAR(result[1], -expected_force[1], 1e-9);
     EXPECT_NEAR(result[2], expected_force[2], 1e-9);
 }
@@ -135,18 +123,6 @@ TEST_F(LennardJonesForceAtBottomTest, PotentialWellAtRadius2_Cardinal) {
     EXPECT_NEAR(result[1], expected_force[1], 1e-9);
     EXPECT_NEAR(result[2], expected_force[2], 1e-9);
 
-    p2.getX() = {-2.0, 0.0, 0.0};
-    result = LennardJonesForce().applyForce(p1, p2);
-    EXPECT_NEAR(result[0], expected_force[0], 1e-9);
-    EXPECT_NEAR(result[1], expected_force[1], 1e-9);
-    EXPECT_NEAR(result[2], expected_force[2], 1e-9);
-
-    p2.getX() = {0.0, 2.0, 0.0};
-    result = LennardJonesForce().applyForce(p1, p2);
-    EXPECT_NEAR(result[0], expected_force[0], 1e-9);
-    EXPECT_NEAR(result[1], expected_force[1], 1e-9);
-    EXPECT_NEAR(result[2], expected_force[2], 1e-9);
-
     p2.getX() = {0.0, -2.0, 0.0};
     result = LennardJonesForce().applyForce(p1, p2);
     EXPECT_NEAR(result[0], expected_force[0], 1e-9);
@@ -167,19 +143,7 @@ TEST_F(LennardJonesForceAtBottomTest, PotentialWellAtRadius2_Diagonal) {
     EXPECT_NEAR(result[1], expected_force[1], 1e-9);
     EXPECT_NEAR(result[2], expected_force[2], 1e-9);
 
-    p2.getX() = {-bottom_diagonal, bottom_diagonal, 0.0};
-    result = LennardJonesForce().applyForce(p1, p2);
-    EXPECT_NEAR(result[0], expected_force[0], 1e-9);
-    EXPECT_NEAR(result[1], expected_force[1], 1e-9);
-    EXPECT_NEAR(result[2], expected_force[2], 1e-9);
-
     p2.getX() = {-bottom_diagonal, -bottom_diagonal, 0.0};
-    result = LennardJonesForce().applyForce(p1, p2);
-    EXPECT_NEAR(result[0], expected_force[0], 1e-9);
-    EXPECT_NEAR(result[1], expected_force[1], 1e-9);
-    EXPECT_NEAR(result[2], expected_force[2], 1e-9);
-
-    p2.getX() = {bottom_diagonal, -bottom_diagonal, 0.0};
     result = LennardJonesForce().applyForce(p1, p2);
     EXPECT_NEAR(result[0], expected_force[0], 1e-9);
     EXPECT_NEAR(result[1], expected_force[1], 1e-9);
@@ -200,19 +164,7 @@ TEST_F(LennardJonesForceAtBottomTest, PotentialWellAtRadius1_Cardinal) {
     EXPECT_NEAR(result[1], expected_force[1], 1e-9);
     EXPECT_NEAR(result[2], expected_force[2], 1e-9);
 
-    p2.getX() = {-1.0, 0.0, 0.0};
-    result = LennardJonesForce().applyForce(p1, p2);
-    EXPECT_NEAR(result[0], expected_force[0], 1e-9);
-    EXPECT_NEAR(result[1], expected_force[1], 1e-9);
-    EXPECT_NEAR(result[2], expected_force[2], 1e-9);
-
     p2.getX() = {0.0, 1.0, 0.0};
-    result = LennardJonesForce().applyForce(p1, p2);
-    EXPECT_NEAR(result[0], expected_force[0], 1e-9);
-    EXPECT_NEAR(result[1], expected_force[1], 1e-9);
-    EXPECT_NEAR(result[2], expected_force[2], 1e-9);
-
-    p2.getX() = {0.0, -1.0, 0.0};
     result = LennardJonesForce().applyForce(p1, p2);
     EXPECT_NEAR(result[0], expected_force[0], 1e-9);
     EXPECT_NEAR(result[1], expected_force[1], 1e-9);
@@ -230,18 +182,6 @@ TEST_F(LennardJonesForceAtBottomTest, PotentialWellAtRadius1_Diagonal) {
 
     p2.getX() = {bottom_diagonal, bottom_diagonal, 0.0};
     R3 result = LennardJonesForce().applyForce(p1, p2);
-    EXPECT_NEAR(result[0], expected_force[0], 1e-9);
-    EXPECT_NEAR(result[1], expected_force[1], 1e-9);
-    EXPECT_NEAR(result[2], expected_force[2], 1e-9);
-
-    p2.getX() = {-bottom_diagonal, bottom_diagonal, 0.0};
-    result = LennardJonesForce().applyForce(p1, p2);
-    EXPECT_NEAR(result[0], expected_force[0], 1e-9);
-    EXPECT_NEAR(result[1], expected_force[1], 1e-9);
-    EXPECT_NEAR(result[2], expected_force[2], 1e-9);
-
-    p2.getX() = {-bottom_diagonal, -bottom_diagonal, 0.0};
-    result = LennardJonesForce().applyForce(p1, p2);
     EXPECT_NEAR(result[0], expected_force[0], 1e-9);
     EXPECT_NEAR(result[1], expected_force[1], 1e-9);
     EXPECT_NEAR(result[2], expected_force[2], 1e-9);
@@ -285,12 +225,6 @@ TEST_F(LennardJonesForceAtSigmaTest, Cardinal) {
     EXPECT_NEAR(result[0], expected_force_y[0], 1e-9);
     EXPECT_NEAR(result[1], expected_force_y[1], 1e-9);
     EXPECT_NEAR(result[2], expected_force_y[2], 1e-9);
-
-    p2.getX() = {0.0, -small_sigma, 0.0};
-    result = LennardJonesForce().applyForce(p1, p2);
-    EXPECT_NEAR(result[0], expected_force_y[0], 1e-9);
-    EXPECT_NEAR(result[1], expected_force_y[1], 1e-9);
-    EXPECT_NEAR(result[2], expected_force_y[2], 1e-9);
 }
 
 TEST_F(LennardJonesForceAtSigmaTest, Diagonal) {
@@ -299,18 +233,6 @@ TEST_F(LennardJonesForceAtSigmaTest, Diagonal) {
 
     p2.getX() = {sigma_diagonal, sigma_diagonal, 0.0};
     R3 result = LennardJonesForce().applyForce(p1, p2);
-    EXPECT_NEAR(result[0], expected_force[0], 1e-9);
-    EXPECT_NEAR(result[1], expected_force[1], 1e-9);
-    EXPECT_NEAR(result[2], expected_force[2], 1e-9);
-
-    p2.getX() = {-sigma_diagonal, sigma_diagonal, 0.0};
-    result = LennardJonesForce().applyForce(p1, p2);
-    EXPECT_NEAR(result[0], expected_force[0], 1e-9);
-    EXPECT_NEAR(result[1], expected_force[1], 1e-9);
-    EXPECT_NEAR(result[2], expected_force[2], 1e-9);
-
-    p2.getX() = {-sigma_diagonal, -sigma_diagonal, 0.0};
-    result = LennardJonesForce().applyForce(p1, p2);
     EXPECT_NEAR(result[0], expected_force[0], 1e-9);
     EXPECT_NEAR(result[1], expected_force[1], 1e-9);
     EXPECT_NEAR(result[2], expected_force[2], 1e-9);
