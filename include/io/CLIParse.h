@@ -25,7 +25,6 @@ namespace mol_sim {
  * Parses command line input.
  * @param argc Number of arguments including the program name
  * @param argsv Array of arguments
- * @param fileReader The FileReader that will read the input file
  * @param particles Container to place the generated particles in.
  * @param settings SettingsParam where options for the simulation are stored.
  */
@@ -34,7 +33,7 @@ const std::string HELP_MSG =
     "Usage: ./MolSim path/to/input/file <ARGS>\n"
     "| -d <DOUBLE>              : sets DELTA_T (default = 0.014)\n"
     "| -t <DOUBLE>              : sets END_TIME (default = 1000)\n"
-    "| -f {GRAV, LJ}            : sets the force-type (default = GRAV)\n"
+    "| -f {GRAV, LJ}            : sets the force-type (default = LJ)\n"
     "| -e <DOUBLE>              : sets epsilon for Lennard-Jones force (default = 5)\n"
     "| -o <DOUBLE>              : sets sigma for Lennard-Jones force (default = 1)\n"
 #if SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_TRACE
