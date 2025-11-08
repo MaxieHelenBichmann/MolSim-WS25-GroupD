@@ -111,8 +111,7 @@ jobs:
     - name: Download sanitizer coverage artifact
       uses: actions/download-artifact@v5
       with:
-        name: coverage
-        path: coverage-out 
+        name: coverage-report
 
     - name: Upload to Codecov
       uses: codecov/codecov-action@v4
