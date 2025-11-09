@@ -78,8 +78,6 @@ void YAMLReader::readXVM(ContainerRef particles, const YAML::Node& node) {
 void YAMLReader::readCube(ContainerRef particles, const YAML::Node& node) {
     try {
         if (node["cuboids"] && node["cuboids"].IsSequence()) {
-            auto num_cube = node["num_cuboids"].as<size_t>();
-            particles.reserve(num_cube);
             for (const auto& curr : node["cuboids"]) {
                 R3 position;
                 const YAML::Node& coordinates = curr["coordinates"];

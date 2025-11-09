@@ -14,8 +14,8 @@ namespace mol_sim {
  * @tparam C
  */
 template <typename C>
-concept ForceSource = requires(C c) {
-    { c.applyForce(Particle(0), Particle(0)) } -> std::same_as<Vector<double, 3>>;
+concept ForceSource = requires(C c, const Particle& p1, const Particle& p2) {
+    { c.applyForce(p1, p2) } -> std::same_as<Vector<double, 3>>;
 };
 /**
  * @brief Enum of all available Force Sources.
