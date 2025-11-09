@@ -34,7 +34,15 @@
 # IDE Stuff
 .idea/
 .vscode/
+.cache/
+*.DS_Store
 
 # Build folders.
 # This rule ignores any folder in the project root that contains "build"
 /*build*/
+
+# Ignore the produced files, when building in project root
+*.vtu
+
+#Doxy 
+doxys_documentation/

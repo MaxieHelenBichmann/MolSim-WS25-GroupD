@@ -16,13 +16,15 @@ if(ENABLE_VTK_OUTPUT)
     endif ()
 
     if(VTK_VERSION VERSION_GREATER_EQUAL 8.9)
-         include_directories(${VTK_INCLUDE_DIRS})
+        target_include_directories(LibMolSim PUBLIC ${VTK_INCLUDE_DIRS})
     else()
         include(${VTK_USE_FILE})
     endif ()
 
-    target_link_libraries(MolSim
-            PRIVATE
+    target_link_libraries(LibMolSim
+            PUBLIC
             ${VTK_LIBRARIES}
     )
+    target_compile_definitions(LibMolSim PUBLIC "ENABLE_VTK_OUTPUT")
+
 endif()
