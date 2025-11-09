@@ -13,6 +13,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+
 #include "utils/Settings.h"
 
 using namespace mol_sim;
@@ -63,7 +64,7 @@ void XVMReader::readFile(ContainerRef particles, [[maybe_unused]] SettingsParam&
                 exit(-1);
             }
             datastream >> m;
-            particles.addParticle(x, v, m);
+            particles.addParticle(x, v, m, SettingsParam::EPSILON_DEFAULT, SettingsParam::SIGMA_DEFAULT);
 
             getline(input_file, tmp_string);
             SPDLOG_TRACE("Read line: {}", tmp_string);

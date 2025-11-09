@@ -70,10 +70,6 @@ class Particle {
     Particle(
         // for visualization, we need always 3 coordinates
         // -> in case of 2d, we use only the first and the second
-        R3 x_arg, R3 v_arg, double m_arg, int type = 0);
-    Particle(
-        // for visualization, we need always 3 coordinates
-        // -> in case of 2d, we use only the first and the second
         R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg = 0);
 
     virtual ~Particle();
