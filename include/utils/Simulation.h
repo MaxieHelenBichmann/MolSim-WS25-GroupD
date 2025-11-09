@@ -10,7 +10,6 @@
 #include "physics/ForceSource.h"
 #include "utils/Settings.h"
 
-
 /**
  * @namespace mol_sim
  * @brief Namespace encompassing the project.
@@ -118,7 +117,6 @@ class Simulation {
         start_time = settings.start_time.value();
         // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
         end_time = settings.end_time.value();
-        force_source = forceType();
     }
 
     /**
