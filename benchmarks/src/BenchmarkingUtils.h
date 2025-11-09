@@ -3,7 +3,6 @@
 #include <random>
 
 #include "particles/Particle.h"
-#include "spdlog/spdlog.h"
 
 namespace mol_sim {
 inline R3 randomR3() {
@@ -22,6 +21,5 @@ inline Particle randomParticle() {
     return {randomR3(), randomR3(), dist(gen)};
 }
 
-inline void setUpLogging() { spdlog::set_level(spdlog::level::warn); }
 }  // namespace mol_sim
 #endif
