@@ -51,8 +51,15 @@ class Particle {
      * Mass of this particle
      */
     double m;
-
+    /**
+     * @brief Epsilon of this particle.
+     *
+     */
     double epsilon;
+    /**
+     * @brief sigma of this particle.
+     *
+     */
     double sigma;
     /**
      * Type of the particle. Use it for whatever you want (e.g. to separate
@@ -140,10 +147,32 @@ class Particle {
      */
     [[nodiscard]] int getType() const;
 
+    /**
+     * @brief Access to the sigma of this Particle
+     *
+     * @return double of the sigma of the Particle
+     */
     [[nodiscard]] double getSigma() const;
+
+    /**
+     * @brief Access to the epsilon of this Particle
+     *
+     * @return double of the epsilon of the Particle
+     */
     [[nodiscard]] double getEpsilon() const;
 
+    /**
+     * @brief Set the Sigma of this Particle.
+     *
+     * @param sigma_arg new sigma value.
+     */
     void setSigma(double sigma_arg);
+
+    /**
+     * @brief Set the Epsilon of this Particle.
+     *
+     * @param epsilon_arg new epsilon value.
+     */
     void setEpsilon(double epsilon_arg);
 
     bool operator==(const Particle& other) const;

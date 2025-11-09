@@ -27,8 +27,7 @@ namespace mol_sim {
         simulation.run();
     }
 }
-// Register the function as a benchmark
-// BENCHMARK(BM_SimulationBig)->Range(2, 2 << 6)->Unit(benchmark::kMillisecond);
+BENCHMARK(bmSimulationBig)->RangeMultiplier(2)->Range(2, 2 << 6)->Repetitions(10)->Unit(benchmark::kMillisecond);
 /**
  * @brief Tests the simulation with the parameters given in Assignment 2
  * Particle counts are 40x8x1 + 8x8x1

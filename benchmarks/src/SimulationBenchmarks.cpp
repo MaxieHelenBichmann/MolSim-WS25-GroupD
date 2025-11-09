@@ -56,4 +56,30 @@ BENCHMARK(bmForceOptimized<LennardJonesForce>)
     ->Range(100, 1000)
     ->Repetitions(10)
     ->Unit(benchmark::kMicrosecond);
+
+/**
+ * @brief Benchmarks the alternative optimized Force Calculation
+ *
+ *
+ */
+template <ForceSource forceType>
+void bmForceOptimizedAlt(benchmark::State& state) {
+    SimpleContainer particles;
+    size_t n = state.range(0);
+    particles.reserve(n);
+
+    for (size_t i = 0; i < n; i++) {
+        particles.addParticle(randomParticle());
+    }
+
+    for ([[maybe_unused]] auto _ : state) {
+        calculateFAlt<SimpleContainer, forceType>(particles);
+        benchmark::DoNotOptimize(particles);
+    }
+}
+BENCHMARK(bmForceOptimizedAlt<LennardJonesForce>)
+    ->RangeMultiplier(10)
+    ->Range(100, 1000)
+    ->Repetitions(10)
+    ->Unit(benchmark::kMicrosecond);
 }  // namespace mol_sim

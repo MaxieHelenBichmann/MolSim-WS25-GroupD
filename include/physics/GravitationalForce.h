@@ -7,10 +7,10 @@
 namespace mol_sim {
 
 /**
- * @brief Class to calculate gravitational forces between two different objects. Implements the ForceSource interface.
+ * @brief Class to calculate gravitational forces between two different objects. Implements the ForceSource concept.
  *
  * Class to calculate gravitational forces between two different objects.
- * Implements the ForceSource interface.
+ * Implements the ForceSource concept.
  */
 class GravitationalForce {
    public:

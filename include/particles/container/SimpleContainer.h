@@ -41,10 +41,23 @@ class SimpleContainer : public std::vector<Particle> {
      * @param x_arg Initial coordinates of the Particle.
      * @param v_arg Initial velocities of the Particle.
      * @param m_arg Mass of the Particle.
-     * @param type Type of the Particle.
+     * @param epsilon_arg Epsilopn of the Particle.
+     * @param sigma_arg Sigma of the Particle.
+
      */
     void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, double epsilon_arg,
                      double sigma_arg);
+
+    /**
+     * @brief Directly constructing a Particle with its required parameters, including type, in-place.
+     *
+     * @param x_arg Initial coordinates of the Particle.
+     * @param v_arg Initial velocities of the Particle.
+     * @param m_arg Mass of the Particle.
+     * @param epsilon_arg Epsilopn of the Particle.
+     * @param sigma_arg Sigma of the Particle.
+     * @param type Type of the Particle.
+     */
     void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, double epsilon_arg,
                      double sigma_arg, int type);
 };

@@ -52,9 +52,8 @@ class LennardJonesForceTest : public testing::Test {
 };
 
 /**
- * @brief Tests the computed force against hand computed force for a particle that has
- * a decent distance from the other particle. This means
- * the particle should experience slight attraction.
+ * @brief Tests the Lennard Jones Force between two far away particles that are aligned on the x axis.
+ * Compares against hand computed values.
  *
  * */
 TEST_F(LennardJonesForceTest, FarAway_X_Aligned) {
@@ -71,7 +70,11 @@ TEST_F(LennardJonesForceTest, FarAway_X_Aligned) {
     EXPECT_EQ(result[1], 0.);
     EXPECT_EQ(result[2], 0.);
 }
-
+/**
+ * @brief Tests the Lennard Jones Force between two far away particles that are aligned on the y axis.
+ * Compares against hand computed values.
+ *
+ * */
 TEST_F(LennardJonesForceTest, FarAway_Y_Aligned) {
     const double expected_force = 0.007320642471;
     p2.getX() = {0.0, 4.0, 0.0};
@@ -86,7 +89,11 @@ TEST_F(LennardJonesForceTest, FarAway_Y_Aligned) {
     EXPECT_NEAR(result[1], -expected_force, precision);
     EXPECT_EQ(result[2], 0.);
 }
-
+/**
+ * @brief Tests the Lennard Jones Force between two far away particles that are not aligned.
+ * Compares against hand computed values.
+ *
+ * */
 TEST_F(LennardJonesForceTest, FarAway_Diagonal) {
     const double expected_force = 0.0004577357322;
     p2.getX() = {4.0, 4.0, 0.0};
@@ -274,7 +281,10 @@ TEST_F(LennardJonesForceTest, TestForceCalcZeroDistance) {
     EXPECT_NEAR(result[1], expected_force, precision);
     EXPECT_NEAR(result[2], expected_force, precision);
 }
-
+/**
+ * @brief Tests that the force between particles with different epsilons and sigmas gets computed correctly.
+ *
+ */
 TEST_F(LennardJonesForceTest, MixingRules) {
     p1.setSigma(1.0);
     p1.setEpsilon(5.0);

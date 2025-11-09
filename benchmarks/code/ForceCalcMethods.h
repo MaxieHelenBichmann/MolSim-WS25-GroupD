@@ -43,6 +43,34 @@ void calculateF(containerType& particles) {
 
 /**
  * @deprecated ONLY USED FOR BENCHMARKING
+ * @brief Copy of the calculateF Method in Simulate.
+ *
+ * @tparam containerType Type of container used.
+ * @param particles Particle Container to calculate forces for.
+ * @param force_source Force source to be used for calculation
+ */
+template <ParticleContainer containerType, ForceSource forceType>
+void calculateFAlt(containerType& particles) {
+    forceType force_source;
+    for (auto& p : particles) {
+        p.getOldF() = p.getF();
+        p.getF() = Vector<double, 3>();
+    }
+
+    for (size_t i = 0; i < particles.size(); i++) {
+        Particle& p1 = particles[i];
+        for (size_t j = i + 1; j < particles.size(); j++) {
+            Particle& p2 = particles[j];
+            Vector<double, 3> force = force_source.applyForce(p1, p2);
+            // Apply force directly (Newton's 3rd law: equal and opposite)
+            p1.getF() = p1.getF() + force;
+            p2.getF() = p2.getF() - force;
+        }
+    }
+}
+
+/**
+ * @deprecated ONLY USED FOR BENCHMARKING
  * @brief Old unoptimized version of the calculateF Method in Simulation.
  *
  * @tparam containerType Type of container used.

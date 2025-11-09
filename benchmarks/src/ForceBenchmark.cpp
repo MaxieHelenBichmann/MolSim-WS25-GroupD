@@ -11,7 +11,7 @@
 namespace mol_sim {
 /**
  * @brief Benchmarks a templated Container of Type ContainerType.
- * Adds 8-8192 particles to the container, then iterates over all off them.
+ * Adds 8-8192 particles to the container, then iterates over all of them.
  * Reruns this Benchmark 10 Times
  * @tparam containerType Type of container to be benchmarked
  */

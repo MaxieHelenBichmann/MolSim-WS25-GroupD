@@ -10,8 +10,7 @@
 namespace mol_sim {
 /**
  * @brief Concept of a ForceSource.
- * fulfills the same function as the abstract Class approach.
- * @tparam C
+ * Each Force must implement this applyForce Method, which calculates the force between two particles.
  */
 template <typename C>
 concept ForceSource = requires(C c, const Particle& p1, const Particle& p2) {
