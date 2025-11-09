@@ -7,22 +7,37 @@
 #include "particles/container/SimpleContainer.h"
 #include "physics/ForceSource.h"
 #include "utils/Vector.h"
+#include "particles/Particle.h"
 
 namespace mol_sim {
 
+/**
+ * @brief Mocks ForceSource.applyForce so we use better test values.
+ * 
+ */
 class ForceMock : public ForceSource {
 public:
     MOCK_METHOD(R3, applyForce, (const Particle& p1, const Particle& p2), (const, override));
 };
 
-class OutputWriterMock : public OutputWriter {
-public:
-    MOCK_METHOD(void, plotParticles, (ContainerRef particles, const std::string& filename, int iteration), (override));
-};
-
-TEST(SimulationTest, calculateX_dt) {
+/**
+ * @brief Test fixture for the following tests. Contains two attributes
+ that will be used throughout the tests.
+ 1) 'particles' which is a SimpleContainer containing the particles we perform the tests on
+ 2) 'settings' which is a SettingsParam for setting simulation parameters
+ */
+class SimulationTest : public testing::Test {
+protected:
     SimpleContainer particles;
     SettingsParam settings;
+};
+
+/**
+ * @brief Tests basic functionality of calculateX with respect to a
+ delta_t != 1 and an initial velocity.
+ * 
+ */
+TEST_F(SimulationTest, calculateX_dt) {
     settings.delta_t = 0.5;
     settings.force_type = GRAVITATIONAL;
     settings.setDefaults();
@@ -35,9 +50,12 @@ TEST(SimulationTest, calculateX_dt) {
     EXPECT_EQ(particles[0].getX(), expected);
 }
 
-TEST(SimulationTest, calculateX_force) {
-    SimpleContainer particles;
-    SettingsParam settings;
+/**
+ * @brief Tests calculateX when a particle has an initial velocity
+ and an initial force that's acting on it.
+ * 
+ */
+TEST_F(SimulationTest, calculateX_force) {
     settings.delta_t = 1;
     settings.force_type = GRAVITATIONAL;
     settings.setDefaults();
@@ -53,9 +71,12 @@ TEST(SimulationTest, calculateX_force) {
     EXPECT_EQ(particles[0].getX(), expected);
 }
 
-TEST(SimulationTest, calculateV_no_force) {
-    SimpleContainer particles;
-    SettingsParam settings;
+/**
+ * @brief Tests basic functionality of calculateV for a single particle
+ when no force is acting on it.
+ * 
+ */
+TEST_F(SimulationTest, calculateV_no_force) {
     settings.delta_t = 1;
     settings.force_type = GRAVITATIONAL;
     settings.setDefaults();
@@ -67,9 +88,12 @@ TEST(SimulationTest, calculateV_no_force) {
     EXPECT_EQ(particles[0].getV(), v);
 }
 
-TEST(SimulationTest, calculateV_simple) {
-    SimpleContainer particles;
-    SettingsParam settings;
+/**
+ * @brief Tests basic functionalty of calculateV for a single particle
+ when there is a force acting on it.
+ * 
+ */
+TEST_F(SimulationTest, calculateV_simple) {
     settings.delta_t = 1;
     settings.force_type = GRAVITATIONAL;
     settings.setDefaults();
@@ -85,9 +109,12 @@ TEST(SimulationTest, calculateV_simple) {
     EXPECT_EQ(particles[0].getV(), expected);
 }
 
-TEST(SimulationTest, calculateV_complex) {
-    SimpleContainer particles;
-    SettingsParam settings;
+/**
+ * @brief Tests a more complex setting of calculateV where the 
+ particle has both a non-zero 'old_f' and 'f'.
+ * 
+ */
+TEST_F(SimulationTest, calculateV_complex) {
     settings.delta_t = 0.5;
     settings.force_type = GRAVITATIONAL;
     settings.setDefaults();
@@ -105,14 +132,18 @@ TEST(SimulationTest, calculateV_complex) {
     EXPECT_EQ(particles[0].getV(), expected);
 }
 
-TEST(SimulationTest, calculateF_simple2_pairwise) {
+/**
+ * @brief Tests that the forces of 2 particles are calculated correctly
+ especially in regards to Newton's third law. The inter-particle force 
+ is 1 dimensional.
+ * 
+ */
+TEST_F(SimulationTest, calculateF_simple2_pairwise) {
     auto force = std::make_unique<ForceMock>();
-    SimpleContainer particles;
-    SettingsParam settings;
     settings.setDefaults();
     //initial positions and velocities irrelevant since we're mocking
-    const Particle p1({.0, .0, .0}, {.0, .0, .0}, 1.0);
-    const Particle p2({.0, .0, .0}, {.0, .0, .0}, 1.0);
+    const Particle p1({.0, .0, .0}, {.0, .0, .0}, {.0, .0, .0}, 1.0);
+    const Particle p2({.0, .0, .0}, {.0, .0, .0}, {.0, .0, .0}, 1.0);
     R3 f12 = {10.0, 0.0, 0.0};
     EXPECT_CALL(*force, applyForce(p1, p2))
         .Times(1)
@@ -126,14 +157,18 @@ TEST(SimulationTest, calculateF_simple2_pairwise) {
     EXPECT_EQ(particles[1].getF(), -1.0 * f12);
 }
 
-TEST(SimulationTest, calculateF_complex2_pairwise) {
+/**
+ * @brief Tests that the forces of 2 particles are calculated correctly
+ especially in regards to Newton's third law. The inter-particle force 
+ is 3 dimensional.
+ * 
+ */
+TEST_F(SimulationTest, calculateF_complex2_pairwise) {
     auto force = std::make_unique<ForceMock>();
-    SimpleContainer particles;
-    SettingsParam settings;
     settings.setDefaults();
     //initial positions and velocities irrelevant since we're mocking
-    const Particle p1({.0, .0, .0}, {.0, .0, .0}, 1.0);
-    const Particle p2({.0, .0, .0}, {.0, .0, .0}, 1.0);
+    const Particle p1({.0, .0, .0}, {.0, .0, .0}, {.0, .0, .0}, 1.0);
+    const Particle p2({.0, .0, .0}, {.0, .0, .0}, {.0, .0, .0}, 1.0);
     R3 f12 = {102.52, -51.3, 135.711};
     EXPECT_CALL(*force, applyForce(p1, p2))
         .Times(1)
@@ -147,21 +182,21 @@ TEST(SimulationTest, calculateF_complex2_pairwise) {
     EXPECT_EQ(particles[1].getF(), -1.0 * f12);
 }
 
-TEST(SimulationTest, calculateF_simple3_pairwise) {
+/**
+ * @brief Tests that the forces of 3 particles are calculated correctly.
+ Each inter-particle force is 1 dimensional.
+ * 
+ */
+TEST_F(SimulationTest, calculateF_simple3_pairwise) {
     auto force = std::make_unique<ForceMock>();
-    SimpleContainer particles;
-    SettingsParam settings;
     settings.setDefaults();
     //initial positions and velocities irrelevant since we're mocking
-    Particle p1({1.0,.0,.0}, {.0,.0,.0}, 1.0);
-    Particle p2({2.0,.0,.0}, {.0,.0,.0}, 1.0);
-    Particle p3({3.0,.0,.0}, {.0,.0,.0}, 1.0);
-    Particle p12({1.0,.0,.0}, {.0,.0,.0}, 1.0);
-    p12.getF() = {10.0, 0.0, 0.0};
-    Particle p22({2.0,.0,.0}, {.0,.0,.0}, 1.0);
-    p22.getF() = {-10.0, 0.0, 0.0};
-    Particle p32({3.0,.0,.0}, {.0,.0,.0}, 1.0);
-    p32.getF() = {-20.0, 0.0, 0.0};
+    Particle p1({1.0,.0,.0}, {.0,.0,.0}, {.0, .0, .0}, 1.0);
+    Particle p2({2.0,.0,.0}, {.0,.0,.0}, {.0, .0, .0}, 1.0);
+    Particle p3({3.0,.0,.0}, {.0,.0,.0}, {.0, .0, .0}, 1.0);
+    Particle p12({1.0,.0,.0}, {.0,.0,.0}, {10.0, 0.0, 0.0}, 1.0);
+    Particle p22({2.0,.0,.0}, {.0,.0,.0}, {-10.0, 0.0, 0.0}, 1.0);
+    Particle p32({3.0,.0,.0}, {.0,.0,.0}, {-20.0, 0.0, 0.0}, 1.0);
     R3 f12 = {10.0, 0.0, 0.0};
     R3 f13 = {20.0, 0.0, 0.0};
     R3 f23 = {-10.0, 0.0, 0.0};
@@ -188,21 +223,21 @@ TEST(SimulationTest, calculateF_simple3_pairwise) {
     EXPECT_EQ(particles[2].getF(), expected3);
 }
 
-TEST(SimulationTest, calculateF_complex3_pairwise) {
+/**
+ * @brief Tests that the forces of 3 particles are calculated correctly.
+ Each of the inter-particle forces are 3 dimensional.
+ * 
+ */
+TEST_F(SimulationTest, calculateF_complex3_pairwise) {
     auto force = std::make_unique<ForceMock>();
-    SimpleContainer particles;
-    SettingsParam settings;
     settings.setDefaults();
     //initial positions and velocities irrelevant since we're mocking
-    const Particle p1({1.0,.0,.0}, {.0,.0,.0}, 1.0);
-    const Particle p2({2.0,.0,.0}, {.0,.0,.0}, 1.0);
-    const Particle p3({3.0,.0,.0}, {.0,.0,.0}, 1.0);
-    Particle p12({1.0,.0,.0}, {.0,.0,.0}, 1.0);
-    p12.getF() = {10.0, 5.0, 6.0};
-    Particle p22({2.0,.0,.0}, {.0,.0,.0}, 1.0);
-    p22.getF() = {-10.0, -5.0, -6.0};
-    Particle p32({3.0,.0,.0}, {.0,.0,.0}, 1.0);
-    p32.getF() = {-20.0, -10.0, -7.0};
+    const Particle p1({1.0, .0, .0}, {.0, .0, .0}, {.0, .0, .0}, 1.0);
+    const Particle p2({2.0, .0, .0}, {.0, .0, .0}, {.0, .0, .0}, 1.0);
+    const Particle p3({3.0, .0, .0}, {.0, .0, .0}, {.0, .0, .0}, 1.0);
+    Particle p12({1.0,.0,.0}, {.0,.0,.0}, {10.0, 5.0, 6.0}, 1.0);
+    Particle p22({2.0,.0,.0}, {.0,.0,.0}, {-10.0, -5.0, -6.0}, 1.0);
+    Particle p32({3.0,.0,.0}, {.0,.0,.0}, {-20.0, -10.0, -7.0}, 1.0);
     R3 f12 = {10.0, 5.0, 6.0};
     R3 f13 = {20.0, 10.0, 7.0};
     R3 f23 = {-10.0, -5.0, -4.0};
@@ -229,5 +264,50 @@ TEST(SimulationTest, calculateF_complex3_pairwise) {
     EXPECT_EQ(particles[2].getF(), expected3);
 }
 
-//TODO: test run(). 2 tests, one for simple GRAVITATIONAL (solar system or sum), the other for simple LENNARDJONES, each 3 iterations or something, nothing crazy.
+/**
+ * @brief Tests that a single timestep is calculated correctly in run() with
+ gravitational forces and 2 particles.
+ * 
+ */
+TEST_F(SimulationTest, run_gravitational_timestep) {
+    settings.delta_t = 0.5;
+    settings.end_time = 0.5;
+    settings.force_type = GRAVITATIONAL;
+    settings.setDefaults();
+    Particle p1({.0, .0, .0}, {.0, .0, .0}, {.0, .0, .0}, 1.0);
+    Particle p2({-1.0, .0, .0}, {10.0, .0, .0}, {.0, .0, .0}, 0.5);
+    particles.addParticle(p1);
+    particles.addParticle(p2);
+    Simulation<SimpleContainer> simulation(particles, settings);
+    simulation.run();
+    Particle p1_expect({.0, .0, .0}, {0.0078125, .0, .0}, {0.03125, .0, .0}, 1.0);
+    Particle p2_expect({4.0, .0, .0}, {9.984375, .0, .0}, {-0.03125, .0, .0}, 0.5);
+    EXPECT_EQ(particles[0], p1_expect);
+    EXPECT_EQ(particles[1], p2_expect);
+}
+
+/**
+ * @brief Tests that a single timestep is calculated correctly in run() with
+ Lennard-Jones forces and 2 particles.
+ * 
+ */
+TEST_F(SimulationTest, run_lennardjones_timestep) {
+    settings.delta_t = 0.5;
+    settings.end_time = 0.5;
+    settings.force_type = LENNARDJONES;
+    settings.sigma = 1;
+    settings.epsilon = 5;
+    settings.setDefaults();
+    Particle p1({.0, .0, .0}, {.0, .0, .0}, {.0, .0, .0}, 1.0);
+    Particle p2({-4.0, .0, .0}, {10.0, .0, .0}, {.0, .0, .0}, 0.5);
+    particles.addParticle(p1);
+    particles.addParticle(p2);
+    Simulation<SimpleContainer> simulation(particles, settings);
+    simulation.run();
+    Particle p1_expect({.0, .0, .0}, {-30, .0, .0}, {-120, .0, .0}, 1.0);
+    Particle p2_expect({1.0, .0, .0}, {70, .0, .0}, {120, .0, .0}, 0.5);
+    EXPECT_EQ(particles[0], p1_expect);
+    EXPECT_EQ(particles[1], p2_expect);
+}
+
 } // namespace mol_sim
