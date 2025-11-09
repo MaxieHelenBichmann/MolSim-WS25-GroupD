@@ -20,7 +20,7 @@ int main(int argc, char* argsv[]) {
     }
     settings.setDefaults();
     SPDLOG_INFO("Simulation configured with {} particles, delta_t={} end_time={}", particles.size(),
-                settings.delta_t.value(), settings.end_time.value());  // NOLINT((bugprone-unchecked-optional-access))
+                settings.delta_t.value(), settings.end_time.value());  // NOLINT(bugprone-unchecked-optional-access)
     Simulation<SimpleContainer, LennardJonesForce> simulation(particles, settings);
     simulation.run();
 }
