@@ -70,6 +70,9 @@ class Particle {
         // -> in case of 2d, we use only the first and the second
         R3 x_arg, R3 v_arg, double m_arg, int type = 0);
 
+    Particle(
+        R3 x_arg, R3 v_arg, R3 f_arg, double m_arg, int type = 0);
+
     virtual ~Particle();
 
     /**

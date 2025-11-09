@@ -55,6 +55,16 @@ Particle::Particle(R3 x_arg, R3 v_arg, double m_arg, int type_arg) {
     SPDLOG_DEBUG("Particle generated!");
 }
 
+Particle::Particle(R3 x_arg, R3 v_arg, R3 f_arg, double m_arg, int type_arg) {
+    x = x_arg;
+    v = v_arg;
+    m = m_arg;
+    type = type_arg;
+    f = f_arg;
+    old_f = {0., 0., 0.};
+    SPDLOG_DEBUG("Particle generated!");
+}
+
 Particle::~Particle() { SPDLOG_DEBUG("Particle destructed!"); }
 
 const R3& Particle::getX() const { return x; }
