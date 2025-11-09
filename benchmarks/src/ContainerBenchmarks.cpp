@@ -24,7 +24,7 @@ void bmTemplatedContainer(benchmark::State& state) {
     double res = 0;
     for ([[maybe_unused]] auto _ : state) {
         for (size_t i = 0; i < n; i++) {
-            particles.addParticle({static_cast<double>(i), 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0);
+            particles.addParticle({static_cast<double>(i), 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0, 0., 0.);
         }
         for (auto& p : particles) {
             res += p.getX()[0];
@@ -57,7 +57,7 @@ void bmContainerRef(benchmark::State& state) {
     double res = 0;
     for ([[maybe_unused]] auto _ : state) {
         for (size_t i = 0; i < n; i++) {
-            particles.addParticle({static_cast<double>(i), 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0);
+            particles.addParticle({static_cast<double>(i), 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0, 0., 0.);
         }
         for (auto& p : particles) {
             res += p.getX()[0];
@@ -84,7 +84,7 @@ void bmAbstractContainer(benchmark::State& state) {
     double res = 0;
     for ([[maybe_unused]] auto _ : state) {
         for (size_t i = 0; i < n; i++) {
-            particles->addParticle({static_cast<double>(i), 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0);
+            particles->addParticle({static_cast<double>(i), 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0, 5., 1.);
         }
         for (auto& p : *particles) {
             res += p.getX()[0];

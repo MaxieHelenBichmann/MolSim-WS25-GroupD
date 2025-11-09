@@ -40,7 +40,7 @@ class LennardJonesForceTest : public testing::Test {
     double big_sigma = 5;
     double small_sigma = 1;
 
-    LennardJonesForceTest() : p1{p1_x, p1_v, 1.0}, p2{p2_x, p2_v, 1.0} {}
+    LennardJonesForceTest() : p1{p1_x, p1_v, 1.0, 5., 1.}, p2{p2_x, p2_v, 1.0, 5., 1.} {}
 
     void SetUp() override {
         p1.setEpsilon(big_epsilon);
@@ -267,7 +267,7 @@ TEST_F(LennardJonesForceTest, Newton3) {
  *
  */
 TEST_F(LennardJonesForceTest, TestForceCalcZeroDistance) {
-    p2 = {p1_x, p2_v, 1.0};
+    p2 = {p1_x, p2_v, 1.0, 5., 1.};
     R3 result = LennardJonesForce().applyForce(p1, p2);
     R3 expected = {0.0, 0.0, 0.0};
     EXPECT_NEAR(result[0], expected[0], 1e-9);

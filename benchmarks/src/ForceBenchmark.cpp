@@ -18,8 +18,8 @@ namespace mol_sim {
 
 void bmAbstractForce(benchmark::State& state) {
     std::unique_ptr<ForceAbstract> force = std::make_unique<GravitationalAbstract>();
-    Particle p1 = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0};
-    Particle p2 = {{1.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0};
+    Particle p1 = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0, 5., 1.};
+    Particle p2 = {{1.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0, 5., 1.};
     size_t n = state.range(0);
     for ([[maybe_unused]] auto _ : state) {
         for (size_t i = 0; i < n; i++) {
@@ -38,8 +38,8 @@ BENCHMARK(bmAbstractForce)
 template <ForceSource forceType>
 void bmConceptForce(benchmark::State& state) {
     forceType force;
-    Particle p1 = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0};
-    Particle p2 = {{1.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0};
+    Particle p1 = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0, 5., 1.};
+    Particle p2 = {{1.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0, 5., 1.};
     size_t n = state.range(0);
     for ([[maybe_unused]] auto _ : state) {
         for (size_t i = 0; i < n; i++) {

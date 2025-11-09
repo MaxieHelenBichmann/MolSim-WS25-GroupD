@@ -14,7 +14,8 @@ class AbstractContainer {
 
     virtual void addParticle(Particle&& value) = 0;
     virtual void addParticle(const Particle& value) = 0;
-    virtual void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg) = 0;
+    virtual void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, double epsilon_arg,
+                             double sigma_arg) = 0;
 
     virtual Particle* begin() = 0;
     virtual Particle* end() = 0;

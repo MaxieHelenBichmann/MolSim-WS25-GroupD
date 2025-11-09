@@ -19,7 +19,7 @@ inline Particle randomParticle() {
     std::mt19937 gen{rd()};
     std::normal_distribution<double> dist{};
 
-    return {randomR3(), randomR3(), dist(gen)};
+    return {randomR3(), randomR3(), dist(gen), dist(gen), dist(gen)};
 }
 
 inline void setUpLogging() { spdlog::set_level(spdlog::level::warn); }
