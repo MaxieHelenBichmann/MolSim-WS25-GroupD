@@ -1,0 +1,17 @@
+------------------------------------------------------------------------------
+Benchmark                                    Time             CPU   Iterations
+------------------------------------------------------------------------------
+bmSimulationGiven/repeats:10             17776 ms        17774 ms            1
+bmSimulationGiven/repeats:10             17993 ms        17991 ms            1
+bmSimulationGiven/repeats:10             17923 ms        17921 ms            1
+bmSimulationGiven/repeats:10             18079 ms        18077 ms            1
+bmSimulationGiven/repeats:10             18365 ms        18363 ms            1
+bmSimulationGiven/repeats:10             18509 ms        18505 ms            1
+bmSimulationGiven/repeats:10             18524 ms        18521 ms            1
+bmSimulationGiven/repeats:10             18717 ms        18715 ms            1
+bmSimulationGiven/repeats:10             18866 ms        18864 ms            1
+bmSimulationGiven/repeats:10             18476 ms        18474 ms            1
+bmSimulationGiven/repeats:10_mean        18323 ms        18321 ms           10
+bmSimulationGiven/repeats:10_median      18420 ms        18418 ms           10
+bmSimulationGiven/repeats:10_stddev        362 ms          362 ms           10
+bmSimulationGiven/repeats:10_cv           1.97 %          1.97 %            10
