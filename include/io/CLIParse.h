@@ -13,7 +13,6 @@
 #include "io/FileReader.h"
 #include "io/fileReader/XVMReader.h"
 #include "io/fileReader/YAMLReader.h"
-#include "physics/ForceSource.h"
 #include "utils/Logging.h"
 #include "utils/Settings.h"
 

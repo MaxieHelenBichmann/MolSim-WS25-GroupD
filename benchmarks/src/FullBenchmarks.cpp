@@ -3,7 +3,6 @@
 #include "particles/container/ContainerRef.h"
 #include "particles/container/SimpleContainer.h"
 #include "particles/generators/CuboidGenerator.h"
-#include "physics/ForceSource.h"
 #include "physics/LennardJonesForce.h"
 #include "utils/Settings.h"
 #include "utils/Simulation.h"
