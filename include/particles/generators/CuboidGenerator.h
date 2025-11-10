@@ -41,10 +41,20 @@ class CuboidGenerator : public Generator {
      */
     double distance;
     /**
-     * @brief ean value of velocity of the Brownian Motion.
+     * @brief Mean value of velocity of the Brownian Motion.
      *
      */
     double avg_velo;
+    /**
+     * @brief Epsilon value of the generated particles.
+     *
+     */
+    double epsilon;
+    /**
+     * @brief Sigma value of the generated particles.
+     *
+     */
+    double sigma;
 
    public:
     /**
@@ -62,14 +72,19 @@ class CuboidGenerator : public Generator {
      * @param mass Mass of the particles.
      * @param distance Mesh width of the grid of particles.
      * @param avg_velo Mean value of velocity of the Brownian Motion.
+     * @param epsilon Epsilon value of the generated particles.
+     * @param sigma Sigma value of the generated particles.
      */
-    CuboidGenerator(R3 position, R3 velocity, N3 num_particles, double mass, double distance, double avg_velo)
+    CuboidGenerator(R3 position, R3 velocity, N3 num_particles, double mass, double distance, double avg_velo,
+                    double epsilon, double sigma)
         : position(position),
           velocity(velocity),
           num_particles(num_particles),
           mass(mass),
           distance(distance),
-          avg_velo(avg_velo) {};
+          avg_velo(avg_velo),
+          epsilon(epsilon),
+          sigma(sigma) {};
 };
 }  // namespace mol_sim
 

@@ -24,6 +24,8 @@ Particle::Particle(const Particle& other) {
     x = other.x;
     v = other.v;
     f = other.f;
+    epsilon = other.epsilon;
+    sigma = other.sigma;
     old_f = other.old_f;
     m = other.m;
     type = other.type;
@@ -37,6 +39,8 @@ Particle& Particle::operator=(const Particle& other) {
     x = other.x;
     v = other.v;
     f = other.f;
+    epsilon = other.epsilon;
+    sigma = other.sigma;
     old_f = other.old_f;
     m = other.m;
     type = other.type;
@@ -44,23 +48,16 @@ Particle& Particle::operator=(const Particle& other) {
     return *this;
 }
 
-// Todo: maybe use initializater list instead of copy?
-Particle::Particle(R3 x_arg, R3 v_arg, double m_arg, int type_arg) {
+// TODO: maybe use initializater list instead of copy?
+
+Particle::Particle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg) {
     x = x_arg;
     v = v_arg;
     m = m_arg;
+    epsilon = epsilon_arg;
+    sigma = sigma_arg;
     type = type_arg;
     f = {0., 0., 0.};
-    old_f = {0., 0., 0.};
-    SPDLOG_DEBUG("Particle generated!");
-}
-
-Particle::Particle(R3 x_arg, R3 v_arg, R3 f_arg, double m_arg, int type_arg) {
-    x = x_arg;
-    v = v_arg;
-    m = m_arg;
-    type = type_arg;
-    f = f_arg;
     old_f = {0., 0., 0.};
     SPDLOG_DEBUG("Particle generated!");
 }
@@ -83,15 +80,24 @@ double Particle::getM() const { return m; }
 
 int Particle::getType() const { return type; }
 
+double Particle::getSigma() const { return sigma; }
+
+double Particle::getEpsilon() const { return epsilon; }
+
+void Particle::setEpsilon(double epsilon_arg) { epsilon = epsilon_arg; }
+
+void Particle::setSigma(double sigma_arg) { sigma = sigma_arg; }
+
 std::string Particle::toString() const {
     std::stringstream stream;
-    stream << "Particle: X:" << x << " v: " << v << " f: " << f << " old_f: " << old_f << " type: " << type;
+    stream << "Particle: X:" << x << " v: " << v << " f: " << f << " old_f: " << old_f << "epsilon: " << epsilon
+           << "sigma:" << sigma << " type: " << type;
     return stream.str();
 }
 
 bool Particle::operator==(const Particle& other) const {
     return (x == other.x) and (v == other.v) and (f == other.f) and (type == other.type) and (m == other.m) and
-           (old_f == other.old_f);
+           (old_f == other.old_f) and (epsilon == other.epsilon) and (sigma == other.sigma);
 }
 
 std::ostream& operator<<(std::ostream& stream, Particle& p) {

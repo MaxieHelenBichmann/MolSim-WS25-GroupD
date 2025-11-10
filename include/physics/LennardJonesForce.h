@@ -1,30 +1,19 @@
 #ifndef LJ_FORCE_H
 #define LJ_FORCE_H
 
-#include "physics/ForceSource.h"
+#include "particles/Particle.h"
 #include "utils/Vector.h"
 
 namespace mol_sim {
 
 /**
- * @brief Class to calculate Lennard-Jones forces between two different objects. Implements the ForceSource interface.
+ * @brief Class to calculate Lennard-Jones forces between two different objects. Implements the ForceSource Concept.
  *
  * Class to calculate Lennard-Jones forces between two different objects.
- * Implements the ForceSource interface.
+ * Implements the ForceSource concept.
  */
-class LennardJonesForce : public ForceSource {
-   private:
-    double epsilon;
-    double sigma;
-
+class LennardJonesForce {
    public:
-    /**
-     * @brief Construct a new LennardJonesForce object, setting all necessary parameters for generation.
-     *
-     * @param epsilon Depth of the potential well
-     * @param sigma Distance where Lennard-Jones force between two particles is 0
-     */
-    LennardJonesForce(double epsilon, double sigma) : epsilon(epsilon), sigma(sigma) {};
     /**
      * @brief Calculates the Lennard-Jones force a particle p2 exerts on a different particle p1.
      *
@@ -34,7 +23,7 @@ class LennardJonesForce : public ForceSource {
      *
      * Calculates the Lennard-Jones force a particle p2 exerts on a different particle p1.
      */
-    [[nodiscard]] Vector<double, 3> applyForce(const Particle& p1, const Particle& p2) const override;
+    [[nodiscard]] Vector<double, 3> applyForce(const Particle& p1, const Particle& p2) const;
 };
 
 }  // namespace mol_sim

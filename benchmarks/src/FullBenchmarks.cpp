@@ -5,6 +5,7 @@
 #include "particles/container/SimpleContainer.h"
 #include "particles/generators/CuboidGenerator.h"
 #include "physics/ForceSource.h"
+#include "physics/LennardJonesForce.h"
 #include "utils/Settings.h"
 #include "utils/Simulation.h"
 namespace mol_sim {
@@ -17,16 +18,15 @@ namespace mol_sim {
     SimpleContainer part_container;
     ContainerRef particles(part_container);
     size_t n = state.range(0);
-    CuboidGenerator generator({0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {n, n, n}, 1.0, 1.0, 0.5);
-    SettingsParam settings(0.1, 0, 1000, LENNARDJONES, 0.0, 1.0);
-    Simulation<SimpleContainer> simulation(part_container, settings);
+    CuboidGenerator generator({0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {n, n, n}, 1.0, 1.0, 0.5, 5.0, 1.0);
+    SettingsParam settings(0.1, 0, 1000, LENNARDJONES, 5.0, 1.0);
+    Simulation<SimpleContainer, LennardJonesForce> simulation(part_container, settings);
     for ([[maybe_unused]] auto _ : state) {
         generator.generateParticles(particles);
         simulation.run();
     }
 }
-// Register the function as a benchmark
-// BENCHMARK(BM_SimulationBig)->Range(2, 2 << 6)->Unit(benchmark::kMillisecond);
+BENCHMARK(bmSimulationBig)->RangeMultiplier(2)->Range(2, 2 << 6)->Repetitions(10)->Unit(benchmark::kMillisecond);
 /**
  * @brief Tests the simulation with the parameters given in Assignment 2
  * Particle counts are 40x8x1 + 8x8x1
@@ -35,10 +35,10 @@ namespace mol_sim {
 static void bmSimulationGiven(benchmark::State& state) {
     SimpleContainer part_container;
     ContainerRef particles(part_container);
-    CuboidGenerator generator1({0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {40U, 8U, 1U}, 1.0, 1.0, 0.1);
-    CuboidGenerator generator2({15.0, 15.0, 0.0}, {0.0, -10.0, 0.0}, {8U, 8U, 1U}, 1.0, 1.0, 0.1);
+    CuboidGenerator generator1({0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {40U, 8U, 1U}, 1.0, 1.0, 0.1, 5.0, 1.0);
+    CuboidGenerator generator2({15.0, 15.0, 0.0}, {0.0, -10.0, 0.0}, {8U, 8U, 1U}, 1.0, 1.0, 0.1, 5.0, 1.0);
     SettingsParam settings(0.14, 0, 1000, LENNARDJONES, 0.0, 1.0);
-    Simulation<SimpleContainer> simulation(part_container, settings);
+    Simulation<SimpleContainer, LennardJonesForce> simulation(part_container, settings);
     for ([[maybe_unused]] auto _ : state) {
         generator1.generateParticles(particles);
         generator2.generateParticles(particles);

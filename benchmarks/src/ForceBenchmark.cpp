@@ -2,8 +2,8 @@
 
 #include <memory>
 
-#include "../code/ForceConcept.h"
-#include "../code/GravitationalConcept.h"
+#include "../code/AbstractForce.h"
+#include "../code/GravtiationalAbstract.h"
 #include "particles/Particle.h"
 #include "physics/ForceSource.h"
 #include "physics/GravitationalForce.h"
@@ -11,15 +11,15 @@
 namespace mol_sim {
 /**
  * @brief Benchmarks a templated Container of Type ContainerType.
- * Adds 8-8192 particles to the container, then iterates over all off them.
+ * Adds 8-8192 particles to the container, then iterates over all of them.
  * Reruns this Benchmark 10 Times
  * @tparam containerType Type of container to be benchmarked
  */
 
 void bmAbstractForce(benchmark::State& state) {
-    std::unique_ptr<ForceSource> force = std::make_unique<GravitationalForce>();
-    Particle p1 = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0};
-    Particle p2 = {{1.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0};
+    std::unique_ptr<ForceAbstract> force = std::make_unique<GravitationalAbstract>();
+    Particle p1 = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0, 5., 1.};
+    Particle p2 = {{1.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0, 5., 1.};
     size_t n = state.range(0);
     for ([[maybe_unused]] auto _ : state) {
         for (size_t i = 0; i < n; i++) {
@@ -35,11 +35,11 @@ BENCHMARK(bmAbstractForce)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kMicrosecond);
 
-template <ForceConcept forceType>
+template <ForceSource forceType>
 void bmConceptForce(benchmark::State& state) {
     forceType force;
-    Particle p1 = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0};
-    Particle p2 = {{1.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0};
+    Particle p1 = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0, 5., 1.};
+    Particle p2 = {{1.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0, 5., 1.};
     size_t n = state.range(0);
     for ([[maybe_unused]] auto _ : state) {
         for (size_t i = 0; i < n; i++) {
@@ -48,7 +48,7 @@ void bmConceptForce(benchmark::State& state) {
     }
 };
 
-BENCHMARK(bmConceptForce<GravitationalConcept>)
+BENCHMARK(bmConceptForce<GravitationalForce>)
     ->RangeMultiplier(10)
     ->Range(1000, 1000000)
     ->Repetitions(10)

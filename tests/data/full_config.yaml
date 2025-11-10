@@ -22,6 +22,8 @@ cuboid_1:
         mass: 1.0
         distance: 1.0
         mean_velo: 0.1
+        epsilon: 5.0
+        sigma: 1.0
 
 xvm_1:
     format: XVM

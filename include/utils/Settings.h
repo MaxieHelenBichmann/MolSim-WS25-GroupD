@@ -11,6 +11,7 @@ namespace mol_sim {
  *
  */
 class SettingsParam {
+   public:
     /**
      * @brief Default value for the delta_t parameter of the simulation.
      *
@@ -43,8 +44,6 @@ class SettingsParam {
      *
      */
     constexpr static double SIGMA_DEFAULT = 1;
-
-   public:
     /**
      * @brief delta_t of the simulation.
      *

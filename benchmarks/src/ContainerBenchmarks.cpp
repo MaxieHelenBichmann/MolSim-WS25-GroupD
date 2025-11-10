@@ -23,7 +23,7 @@ void bmTemplatedContainer(benchmark::State& state) {
     double res = 0;
     for ([[maybe_unused]] auto _ : state) {
         for (size_t i = 0; i < n; i++) {
-            particles.addParticle({static_cast<double>(i), 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0);
+            particles.addParticle({static_cast<double>(i), 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0, 0., 0.);
         }
         for (auto& p : particles) {
             res += p.getX()[0];
@@ -55,7 +55,7 @@ void bmContainerRef(benchmark::State& state) {
     double res = 0;
     for ([[maybe_unused]] auto _ : state) {
         for (size_t i = 0; i < n; i++) {
-            particles.addParticle({static_cast<double>(i), 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0);
+            particles.addParticle({static_cast<double>(i), 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0, 0., 0.);
         }
         for (auto& p : particles) {
             res += p.getX()[0];
@@ -63,25 +63,25 @@ void bmContainerRef(benchmark::State& state) {
     }
     benchmark::DoNotOptimize(res);
 };
-/*
-BENCHMARK(BM_ContainerRef<SimpleContainer>)
+
+BENCHMARK(bmContainerRef<SimpleContainer>)
     ->Range(8 << 0, 8 << 6)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kNanosecond);
-BENCHMARK(BM_ContainerRef<SimpleContainer>)
+BENCHMARK(bmContainerRef<SimpleContainer>)
     ->Range(16 << 6, 16 << 10)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kMicrosecond);
-*/
+
 void bmAbstractContainer(benchmark::State& state) {
     std::unique_ptr<AbstractContainer> particles = std::make_unique<ContainerImpl>();
     size_t n = state.range(0);
     double res = 0;
     for ([[maybe_unused]] auto _ : state) {
         for (size_t i = 0; i < n; i++) {
-            particles->addParticle({static_cast<double>(i), 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0);
+            particles->addParticle({static_cast<double>(i), 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0, 5., 1.);
         }
         for (auto& p : *particles) {
             res += p.getX()[0];
@@ -100,5 +100,4 @@ BENCHMARK(bmAbstractContainer)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kMicrosecond);
 
-BENCHMARK_MAIN();  // NOLINT
 }  // namespace mol_sim

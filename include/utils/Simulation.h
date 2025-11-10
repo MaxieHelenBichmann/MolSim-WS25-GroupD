@@ -3,15 +3,11 @@
 
 #include <spdlog/spdlog.h>
 
-#include <memory>
-
 #include "io/outputWriter/VTKWriter.h"
 #include "io/outputWriter/XYZWriter.h"
 #include "particles/Particle.h"
 #include "particles/ParticleContainer.h"
 #include "physics/ForceSource.h"
-#include "physics/GravitationalForce.h"
-#include "physics/LennardJonesForce.h"
 #include "utils/Settings.h"
 
 /**
@@ -28,7 +24,7 @@ namespace mol_sim {
  * and then execute run().
  * @tparam containerType Type of container used for this simulation. Templated to work with Concept.
  */
-template <ParticleContainer containerType>
+template <ParticleContainer containerType, ForceSource forceType>
 class Simulation {
    private:
     /**
@@ -40,7 +36,7 @@ class Simulation {
      * @brief Pointer to our force source.
      * Pointer to our force source, for easy switching, force Source determined by forceType in constructor.
      */
-    std::unique_ptr<ForceSource> force_source;
+    forceType force_source;
     /**
      * @brief Time step of simulation.
      * Default value is 0.014.
@@ -99,8 +95,6 @@ class Simulation {
      * Calculates the forces of every particle. for the next time step. Using the specified force source and delta_t.
      */
     void calculateF() {
-        std::vector<Vector<double, 3>> forces(particles.size(), Vector<double, 3>());
-
         for (auto& p : particles) {
             p.getOldF() = p.getF();
             p.getF() = Vector<double, 3>();
@@ -108,16 +102,12 @@ class Simulation {
 
         for (size_t i = 0; i < particles.size(); i++) {
             Particle& p1 = particles[i];
-            // compute row
             for (size_t j = i + 1; j < particles.size(); j++) {
-                Particle p2 = particles[j];
-                Vector<double, 3> force = force_source->applyForce(p1, p2);
-                forces[j] = force;
+                Particle& p2 = particles[j];
+                Vector<double, 3> force = force_source.applyForce(p1, p2);
+                // Apply force directly (Newton's 3rd law: equal and opposite)
                 p1.getF() = p1.getF() + force;
-            }
-            // apply row in column
-            for (size_t j = i + 1; j < particles.size(); j++) {
-                particles[j].getF() = particles[j].getF() - forces[j];
+                p2.getF() = p2.getF() - force;
             }
         }
     }
@@ -140,6 +130,24 @@ class Simulation {
         for (auto& p : particles) {
             p.getV() = p.getV() + ((0.5 * delta_t / p.getM()) * (p.getOldF() + p.getF()));
         }
+    }
+
+   public:
+    /**
+     * @brief Construct a new Simulation object and prepare for run() call
+     * This class implements a Builder Pattern, meaning all parameters need to be set before the run() call, which will
+     * run the simulation.
+     * @param particles Container of particles to be used in the simulation.
+     * @param settings Simulation parameters. If relevant values are not set their default values in
+     * include/utils/Default.h will be used instead.
+     */
+    Simulation(containerType& particles, SettingsParam& settings) : particles(particles) {
+        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+        delta_t = settings.delta_t.value();
+        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+        start_time = settings.start_time.value();
+        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+        end_time = settings.end_time.value();
     }
 
     /**

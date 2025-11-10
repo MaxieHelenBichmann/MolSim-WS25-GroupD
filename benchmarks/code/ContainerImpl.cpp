@@ -6,8 +6,9 @@ void ContainerImpl::addParticle(Particle&& value) { particles.push_back(value); 
 
 void ContainerImpl::addParticle(const Particle& value) { particles.push_back(value); }
 
-void ContainerImpl::addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg) {
-    particles.emplace_back(x_arg, v_arg, m_arg);
+void ContainerImpl::addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, double epsilon_arg,
+                                double sigma_arg) {
+    particles.emplace_back(x_arg, v_arg, m_arg, epsilon_arg, sigma_arg);
 }
 
 Particle* ContainerImpl::begin() { return particles.data(); }

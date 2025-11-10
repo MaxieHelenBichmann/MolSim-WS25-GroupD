@@ -1,5 +1,5 @@
-option(TEST_ENABLED "Enable Testing with gtest" ON)
-if(TEST_ENABLED)
+option(ENABLE_TESTING "Enable Testing with gtest" ON)
+if(ENABLE_TESTING)
   message(STATUS "Building tests is enabled")
   include(FetchContent)
   FetchContent_Declare(

@@ -51,7 +51,16 @@ class Particle {
      * Mass of this particle
      */
     double m;
-
+    /**
+     * @brief Epsilon of this particle.
+     *
+     */
+    double epsilon;
+    /**
+     * @brief sigma of this particle.
+     *
+     */
+    double sigma;
     /**
      * Type of the particle. Use it for whatever you want (e.g. to separate
      * molecules belonging to different bodies, matters, and so on)
@@ -68,10 +77,7 @@ class Particle {
     Particle(
         // for visualization, we need always 3 coordinates
         // -> in case of 2d, we use only the first and the second
-        R3 x_arg, R3 v_arg, double m_arg, int type = 0);
-
-    Particle(
-        R3 x_arg, R3 v_arg, R3 f_arg, double m_arg, int type = 0);
+        R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg = 0);
 
     virtual ~Particle();
 
@@ -140,6 +146,34 @@ class Particle {
      * @return Int of the type of the Particle.
      */
     [[nodiscard]] int getType() const;
+
+    /**
+     * @brief Access to the sigma of this Particle
+     *
+     * @return double of the sigma of the Particle
+     */
+    [[nodiscard]] double getSigma() const;
+
+    /**
+     * @brief Access to the epsilon of this Particle
+     *
+     * @return double of the epsilon of the Particle
+     */
+    [[nodiscard]] double getEpsilon() const;
+
+    /**
+     * @brief Set the Sigma of this Particle.
+     *
+     * @param sigma_arg new sigma value.
+     */
+    void setSigma(double sigma_arg);
+
+    /**
+     * @brief Set the Epsilon of this Particle.
+     *
+     * @param epsilon_arg new epsilon value.
+     */
+    void setEpsilon(double epsilon_arg);
 
     bool operator==(const Particle& other) const;
 

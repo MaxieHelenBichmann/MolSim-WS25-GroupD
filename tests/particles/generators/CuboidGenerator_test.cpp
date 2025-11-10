@@ -24,6 +24,8 @@ class CuboidGeneratorTest : public testing::Test {
     R3 velocity = {0.0, 0.0, 0.0};
     N3 num_particles = {2U, 2U, 2U};
     double mass = 1.0;
+    double epsilon = 5.0;
+    double sigma = 1.0;
     double distance = 1.0;
     double avg_velo = 0.1;
     CuboidGenerator generator;
@@ -31,7 +33,7 @@ class CuboidGeneratorTest : public testing::Test {
     CuboidGeneratorTest()
         : particle_container(),
           particles(particle_container),
-          generator(position, velocity, num_particles, mass, distance, avg_velo) {}
+          generator(position, velocity, num_particles, mass, distance, avg_velo, epsilon, sigma) {}
 
     void SetUp() override {
         particles.clear();
@@ -76,6 +78,24 @@ TEST_F(CuboidGeneratorTest, testParticleMass) {
     }
 }
 /**
+ * @brief Tests that the Particles have the correct sigma.
+ *
+ */
+TEST_F(CuboidGeneratorTest, testParticleSigma) {
+    for (auto& p : particles) {
+        EXPECT_EQ(p.getSigma(), sigma);
+    }
+}
+/**
+ * @brief Tests that the Particles have the correct epsilon.
+ *
+ */
+TEST_F(CuboidGeneratorTest, testParticleEpsilon) {
+    for (auto& p : particles) {
+        EXPECT_EQ(p.getEpsilon(), epsilon);
+    }
+}
+/**
  * @brief Tests that the Particles have no velocity on the z-axis.
  *
  */
@@ -94,7 +114,7 @@ TEST_F(CuboidGeneratorTest, testVelocityDistribution) {
     ContainerRef particles(particle_container);
     N3 num_particles = {10U, 10U, 10U};
     R3 initial_velocity = {1.0, 2.0, 0.0};
-    CuboidGenerator generator(position, initial_velocity, num_particles, mass, distance, avg_velo);
+    CuboidGenerator generator(position, initial_velocity, num_particles, mass, distance, avg_velo, epsilon, sigma);
     generator.generateParticles(particles);
 
     R3 mean_velocity = {0.0, 0.0, 0.0};
@@ -120,7 +140,7 @@ TEST_F(CuboidGeneratorTest, testAverageVelocity) {
     double avg_velo = 0.5;
     R3 initial_velocity = {1.0, 2.0, 0.0};
 
-    CuboidGenerator generator(position, initial_velocity, num_particles, mass, distance, avg_velo);
+    CuboidGenerator generator(position, initial_velocity, num_particles, mass, distance, avg_velo, epsilon, sigma);
     generator.generateParticles(particles);
 
     // Calculate mean velocity
@@ -153,7 +173,7 @@ TEST_F(CuboidGeneratorTest, testZeroParticleGeneration) {
     SimpleContainer particle_container;
     ContainerRef particles(particle_container);
     N3 num_particles = {10U, 0U, 10U};
-    CuboidGenerator generator(position, velocity, num_particles, mass, distance, avg_velo);
+    CuboidGenerator generator(position, velocity, num_particles, mass, distance, avg_velo, epsilon, sigma);
     generator.generateParticles(particles);
     EXPECT_EQ(particles.size(), 0);
 }

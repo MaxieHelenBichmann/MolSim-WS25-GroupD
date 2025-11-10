@@ -127,7 +127,7 @@ TEST_F(ContainerRefTest, testAddParticleConstLval) {
  * double m_arg).
  */
 TEST_F(ContainerRefTest, testAddParticleEmplaceNoType) {
-    particles_empty.addParticle({1., 2., 3.}, {4., 5., 6.}, 3.14);
+    particles_empty.addParticle({1., 2., 3.}, {4., 5., 6.}, 3.14, 5., 1.);
     EXPECT_EQ(particles_empty.size(), static_cast<size_t>(1));
 }
 
@@ -136,7 +136,7 @@ TEST_F(ContainerRefTest, testAddParticleEmplaceNoType) {
  * addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, int type).
  */
 TEST_F(ContainerRefTest, testAddParticleEmplace) {
-    particles_empty.addParticle({1., 2., 3.}, {4., 5., 6.}, 3.14, 69);
+    particles_empty.addParticle({1., 2., 3.}, {4., 5., 6.}, 3.14, 8., 9., 69);
     EXPECT_EQ(particles_empty.size(), static_cast<size_t>(1));
 }
 
@@ -177,7 +177,7 @@ TEST(ContainerRef, testSizeEmptyClearReserve) {
     EXPECT_EQ(c.size(), static_cast<size_t>(0));
 
     c.addParticle(Particle(42));
-    c.addParticle({1., 2., 3.}, {4., 5., 6.}, 1.0);
+    c.addParticle({1., 2., 3.}, {4., 5., 6.}, 1.0, 5., 1.);
     ASSERT_EQ(c.size(), static_cast<size_t>(2));
 
     c.clear();
