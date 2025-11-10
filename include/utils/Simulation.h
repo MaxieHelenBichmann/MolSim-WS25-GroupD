@@ -101,6 +101,7 @@ class Simulation {
      * This class implements a Builder Pattern, meaning all parameters need to be set before the run() call, which will
      * run the simulation.
      * @param particles Container of particles to be used in the simulation.
+     * @param force_source Force source to be used in the simulation.
      * @param settings Simulation parameters. If relevant values are not set their default values in
      * include/utils/Default.h will be used instead.
      */

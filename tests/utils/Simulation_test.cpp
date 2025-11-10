@@ -26,6 +26,7 @@ class ForceMock {
  that will be used throughout the tests.
  1) 'particles' which is a SimpleContainer containing the particles we perform the tests on
  2) 'settings' which is a SettingsParam for setting simulation parameters
+ 3)
  */
 class SimulationTest : public testing::Test {
    protected:
