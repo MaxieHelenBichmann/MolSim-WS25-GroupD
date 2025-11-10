@@ -88,10 +88,8 @@ void cliParse(int argc, char** argsv, SimpleContainer& particles, SettingsParam&
             bool lj = !static_cast<bool>(std::strcmp(force_string, LJ));
 
             if (grav) {
-                settings.force_type = GRAVITATIONAL;
                 parsed_args += 2;
             } else if (lj) {
-                settings.force_type = LENNARDJONES;
                 parsed_args += 2;
                 if (epsilon_opt != &argsv[argc]) {
                     settings.epsilon = std::stod(*(++epsilon_opt));
