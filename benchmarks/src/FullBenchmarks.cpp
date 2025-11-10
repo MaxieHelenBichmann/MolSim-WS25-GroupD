@@ -15,12 +15,13 @@ namespace mol_sim {
  *
  */
 [[maybe_unused]] static void bmSimulationBig(benchmark::State& state) {
+    LennardJonesForce lj_force;
     SimpleContainer part_container;
     ContainerRef particles(part_container);
     size_t n = state.range(0);
     CuboidGenerator generator({0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {n, n, n}, 1.0, 1.0, 0.5, 5.0, 1.0);
     SettingsParam settings(0.1, 0, 1000, LENNARDJONES, 5.0, 1.0);
-    Simulation<SimpleContainer, LennardJonesForce> simulation(part_container, settings);
+    Simulation<SimpleContainer, LennardJonesForce> simulation(part_container, lj_force, settings);
     for ([[maybe_unused]] auto _ : state) {
         generator.generateParticles(particles);
         simulation.run();
@@ -33,12 +34,13 @@ BENCHMARK(bmSimulationBig)->RangeMultiplier(2)->Range(2, 2 << 6)->Repetitions(10
  *
  */
 static void bmSimulationGiven(benchmark::State& state) {
+    LennardJonesForce lj_force;
     SimpleContainer part_container;
     ContainerRef particles(part_container);
     CuboidGenerator generator1({0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {40U, 8U, 1U}, 1.0, 1.0, 0.1, 5.0, 1.0);
     CuboidGenerator generator2({15.0, 15.0, 0.0}, {0.0, -10.0, 0.0}, {8U, 8U, 1U}, 1.0, 1.0, 0.1, 5.0, 1.0);
     SettingsParam settings(0.14, 0, 1000, LENNARDJONES, 0.0, 1.0);
-    Simulation<SimpleContainer, LennardJonesForce> simulation(part_container, settings);
+    Simulation<SimpleContainer, LennardJonesForce> simulation(part_container, lj_force, settings);
     for ([[maybe_unused]] auto _ : state) {
         generator1.generateParticles(particles);
         generator2.generateParticles(particles);

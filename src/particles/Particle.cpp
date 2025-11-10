@@ -61,6 +61,17 @@ Particle::Particle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double 
     old_f = {0., 0., 0.};
     SPDLOG_DEBUG("Particle generated!");
 }
+Particle::Particle(R3 x_arg, R3 v_arg, R3 f_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg) {
+    x = x_arg;
+    v = v_arg;
+    f = f_arg;
+    m = m_arg;
+    epsilon = epsilon_arg;
+    sigma = sigma_arg;
+    type = type_arg;
+    old_f = {0., 0., 0.};
+    SPDLOG_DEBUG("Particle generated!");
+}
 
 Particle::~Particle() { SPDLOG_DEBUG("Particle destructed!"); }
 

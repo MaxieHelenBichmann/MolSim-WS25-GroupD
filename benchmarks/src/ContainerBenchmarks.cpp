@@ -4,7 +4,6 @@
 
 #include "../code/AbstractContainer.h"
 #include "../code/ContainerImpl.h"
-#include "BenchmarkingUtils.h"
 #include "particles/ParticleContainer.h"
 #include "particles/container/ContainerRef.h"
 #include "particles/container/SimpleContainer.h"
