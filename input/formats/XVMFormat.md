@@ -25,7 +25,11 @@ Each object in the `particles` list defines a single particle and has the follow
   - `vx`: The x-component of the velocity.
   - `vy`: The y-component of the velocity.
   - `vz`: The z-component of the velocity.
-- `mass`: The mass of the particle.
+- `mass`: The mass of the particle. 
+
+Optional keys: 
+- `epsilon`: The Epsilon value of the particle.
+- `sigma`: The Sigma value of the particle.
 
 ## Example
 

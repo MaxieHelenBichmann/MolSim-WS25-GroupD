@@ -38,7 +38,7 @@ Contributors:
     ```
     <details><summary>Configure Options</summary>
     - <b>ENABLE_TESTING</b> enables all tests.<br />
-    - <b>ENABLE_BENCHMARK</b> enables benchmarking.<br />
+    - <b>ENABLE_BENCHMARK</b> enables benchmarking. (<b>BENCHMARK_DOWNLOAD_DEPENDENCIES</b> should also be enabled)<br />
     - <b>ENABLE_DOXYGEN</b> enables doxygen.<br />
     - <b>COVERAGE</b> enables code coverage reports.<br />
     - <b>ENABLE_VTK_OUTPUT</b> enables output in the vtk format.<br />

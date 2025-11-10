@@ -66,8 +66,15 @@ void YAMLReader::readXVM(ContainerRef particles, const YAML::Node& node) {
 
                 auto mass = curr["mass"].as<double>();
 
-                particles.addParticle(position, velocity, mass, mol_sim::SettingsParam::EPSILON_DEFAULT,
-                                      mol_sim::SettingsParam::EPSILON_DEFAULT);
+                double epsilon = SettingsParam::EPSILON_DEFAULT;
+                double sigma = SettingsParam::SIGMA_DEFAULT;
+                if (curr["epsilon"]) {
+                    epsilon = curr["epsilon"].as<double>();
+                }
+                if (curr["sigma"]) {
+                    sigma = curr["sigma"].as<double>();
+                }
+                particles.addParticle(position, velocity, mass, epsilon, sigma);
             }
         }
     } catch (const YAML::Exception& e) {

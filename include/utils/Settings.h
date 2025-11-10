@@ -28,11 +28,6 @@ class SettingsParam {
      */
     constexpr static double START_TIME_DEFAULT = 0;
     /**
-     * @brief Default value for the start_time parameter of the simulation.
-     *
-     */
-    constexpr static Force FORCE_TYPE_DEFAULT = LENNARDJONES;
-    /**
      * @brief Default value for the epsilon parameter of the simulation if
      * the force_type is LJ (Lennard-Jones).
      *
@@ -63,11 +58,6 @@ class SettingsParam {
      * @brief Force type used in the simulation.
      *
      */
-    std::optional<Force> force_type;
-    /**
-     * @brief Force type used in the simulation.
-     *
-     */
     std::optional<double> epsilon;
     /**
      * @brief Force type used in the simulation.
@@ -81,20 +71,16 @@ class SettingsParam {
      * @param delta_t
      * @param start_time
      * @param end_time
+     * @param epsilon
+     * @param sigma
      */
     SettingsParam(std::optional<double> delta_t = std::nullopt, std::optional<double> start_time = std::nullopt,
-                  std::optional<double> end_time = std::nullopt, std::optional<Force> force_type = std::nullopt,
-                  std::optional<double> epsilon = std::nullopt, std::optional<double> sigma = std::nullopt)
-        : delta_t(delta_t),
-          start_time(start_time),
-          end_time(end_time),
-          force_type(force_type),
-          epsilon(epsilon),
-          sigma(sigma) {}
+                  std::optional<double> end_time = std::nullopt, std::optional<double> epsilon = std::nullopt,
+                  std::optional<double> sigma = std::nullopt)
+        : delta_t(delta_t), start_time(start_time), end_time(end_time), epsilon(epsilon), sigma(sigma) {}
 
     /**
      * @brief Provide default values for settings that have not been set.
-     * @param settings A SettingsParam of the settings that were made.
      *
      * */
 
@@ -107,9 +93,6 @@ class SettingsParam {
         }
         if (!start_time.has_value()) {
             start_time = START_TIME_DEFAULT;
-        }
-        if (!force_type.has_value()) {
-            force_type = FORCE_TYPE_DEFAULT;
         }
         if (!epsilon.has_value()) {
             epsilon = EPSILON_DEFAULT;

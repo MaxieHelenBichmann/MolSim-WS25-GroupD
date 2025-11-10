@@ -32,7 +32,8 @@ Each object in the `cuboids` list defines a single cuboid and has the following 
 - `mass`: The mass of each particle in the cuboid.
 - `distance`: The spacing between adjacent particles in the cuboid.
 - `mean_velo`: The mean velocity used for the Maxwell-Boltzmann distribution of the particles' velocities.
-
+- `epsilon`: The Epsilon value of all particles in this cuboid
+- `sigma`: The Sigma value of all particles in this cuboid
 ## Example
 
 ```yaml
@@ -55,4 +56,6 @@ my_cuboid:
         mass: 1.0
         distance: 1.1225
         mean_velo: 0.1
+        epsilon: 5.0
+        sigma: 1.0
 ```
