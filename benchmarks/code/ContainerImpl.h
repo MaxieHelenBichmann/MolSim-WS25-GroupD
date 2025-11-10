@@ -8,7 +8,7 @@
 namespace mol_sim {
 /**
  * @deprecated ONLY USED FOR BENCHMARKING
- * @brief Concrete Implementation of abstract container.
+ * @brief Concrete Implementation of abstract container to compare to concept-based containers.
  */
 class ContainerImpl : public AbstractContainer {
    private:

@@ -18,7 +18,8 @@ if(ENABLE_TESTING)
         target_link_libraries(
                 tests
                 LibMolSim
-                GTest::gtest_main)
+                GTest::gtest_main
+                gmock_main)
 
         include(GoogleTest)
         gtest_discover_tests(tests)

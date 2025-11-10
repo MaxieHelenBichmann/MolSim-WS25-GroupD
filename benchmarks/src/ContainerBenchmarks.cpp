@@ -12,13 +12,12 @@
 namespace mol_sim {
 /**
  * @brief Benchmarks a templated Container of Type ContainerType.
- * Adds 8-8192 particles to the container, then iterates over all off them.
- * Reruns this Benchmark 10 Times
+ * Adds 8-8192 particles to the container, then iterates over all of them.
+ * Reruns this Benchmark 10 times
  * @tparam containerType Type of container to be benchmarked
  */
 template <ParticleContainer containerType>
 void bmTemplatedContainer(benchmark::State& state) {
-    setUpLogging();
     containerType particles;
     size_t n = state.range(0);
     double res = 0;
@@ -50,7 +49,6 @@ BENCHMARK(bmTemplatedContainer<SimpleContainer>)
  */
 template <ParticleContainer containerType>
 void bmContainerRef(benchmark::State& state) {
-    setUpLogging();
     containerType part_container;
     ContainerRef particles(part_container);
     size_t n = state.range(0);
@@ -78,7 +76,6 @@ BENCHMARK(bmContainerRef<SimpleContainer>)
     ->Unit(benchmark::kMicrosecond);
 
 void bmAbstractContainer(benchmark::State& state) {
-    setUpLogging();
     std::unique_ptr<AbstractContainer> particles = std::make_unique<ContainerImpl>();
     size_t n = state.range(0);
     double res = 0;

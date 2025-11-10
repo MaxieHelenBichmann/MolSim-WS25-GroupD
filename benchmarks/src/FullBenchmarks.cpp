@@ -15,7 +15,6 @@ namespace mol_sim {
  *
  */
 [[maybe_unused]] static void bmSimulationBig(benchmark::State& state) {
-    setUpLogging();
     SimpleContainer part_container;
     ContainerRef particles(part_container);
     size_t n = state.range(0);
@@ -34,7 +33,6 @@ BENCHMARK(bmSimulationBig)->RangeMultiplier(2)->Range(2, 2 << 6)->Repetitions(10
  *
  */
 static void bmSimulationGiven(benchmark::State& state) {
-    setUpLogging();
     SimpleContainer part_container;
     ContainerRef particles(part_container);
     CuboidGenerator generator1({0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {40U, 8U, 1U}, 1.0, 1.0, 0.1, 5.0, 1.0);

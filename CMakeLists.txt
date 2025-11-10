@@ -20,7 +20,11 @@ if(NOT CMAKE_BUILD_TYPE)
             "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
-add_compile_options(-O3)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_options(-O0)
+else()
+    add_compile_options(-O3)
+endif()
 
 add_compile_definitions(
     SPDLOG_USE_STD_FORMAT

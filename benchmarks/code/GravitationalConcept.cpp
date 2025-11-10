@@ -1,4 +1,4 @@
-#include "ConceptGrav.h"
+#include "GravitationalConcept.h"
 
 #include "utils/Vector.h"
 

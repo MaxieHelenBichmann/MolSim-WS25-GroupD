@@ -6,7 +6,7 @@
 namespace mol_sim {
 /**
  * @deprecated ONLY USED FOR BENCHMARKING
- * @brief Abstract implementation of a Particle Container
+ * @brief Abstract implementation of a Particle Container to compare to concept approach.
  */
 class AbstractContainer {
    public:

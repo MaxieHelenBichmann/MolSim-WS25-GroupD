@@ -36,12 +36,13 @@ Contributors:
     mkdir build && cd build
     ccmake ..
     ```
-1.5 Configure Option:
-    - **ENABLE_TESTING** enables all tests.
-    - **ENABLE_BENCHMARK** enables benchmarking.
-    - **ENABLE_DOXYGEN** enables doxygen.
-    - **ENABLE_VTK_OUTPUT** enables output in the vtk format.
-    - **CMAKE_BUILD_TYPE** The build type (Debug, Release,...)
+    <details><summary>Configure Options</summary>
+    - <b>ENABLE_TESTING</b> enables all tests.<br />
+    - <b>ENABLE_BENCHMARK</b> enables benchmarking.<br />
+    - <b>ENABLE_DOXYGEN</b> enables doxygen.<br />
+    - <b>ENABLE_VTK_OUTPUT</b> enables output in the vtk format.<br />
+    - <b>CMAKE_BUILD_TYPE</b> specifies the build type (Debug, Release,...).<br />
+   </details>  
 
  
 2. Now you can interactively change the options (These include Doxygen generation, clang-tidy integration and VTK output).
