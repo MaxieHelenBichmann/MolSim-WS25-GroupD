@@ -40,6 +40,7 @@ Contributors:
     - <b>ENABLE_TESTING</b> enables all tests.<br />
     - <b>ENABLE_BENCHMARK</b> enables benchmarking.<br />
     - <b>ENABLE_DOXYGEN</b> enables doxygen.<br />
+    - <b>COVERAGE</b> enables code coverage reports.<br />
     - <b>ENABLE_VTK_OUTPUT</b> enables output in the vtk format.<br />
     - <b>CMAKE_BUILD_TYPE</b> specifies the build type (Debug, Release,...).<br />
    </details>  
@@ -95,7 +96,7 @@ Contributors:
 
 ## Optional Tools
 
-**Doxygen:**  
+**Doxygen**  
 If Doxygen support was enabled:
 
 ```
@@ -113,3 +114,12 @@ make fix
 ```
 
 Which automatically applies fixes where clang-tidy finds them.
+
+**Test Coverage**  
+If coverage was enabled:
+
+```
+make coverage_report
+```
+
+Creates a coverage report on the coverage directory inside the build directory.
