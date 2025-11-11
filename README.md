@@ -30,12 +30,14 @@ Contributors:
 
 0. Make sure to be in the project root.
 
-1. Configure the project with cmake by running these commands:
+1. Configure the project with CMake by running these commands:
 
     ```
     mkdir build && cd build
     ccmake ..
     ```
+
+2. Now you can interactively change the options.
     <details><summary>Configure Options</summary>
     - <b>ENABLE_TESTING</b> enables all tests.<br />
     - <b>ENABLE_BENCHMARK</b> enables benchmarking. (<b>BENCHMARK_DOWNLOAD_DEPENDENCIES</b> should also be enabled)<br />
@@ -44,9 +46,6 @@ Contributors:
     - <b>ENABLE_VTK_OUTPUT</b> enables output in the vtk format.<br />
     - <b>CMAKE_BUILD_TYPE</b> specifies the build type (Debug, Release,...).<br />
    </details>  
-
- 
-2. Now you can interactively change the options (These include Doxygen generation, clang-tidy integration and VTK output).
 
 3. Build the executable with the Makefile by running the command:
 
@@ -58,9 +57,9 @@ Contributors:
 
 **How do I run the project?**
 
-0. Make sure to be in the project root.
+0. Make sure to be in the project root after you built the project.
 
-1. Run the executable with the given input file and optional desired delta_T ( -d) and end_T ( -t):
+1. Run the executable with the given input file and optional desired delta_T (-d) and end_T (-t):
 
     ```
     ./build/project/MolSim ./input/planets.yaml -d 0.014 -t 1000
@@ -73,7 +72,7 @@ Contributors:
 
 **How do I test the project?**
 
-0. Make sure to be in the project root.
+0. Make sure to be in the project root and to have built the project with the according CMake configuration.
 
 1. Run the test executable or use ctest:
     ```
@@ -87,7 +86,7 @@ Contributors:
 
 **How do I benchmark the project?**
 
-0. Make sure to be in the project root.
+0. Make sure to be in the project root and to have built the project with the according CMake configuration.
 
 1. Run the benchmark executable:
     ```
