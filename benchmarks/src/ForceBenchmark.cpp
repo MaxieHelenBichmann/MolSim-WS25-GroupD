@@ -10,10 +10,9 @@
 
 namespace mol_sim {
 /**
- * @brief Benchmarks a templated Container of Type ContainerType.
- * Adds 8-8192 particles to the container, then iterates over all of them.
+ * @brief Benchmarks a force Source implemented using an abstract class.
+ * Runs the gravitational force calculation 1.000-1.000.000 times
  * Reruns this Benchmark 10 Times
- * @tparam containerType Type of container to be benchmarked
  */
 
 void bmAbstractForce(benchmark::State& state) {
@@ -34,7 +33,12 @@ BENCHMARK(bmAbstractForce)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kMicrosecond);
-
+/**
+ * @brief Benchmarks a force Source implemented using a concept.
+ * Runs the gravitational force calculation 1.000-1.000.000 times
+ * Reruns this Benchmark 10 Times
+ * @tparam forceType Type of force to benchmark
+ */
 template <ForceSource forceType>
 void bmConceptForce(benchmark::State& state) {
     forceType force;

@@ -5,6 +5,11 @@
 #include "particles/Particle.h"
 
 namespace mol_sim {
+/**
+ * @brief Creates a random R3 Vector
+ *
+ * @return R3
+ */
 inline R3 randomR3() {
     std::random_device rd{};
     std::mt19937 gen{rd()};
@@ -12,6 +17,12 @@ inline R3 randomR3() {
 
     return {dist(gen), dist(gen), dist(gen)};
 }
+
+/**
+ * @brief Creates a random particle
+ *
+ * @return Particle
+ */
 
 inline Particle randomParticle() {
     std::random_device rd{};

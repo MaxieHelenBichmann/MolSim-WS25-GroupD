@@ -9,7 +9,7 @@
 namespace mol_sim {
 /**
  * @brief Benchmarks the unoptimized Force Calculation
- *
+ * Performs one calulateF() call on a container of 100-1000 particles
  *
  */
 template <ForceSource forceType>
@@ -33,7 +33,7 @@ BENCHMARK(bmForceUnOptimized<LennardJonesForce>)
     ->Unit(benchmark::kMicrosecond);
 /**
  * @brief Benchmarks the optimized Force Calculation
- *
+ * Performs one calulateF() call on a container of 100-1000 particles
  *
  */
 template <ForceSource forceType>
@@ -59,7 +59,7 @@ BENCHMARK(bmForceOptimized<LennardJonesForce>)
 
 /**
  * @brief Benchmarks the alternative optimized Force Calculation
- *
+ * Performs one calulateF() call on a container of 100-1000 particles
  *
  */
 template <ForceSource forceType>

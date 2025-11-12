@@ -74,6 +74,12 @@ BENCHMARK(bmContainerRef<SimpleContainer>)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kMicrosecond);
 
+/**
+ * @brief Benchmarks a Container implemented using an abstract class.
+ * Adds 8-8192 particles to the container, then iterates over all of them.
+ * Reruns this Benchmark 10 times
+
+ */
 void bmAbstractContainer(benchmark::State& state) {
     std::unique_ptr<AbstractContainer> particles = std::make_unique<ContainerImpl>();
     size_t n = state.range(0);
