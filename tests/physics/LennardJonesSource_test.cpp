@@ -119,6 +119,11 @@ class LennardJonesForceAtBottomTest : public LennardJonesForceTest {
     void SetUp() override { LennardJonesForceTest::SetUp(); }
 };
 
+/**
+ * @brief Testing the afromentioned case at radius 2 when the two particles are cardinal to one another.
+ *
+ */
+
 TEST_F(LennardJonesForceAtBottomTest, PotentialWellAtRadius2_Cardinal) {
     double sigma = 1.78179743599999995673499597615;  // 2^{5/6}
     p1.setSigma(sigma);
@@ -137,6 +142,11 @@ TEST_F(LennardJonesForceAtBottomTest, PotentialWellAtRadius2_Cardinal) {
     EXPECT_NEAR(result[1], expected_force, precision);
     EXPECT_EQ(result[2], 0.);
 }
+
+/**
+ * @brief Testing the afromentioned case at radius 2 when the two particles are diagonal to one another.
+ *
+ */
 
 TEST_F(LennardJonesForceAtBottomTest, PotentialWellAtRadius2_Diagonal) {
     double sigma = 1.78179743599999995673499597615;  // 2^{5/6}
@@ -157,6 +167,10 @@ TEST_F(LennardJonesForceAtBottomTest, PotentialWellAtRadius2_Diagonal) {
     EXPECT_NEAR(result[1], expected_force, precision);
     EXPECT_EQ(result[2], 0.);
 }
+/**
+ * @brief Testing the afromentioned case at radius 1 when the two particles are cardinal to one another.
+ *
+ */
 
 TEST_F(LennardJonesForceAtBottomTest, PotentialWellAtRadius1_Cardinal) {
     double sigma = 8.90898718099999986641535087983E-1;  // 2^{-1/6}
@@ -178,6 +192,11 @@ TEST_F(LennardJonesForceAtBottomTest, PotentialWellAtRadius1_Cardinal) {
     EXPECT_NEAR(result[1], expected_force, precision);
     EXPECT_EQ(result[2], 0.);
 }
+
+/**
+ * @brief Testing the afromentioned case at radius 1 when the two particles are diagonal to one another.
+ *
+ */
 
 TEST_F(LennardJonesForceAtBottomTest, PotentialWellAtRadius1_Diagonal) {
     double sigma = 8.90898718099999986641535087983E-1;  // 2^{-1/6}
@@ -213,6 +232,10 @@ class LennardJonesForceAtSigmaTest : public LennardJonesForceTest {
     void SetUp() override { LennardJonesForceTest::SetUp(); }
 };
 
+/**
+ * @brief Testing the afromentioned case when the two particles are cardinal to one another.
+ *
+ */
 TEST_F(LennardJonesForceAtSigmaTest, Cardinal) {
     const double expected_force = -120.0;
     p2.getX() = {small_sigma, 0.0, 0.0};
@@ -233,7 +256,10 @@ TEST_F(LennardJonesForceAtSigmaTest, Cardinal) {
     EXPECT_NEAR(result[1], expected_force, precision);
     EXPECT_EQ(result[2], 0.);
 }
-
+/**
+ * @brief Testing the afromentioned case when the two particles are diagonal to one another.
+ *
+ */
 TEST_F(LennardJonesForceAtSigmaTest, Diagonal) {
     const double expected_force = -60.0 * std::numbers::sqrt2;
     double sigma_diagonal = 1.0 / std::numbers::sqrt2;
