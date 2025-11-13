@@ -51,15 +51,16 @@ const std::string& h = "-h";
 const char* GRAV = "GRAV";
 const char* LJ = "LJ";
 
-void cliParse(int argc, char** argsv, SimpleContainer& particles, SettingsParam& settings) {
-    std::cout << "Hello from MolSim for PSE!" << '\n';
+void cliParse(int argc, char** argsv, SimpleContainer& particles, Force& force, SettingsParam& settings) {
+    SPDLOG_INFO("Hello from MolSim for PSE!");
     char** help = std::find(argsv, argsv + argc, h);
     if (help != &argsv[argc]) {
         std::cout << HELP_MSG << '\n';
         exit(-1);
     }
     if (argc == 0) {
-        std::cout << "Erroneous programme call! " << '\n' << HELP_MSG << '\n';
+        SPDLOG_ERROR("Erroneous programme call!: No arguments provided!");
+        std::cout << HELP_MSG << '\n';
         exit(-2);
     }
 
@@ -88,6 +89,7 @@ void cliParse(int argc, char** argsv, SimpleContainer& particles, SettingsParam&
 
             if (grav) {
                 parsed_args += 2;
+                force = GRAVITATIONAL;
             } else if (lj) {
                 parsed_args += 2;
                 if (epsilon_opt != &argsv[argc]) {

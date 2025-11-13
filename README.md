@@ -59,10 +59,10 @@ Contributors:
 
 0. Make sure to be in the project root after you built the project.
 
-1. Run the executable with the given input file and optional desired delta_T (-d) and end_T (-t):
+1. Run the executable with the given input file and optional desired delta_T (-d), end_T (-t) and force (-f):
 
     ```
-    ./build/project/MolSim ./input/planets.yaml -d 0.014 -t 1000
+    ./build/project/MolSim ./input/planets.yaml -d 0.014 -t 1000 -f GRAV
     ```
     ```
     ./build/project/MolSim ./input/particles.yaml -d 0.0002 -t 5
