@@ -6,6 +6,7 @@
 
 #include "particles/container/ContainerRef.h"
 #include "particles/container/SimpleContainer.h"
+#include "testingUtils.h"
 
 namespace mol_sim {
 /**
@@ -31,6 +32,7 @@ class DiscGeneratorTest : public testing::Test {
     double sigma = 1.0;
     double distance = 1.0;
     double avg_velo = 0.1;
+    double precision = 1e-1;
     DiscGenerator generator;
 
     DiscGeneratorTest()
@@ -133,9 +135,7 @@ TEST_F(DiscGeneratorTest, testVelocityDistribution) {
     mean_velocity = mean_velocity * (1.0 / static_cast<double>(particles.size()));
 
     // Check if mean velocity is close to initial velocity
-    EXPECT_NEAR(mean_velocity[0], initial_velocity[0], 1e-1);
-    EXPECT_NEAR(mean_velocity[1], initial_velocity[1], 1e-1);
-    EXPECT_NEAR(mean_velocity[2], initial_velocity[2], 1e-1);
+    EXPECT_R3_NEAR(mean_velocity, initial_velocity, precision);
 }
 /**
  * @brief Tests that the Particles velocity are correctly distributed around the initial velocity and take the avg_velo
@@ -169,9 +169,8 @@ TEST_F(DiscGeneratorTest, testAverageVelocity) {
     variance = variance * (1.0 / static_cast<double>(particles.size()));
 
     // Check if variance is close to avg_velo^2 for 2D, and 0 for the 3rd dimension
-    EXPECT_NEAR(variance[0], avg_velo * avg_velo, 1e-1);
-    EXPECT_NEAR(variance[1], avg_velo * avg_velo, 1e-1);
-    EXPECT_NEAR(variance[2], 0.0, 1e-1);
+    R3 expected_var = {avg_velo * avg_velo, avg_velo * avg_velo, 0.};
+    EXPECT_R3_NEAR(variance, expected_var, precision);
 }
 
 /**

@@ -7,12 +7,12 @@
 #include <mutex>
 #include <string>
 
-#include "../testingUtils.h"
 #include "io/fileReader/YAMLReaderException.h"
 #include "particles/Particle.h"
 #include "particles/container/ContainerRef.h"
 #include "particles/container/SimpleContainer.h"
 #include "spdlog/sinks/ostream_sink.h"
+#include "testingUtils.h"
 #include "utils/Settings.h"
 
 namespace mol_sim {
@@ -94,8 +94,8 @@ TEST_F(YAMLReaderTest, ReadSimpleCuboid) {
     R3 expected_pos = {0., 0., 0.};
     R3 expected_velo = {0., 0., 0.};
     auto cube = cuboids[0];
-    EXPECT_R3_EQ(cube.position, expected_pos);
-    EXPECT_R3_EQ(cube.velocity, expected_pos);
+    EXPECT_EQ(cube.position, expected_pos);
+    EXPECT_EQ(cube.velocity, expected_pos);
     EXPECT_EQ(cube.num_particles[0], 2);
     EXPECT_EQ(cube.num_particles[1], 2);
     EXPECT_EQ(cube.num_particles[2], 2);
@@ -117,8 +117,8 @@ TEST_F(YAMLReaderTest, ReadSimpleDisc) {
     R3 expected_pos = {0., 0., 0.};
     R3 expected_velo = {0., 0., 0.};
     auto disc = discs[0];
-    EXPECT_R3_EQ(disc.position, expected_pos);
-    EXPECT_R3_EQ(disc.velocity, expected_pos);
+    EXPECT_EQ(disc.position, expected_pos);
+    EXPECT_EQ(disc.velocity, expected_pos);
     EXPECT_EQ(disc.radius, 2);
 
     EXPECT_DOUBLE_EQ(disc.avg_velo, 0.);
@@ -227,7 +227,7 @@ TEST_F(YAMLReaderTest, ReadFullConfigFile) {
 
     R3 expected_domain = {1., 1., 1.};
     ASSERT_TRUE(settings.domain.has_value());
-    EXPECT_R3_EQ(settings.domain.value(), expected_domain);
+    EXPECT_EQ(settings.domain.value(), expected_domain);
 
     EXPECT_EQ(output.find("Error"), std::string::npos);
 }

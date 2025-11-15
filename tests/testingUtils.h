@@ -15,7 +15,7 @@ namespace mol_sim {
  * @param tolerance The tolerance for floating-point comparison.
  * @return ::testing::AssertionSuccess() if they are equal, otherwise ::testing::AssertionFailure().
  */
-inline ::testing::AssertionResult equalityR3(const R3& expected, const R3& actual, double tolerance = 1e-9) {
+inline ::testing::AssertionResult equalityR3(const R3& actual, const R3& expected, double tolerance = 1e-9) {
     if (std::abs(expected[0] - actual[0]) < tolerance && std::abs(expected[1] - actual[1]) < tolerance &&
         std::abs(expected[2] - actual[2]) < tolerance) {
         return ::testing::AssertionSuccess();
