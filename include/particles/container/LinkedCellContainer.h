@@ -1,9 +1,10 @@
 #ifndef LINKEDCELL_CONTAINER_H
 #define LINKEDCELL_CONTAINER_H
 
-#include <particles/ParticleContainer.h>
-
+#include <cstdint>
 #include <vector>
+
+#include "particles/ParticleContainer.h"
 
 namespace mol_sim {
 
@@ -24,42 +25,120 @@ class LinkedCellContainer {
     struct Cell {
         enum class CellType : std::uint8_t { INNER, BOUNDARY, HALO };
 
+        /**
+         * @brief Constructor, initializing a Cell with type and boundaries.
+         */
         Cell(CellType cell_type, std::array<double, 6> bounds);
 
+        /**
+         * @brief Adding a pointer to an existing Particle to the cell.
+         *
+         * @param value Pointer to already constructed Particle.
+         */
         void addParticle(Particle* value);
+        /**
+         * @brief Remove a pointer at a specific index from the cell.
+         *
+         * @param idx Index of the pointer to remove.
+         */
         void removeParticle(size_t idx);
+        /**
+         * @brief Remove a specific pointer from the cell.
+         *
+         * @param p Pointer to remove.
+         */
         void removeParticle(Particle* p);
+        /**
+         * @brief Clear the entire cell, destructing no Particles.
+         */
         void clear();
 
         Particle* operator[](size_t idx);
+
+        /**
+         * @brief Check whether a Particle fits into the cell boundaries.
+         *
+         * @param p Pointer to Particle to check.
+         *
+         * @return True if Particle is within cell boundaries.
+         */
         bool fits(Particle* p) const;
 
        private:
+        /**
+         * std::vector storing pointers to all Particles in the cell.
+         */
         std::vector<Particle*> data;
+        /**
+         * Type of the cell. [INNER, BOUNDARY, HALO]
+         */
         [[maybe_unused]] CellType type = CellType::INNER;
-        std::array<double, 6> bounds;  // xmin, xmax, ymin, ymax, zmin, zmax
+        /**
+         * Boundaries of the cell. [xmin, xmax, ymin, ymax, zmin, zmax]
+         */
+        std::array<double, 6> bounds;
     };
 
+    /**
+     * @brief Switch a Particle from one cell to another. [HELPER FUNCTION]
+     *
+     * @param p Reference to Particle to switch.
+     * @param old_cell_idx Index of the old cell.
+     * @param new_cell_idx Index of the new cell.
+     */
     void switchCell(Particle& p, size_t old_cell_idx, size_t new_cell_idx);
 
+    /**
+     * @brief Switch a Particle from one cell to another. [HELPER FUNCTION]
+     *
+     * @param p Pointer to Particle to switch.
+     * @param old_cell_idx Index of the old cell.
+     * @param new_cell_idx Index of the new cell.
+     */
     void switchCell(Particle* p, size_t old_cell_idx, size_t new_cell_idx);
 
+    /**
+     * @brief Switch a Particle from one cell to another. [HELPER FUNCTION]
+     *
+     * @param p Index of the Particle in the old cell, which should be switched.
+     * @param old_cell_idx Index of the old cell.
+     * @param new_cell_idx Index of the new cell.
+     */
     void switchCell(size_t p, size_t old_cell_idx, size_t new_cell_idx);
 
+    /**
+     * @brief Find the index of the cell, in which a Particle is located. [HELPER FUNCTION]
+     *
+     * @param p Pointer to the Particle.
+     *
+     * @return Index of the cell, in which the Particle is located.
+     */
     size_t findCellIndex(Particle* p);
 
     /**
-     * Vector storing all Particles in the container.
+     * std::vector storing all Particles in the container.
      */
     std::vector<Particle> data;
 
     /**
-     * Vector storing all cells of the container.
+     * std::vector storing all cells of the container.
      */
     std::vector<Cell> cells;
 
+    /**
+     * Vector storing the global bounds of the domain of this container.
+     * The Linked-Cell container assumes a cuboidal domain from (0,0,0) to domain_size.
+     */
     R3 domain_size;
+
+    /**
+     * Number of cells in each dimension.
+     */
     std::array<size_t, 3> num_cells;
+
+    /**
+     * Cutoff radius used for cell size.
+     */
     double cutoff_radius;
 
    public:
@@ -71,6 +150,14 @@ class LinkedCellContainer {
     LinkedCellContainer(R3 domain_size, double cutoff_radius);
 
     // retrieve data
+
+    /**
+     * @brief Check whether a (potential) Particle fits into the domain.
+     *
+     * @param v Coordinates of the Particle to check.
+     *
+     * @return True if position is within domain boundaries.
+     */
     [[nodiscard]] bool fits(R3 v) const;
 
     Particle& operator[](size_t idx);
@@ -124,7 +211,7 @@ class LinkedCellContainer {
      * @param x_arg Initial coordinates of the Particle.
      * @param v_arg Initial velocities of the Particle.
      * @param m_arg Mass of the Particle.
-     * @param epsilon_arg Epsilopn of the Particle.
+     * @param epsilon_arg Epsilon of the Particle.
      * @param sigma_arg Sigma of the Particle.
      */
     void addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg);
@@ -144,42 +231,42 @@ class LinkedCellContainer {
     // iterators
 
     /**
-     * @brief Mutable iterator.
+     * @brief Mutable iterator of the raw data (no logic).
      *
      * @return Mutable iterator to the first element of the container.
      */
     std::vector<Particle>::iterator begin();
 
     /**
-     * @brief Const iterator.
+     * @brief Const iterator of the raw data (no logic).
      *
      * @return Const iterator to the first element of the container.
      */
     [[nodiscard]] std::vector<Particle>::const_iterator begin() const;
 
     /**
-     * @brief Const iterator.
+     * @brief Const iterator of the raw data (no logic).
      *
      * @return Const iterator to the first element of the container.
      */
     [[nodiscard]] std::vector<Particle>::const_iterator cbegin() const;
 
     /**
-     * @brief Mutable iterator.
+     * @brief Mutable iterator of the raw data (no logic).
      *
      * @return Mutable past-the-end iterator of the container.
      */
     std::vector<Particle>::iterator end();
 
     /**
-     * @brief Const iterator.
+     * @brief Const iterator of the raw data (no logic).
      *
      * @return Const past-the-end iterator of the container.
      */
     [[nodiscard]] std::vector<Particle>::const_iterator end() const;
 
     /**
-     * @brief Const iterator.
+     * @brief Const iterator of the raw data (no logic).
      *
      * @return Const past-the-end iterator of the container
      */
