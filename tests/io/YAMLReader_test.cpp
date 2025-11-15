@@ -167,12 +167,10 @@ TEST_F(YAMLReaderTest, ReadFullConfigFile) {
     std::string output = log_stream->str();
     EXPECT_EQ(particles.size(), 5);
 
-    EXPECT_TRUE(settings.delta_t.has_value());
-    // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+    ASSERT_TRUE(settings.delta_t.has_value());
     EXPECT_EQ(settings.delta_t.value(), 0.005);
 
-    EXPECT_TRUE(settings.end_time.has_value());
-    // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+    ASSERT_TRUE(settings.end_time.has_value());
     EXPECT_EQ(settings.end_time.value(), 500.0);
     EXPECT_EQ(output.find("Error"), std::string::npos);
 }

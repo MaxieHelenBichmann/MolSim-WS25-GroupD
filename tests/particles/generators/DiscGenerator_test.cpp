@@ -1,4 +1,4 @@
-#include "particles/generators/CuboidGenerator.h"
+#include "particles/generators/DiscGenerator.h"
 
 #include <gtest/gtest.h>
 
@@ -18,42 +18,52 @@ namespace mol_sim {
  * distance: 1
  * average velocity: 0.1
  */
-class CuboidGeneratorTest : public testing::Test {
+
+class DiscGeneratorTest : public testing::Test {
    protected:
     SimpleContainer particle_container;
     ContainerRef particles;
     R3 position = {0.0, 0.0, 0.0};
     R3 velocity = {0.0, 0.0, 0.0};
-    N3 num_particles = {2U, 2U, 2U};
+    size_t radius = 2;
     double mass = 1.0;
     double epsilon = 5.0;
     double sigma = 1.0;
     double distance = 1.0;
     double avg_velo = 0.1;
-    CuboidGenerator generator;
+    DiscGenerator generator;
 
-    CuboidGeneratorTest()
+    DiscGeneratorTest()
         : particle_container(),
           particles(particle_container),
-          generator(position, velocity, num_particles, mass, distance, avg_velo, epsilon, sigma) {}
+          generator(position, velocity, radius, mass, distance, avg_velo, epsilon, sigma) {}
 
     void SetUp() override {
         particles.clear();
         generator.generateParticles(particles);
     }
+    /*
+     *
+     ***
+     *****
+     ***
+     *
+     */
 };
 /**
  * @brief Tests that the CuboidGenerator generates the correct number of particles.
  *
  */
-TEST_F(CuboidGeneratorTest, testParticleCount) { EXPECT_EQ(particles.size(), 8); }
+TEST_F(DiscGeneratorTest, testParticleCount) { EXPECT_EQ(particles.size(), 13); }
 /**
  * @brief Tests that the Particles are generated at the correct positions.
  *
  */
-TEST_F(CuboidGeneratorTest, testParticlePositions) {
-    std::vector<R3> expected_positions = {{0., 0., 0.}, {0., 0., 1.}, {0., 1., 0.}, {0., 1., 1.},
-                                          {1., 0., 0.}, {1., 0., 1.}, {1., 1., 0.}, {1., 1., 1.}};
+TEST_F(DiscGeneratorTest, testParticlePositions) {
+    std::vector<R3> expected_positions = {
+        {0., 0., 0.},  {-1., 0., 0.},  {1., 0., 0.},  {0., -1., 0.}, {0., 1., 0.},  {1., 1., 0.}, {-1., 1., 0.},
+        {1., -1., 0.}, {-1., -1., 0.}, {-2., 0., 0.}, {2., 0., 0.},  {0., -2., 0.}, {0., 2., 0.},
+    };
 
     for (R3 pos : expected_positions) {
         bool found = false;
@@ -71,7 +81,7 @@ TEST_F(CuboidGeneratorTest, testParticlePositions) {
  * @brief Tests that the Particles have the correct mass.
  *
  */
-TEST_F(CuboidGeneratorTest, testParticleMass) {
+TEST_F(DiscGeneratorTest, testParticleMass) {
     for (auto& p : particles) {
         EXPECT_EQ(p.getM(), mass);
     }
@@ -80,7 +90,7 @@ TEST_F(CuboidGeneratorTest, testParticleMass) {
  * @brief Tests that the Particles have the correct sigma.
  *
  */
-TEST_F(CuboidGeneratorTest, testParticleSigma) {
+TEST_F(DiscGeneratorTest, testParticleSigma) {
     for (auto& p : particles) {
         EXPECT_EQ(p.getSigma(), sigma);
     }
@@ -89,7 +99,7 @@ TEST_F(CuboidGeneratorTest, testParticleSigma) {
  * @brief Tests that the Particles have the correct epsilon.
  *
  */
-TEST_F(CuboidGeneratorTest, testParticleEpsilon) {
+TEST_F(DiscGeneratorTest, testParticleEpsilon) {
     for (auto& p : particles) {
         EXPECT_EQ(p.getEpsilon(), epsilon);
     }
@@ -98,7 +108,7 @@ TEST_F(CuboidGeneratorTest, testParticleEpsilon) {
  * @brief Tests that the Particles have no velocity on the z-axis.
  *
  */
-TEST_F(CuboidGeneratorTest, testParticleVelocity) {
+TEST_F(DiscGeneratorTest, testParticleVelocity) {
     for (auto& p : particles) {
         EXPECT_EQ(p.getV()[2], 0.0);
     }
@@ -107,13 +117,13 @@ TEST_F(CuboidGeneratorTest, testParticleVelocity) {
  * @brief Tests that the Particles velocity are correctly distributed around the initial velocity. (mean)
  *
  */
-TEST_F(CuboidGeneratorTest, testVelocityDistribution) {
+TEST_F(DiscGeneratorTest, testVelocityDistribution) {
     // Redefine generator and particles for this test to have more particles
     SimpleContainer particle_container;
     ContainerRef particles(particle_container);
-    N3 num_particles = {10U, 10U, 10U};
+    radius = 10;
     R3 initial_velocity = {1.0, 2.0, 0.0};
-    CuboidGenerator generator(position, initial_velocity, num_particles, mass, distance, avg_velo, epsilon, sigma);
+    DiscGenerator generator(position, initial_velocity, radius, mass, distance, avg_velo, epsilon, sigma);
     generator.generateParticles(particles);
 
     R3 mean_velocity = {0.0, 0.0, 0.0};
@@ -132,14 +142,14 @@ TEST_F(CuboidGeneratorTest, testVelocityDistribution) {
  * into account correctly. (variance)
  *
  */
-TEST_F(CuboidGeneratorTest, testAverageVelocity) {
+TEST_F(DiscGeneratorTest, testAverageVelocity) {
     SimpleContainer particle_container;
     ContainerRef particles(particle_container);
-    N3 num_particles = {10U, 10U, 10U};
+    radius = 10;
     double avg_velo = 0.5;
     R3 initial_velocity = {1.0, 2.0, 0.0};
 
-    CuboidGenerator generator(position, initial_velocity, num_particles, mass, distance, avg_velo, epsilon, sigma);
+    DiscGenerator generator(position, initial_velocity, radius, mass, distance, avg_velo, epsilon, sigma);
     generator.generateParticles(particles);
 
     // Calculate mean velocity
@@ -168,11 +178,11 @@ TEST_F(CuboidGeneratorTest, testAverageVelocity) {
  * @brief Tests that no particles are generated when one dimension is 0
  *
  */
-TEST_F(CuboidGeneratorTest, testZeroParticleGeneration) {
+TEST_F(DiscGeneratorTest, testZeroParticleGeneration) {
     SimpleContainer particle_container;
     ContainerRef particles(particle_container);
-    N3 num_particles = {10U, 0U, 10U};
-    CuboidGenerator generator(position, velocity, num_particles, mass, distance, avg_velo, epsilon, sigma);
+    radius = 0;
+    DiscGenerator generator(position, velocity, radius, mass, distance, avg_velo, epsilon, sigma);
     generator.generateParticles(particles);
     EXPECT_EQ(particles.size(), 0);
 }
