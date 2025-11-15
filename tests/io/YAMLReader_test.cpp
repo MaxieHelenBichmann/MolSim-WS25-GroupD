@@ -208,10 +208,10 @@ TEST_F(YAMLReaderTest, ReadFullConfigFile) {
     EXPECT_EQ(settings.delta_t.value(), 0.005);
 
     ASSERT_TRUE(settings.end_time.has_value());
-    EXPECT_EQ(settings.end_time.value(), 500.0);
+    EXPECT_DOUBLE_EQ(settings.end_time.value(), 500.0);
 
     ASSERT_TRUE(settings.start_time.has_value());
-    EXPECT_EQ(settings.end_time.value(), 0.0);
+    EXPECT_DOUBLE_EQ(settings.start_time.value(), 0.0);
 
     ASSERT_TRUE(settings.base_name.has_value());
     EXPECT_EQ(settings.base_name.value(), "MD");
@@ -223,7 +223,7 @@ TEST_F(YAMLReaderTest, ReadFullConfigFile) {
     EXPECT_EQ(settings.frequency.value(), 10);
 
     ASSERT_TRUE(settings.cutoff.has_value());
-    EXPECT_EQ(settings.cutoff.value(), 1.);
+    EXPECT_DOUBLE_EQ(settings.cutoff.value(), 1.);
 
     R3 expected_domain = {1., 1., 1.};
     ASSERT_TRUE(settings.domain.has_value());
