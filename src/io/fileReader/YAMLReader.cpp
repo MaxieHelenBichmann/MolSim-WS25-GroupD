@@ -88,43 +88,6 @@ void YAMLReader::readXVM(ContainerRef particles, const YAML::Node& node) {
         throw YAMLReaderException(e.what());
     }
 }
-void YAMLReader::readCube(ContainerRef particles, const YAML::Node& node) {
-    try {
-        if (node["cuboids"] && node["cuboids"].IsSequence()) {
-            for (const auto& curr : node["cuboids"]) {
-                R3 position;
-                const YAML::Node& coordinates = curr["coordinates"];
-                position[0] = coordinates["x"].as<double>();
-                position[1] = coordinates["y"].as<double>();
-                position[2] = coordinates["z"].as<double>();
-
-                R3 velocity;
-                const YAML::Node& velocity_node = curr["velocity"];
-                velocity[0] = velocity_node["vx"].as<double>();
-                velocity[1] = velocity_node["vy"].as<double>();
-                velocity[2] = velocity_node["vz"].as<double>();
-
-                N3 num_particles;
-                const YAML::Node& count_node = curr["particleNum"];
-                num_particles[0] = count_node["nx"].as<size_t>();
-                num_particles[1] = count_node["ny"].as<size_t>();
-                num_particles[2] = count_node["nz"].as<size_t>();
-
-                auto mass = curr["mass"].as<double>();
-                auto distance = curr["distance"].as<double>();
-                auto avg_velo = curr["mean_velo"].as<double>();
-                auto epsilon = curr["epsilon"].as<double>();
-                auto sigma = curr["sigma"].as<double>();
-
-                CuboidGenerator generator(position, velocity, num_particles, mass, distance, avg_velo, epsilon, sigma);
-                generator.generateParticles(particles);
-            }
-        }
-    } catch (const YAML::Exception& e) {
-        SPDLOG_ERROR("Error parsing YAML: {}", e.what());
-        throw YAMLReaderException(e.what());
-    }
-}
 void YAMLReader::readSettings(SettingsParam& settings, const YAML::Node& node) {
     if (node["delta_t"] && !settings.delta_t.has_value()) {
         settings.delta_t = node["delta_t"].as<double>();
@@ -162,36 +125,97 @@ void YAMLReader::readSettings(SettingsParam& settings, const YAML::Node& node) {
         settings.domain = {x, y, z};
     }
 }
-void YAMLReader::readDisc(ContainerRef particles, const YAML::Node& node) {
+// Add these new methods that parse without generating
+std::vector<YAMLReader::CuboidData> YAMLReader::parseCuboids(const YAML::Node& node) {
+    std::vector<CuboidData> cuboids;
     try {
-        if (node["discs"] && node["discs"].IsSequence()) {
-            for (const auto& curr : node["discs"]) {
-                R3 position;
+        if (node["cuboids"] && node["cuboids"].IsSequence()) {
+            for (const auto& curr : node["cuboids"]) {
+                CuboidData data;
+
                 const YAML::Node& coordinates = curr["coordinates"];
-                position[0] = coordinates["x"].as<double>();
-                position[1] = coordinates["y"].as<double>();
-                position[2] = coordinates["z"].as<double>();
+                data.position[0] = coordinates["x"].as<double>();
+                data.position[1] = coordinates["y"].as<double>();
+                data.position[2] = coordinates["z"].as<double>();
 
-                R3 velocity;
                 const YAML::Node& velocity_node = curr["velocity"];
-                velocity[0] = velocity_node["vx"].as<double>();
-                velocity[1] = velocity_node["vy"].as<double>();
-                velocity[2] = velocity_node["vz"].as<double>();
+                data.velocity[0] = velocity_node["vx"].as<double>();
+                data.velocity[1] = velocity_node["vy"].as<double>();
+                data.velocity[2] = velocity_node["vz"].as<double>();
 
-                auto radius = curr["radius"].as<size_t>();
-                auto mass = curr["mass"].as<double>();
-                auto distance = curr["distance"].as<double>();
-                auto avg_velo = curr["mean_velo"].as<double>();
-                auto epsilon = curr["epsilon"].as<double>();
-                auto sigma = curr["sigma"].as<double>();
+                const YAML::Node& count_node = curr["particleNum"];
+                data.num_particles[0] = count_node["nx"].as<size_t>();
+                data.num_particles[1] = count_node["ny"].as<size_t>();
+                data.num_particles[2] = count_node["nz"].as<size_t>();
 
-                DiscGenerator generator(position, velocity, radius, mass, distance, avg_velo, epsilon, sigma);
-                generator.generateParticles(particles);
+                data.mass = curr["mass"].as<double>();
+                data.distance = curr["distance"].as<double>();
+                data.avg_velo = curr["mean_velo"].as<double>();
+                data.epsilon = curr["epsilon"].as<double>();
+                data.sigma = curr["sigma"].as<double>();
+
+                cuboids.push_back(data);
             }
         }
     } catch (const YAML::Exception& e) {
-        SPDLOG_ERROR("Error parsing YAML: {}", e.what());
+        SPDLOG_ERROR("Error parsing cuboids: {}", e.what());
         throw YAMLReaderException(e.what());
     }
+    return cuboids;
 }
+
+std::vector<YAMLReader::DiscData> YAMLReader::parseDiscs(const YAML::Node& node) {
+    std::vector<DiscData> discs;
+    try {
+        if (node["discs"] && node["discs"].IsSequence()) {
+            for (const auto& curr : node["discs"]) {
+                DiscData data;
+
+                const YAML::Node& coordinates = curr["coordinates"];
+                data.position[0] = coordinates["x"].as<double>();
+                data.position[1] = coordinates["y"].as<double>();
+                data.position[2] = coordinates["z"].as<double>();
+
+                const YAML::Node& velocity_node = curr["velocity"];
+                data.velocity[0] = velocity_node["vx"].as<double>();
+                data.velocity[1] = velocity_node["vy"].as<double>();
+                data.velocity[2] = velocity_node["vz"].as<double>();
+
+                data.radius = curr["radius"].as<size_t>();
+                data.mass = curr["mass"].as<double>();
+                data.distance = curr["distance"].as<double>();
+                data.avg_velo = curr["mean_velo"].as<double>();
+                data.epsilon = curr["epsilon"].as<double>();
+                data.sigma = curr["sigma"].as<double>();
+
+                discs.push_back(data);
+            }
+        }
+    } catch (const YAML::Exception& e) {
+        SPDLOG_ERROR("Error parsing discs: {}", e.what());
+        throw YAMLReaderException(e.what());
+    }
+    return discs;
+}
+
+// Now refactor readCube to use parseCuboids
+void YAMLReader::readCube(ContainerRef particles, const YAML::Node& node) {
+    auto cuboids = parseCuboids(node);
+    for (const auto& data : cuboids) {
+        CuboidGenerator generator(data.position, data.velocity, data.num_particles, data.mass, data.distance,
+                                  data.avg_velo, data.epsilon, data.sigma);
+        generator.generateParticles(particles);
+    }
+}
+
+// Refactor readDisc similarly
+void YAMLReader::readDisc(ContainerRef particles, const YAML::Node& node) {
+    auto discs = parseDiscs(node);
+    for (const auto& data : discs) {
+        DiscGenerator generator(data.position, data.velocity, data.radius, data.mass, data.distance, data.avg_velo,
+                                data.epsilon, data.sigma);
+        generator.generateParticles(particles);
+    }
+}
+
 }  // namespace mol_sim

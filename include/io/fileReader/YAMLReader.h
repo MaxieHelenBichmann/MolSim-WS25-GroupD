@@ -13,14 +13,42 @@
 #include "yaml-cpp/yaml.h"
 
 namespace mol_sim {
-using R3 = Vector<double, 3>;
 using N3 = Vector<size_t, 3>;
+/**
+ * @brief Struct to hold Cuboid Generation Data
+ *
+ */
+
 /**
  * @brief Reads in .yaml files that follow supported Structure
  * Supported formats: XVM, Cuboid
  */
 class YAMLReader : public FileReader {
    public:
+    struct CuboidData {
+        R3 position;
+        R3 velocity;
+        N3 num_particles;
+        double mass;
+        double distance;
+        double avg_velo;
+        double epsilon;
+        double sigma;
+    };
+    /**
+     * @brief Struct to hold Disc Generation Data
+     *
+     */
+    struct DiscData {
+        R3 position;
+        R3 velocity;
+        size_t radius;
+        double mass;
+        double distance;
+        double avg_velo;
+        double epsilon;
+        double sigma;
+    };
     YAMLReader();
     ~YAMLReader() override;
     /**
@@ -31,12 +59,14 @@ class YAMLReader : public FileReader {
      * @param filename Path to input file.
      */
     void readFile(ContainerRef particles, SettingsParam& settings, const std::string& filename) override;
+    std::vector<YAMLReader::CuboidData> parseCuboids(const YAML::Node& node);
+    std::vector<YAMLReader::DiscData> parseDiscs(const YAML::Node& node);
 
    private:
     static void readXVM(ContainerRef particles, const YAML::Node& node);
-    static void readCube(ContainerRef particles, const YAML::Node& node);
-    static void readDisc(ContainerRef particles, const YAML::Node& node);
     static void readSettings(SettingsParam& Settings, const YAML::Node& node);
+    void readCube(ContainerRef particles, const YAML::Node& node);
+    void readDisc(ContainerRef particles, const YAML::Node& node);
 };
 
 }  // namespace mol_sim
