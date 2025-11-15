@@ -2,7 +2,7 @@
 
 using namespace mol_sim;
 
-LinkedCellContainer::LinkedCellContainer() {}
+LinkedCellContainer::LinkedCellContainer() = default;
 
 Particle& LinkedCellContainer::operator[](size_t idx) { return data[idx]; }
 const Particle& LinkedCellContainer::operator[](size_t idx) const { return data[idx]; }
