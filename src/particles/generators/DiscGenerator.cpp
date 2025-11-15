@@ -5,8 +5,12 @@
 namespace mol_sim {
 
 void DiscGenerator::generateParticles(ContainerRef particles) {
+    if (radius == 0) {
+        return;
+    }
     particles.reserve(radius * radius * 4);
     long loop_radius = static_cast<long>(radius);
+
     for (long i = -loop_radius; i <= loop_radius; i++) {
         for (long j = -loop_radius; j <= loop_radius; j++) {
             if ((i * i) + (j * j) <= loop_radius * loop_radius) {
