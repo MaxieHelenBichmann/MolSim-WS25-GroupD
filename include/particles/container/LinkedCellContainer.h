@@ -17,34 +17,62 @@ namespace mol_sim {
  */
 class LinkedCellContainer {
     /**
+     * @brief Cell with specific boundaries and type in the Linked-Cell container.
+     *
+     * Unites methods for access and modification of Particles in the cell.
+     */
+    struct Cell {
+        enum class CellType : std::uint8_t { INNER, BOUNDARY, HALO };
+
+        Cell(CellType cell_type, std::array<double, 6> bounds);
+
+        void addParticle(Particle* value);
+        void removeParticle(size_t idx);
+        void removeParticle(Particle* p);
+        void clear();
+
+        Particle* operator[](size_t idx);
+        bool fits(Particle* p) const;
+
+       private:
+        std::vector<Particle*> data;
+        [[maybe_unused]] CellType type = CellType::INNER;
+        std::array<double, 6> bounds;  // xmin, xmax, ymin, ymax, zmin, zmax
+    };
+
+    void switchCell(Particle& p, size_t old_cell_idx, size_t new_cell_idx);
+
+    void switchCell(Particle* p, size_t old_cell_idx, size_t new_cell_idx);
+
+    void switchCell(size_t p, size_t old_cell_idx, size_t new_cell_idx);
+
+    size_t findCellIndex(Particle* p);
+
+    /**
      * Vector storing all Particles in the container.
      */
     std::vector<Particle> data;
 
     /**
-     * Vector storing the starting indices of each cell in the data vector.
-     * Cells themselves are indexed the following way:
-     *
-     *   0   1   2   3   4
-     *      -----------
-     *   5 | 6 | 7 | 8 | 9
-     *   10| 11| 12| 13| 14
-     *   15| 16| 17| 18| 19
-     *      -----------
-     *   20  21  22  23  24
-     *
+     * Vector storing all cells of the container.
      */
-    std::vector<size_t> cell_indices;
+    std::vector<Cell> cells;
+
+    R3 domain_size;
+    std::array<size_t, 3> num_cells;
+    double cutoff_radius;
 
    public:
     // constructors
 
     /**
-     * @brief Constructor, initializing ContainerRef with a reference to a SimpleContainer.
+     * @brief Constructor, initializing a LinkedCellContainer.
      */
-    LinkedCellContainer();
+    LinkedCellContainer(R3 domain_size, double cutoff_radius);
 
     // retrieve data
+    [[nodiscard]] bool fits(R3 v) const;
+
     Particle& operator[](size_t idx);
     const Particle& operator[](size_t idx) const;
 
