@@ -15,13 +15,6 @@
 namespace mol_sim {
 
 /**
- * @brief Alias for a mathematical 3-dimensional real-valued (double-precision) vector.
- *
- * @see Vector
- */
-using R3 = Vector<double, 3>;
-
-/**
  * @brief Stores all important attributes of a Particle.
  *
  */

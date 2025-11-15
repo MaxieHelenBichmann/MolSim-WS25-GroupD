@@ -6,6 +6,7 @@
 #include <mutex>
 #include <string>
 
+#include "../testingUtils.h"
 #include "io/fileReader/YAMLReaderException.h"
 #include "particles/Particle.h"
 #include "particles/container/ContainerRef.h"
@@ -72,7 +73,11 @@ TEST_F(YAMLReaderTest, ReadSimpleXVM) {
     YAMLReader reader;
     reader.readFile(particles, settings, test_data_dir + "/simple_XVM.yaml");
     std::string output = log_stream->str();
-    EXPECT_EQ(particles.size(), 1);
+    R3 expected_pos = {0., 0., 0.};
+    R3 expected_velo = {0., 0., 0.};
+    ASSERT_EQ(particles.size(), 1);
+    EXPECT_R3_EQ(particles[0].getX(), expected_pos);
+    EXPECT_R3_EQ(particles[0].getV(), expected_velo);
     EXPECT_EQ(particles[0].getM(), 1.0);
     EXPECT_EQ(output.find("Error"), std::string::npos);
 }
@@ -83,111 +88,127 @@ TEST_F(YAMLReaderTest, ReadSimpleXVM) {
 TEST_F(YAMLReaderTest, ReadSimpleCuboid) {
     YAMLReader reader;
     YAML::Node root = YAML::LoadFile(test_data_dir + "/simple_cuboid.yaml");
-
     auto cuboids = reader.parseCuboids(root["simple_cuboids"]["cuboids"]);
-
     ASSERT_EQ(cuboids.size(), 1);
+    R3 expected_pos = {0., 0., 0.};
+    R3 expected_velo = {0., 0., 0.};
     auto cube = cuboids[0];
-    EXPECT_DOUBLE_EQ(val1, val2)
+    EXPECT_R3_EQ(cube.position, expected_pos);
+    EXPECT_R3_EQ(cube.velocity, expected_pos);
+    EXPECT_EQ(cube.num_particles[0], 2);
+    EXPECT_EQ(cube.num_particles[1], 2);
+    EXPECT_EQ(cube.num_particles[2], 2);
     EXPECT_DOUBLE_EQ(cube.avg_velo, 0.);
+    EXPECT_DOUBLE_EQ(cube.mass, 1.);
+    EXPECT_DOUBLE_EQ(cube.distance, 1.);
+    EXPECT_DOUBLE_EQ(cube.epsilon, 5.);
+    EXPECT_DOUBLE_EQ(cube.sigma, 1.);
+}
+/**
+ * @brief Tests the YAML Readers Disc Format support.
+ * Tests this by reading in simple_disc.yaml
+ */
+TEST_F(YAMLReaderTest, ReadSimpleDisc) {
+    YAMLReader reader;
+    YAML::Node root = YAML::LoadFile(test_data_dir + "/simple_disc.yaml");
+    auto discs = reader.parseDiscs(root["simple_disc"]["discs"]);
+    ASSERT_EQ(discs.size(), 1);
+    R3 expected_pos = {0., 0., 0.};
+    R3 expected_velo = {0., 0., 0.};
+    auto disc = discs[0];
+    EXPECT_R3_EQ(disc.position, expected_pos);
+    EXPECT_R3_EQ(disc.velocity, expected_pos);
+    EXPECT_EQ(disc.radius, 2);
 
-    /**
-     * @brief Tests the YAML Readers Disc Format support.
-     * Tests this by reading in simple_disc.yaml
-     */
-    TEST_F(YAMLReaderTest, ReadSimpleDisc) {
-        YAMLReader reader;
-        reader.readFile(particles, settings, test_data_dir + "/simple_disc.yaml");
-        std::string output = log_stream->str();
-        EXPECT_EQ(particles.size(), 8);
-        for (auto& p : particles) {
-            EXPECT_EQ(p.getM(), 1.0);
-        }
-        EXPECT_EQ(output.find("Error"), std::string::npos);
-    }
-    /**
-     * @brief Tests the behaviour of YAMLReader when an invalid filepath is given
-     *
-     */
-    TEST_F(YAMLReaderTest, ReadNonExistentFile) {
-        YAMLReader reader;
-        EXPECT_THROW(reader.readFile(particles, settings, test_data_dir + "/bogus_file.yaml"), YAMLReaderException);
-    }
-    /**
-     * @brief Tests the behaviour of YAMLReader when an unknown format option is parsed
-     *
-     */
-    TEST_F(YAMLReaderTest, ReadWrongFileFormat) {
-        YAMLReader reader;
-        EXPECT_THROW(reader.readFile(particles, settings, test_data_dir + "/unknown_format.yaml"), YAMLReaderException);
-        std::string output = log_stream->str();
-        EXPECT_NE(output.find("Unknown Format"), std::string::npos);
-    }
+    EXPECT_DOUBLE_EQ(disc.avg_velo, 0.);
+    EXPECT_DOUBLE_EQ(disc.mass, 1.);
+    EXPECT_DOUBLE_EQ(disc.distance, 1.);
+    EXPECT_DOUBLE_EQ(disc.epsilon, 5.);
+    EXPECT_DOUBLE_EQ(disc.sigma, 1.);
+}
+/**
+ * @brief Tests the behaviour of YAMLReader when an invalid filepath is given
+ *
+ */
+TEST_F(YAMLReaderTest, ReadNonExistentFile) {
+    YAMLReader reader;
+    EXPECT_THROW(reader.readFile(particles, settings, test_data_dir + "/bogus_file.yaml"), YAMLReaderException);
+}
+/**
+ * @brief Tests the behaviour of YAMLReader when an unknown format option is parsed
+ *
+ */
+TEST_F(YAMLReaderTest, ReadWrongFileFormat) {
+    YAMLReader reader;
+    EXPECT_THROW(reader.readFile(particles, settings, test_data_dir + "/unknown_format.yaml"), YAMLReaderException);
+    std::string output = log_stream->str();
+    EXPECT_NE(output.find("Unknown Format"), std::string::npos);
+}
 
-    /**
-     * @brief Tests the behaviour of YAMLReader when a malformed file is given
-     *
-     */
-    TEST_F(YAMLReaderTest, ReadMalformedFile) {
-        YAMLReader reader;
-        EXPECT_THROW(reader.readFile(particles, settings, test_data_dir + "/malformed.yaml"), YAMLReaderException);
-    }
+/**
+ * @brief Tests the behaviour of YAMLReader when a malformed file is given
+ *
+ */
+TEST_F(YAMLReaderTest, ReadMalformedFile) {
+    YAMLReader reader;
+    EXPECT_THROW(reader.readFile(particles, settings, test_data_dir + "/malformed.yaml"), YAMLReaderException);
+}
 
-    /**
-     * @brief Tests the behaviour of YAMLReader when a file with missing fields is given
-     *
-     */
-    TEST_F(YAMLReaderTest, ReadMissingFields) {
-        YAMLReader reader;
-        EXPECT_THROW(reader.readFile(particles, settings, test_data_dir + "/missing_fields.yaml"), YAMLReaderException);
-    }
+/**
+ * @brief Tests the behaviour of YAMLReader when a file with missing fields is given
+ *
+ */
+TEST_F(YAMLReaderTest, ReadMissingFields) {
+    YAMLReader reader;
+    EXPECT_THROW(reader.readFile(particles, settings, test_data_dir + "/missing_fields.yaml"), YAMLReaderException);
+}
 
-    /**
-     * @brief Tests the behaviour of YAMLReader when an empty file is given
-     *
-     */
-    TEST_F(YAMLReaderTest, ReadEmptyFile) {
-        YAMLReader reader;
-        EXPECT_THROW(reader.readFile(particles, settings, test_data_dir + "/empty.yaml"), YAMLReaderException);
-    }
+/**
+ * @brief Tests the behaviour of YAMLReader when an empty file is given
+ *
+ */
+TEST_F(YAMLReaderTest, ReadEmptyFile) {
+    YAMLReader reader;
+    EXPECT_THROW(reader.readFile(particles, settings, test_data_dir + "/empty.yaml"), YAMLReaderException);
+}
 
-    /**
-     * @brief Tests the YAML Readers ability to read multiple objects from a single file
-     *
-     */
-    TEST_F(YAMLReaderTest, ReadMultipleObjects) {
-        YAMLReader reader;
-        reader.readFile(particles, settings, test_data_dir + "/multiple_objects.yaml");
-        std::string output = log_stream->str();
-        EXPECT_EQ(particles.size(), 5);
-        EXPECT_EQ(output.find("Error"), std::string::npos);
-    }
+/**
+ * @brief Tests the YAML Readers ability to read multiple objects from a single file
+ *
+ */
+TEST_F(YAMLReaderTest, ReadMultipleObjects) {
+    YAMLReader reader;
+    reader.readFile(particles, settings, test_data_dir + "/multiple_objects.yaml");
+    std::string output = log_stream->str();
+    EXPECT_EQ(particles.size(), 5);
+    EXPECT_EQ(output.find("Error"), std::string::npos);
+}
 
-    /**
-     * @brief Tests the behaviour of YAMLReader when a file with only settings is given
-     *
-     */
-    TEST_F(YAMLReaderTest, ReadFileWithOnlySettings) {
-        YAMLReader reader;
-        EXPECT_THROW(reader.readFile(particles, settings, test_data_dir + "/only_settings.yaml"), YAMLReaderException);
-    }
+/**
+ * @brief Tests the behaviour of YAMLReader when a file with only settings is given
+ *
+ */
+TEST_F(YAMLReaderTest, ReadFileWithOnlySettings) {
+    YAMLReader reader;
+    EXPECT_THROW(reader.readFile(particles, settings, test_data_dir + "/only_settings.yaml"), YAMLReaderException);
+}
 
-    /**
-     * @brief Tests the YAML Readers ability to read a full config file with settings and multiple objects
-     *
-     */
-    TEST_F(YAMLReaderTest, ReadFullConfigFile) {
-        YAMLReader reader;
-        reader.readFile(particles, settings, test_data_dir + "/full_config.yaml");
-        std::string output = log_stream->str();
-        EXPECT_EQ(particles.size(), 5);
+/**
+ * @brief Tests the YAML Readers ability to read a full config file with settings and multiple objects
+ *
+ */
+TEST_F(YAMLReaderTest, ReadFullConfigFile) {
+    YAMLReader reader;
+    reader.readFile(particles, settings, test_data_dir + "/full_config.yaml");
+    std::string output = log_stream->str();
+    EXPECT_EQ(particles.size(), 5);
 
-        ASSERT_TRUE(settings.delta_t.has_value());
-        EXPECT_EQ(settings.delta_t.value(), 0.005);
+    ASSERT_TRUE(settings.delta_t.has_value());
+    EXPECT_EQ(settings.delta_t.value(), 0.005);
 
-        ASSERT_TRUE(settings.end_time.has_value());
-        EXPECT_EQ(settings.end_time.value(), 500.0);
-        EXPECT_EQ(output.find("Error"), std::string::npos);
-    }
+    ASSERT_TRUE(settings.end_time.has_value());
+    EXPECT_EQ(settings.end_time.value(), 500.0);
+    EXPECT_EQ(output.find("Error"), std::string::npos);
+}
 
 }  // namespace mol_sim

@@ -27,11 +27,10 @@ inline ::testing::AssertionResult equalityR3(const R3& expected, const R3& actua
                                          << "  Actual:   {" << actual[0] << ", " << actual[1] << ", " << actual[2]
                                          << "}";
 }
-
-#define EXPECT_R3_EQUAL(expected, actual) EXPECT_TRUE(AreR3sEqual(expected, actual))
-
-#define EXPECT_R3_EQUAL_WITH_TOLERANCE(expected, actual, tolerance) \
-    EXPECT_TRUE(AreR3sEqual(expected, actual, tolerance))
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define EXPECT_R3_EQ(expected, actual) EXPECT_TRUE(equalityR3(expected, actual))
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define EXPECT_R3_NEAR(expected, actual, tolerance) EXPECT_TRUE(equalityR3(expected, actual, tolerance))
 }  // namespace mol_sim
 
 #endif

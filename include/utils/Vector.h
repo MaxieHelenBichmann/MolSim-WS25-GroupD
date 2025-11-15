@@ -299,6 +299,12 @@ struct tuple_element<I, mol_sim::Vector<T, N>> {
 }  // namespace std
 
 namespace mol_sim {
+/**
+ * @brief Alias for a mathematical 3-dimensional real-valued (double-precision) vector.
+ *
+ * @see Vector
+ */
+using R3 = Vector<double, 3>;
 
 template <size_t I, class T, size_t N>
 constexpr T& get(Vector<T, N>& v) noexcept {
