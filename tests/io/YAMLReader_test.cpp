@@ -1,6 +1,7 @@
 #include "io/fileReader/YAMLReader.h"
 
 #include <gtest/gtest.h>
+#include <physics/ForceSource.h>
 #include <spdlog/spdlog.h>
 
 #include <mutex>
@@ -201,13 +202,33 @@ TEST_F(YAMLReaderTest, ReadFullConfigFile) {
     YAMLReader reader;
     reader.readFile(particles, settings, test_data_dir + "/full_config.yaml");
     std::string output = log_stream->str();
-    EXPECT_EQ(particles.size(), 5);
+    EXPECT_EQ(particles.size(), 1);
 
     ASSERT_TRUE(settings.delta_t.has_value());
     EXPECT_EQ(settings.delta_t.value(), 0.005);
 
     ASSERT_TRUE(settings.end_time.has_value());
     EXPECT_EQ(settings.end_time.value(), 500.0);
+
+    ASSERT_TRUE(settings.start_time.has_value());
+    EXPECT_EQ(settings.end_time.value(), 0.0);
+
+    ASSERT_TRUE(settings.base_name.has_value());
+    EXPECT_EQ(settings.base_name.value(), "MD");
+
+    ASSERT_TRUE(settings.force.has_value());
+    EXPECT_EQ(settings.force.value(), LENNARDJONES);
+
+    ASSERT_TRUE(settings.frequency.has_value());
+    EXPECT_EQ(settings.frequency.value(), 10);
+
+    ASSERT_TRUE(settings.cutoff.has_value());
+    EXPECT_EQ(settings.cutoff.value(), 1.);
+
+    R3 expected_domain = {1., 1., 1.};
+    ASSERT_TRUE(settings.domain.has_value());
+    EXPECT_R3_EQ(settings.domain.value(), expected_domain);
+
     EXPECT_EQ(output.find("Error"), std::string::npos);
 }
 
