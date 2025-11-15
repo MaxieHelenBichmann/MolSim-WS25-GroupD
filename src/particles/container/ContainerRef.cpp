@@ -44,7 +44,7 @@ void ContainerRef::addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_
                instance);
 }
 
-// iterators
+// normal iterators
 std::vector<Particle>::iterator ContainerRef::begin() {
     return std::visit([](auto& c) { return c->begin(); }, instance);
 }
@@ -64,6 +64,7 @@ std::vector<Particle>::const_iterator ContainerRef::cend() const {
     return std::visit([](const auto& c) { return c->cend(); }, instance);
 }
 
+// proximity iterators
 SimpleContainer::proximity_iterator ContainerRef::proximityBegin(R3 center, double radius, size_t offset) {
     return std::visit([center, radius, offset](auto& c) { return c->proximityBegin(center, radius, offset); },
                       instance);

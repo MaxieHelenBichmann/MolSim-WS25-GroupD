@@ -1,38 +1,40 @@
-#ifndef CONTAINER_REF_H
-#define CONTAINER_REF_H
+#ifndef LINKEDCELL_CONTAINER_H
+#define LINKEDCELL_CONTAINER_H
 
-#include <variant>
+#include <particles/ParticleContainer.h>
 
-#include "particles/container/SimpleContainer.h"
+#include <vector>
 
 namespace mol_sim {
 
 /**
- * @brief Container Reference for Particles
+ * @brief Linked-Cell Container for Particles
  *
  * This container implements the concept ParticleContainer.
- * It essentially stores a pointer (not null) to an arbitrary ParticleContainer - currently only SimpleContainer
- * possible - but does not gain ownership over the elements in the Container. It calls the methods of the actual
- * SimpleContainer from which it was constructed. It is virtually a Generic Type for a ParticleContainer, which can be
- * instantiated.
- * Not being based on templates, it does not increase compile time as much, but checks for which function to call are
- * made at run time.
- *
- * Only use for UNCRITICAL functions/operations (e.g., IO). DO NOT USE IN PERFORMANCE-RELEVANT FUNCTIONS!
- *
- * Do not take References of a ContainerRef object, as it is a reference itself, and trivially copyable.
- * Alway pass-by-value (copy) - similar to std::span.
- *
- * @note maybe will get erased later, if IO functions will be templated as well and compile time and code size
- * acceptable
+ * It stored the Particles in linked cells to optimize proximity queries. However,
+ * it is also possible to simply iterate over all Particles, because they are stored in a linearized vector.
  *
  */
-class ContainerRef {
+class LinkedCellContainer {
     /**
-     * Pointer to the current instance of the ContainerRef.
-     * More containers can be added in the std::variant later.
+     * Vector storing all Particles in the container.
      */
-    std::variant<SimpleContainer*> instance;  // NOLINT
+    std::vector<Particle> data;
+
+    /**
+     * Vector storing the starting indices of each cell in the data vector.
+     * Cells themselves are indexed the following way:
+     *
+     *   0   1   2   3   4
+     *      -----------
+     *   5 | 6 | 7 | 8 | 9
+     *   10| 11| 12| 13| 14
+     *   15| 16| 17| 18| 19
+     *      -----------
+     *   20  21  22  23  24
+     *
+     */
+    std::vector<size_t> cell_indices;
 
    public:
     // constructors
@@ -40,7 +42,7 @@ class ContainerRef {
     /**
      * @brief Constructor, initializing ContainerRef with a reference to a SimpleContainer.
      */
-    ContainerRef(SimpleContainer& c);
+    LinkedCellContainer();
 
     // retrieve data
     Particle& operator[](size_t idx);
@@ -94,7 +96,7 @@ class ContainerRef {
      * @param x_arg Initial coordinates of the Particle.
      * @param v_arg Initial velocities of the Particle.
      * @param m_arg Mass of the Particle.
-     * @param epsilon_arg Epsilon of the Particle.
+     * @param epsilon_arg Epsilopn of the Particle.
      * @param sigma_arg Sigma of the Particle.
      */
     void addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg);
@@ -155,6 +157,18 @@ class ContainerRef {
      */
     [[nodiscard]] std::vector<Particle>::const_iterator cend() const;
 
+    class proximity_iterator {
+       public:
+        proximity_iterator() = default;
+    };
+    // static_assert(std::forward_iterator<proximity_iterator>);
+
+    class const_proximity_iterator {
+       public:
+        const_proximity_iterator() = default;
+    };
+    // static_assert(std::forward_iterator<const_proximity_iterator>);
+
     /**
      * @brief Mutable Iterator over particles in proximity.
      *
@@ -164,7 +178,7 @@ class ContainerRef {
      *
      * @return Mutable iterator to the first particle within the given radius of the center.
      */
-    [[nodiscard]] SimpleContainer::proximity_iterator proximityBegin(R3 center, double radius, size_t offset = 0);
+    [[nodiscard]] proximity_iterator proximityBegin(R3 center, double radius, size_t offset = 0);
 
     /**
      * @brief Mutable Iterator over particles in proximity.
@@ -174,7 +188,7 @@ class ContainerRef {
      *
      * @return Mutable iterator after the last particle within the given radius of the center.
      */
-    [[nodiscard]] SimpleContainer::proximity_iterator proximityEnd(R3 center, double radius);
+    [[nodiscard]] proximity_iterator proximityEnd(R3 center, double radius);
 
     /**
      * @brief Const Iterator over particles in proximity.
@@ -185,8 +199,7 @@ class ContainerRef {
      *
      * @return Const iterator to the first particle within the given radius of the center.
      */
-    [[nodiscard]] SimpleContainer::const_proximity_iterator proximityBegin(R3 center, double radius,
-                                                                           size_t offset = 0) const;
+    [[nodiscard]] const_proximity_iterator proximityBegin(R3 center, double radius, size_t offset = 0) const;
 
     /**
      * @brief Const Iterator over particles in proximity.
@@ -196,7 +209,7 @@ class ContainerRef {
      *
      * @return Const iterator after the last particle within the given radius of the center.
      */
-    [[nodiscard]] SimpleContainer::const_proximity_iterator proximityEnd(R3 center, double radius) const;
+    [[nodiscard]] const_proximity_iterator proximityEnd(R3 center, double radius) const;
 };
 
 }  // namespace mol_sim

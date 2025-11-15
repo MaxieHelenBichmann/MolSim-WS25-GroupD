@@ -41,7 +41,7 @@ class SimpleContainer : public std::vector<Particle> {
      * @param x_arg Initial coordinates of the Particle.
      * @param v_arg Initial velocities of the Particle.
      * @param m_arg Mass of the Particle.
-     * @param epsilon_arg Epsilopn of the Particle.
+     * @param epsilon_arg Epsilon of the Particle.
      * @param sigma_arg Sigma of the Particle.
 
      */
@@ -53,7 +53,7 @@ class SimpleContainer : public std::vector<Particle> {
      * @param x_arg Initial coordinates of the Particle.
      * @param v_arg Initial velocities of the Particle.
      * @param m_arg Mass of the Particle.
-     * @param epsilon_arg Epsilopn of the Particle.
+     * @param epsilon_arg Epsilon of the Particle.
      * @param sigma_arg Sigma of the Particle.
      * @param type Type of the Particle.
      */
