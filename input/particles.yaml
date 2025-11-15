@@ -6,7 +6,6 @@ settings:
 
 cube:
   format: Cuboid
-  num_cuboids: 2
   cuboids:
     - coordinates:
         x: 0.0

@@ -30,7 +30,9 @@ my_particles:
 
 The following pages describe the specific keys and values for each format type.
 
+\subpage disc_format
 \subpage cuboid_format    
 \subpage xvm_format   
 \subpage settings_format
+
 

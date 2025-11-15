@@ -10,7 +10,6 @@ To define a cuboid, you create a top-level block with the `format` key set to `"
 The cuboid block has the following keys:
 
 - `format`: A string describing the format, in this case `"Cuboid"`.
-- `num_cuboids`: An integer specifying the number of cuboid objects defined in this block.
 - `cuboids`: A list of cuboid objects.
 
 ## Cuboid Object
@@ -39,7 +38,6 @@ Each object in the `cuboids` list defines a single cuboid and has the following 
 ```yaml
 my_cuboid:
     format: Cuboid
-    num_cuboids: 1
     cuboids:
       - coordinates:
           x: 0.0
