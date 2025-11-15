@@ -1,9 +1,14 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
+#include <cstddef>
 #include <optional>
+#include <string>
+#include <utility>
 
+#include "particles/Particle.h"
 #include "physics/ForceSource.h"
+#include "physics/LennardJonesForce.h"
 
 namespace mol_sim {
 /**
@@ -40,6 +45,27 @@ class SettingsParam {
      */
     constexpr static double SIGMA_DEFAULT = 1;
     /**
+     * @brief Default base string of the output files of the simulation.
+     *
+     */
+    constexpr static std::string NAME_DEFAULT = "MD";
+    /**
+     * @brief Default force type of the simulation.
+     *
+     */
+    constexpr static Force FORCE_DEFAULT = LENNARDJONES;
+    /**
+     * @brief Default write frequency of the simulation.
+     *
+     */
+    constexpr static size_t FREQUENCY_DEFAULT = 10;
+    /**
+     * @brief Default cutoff radius for the linked cells.
+     *
+     */
+    constexpr static double CUTOFF_DEFAULT = 0.5;
+
+    /**
      * @brief delta_t of the simulation.
      *
      */
@@ -65,6 +91,32 @@ class SettingsParam {
      */
     std::optional<double> sigma;
     /**
+     * @brief Base name of the output files
+     *
+     */
+    std::optional<std::string> base_name;
+    /**
+     * @brief Type of force used in the simulation
+     *
+     */
+    std::optional<Force> force;
+    /**
+     * @brief Frequency of output files being written
+     * All *frequency* iterations file is written
+     */
+    std::optional<size_t> frequency;
+    /**
+     * @brief Cutoff of the linked cells algorithm
+     *
+     */
+    std::optional<double> cutoff;
+    /**
+     * @brief Domain of the simulation
+     *
+     */
+    std::optional<R3> domain;
+
+    /**
      * @brief Construct new SettingsParam.
      * All values will be set to null_opt if not specified otherwise.
      * Default Values will be set in MolSim.cpp
@@ -73,11 +125,27 @@ class SettingsParam {
      * @param end_time
      * @param epsilon
      * @param sigma
+     * @param base_name
+     * @param force
+     * @param frequency
+     * @param cutoff
+     * @param domain
      */
     SettingsParam(std::optional<double> delta_t = std::nullopt, std::optional<double> start_time = std::nullopt,
                   std::optional<double> end_time = std::nullopt, std::optional<double> epsilon = std::nullopt,
-                  std::optional<double> sigma = std::nullopt)
-        : delta_t(delta_t), start_time(start_time), end_time(end_time), epsilon(epsilon), sigma(sigma) {}
+                  std::optional<double> sigma = std::nullopt, std::optional<std::string> base_name = std::nullopt,
+                  std::optional<Force> force = std::nullopt, std::optional<size_t> frequency = std::nullopt,
+                  std::optional<double> cutoff = std::nullopt, std::optional<R3> domain = std::nullopt)
+        : delta_t(delta_t),
+          start_time(start_time),
+          end_time(end_time),
+          epsilon(epsilon),
+          sigma(sigma),
+          base_name(std::move(base_name)),
+          force(force),
+          frequency(frequency),
+          cutoff(cutoff),
+          domain(domain) {}
 
     /**
      * @brief Provide default values for settings that have not been set.
@@ -99,6 +167,21 @@ class SettingsParam {
         }
         if (!sigma.has_value()) {
             sigma = SIGMA_DEFAULT;
+        }
+        if (!base_name.has_value()) {
+            base_name = NAME_DEFAULT;
+        }
+        if (!force.has_value()) {
+            force = FORCE_DEFAULT;
+        }
+        if (!frequency.has_value()) {
+            frequency = FREQUENCY_DEFAULT;
+        }
+        if (!cutoff.has_value()) {
+            cutoff = CUTOFF_DEFAULT;
+        }
+        if (!domain.has_value()) {
+            domain = {1., 1., 1.};
         }
     }
 };

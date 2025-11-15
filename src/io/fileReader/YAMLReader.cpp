@@ -1,6 +1,7 @@
 #include "io/fileReader/YAMLReader.h"
 
 #include <spdlog/spdlog.h>
+#include <yaml-cpp/node/node.h>
 
 #include <cstddef>
 #include <cstdlib>
@@ -8,6 +9,7 @@
 
 #include "io/fileReader/YAMLReaderException.h"
 #include "particles/generators/CuboidGenerator.h"
+#include "physics/ForceSource.h"
 #include "utils/Settings.h"
 
 namespace mol_sim {
@@ -128,6 +130,32 @@ void YAMLReader::readSettings(SettingsParam& settings, const YAML::Node& node) {
     }
     if (node["start_time"] && !settings.start_time.has_value()) {
         settings.start_time = node["start_time"].as<double>();
+    }
+    if (node["base_name"] && !settings.base_name.has_value()) {
+        settings.base_name = node["base_name"].as<std::string>();
+    }
+    if (node["force"] && !settings.force.has_value()) {
+        auto force_str = node["force"].as<std::string>();
+        if (force_str == "Lennard Jones") {
+            settings.force = LENNARDJONES;
+        } else if (force_str == "Gravitational") {
+            settings.force = GRAVITATIONAL;
+        } else {
+            SPDLOG_WARN("Unknown Force Type, defaulting to Lennard Jones!");
+        }
+    }
+    if (node["frequency"] && !settings.frequency.has_value()) {
+        settings.frequency = node["frequency"].as<size_t>();
+    }
+    if (node["cutoff"] && !settings.cutoff.has_value()) {
+        settings.cutoff = node["cutoff"].as<double>();
+    }
+    if (node["domain"] && !settings.domain.has_value()) {
+        const YAML::Node& domain_node = node["domain"];
+        auto x = domain_node["x"].as<double>();
+        auto y = domain_node["y"].as<double>();
+        auto z = domain_node["z"].as<double>();
+        settings.domain = {x, y, z};
     }
 }
 }  // namespace mol_sim
