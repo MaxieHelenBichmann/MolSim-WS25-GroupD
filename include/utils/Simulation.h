@@ -3,6 +3,8 @@
 
 #include <spdlog/spdlog.h>
 
+#include <cstddef>
+
 #include "io/outputWriter/VTKWriter.h"
 #include "io/outputWriter/XYZWriter.h"
 #include "particles/Particle.h"
@@ -52,6 +54,8 @@ class Simulation {
      * Default value is 1000.
      */
     double end_time;
+    size_t frequency;
+    std::string base_name;
 
    public:
     /**
@@ -113,6 +117,8 @@ class Simulation {
         start_time = settings.start_time.value();
         // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
         end_time = settings.end_time.value();
+        frequency = settings.frequency.value();
+        base_name = settings.base_name.value();
     }
 
     /**
@@ -134,13 +140,14 @@ class Simulation {
 
             iteration++;
 #ifndef DISABLE_IO
-            if (iteration % 10 == 0) {
+            if (iteration % frequency == 0) {
                 try {
+                    std::string out_name = base_name;
 #ifdef ENABLE_VTK_OUTPUT
-                    std::string out_name("MD_vtk");
+                    out_name += "_vtk";
                     VTKWriter writer;
 #else
-                    std::string out_name("MD_xyz");
+                    out_name += "_xyz";
                     XYZWriter writer;
 #endif
                     writer.plotParticles(particles, out_name, iteration);
