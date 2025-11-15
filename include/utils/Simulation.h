@@ -4,6 +4,7 @@
 #include <spdlog/spdlog.h>
 
 #include <cstddef>
+#include <limits>
 
 #include "io/outputWriter/VTKWriter.h"
 #include "io/outputWriter/XYZWriter.h"
@@ -54,8 +55,15 @@ class Simulation {
      * Default value is 1000.
      */
     double end_time;
+
     size_t frequency;
     std::string base_name;
+
+    /**
+     * @brief Cutoff radius for particles in proximity.
+     * Default value is infinity.
+     */
+    double cutoff_radius = std::numeric_limits<double>::infinity();
 
    public:
     /**
@@ -68,10 +76,12 @@ class Simulation {
             p.getF() = Vector<double, 3>();
         }
 
-        for (size_t i = 0; i < particles.size(); i++) {
-            Particle& p1 = particles[i];
-            for (size_t j = i + 1; j < particles.size(); j++) {
-                Particle& p2 = particles[j];
+        size_t idx = 1;
+        for (auto it = particles.begin(); it != particles.end(); ++it, idx++) {
+            Particle& p1 = *it;
+            for (auto it_prox = particles.proximityBegin(p1.getX(), cutoff_radius, idx);
+                 it_prox != particles.proximityEnd(p1.getX(), cutoff_radius); ++it_prox) {
+                Particle& p2 = *it_prox;
                 Vector<double, 3> force = force_source.applyForce(p1, p2);
                 // Apply force directly (Newton's 3rd law: equal and opposite)
                 p1.getF() = p1.getF() + force;

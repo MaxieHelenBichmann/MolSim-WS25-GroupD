@@ -97,8 +97,7 @@ class ContainerRef {
      * @param epsilon_arg Epsilopn of the Particle.
      * @param sigma_arg Sigma of the Particle.
      */
-    void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, double epsilon_arg,
-                     double sigma_arg);
+    void addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg);
 
     /**
      * @brief Directly constructing a Particle with its required parameters, including type, in-place.
@@ -110,8 +109,7 @@ class ContainerRef {
      * @param sigma_arg Sigma of the Particle.
      * @param type Type of the Particle.
      */
-    void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, double epsilon_arg,
-                     double sigma_arg, int type);
+    void addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type);
 
     // iterators
 
@@ -156,6 +154,12 @@ class ContainerRef {
      * @return Const past-the-end iterator of the container
      */
     [[nodiscard]] std::vector<Particle>::const_iterator cend() const;
+
+    [[nodiscard]] SimpleContainer::proximity_iterator proximityBegin(R3 center, double radius, size_t offset = 0);
+    [[nodiscard]] SimpleContainer::proximity_iterator proximityEnd(R3 center, double radius);
+    [[nodiscard]] SimpleContainer::const_proximity_iterator proximityBegin(R3 center, double radius,
+                                                                           size_t offset = 0) const;
+    [[nodiscard]] SimpleContainer::const_proximity_iterator proximityEnd(R3 center, double radius) const;
 };
 
 }  // namespace mol_sim

@@ -45,8 +45,7 @@ class SimpleContainer : public std::vector<Particle> {
      * @param sigma_arg Sigma of the Particle.
 
      */
-    void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, double epsilon_arg,
-                     double sigma_arg);
+    void addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg);
 
     /**
      * @brief Directly constructing a Particle with its required parameters, including type, in-place.
@@ -58,8 +57,115 @@ class SimpleContainer : public std::vector<Particle> {
      * @param sigma_arg Sigma of the Particle.
      * @param type Type of the Particle.
      */
-    void addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, double epsilon_arg,
-                     double sigma_arg, int type);
+    void addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type);
+
+    class const_proximity_iterator {
+        const Particle* cur;
+        const Particle* end;
+        double radius;
+        R3 center;
+
+        void satisfy() {
+            if (std::isinf(radius)) {
+                return;
+            }
+            while (cur != end && !((center - cur->getX()).euclidNorm() <= radius)) {
+                ++cur;  // NOLINT
+            }
+        }
+
+       public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type = Particle;
+        using difference_type = std::ptrdiff_t;
+        using pointer = const Particle*;
+        using reference = const Particle&;
+
+        const_proximity_iterator() noexcept : cur(nullptr), end(nullptr), radius(0.0) {}
+        const_proximity_iterator(R3 center, double radius, const Particle* cur, const Particle* end, size_t offset)
+            : cur(cur + offset), end(end), radius(radius), center(center) {  // NOLINT
+            satisfy();
+        }
+
+        reference operator*() const { return *cur; }
+        pointer operator->() const { return cur; }
+
+        const_proximity_iterator& operator++() {
+            ++cur;  // NOLINT
+            satisfy();
+            return *this;
+        }
+
+        const_proximity_iterator operator++(int) {
+            const_proximity_iterator tmp = *this;
+            ++(*this);
+            return tmp;
+        }
+
+        friend bool operator==(const const_proximity_iterator& a, const const_proximity_iterator& b) {
+            return a.cur == b.cur;
+        }
+        friend bool operator!=(const const_proximity_iterator& a, const const_proximity_iterator& b) {
+            return !(a == b);
+        }
+    };
+    static_assert(std::forward_iterator<const_proximity_iterator>);
+
+    class proximity_iterator {
+        Particle* cur;
+        Particle* end;
+        double radius;
+        R3 center;
+
+        void satisfy() {
+            if (std::isinf(radius)) {
+                return;
+            }
+            while (cur != end && !((center - cur->getX()).euclidNorm() <= radius)) {
+                ++cur;  // NOLINT
+            }
+        }
+
+       public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type = Particle;
+        using difference_type = std::ptrdiff_t;
+        using pointer = Particle*;
+        using reference = Particle&;
+
+        proximity_iterator() noexcept : cur(nullptr), end(nullptr), radius(0.0) {}
+        proximity_iterator(R3 center, double radius, Particle* cur, Particle* end, size_t offset)
+            : cur(cur + offset), end(end), radius(radius), center(center) {  // NOLINT
+            satisfy();
+        }
+
+        reference operator*() const { return *cur; }
+        pointer operator->() const { return cur; }
+
+        proximity_iterator& operator++() {
+            ++cur;  // NOLINT
+            satisfy();
+            return *this;
+        }
+
+        proximity_iterator operator++(int) {
+            proximity_iterator tmp = *this;
+            ++(*this);
+            return tmp;
+        }
+
+        friend bool operator==(const proximity_iterator& a, const proximity_iterator& b) { return a.cur == b.cur; }
+        friend bool operator!=(const proximity_iterator& a, const proximity_iterator& b) { return !(a == b); }
+    };
+    static_assert(std::forward_iterator<proximity_iterator>);
+
+    [[nodiscard]] proximity_iterator proximityBegin(R3 center, double radius, size_t offset = 0);
+
+    [[nodiscard]] const_proximity_iterator proximityBegin(R3 center, double radius, size_t offset = 0) const;
+
+    [[nodiscard]] proximity_iterator proximityEnd(R3 center, double radius);
+
+    [[nodiscard]] const_proximity_iterator proximityEnd(R3 center, double radius) const;
 };
 
 }  // namespace mol_sim

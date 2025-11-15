@@ -48,13 +48,19 @@ concept ParticleContainer = requires(C c) {
     { c.addParticle(R3(), R3(), 0., 0., 0.) };
     { c.addParticle(R3(), R3(), 0., 0., 0., 0) };
 
-    // iterators
-    { c.begin() } -> std::contiguous_iterator;
-    { (*static_cast<const C*>(&c)).begin() } -> std::contiguous_iterator;
-    { c.cbegin() } -> std::contiguous_iterator;
-    { c.end() } -> std::contiguous_iterator;
-    { (*static_cast<const C*>(&c)).end() } -> std::contiguous_iterator;
-    { c.cend() } -> std::contiguous_iterator;
+    // iterators all particles
+    { c.begin() } -> std::forward_iterator;
+    { (*static_cast<const C*>(&c)).begin() } -> std::forward_iterator;
+    { c.cbegin() } -> std::forward_iterator;
+    { c.end() } -> std::forward_iterator;
+    { (*static_cast<const C*>(&c)).end() } -> std::forward_iterator;
+    { c.cend() } -> std::forward_iterator;
+
+    // iterators particles in proximity
+    { c.proximityBegin(R3(), double(), size_t()) } -> std::forward_iterator;
+    { (*static_cast<const C*>(&c)).proximityBegin(R3(), double(), size_t()) } -> std::forward_iterator;
+    { c.proximityEnd(R3(), double()) } -> std::forward_iterator;
+    { (*static_cast<const C*>(&c)).proximityEnd(R3(), double()) } -> std::forward_iterator;
 };
 
 }  // namespace mol_sim
