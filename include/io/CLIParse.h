@@ -51,7 +51,7 @@ const std::string& h = "-h";
 const char* GRAV = "GRAV";
 const char* LJ = "LJ";
 
-void cliParse(int argc, char** argsv, SimpleContainer& particles, Force& force, SettingsParam& settings) {
+void cliParse(int argc, char** argsv, SimpleContainer& particles, SettingsParam& settings) {
     SPDLOG_INFO("Hello from MolSim for PSE!");
     char** help = std::find(argsv, argsv + argc, h);
     if (help != &argsv[argc]) {
@@ -89,7 +89,7 @@ void cliParse(int argc, char** argsv, SimpleContainer& particles, Force& force, 
 
             if (grav) {
                 parsed_args += 2;
-                force = GRAVITATIONAL;
+                settings.force = GRAVITATIONAL;
             } else if (lj) {
                 parsed_args += 2;
                 if (epsilon_opt != &argsv[argc]) {

@@ -13,9 +13,8 @@ using namespace mol_sim;
 int main(int argc, char* argsv[]) {
     SimpleContainer particles;
     SettingsParam settings;
-    Force force = LENNARDJONES;
     try {
-        cliParse(argc, argsv, particles, force, settings);
+        cliParse(argc, argsv, particles, settings);
     } catch (YAMLReaderException& e) {
         SPDLOG_ERROR("YAML Reader failed with: {}", e.what());
         exit(-1);
@@ -24,7 +23,7 @@ int main(int argc, char* argsv[]) {
     SPDLOG_INFO("Simulation configured with {} particles, delta_t={} end_time={}", particles.size(),
                 settings.delta_t.value(), settings.end_time.value());  // NOLINT(bugprone-unchecked-optional-access)
 
-    switch (force) {
+    switch (settings.force.value()) {
         case GRAVITATIONAL: {
             GravitationalForce grav_force;
             Simulation<SimpleContainer, GravitationalForce> simulation(particles, grav_force, settings);
