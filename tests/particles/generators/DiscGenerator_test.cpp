@@ -10,11 +10,11 @@
 
 namespace mol_sim {
 /**
- * @brief Test Fixture for testing the CuboidGenerator.
+ * @brief Test Fixture for testing the DiskGenerator.
  * Base Config/Data of the generator is as follow:
  * Position: (0,0,0)
  * Velocity: (0,0,0)
- * Num_Particles: (2,2,2)
+ * radius: 2
  * mass: 1
  * distance: 1
  * average velocity: 0.1
@@ -53,7 +53,7 @@ class DiscGeneratorTest : public testing::Test {
      */
 };
 /**
- * @brief Tests that the CuboidGenerator generates the correct number of particles.
+ * @brief Tests that the DiscGenerator generates the correct number of particles.
  *
  */
 TEST_F(DiscGeneratorTest, testParticleCount) { EXPECT_EQ(particles.size(), 13); }
@@ -174,7 +174,7 @@ TEST_F(DiscGeneratorTest, testAverageVelocity) {
 }
 
 /**
- * @brief Tests that no particles are generated when one dimension is 0
+ * @brief Tests that no particles are generated when radius is 0
  *
  */
 TEST_F(DiscGeneratorTest, testZeroParticleGeneration) {
