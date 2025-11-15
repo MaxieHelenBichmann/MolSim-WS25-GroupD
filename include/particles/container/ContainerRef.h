@@ -155,10 +155,47 @@ class ContainerRef {
      */
     [[nodiscard]] std::vector<Particle>::const_iterator cend() const;
 
+    /**
+     * @brief Mutable Iterator over particles in proximity.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     * @param radius Radius within which to consider particles in proximity.
+     * @param offset Offset from the beginning of the container to start the iteration (used for N3L optimization).
+     *
+     * @return Mutable iterator to the first particle within the given radius of the center.
+     */
     [[nodiscard]] SimpleContainer::proximity_iterator proximityBegin(R3 center, double radius, size_t offset = 0);
+
+    /**
+     * @brief Mutable Iterator over particles in proximity.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     * @param radius Radius within which to consider particles in proximity.
+     *
+     * @return Mutable iterator after the last particle within the given radius of the center.
+     */
     [[nodiscard]] SimpleContainer::proximity_iterator proximityEnd(R3 center, double radius);
+
+    /**
+     * @brief Const Iterator over particles in proximity.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     * @param radius Radius within which to consider particles in proximity.
+     * @param offset Offset from the beginning of the container to start the iteration (used for N3L optimization).
+     *
+     * @return Const iterator to the first particle within the given radius of the center.
+     */
     [[nodiscard]] SimpleContainer::const_proximity_iterator proximityBegin(R3 center, double radius,
                                                                            size_t offset = 0) const;
+
+    /**
+     * @brief Const Iterator over particles in proximity.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     * @param radius Radius within which to consider particles in proximity.
+     *
+     * @return Const iterator after the last particle within the given radius of the center.
+     */
     [[nodiscard]] SimpleContainer::const_proximity_iterator proximityEnd(R3 center, double radius) const;
 };
 

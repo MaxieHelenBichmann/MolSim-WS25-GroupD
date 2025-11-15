@@ -59,6 +59,17 @@ class SimpleContainer : public std::vector<Particle> {
      */
     void addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type);
 
+    /**
+     * @brief Const iterator that iterates over all particles that apply a force on a given particle.
+     *
+     * Satisfies the forward iterator concept.
+     * Only iterates over particles within the given radius of the center, or all if the radius is infinite.
+     *
+     * Enables cutoff radius, BUT still iterates over all particles when checking proximity.
+     * To optimize that behavior and enable optimizations, use the LinkedCellContainer.
+     *
+     * This class is mainly used to fulfill the interface with the calculateF() function in Simulation.
+     */
     class const_proximity_iterator {
         const Particle* cur;
         const Particle* end;
@@ -111,6 +122,17 @@ class SimpleContainer : public std::vector<Particle> {
     };
     static_assert(std::forward_iterator<const_proximity_iterator>);
 
+    /**
+     * @brief Iterator that iterates over all particles that apply a force on a given particle.
+     *
+     * Satisfies the forward iterator concept.
+     * Only iterates over particles within the given radius of the center, or all if the radius is infinite.
+     *
+     * Enables cutoff radius, BUT still iterates over all particles when checking proximity.
+     * To optimize that behavior and enable optimizations, use the LinkedCellContainer.
+     *
+     * This class is mainly used to fulfill the interface with the calculateF() function in Simulation.
+     */
     class proximity_iterator {
         Particle* cur;
         Particle* end;
@@ -159,12 +181,46 @@ class SimpleContainer : public std::vector<Particle> {
     };
     static_assert(std::forward_iterator<proximity_iterator>);
 
+    /**
+     * @brief Mutable Iterator over particles in proximity.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     * @param radius Radius within which to consider particles in proximity.
+     * @param offset Offset from the beginning of the container to start the iteration (used for N3L optimization).
+     *
+     * @return Mutable iterator to the first particle within the given radius of the center.
+     */
     [[nodiscard]] proximity_iterator proximityBegin(R3 center, double radius, size_t offset = 0);
 
+    /**
+     * @brief Const Iterator over particles in proximity.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     * @param radius Radius within which to consider particles in proximity.
+     * @param offset Offset from the beginning of the container to start the iteration (used for N3L optimization).
+     *
+     * @return Const iterator to the first particle within the given radius of the center.
+     */
     [[nodiscard]] const_proximity_iterator proximityBegin(R3 center, double radius, size_t offset = 0) const;
 
+    /**
+     * @brief Mutable Iterator over particles in proximity.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     * @param radius Radius within which to consider particles in proximity.
+     *
+     * @return Mutable iterator after the last particle within the given radius of the center.
+     */
     [[nodiscard]] proximity_iterator proximityEnd(R3 center, double radius);
 
+    /**
+     * @brief Const Iterator over particles in proximity.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     * @param radius Radius within which to consider particles in proximity.
+     *
+     * @return Const iterator after the last particle within the given radius of the center.
+     */
     [[nodiscard]] const_proximity_iterator proximityEnd(R3 center, double radius) const;
 };
 
