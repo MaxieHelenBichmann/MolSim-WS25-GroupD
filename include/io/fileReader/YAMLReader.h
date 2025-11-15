@@ -1,6 +1,7 @@
 #ifndef YAML_READER_H
 #define YAML_READER_H
 
+#include <sys/stat.h>
 #include <yaml-cpp/node/node.h>
 
 #include <cstddef>
@@ -34,6 +35,7 @@ class YAMLReader : public FileReader {
    private:
     static void readXVM(ContainerRef particles, const YAML::Node& node);
     static void readCube(ContainerRef particles, const YAML::Node& node);
+    static void readDisc(ContainerRef particles, const YAML::Node& node);
     static void readSettings(SettingsParam& Settings, const YAML::Node& node);
 };
 

@@ -9,6 +9,7 @@
 
 #include "io/fileReader/YAMLReaderException.h"
 #include "particles/generators/CuboidGenerator.h"
+#include "particles/generators/DiscGenerator.h"
 #include "physics/ForceSource.h"
 #include "utils/Settings.h"
 
@@ -32,6 +33,9 @@ void YAMLReader::readFile(ContainerRef particles, SettingsParam& settings, const
                 } else if (format == "Cuboid") {
                     has_particle_definition = true;
                     readCube(particles, node);
+                } else if (format == "Disc") {
+                    has_particle_definition = true;
+                    readDisc(particles, node);
                 } else if (format == "Settings") {
                     readSettings(settings, node);
                 } else {
@@ -156,6 +160,38 @@ void YAMLReader::readSettings(SettingsParam& settings, const YAML::Node& node) {
         auto y = domain_node["y"].as<double>();
         auto z = domain_node["z"].as<double>();
         settings.domain = {x, y, z};
+    }
+}
+void YAMLReader::readDisc(ContainerRef particles, const YAML::Node& node) {
+    try {
+        if (node["discs"] && node["discs"].IsSequence()) {
+            for (const auto& curr : node["discs"]) {
+                R3 position;
+                const YAML::Node& coordinates = curr["coordinates"];
+                position[0] = coordinates["x"].as<double>();
+                position[1] = coordinates["y"].as<double>();
+                position[2] = coordinates["z"].as<double>();
+
+                R3 velocity;
+                const YAML::Node& velocity_node = curr["velocity"];
+                velocity[0] = velocity_node["vx"].as<double>();
+                velocity[1] = velocity_node["vy"].as<double>();
+                velocity[2] = velocity_node["vz"].as<double>();
+
+                auto radius = curr["radius"].as<size_t>();
+                auto mass = curr["mass"].as<double>();
+                auto distance = curr["distance"].as<double>();
+                auto avg_velo = curr["mean_velo"].as<double>();
+                auto epsilon = curr["epsilon"].as<double>();
+                auto sigma = curr["sigma"].as<double>();
+
+                DiscGenerator generator(position, velocity, radius, mass, distance, avg_velo, epsilon, sigma);
+                generator.generateParticles(particles);
+            }
+        }
+    } catch (const YAML::Exception& e) {
+        SPDLOG_ERROR("Error parsing YAML: {}", e.what());
+        throw YAMLReaderException(e.what());
     }
 }
 }  // namespace mol_sim
