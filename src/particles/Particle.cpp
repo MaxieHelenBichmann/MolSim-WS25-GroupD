@@ -11,6 +11,8 @@
 
 #include <iostream>
 
+#include "utils/Vector.h"
+
 using namespace mol_sim;
 
 Particle::Particle(int type_arg) {
@@ -48,28 +50,26 @@ Particle& Particle::operator=(const Particle& other) {
     return *this;
 }
 
-// TODO: maybe use initializater list instead of copy?
-
-Particle::Particle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg) {
-    x = x_arg;
-    v = v_arg;
-    m = m_arg;
-    epsilon = epsilon_arg;
-    sigma = sigma_arg;
-    type = type_arg;
-    f = {0., 0., 0.};
-    old_f = {0., 0., 0.};
+Particle::Particle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg)
+    : x(x_arg),
+      v(v_arg),
+      f(R3(0., 0., 0.)),
+      old_f(R3{0., 0., 0.}),
+      m(m_arg),
+      epsilon(epsilon_arg),
+      sigma(sigma_arg),
+      type(type_arg) {
     SPDLOG_DEBUG("Particle generated!");
 }
-Particle::Particle(R3 x_arg, R3 v_arg, R3 f_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg) {
-    x = x_arg;
-    v = v_arg;
-    f = f_arg;
-    m = m_arg;
-    epsilon = epsilon_arg;
-    sigma = sigma_arg;
-    type = type_arg;
-    old_f = {0., 0., 0.};
+Particle::Particle(R3 x_arg, R3 v_arg, R3 f_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg)
+    : x(x_arg),
+      v(v_arg),
+      f(f_arg),
+      old_f(R3{0., 0., 0.}),
+      m(m_arg),
+      epsilon(epsilon_arg),
+      sigma(sigma_arg),
+      type(type_arg) {
     SPDLOG_DEBUG("Particle generated!");
 }
 
