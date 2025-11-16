@@ -1,6 +1,7 @@
 #ifndef LINKEDCELL_CONTAINER_H
 #define LINKEDCELL_CONTAINER_H
 
+#include <array>
 #include <cstdint>
 #include <vector>
 
@@ -52,6 +53,19 @@ class LinkedCellContainer {
          * @brief Clear the entire cell, destructing no Particles.
          */
         void clear();
+        /**
+         * @brief Access the vector of Particle pointers in the cell.
+         *
+         * @return Reference to the vector of Particle pointers.
+         */
+        std::vector<Particle*>& particles();
+
+        /**
+         * @brief Access the const vector of Particle pointers in the cell.
+         *
+         * @return Reference to the vector of Particle pointers.
+         */
+        [[nodiscard]] const std::vector<Particle*>& particles() const;
 
         Particle* operator[](size_t idx);
 
@@ -109,11 +123,29 @@ class LinkedCellContainer {
     /**
      * @brief Find the index of the cell, in which a Particle is located. [HELPER FUNCTION]
      *
-     * @param p Pointer to the Particle.
+     * @param x Coordinates of the Particle.
      *
      * @return Index of the cell, in which the Particle is located.
      */
-    size_t findCellIndex(Particle* p);
+    [[nodiscard]] size_t findCellIndex(R3 vec) const;
+
+    /**
+     * @brief Find the adjacent cells of a cell. [HELPER FUNCTION]
+     *
+     * @param cell_idx Index of the cell.
+     *
+     * @return Vector of pointers to the adjacent cells, including the cell itself.
+     */
+    std::vector<Cell*> findAdjacentCells(size_t cell_idx);
+
+    /**
+     * @brief Find the adjacent cells of a cell. [HELPER FUNCTION]
+     *
+     * @param cell_idx Index of the cell.
+     *
+     * @return Vector of const pointers to the adjacent cells, including the cell itself.
+     */
+    [[nodiscard]] std::vector<const Cell*> findAdjacentCells(size_t cell_idx) const;
 
     /**
      * std::vector storing all Particles in the container.
@@ -132,14 +164,15 @@ class LinkedCellContainer {
     R3 domain_size;
 
     /**
-     * Number of cells in each dimension.
+     * Number of cells in each dimension, including halo cells.
      */
     std::array<size_t, 3> num_cells;
 
     /**
-     * Cutoff radius used for cell size.
+     * Effective edge length of a single cell in each spatial dimension.
+     * At least as big as the given cutoff radius, to still only check the immediate neighbors.
      */
-    double cutoff_radius;
+    std::array<double, 3> cell_length{};
 
    public:
     // constructors
@@ -158,7 +191,16 @@ class LinkedCellContainer {
      *
      * @return True if position is within domain boundaries.
      */
-    [[nodiscard]] bool fits(R3 v) const;
+    [[nodiscard]] bool fitsDomain(R3 v) const;
+
+    /**
+     * @brief Check whether a (potential) Particle fits into the container (so including halo cells).
+     *
+     * @param v Coordinates of the Particle to check.
+     *
+     * @return True if position is within container boundaries.
+     */
+    [[nodiscard]] bool fitsContainer(R3 v) const;
 
     Particle& operator[](size_t idx);
     const Particle& operator[](size_t idx) const;
@@ -272,17 +314,155 @@ class LinkedCellContainer {
      */
     [[nodiscard]] std::vector<Particle>::const_iterator cend() const;
 
+    /**
+     * @brief Iterator that iterates over all particles that apply a force on a given particle.
+     *
+     * Satisfies the forward iterator concept.
+     * Only iterates over particles within the given radius of the center, or all if the radius is infinite.
+     *
+     * Enables cutoff radius, and iterates only over the particles in the adjacent cells.
+     */
     class proximity_iterator {
-       public:
-        proximity_iterator() = default;
-    };
-    // static_assert(std::forward_iterator<proximity_iterator>);
+        Particle** cur;
+        Particle** end;
+        Particle** cell_end;
+        std::vector<Cell*> cells;
+        double radius;
+        R3 center;
 
-    class const_proximity_iterator {
+        void inc() {
+            if (cur == cell_end) {  // reached end of current cell
+                cells.erase(cells.begin());
+                cur = cells.front()->particles().data();
+                cell_end = cur + cells.front()->particles().size();  // NOLINT
+            } else {                                                 // iterate within current cell
+                ++cur;                                               // NOLINT
+            }
+        }
+
+        void satisfy() {
+            if (std::isinf(radius)) {
+                return;
+            }
+            while (cur != end && !((center - (*cur)->getX()).euclidNorm() <= radius)) {
+                inc();
+            }
+        }
+
        public:
-        const_proximity_iterator() = default;
+        using iterator_category = std::forward_iterator_tag;
+        using value_type = Particle;
+        using difference_type = std::ptrdiff_t;
+        using pointer = Particle*;
+        using reference = Particle&;
+
+        proximity_iterator() noexcept : cur(nullptr), end(nullptr), cell_end(nullptr), radius(0.0) {}
+        proximity_iterator(R3 center, double radius, Particle** cur, std::vector<Cell*> cells)
+            : cur(cur),
+              end(cells.back()->particles().data() + cells.back()->particles().size()),         // NOLINT
+              cell_end(cells.front()->particles().data() + cells.front()->particles().size()),  // NOLINT
+              cells(cells),
+              radius(radius),
+              center(center) {
+            satisfy();
+        }
+
+        reference operator*() const { return **cur; }
+        pointer operator->() const { return *cur; }
+
+        proximity_iterator& operator++() {
+            inc();
+            satisfy();
+            return *this;
+        }
+
+        proximity_iterator operator++(int) {
+            proximity_iterator tmp = *this;
+            ++(*this);
+            return tmp;
+        }
+
+        friend bool operator==(const proximity_iterator& a, const proximity_iterator& b) { return a.cur == b.cur; }
+        friend bool operator!=(const proximity_iterator& a, const proximity_iterator& b) { return !(a == b); }
     };
-    // static_assert(std::forward_iterator<const_proximity_iterator>);
+    static_assert(std::forward_iterator<proximity_iterator>);
+
+    /**
+     * @brief Iterator that iterates over all particles that apply a force on a given particle.
+     *
+     * Satisfies the forward iterator concept.
+     * Only iterates over particles within the given radius of the center, or all if the radius is infinite.
+     *
+     * Enables cutoff radius, and iterates only over the particles in the adjacent cells.
+     */
+    class const_proximity_iterator {
+        const Particle* const* cur;
+        const Particle* const* end;
+        const Particle* const* cell_end;
+        std::vector<const Cell*> cells;
+        double radius;
+        R3 center;
+
+        void inc() {
+            if (cur == cell_end) {  // reached end of current cell
+                cells.erase(cells.begin());
+                cur = cells.front()->particles().data();
+                cell_end = cur + cells.front()->particles().size();  // NOLINT
+            } else {                                                 // iterate within current cell
+                ++cur;                                               // NOLINT
+            }
+        }
+
+        void satisfy() {
+            if (std::isinf(radius)) {
+                return;
+            }
+            while (cur != end && !((center - (*cur)->getX()).euclidNorm() <= radius)) {
+                inc();
+            }
+        }
+
+       public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type = const Particle;
+        using difference_type = std::ptrdiff_t;
+        using pointer = const Particle*;
+        using reference = const Particle&;
+
+        const_proximity_iterator() noexcept : cur(nullptr), end(nullptr), cell_end(nullptr), radius(0.0) {}
+        const_proximity_iterator(R3 center, double radius, const Particle* const* cur, std::vector<const Cell*> cells)
+            : cur(cur),
+              end(cells.back()->particles().data() + cells.back()->particles().size()),         // NOLINT
+              cell_end(cells.front()->particles().data() + cells.front()->particles().size()),  // NOLINT
+              cells(cells),
+              radius(radius),
+              center(center) {
+            satisfy();
+        }
+
+        reference operator*() const { return **cur; }
+        pointer operator->() const { return *cur; }
+
+        const_proximity_iterator& operator++() {
+            inc();
+            satisfy();
+            return *this;
+        }
+
+        const_proximity_iterator operator++(int) {
+            const_proximity_iterator tmp = *this;
+            ++(*this);
+            return tmp;
+        }
+
+        friend bool operator==(const const_proximity_iterator& a, const const_proximity_iterator& b) {
+            return a.cur == b.cur;
+        }
+        friend bool operator!=(const const_proximity_iterator& a, const const_proximity_iterator& b) {
+            return !(a == b);
+        }
+    };
+    static_assert(std::forward_iterator<const_proximity_iterator>);
 
     /**
      * @brief Mutable Iterator over particles in proximity.
