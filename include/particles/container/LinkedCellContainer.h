@@ -3,11 +3,29 @@
 
 #include <array>
 #include <cstdint>
+#include <set>
 #include <vector>
 
 #include "particles/ParticleContainer.h"
 
 namespace mol_sim {
+
+/**
+ * @brief Enum for boundary types in the Linked-Cell Container.
+ *
+ * UPPER: +z direction (x-y plane at max z)
+ * LOWER: -z direction (x-y plane at min z)
+ * FRONT: -y direction (x-z plane at min y)
+ * BACK: +y direction (x-z plane at max y)
+ * LEFT: -x direction (y-z plane at min x)
+ * RIGHT: +x direction (y-z plane at max x)
+ */
+enum class BoundaryType : std::uint8_t { UPPER, LOWER, FRONT, BACK, LEFT, RIGHT };
+
+/**
+ * @brief Enum for cell types in the Linked-Cell Container.
+ */
+enum class CellType : std::uint8_t { INNER, BOUNDARY, HALO };
 
 /**
  * @brief Linked-Cell Container for Particles
@@ -24,8 +42,6 @@ class LinkedCellContainer {
      * Unites methods for access and modification of Particles in the cell.
      */
     struct Cell {
-        enum class CellType : std::uint8_t { INNER, BOUNDARY, HALO };
-
         /**
          * @brief Constructor, initializing a Cell with type and boundaries.
          */
@@ -146,6 +162,24 @@ class LinkedCellContainer {
      * @return Vector of const pointers to the adjacent cells, including the cell itself.
      */
     [[nodiscard]] std::vector<const Cell*> findAdjacentCells(size_t cell_idx) const;
+
+    /**
+     * @brief Find the boundary or halo cells. [HELPER FUNCTION]
+     *
+     * @param type Type of the boundary.
+     * @param boundary_cells Vector to store the found boundary cells.
+     * @param offset Offset to consider for halo cells. (0 = halo cells, 1 = boundary cells)
+     */
+    void findBoundaryCells(BoundaryType type, std::vector<const Cell*>& boundary_cells, size_t offset = 0) const;
+
+    /**
+     * @brief Find the boundary or halo cells. [HELPER FUNCTION]
+     *
+     * @param type Type of the boundary.
+     * @param boundary_cells Vector to store the found boundary cells.
+     * @param offset Offset to consider for halo cells. (0 = halo cells, 1 = boundary cells)
+     */
+    void findBoundaryCells(BoundaryType type, std::vector<Cell*>& boundary_cells, size_t offset = 0);
 
     /**
      * std::vector storing all Particles in the container.
@@ -269,6 +303,13 @@ class LinkedCellContainer {
      * @param type Type of the Particle.
      */
     void addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type);
+
+    /**
+     * @brief Remove a Particle if it lies in a halo cell.
+     *
+     * @param p Pointer to the Particle to remove.
+     */
+    void removeParticle(Particle* p);
 
     // iterators
 
@@ -505,6 +546,100 @@ class LinkedCellContainer {
      * @return Const iterator after the last particle within the given radius of the center.
      */
     [[nodiscard]] const_proximity_iterator proximityEnd(R3 center, double radius) const;
+
+    // boundary and halo iterators
+
+    /**
+     * @brief Iterator over particles in halo cells.
+     *
+     * @param boundary_types Boundary types to specify which halo cells to iterate over. Defaults to all sides.
+     *
+     * @return Iterator to the first particle within the given halo cells.
+     */
+    [[nodiscard]] proximity_iterator haloBegin(const std::set<BoundaryType>& boundary_types = {
+                                                   BoundaryType::UPPER, BoundaryType::LOWER, BoundaryType::FRONT,
+                                                   BoundaryType::BACK, BoundaryType::LEFT, BoundaryType::RIGHT});
+
+    /**
+     * @brief Const Iterator over particles in halo cells.
+     *
+     * @param boundary_types Boundary types to specify which halo cells to iterate over. Defaults to all sides.
+     *
+     * @return Const iterator to the first particle within the given halo cells.
+     */
+    [[nodiscard]] const_proximity_iterator haloBegin(const std::set<BoundaryType>& boundary_types = {
+                                                         BoundaryType::UPPER, BoundaryType::LOWER, BoundaryType::FRONT,
+                                                         BoundaryType::BACK, BoundaryType::LEFT,
+                                                         BoundaryType::RIGHT}) const;
+
+    /**
+     * @brief Iterator over particles in halo cells.
+     *
+     * @param boundary_types Boundary types to specify which halo cells to iterate over. Defaults to all sides.
+     *
+     * @return Iterator after the last particle within the given halo cells.
+     */
+    [[nodiscard]] proximity_iterator haloEnd(const std::set<BoundaryType>& boundary_types = {
+                                                 BoundaryType::UPPER, BoundaryType::LOWER, BoundaryType::FRONT,
+                                                 BoundaryType::BACK, BoundaryType::LEFT, BoundaryType::RIGHT});
+
+    /**
+     * @brief Const Iterator over particles in halo cells.
+     *
+     * @param boundary_types Boundary types to specify which halo cells to iterate over. Defaults to all sides.
+     *
+     * @return Const iterator after the last particle within the given halo cells.
+     */
+    [[nodiscard]] const_proximity_iterator haloEnd(const std::set<BoundaryType>& boundary_types = {
+                                                       BoundaryType::UPPER, BoundaryType::LOWER, BoundaryType::FRONT,
+                                                       BoundaryType::BACK, BoundaryType::LEFT,
+                                                       BoundaryType::RIGHT}) const;
+
+    /**
+     * @brief Iterator over particles in boundary cells.
+     *
+     * @param boundary_types Boundary types to specify which boundary cells to iterate over. Defaults to all sides.
+     *
+     * @return Iterator to the first particle within the given boundary cells.
+     */
+    [[nodiscard]] proximity_iterator boundaryBegin(const std::set<BoundaryType>& boundary_types = {
+                                                       BoundaryType::UPPER, BoundaryType::LOWER, BoundaryType::FRONT,
+                                                       BoundaryType::BACK, BoundaryType::LEFT, BoundaryType::RIGHT});
+
+    /**
+     * @brief Const Iterator over particles in boundary cells.
+     *
+     * @param boundary_types Boundary types to specify which boundary cells to iterate over. Defaults to all sides.
+     *
+     * @return Const iterator to the first particle within the given boundary cells.
+     */
+    [[nodiscard]] const_proximity_iterator boundaryBegin(const std::set<BoundaryType>& boundary_types = {
+                                                             BoundaryType::UPPER, BoundaryType::LOWER,
+                                                             BoundaryType::FRONT, BoundaryType::BACK,
+                                                             BoundaryType::LEFT, BoundaryType::RIGHT}) const;
+
+    /**
+     * @brief Iterator over particles in boundary cells.
+     *
+     * @param boundary_types Boundary types to specify which boundary cells to iterate over. Defaults to all sides.
+     *
+     * @return Iterator after the last particle within the given boundary cells.
+     */
+    [[nodiscard]] proximity_iterator boundaryEnd(const std::set<BoundaryType>& boundary_types = {
+                                                     BoundaryType::UPPER, BoundaryType::LOWER, BoundaryType::FRONT,
+                                                     BoundaryType::BACK, BoundaryType::LEFT, BoundaryType::RIGHT});
+
+    /**
+     * @brief Const Iterator over particles in boundary cells.
+     *
+     * @param boundary_types Boundary types to specify which boundary cells to iterate over. Defaults to all sides.
+     *
+     * @return Const iterator after the last particle within the given boundary cells.
+     */
+    [[nodiscard]] const_proximity_iterator boundaryEnd(const std::set<BoundaryType>& boundary_types = {
+                                                           BoundaryType::UPPER, BoundaryType::LOWER,
+                                                           BoundaryType::FRONT, BoundaryType::BACK, BoundaryType::LEFT,
+                                                           BoundaryType::RIGHT}) const;
 };
 
 }  // namespace mol_sim
