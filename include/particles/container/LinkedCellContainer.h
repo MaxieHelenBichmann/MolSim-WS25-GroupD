@@ -87,7 +87,7 @@ class LinkedCellContainer {
          *
          * @return True if Particle is within cell boundaries.
          */
-        bool fits(R3 x) const;
+        [[nodiscard]] bool fits(R3 x) const;
 
        private:
         /**
