@@ -83,11 +83,11 @@ class LinkedCellContainer {
         /**
          * @brief Check whether a Particle fits into the cell boundaries.
          *
-         * @param p Pointer to Particle to check.
+         * @param x Coordinates to check.
          *
          * @return True if Particle is within cell boundaries.
          */
-        bool fits(Particle& p) const;
+        bool fits(R3 x) const;
 
        private:
         /**
@@ -288,6 +288,14 @@ class LinkedCellContainer {
      * @param p Pointer to the Particle to remove.
      */
     void eraseParticle(Particle* p);
+
+    /**
+     * @brief Update the position of a given Particle in the Container.
+     *
+     * @param p Iterator to the Particle to update.
+     * @param new_x New position to set.
+     */
+    void updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x);
 
     // iterators
 

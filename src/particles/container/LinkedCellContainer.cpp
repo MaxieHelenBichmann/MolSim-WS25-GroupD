@@ -24,9 +24,9 @@ void LinkedCellContainer::Cell::clear() { indices.clear(); }
 std::vector<size_t>& LinkedCellContainer::Cell::particles() { return indices; }
 const std::vector<size_t>& LinkedCellContainer::Cell::particles() const { return indices; }
 size_t LinkedCellContainer::Cell::operator[](size_t idx) { return indices[idx]; }
-bool LinkedCellContainer::Cell::fits(Particle& p) const {
-    return bounds[0] <= p.getX()[0] && p.getX()[0] < bounds[1] && bounds[2] <= p.getX()[1] && p.getX()[1] < bounds[3] &&
-           bounds[4] <= p.getX()[2] && p.getX()[2] < bounds[5];
+bool LinkedCellContainer::Cell::fits(R3 x) const {
+    return bounds[0] <= x[0] && x[0] < bounds[1] && bounds[2] <= x[1] && x[1] < bounds[3] && bounds[4] <= x[2] &&
+           x[2] < bounds[5];
 }
 
 // ------------------- LinkedCellContainer methods -------------------
@@ -346,6 +346,20 @@ void LinkedCellContainer::eraseParticle(Particle* p) {
         cells[cell_idx].removeParticle(it - data.begin());
         data.erase(it);
     }
+}
+
+void LinkedCellContainer::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x) {
+    size_t old_cell_idx = findCellIndex(p->getX());
+    if (!cells[old_cell_idx].fits(new_x)) {
+        size_t new_cell_idx = findCellIndex(new_x);
+        if (new_cell_idx == cells.size()) {
+            SPDLOG_INFO("New position not in container!");
+            return;
+        }
+        switchCell(static_cast<size_t>(p - data.begin()), old_cell_idx, new_cell_idx);
+    }
+
+    p->getX() = new_x;
 }
 
 // normal iterators
