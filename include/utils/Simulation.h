@@ -10,6 +10,8 @@
 #include "io/outputWriter/XYZWriter.h"
 #include "particles/Particle.h"
 #include "particles/ParticleContainer.h"
+#include "particles/container/LinkedCellContainer.h"
+#include "particles/container/SimpleContainer.h"
 #include "physics/ForceSource.h"
 #include "utils/Settings.h"
 
@@ -92,11 +94,26 @@ class Simulation {
 
     /**
      * @brief Calculates the positions of every particle for the next time step.
-     * Calculates the forces of every particle for the next time step, specified by delta_t.
+     * Calculates the forces of every particle for the next time step, specified by delta_t, for the provided
+     * container.
      */
+    template <ParticleContainer conTy>
     void calculateX() {
         for (auto& p : particles) {
             p.getX() = p.getX() + (delta_t * p.getV()) + ((0.5 * delta_t * delta_t / p.getM()) * p.getF());
+        }
+    }
+    /**
+     * @brief Specialization of calculate for LinkedCellContainer.
+     * Additionally updates the cell information of the LinkedCellContainer, which is not necessary for other
+     * containers.
+     */
+    template <>
+    void calculateX<LinkedCellContainer>() {
+        for (auto it = particles.begin(); it != particles.end(); ++it) {
+            const auto new_position =
+                it->getX() + (delta_t * it->getV()) + ((0.5 * delta_t * delta_t / it->getM()) * it->getF());
+            particles.updateParticlePosition(it, new_position);
         }
     }
 
@@ -142,7 +159,7 @@ class Simulation {
         // for this loop, we assume: current x, current f and current v are known
         while (current_time < end_time) {
             // calculate new x
-            calculateX();
+            calculateX<containerType>();
             // calculate new f
             calculateF();
             // calculate new v
