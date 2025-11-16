@@ -3,6 +3,7 @@
 #include <spdlog/spdlog.h>
 
 #include <cmath>
+#include <unordered_set>
 
 using namespace mol_sim;
 
@@ -10,23 +11,22 @@ using namespace mol_sim;
 
 LinkedCellContainer::Cell::Cell(CellType cell_type, std::array<double, 6> bounds) : type(cell_type), bounds(bounds) {}
 
-void LinkedCellContainer::Cell::addParticle(Particle* value) { data.push_back(value); }
-void LinkedCellContainer::Cell::removeParticle(size_t idx) { data.erase(data.begin() + idx); }  // NOLINT
-void LinkedCellContainer::Cell::removeParticle(Particle* p) {
-    for (size_t i = 0; i < data.size(); ++i) {
-        if (data[i] == p) {
-            data.erase(data.begin() + i);  // NOLINT
+void LinkedCellContainer::Cell::addParticle(size_t idx) { indices.push_back(idx); }
+void LinkedCellContainer::Cell::removeParticle(size_t idx) {
+    for (size_t i = 0; i < indices.size(); ++i) {
+        if (indices[i] == idx) {
+            indices.erase(indices.begin() + i);  // NOLINT
             return;
         }
     }
 }
-void LinkedCellContainer::Cell::clear() { data.clear(); }
-std::vector<Particle*>& LinkedCellContainer::Cell::particles() { return data; }
-const std::vector<Particle*>& LinkedCellContainer::Cell::particles() const { return data; }
-Particle* LinkedCellContainer::Cell::operator[](size_t idx) { return data[idx]; }
-bool LinkedCellContainer::Cell::fits(Particle* p) const {
-    return bounds[0] <= p->getX()[0] && p->getX()[0] < bounds[1] && bounds[2] <= p->getX()[1] &&
-           p->getX()[1] < bounds[3] && bounds[4] <= p->getX()[2] && p->getX()[2] < bounds[5];
+void LinkedCellContainer::Cell::clear() { indices.clear(); }
+std::vector<size_t>& LinkedCellContainer::Cell::particles() { return indices; }
+const std::vector<size_t>& LinkedCellContainer::Cell::particles() const { return indices; }
+size_t LinkedCellContainer::Cell::operator[](size_t idx) { return indices[idx]; }
+bool LinkedCellContainer::Cell::fits(Particle& p) const {
+    return bounds[0] <= p.getX()[0] && p.getX()[0] < bounds[1] && bounds[2] <= p.getX()[1] && p.getX()[1] < bounds[3] &&
+           bounds[4] <= p.getX()[2] && p.getX()[2] < bounds[5];
 }
 
 // ------------------- LinkedCellContainer methods -------------------
@@ -74,20 +74,9 @@ LinkedCellContainer::LinkedCellContainer(R3 domain_size, double cutoff_radius) :
     }
 }
 
-void LinkedCellContainer::switchCell(Particle& p, size_t old_cell_idx, size_t new_cell_idx) {
-    cells[old_cell_idx].removeParticle(&p);
-    cells[new_cell_idx].addParticle(&p);
-}
-
-void LinkedCellContainer::switchCell(Particle* p, size_t old_cell_idx, size_t new_cell_idx) {
+void LinkedCellContainer::switchCell(size_t p, size_t old_cell_idx, size_t new_cell_idx) {
     cells[old_cell_idx].removeParticle(p);
     cells[new_cell_idx].addParticle(p);
-}
-
-void LinkedCellContainer::switchCell(size_t p, size_t old_cell_idx, size_t new_cell_idx) {
-    Particle* particle_ptr = cells[old_cell_idx][p];
-    cells[old_cell_idx].removeParticle(particle_ptr);
-    cells[new_cell_idx].addParticle(particle_ptr);
 }
 
 size_t LinkedCellContainer::findCellIndex(R3 vec) const {
@@ -322,16 +311,14 @@ void LinkedCellContainer::addParticle(Particle&& value) {
         return;
     }
     data.push_back(value);
-    Particle* p = &data.back();  // NOLINT
-    cells[findCellIndex(p->getX())].addParticle(p);
+    cells[findCellIndex(value.getX())].addParticle(data.size() - 1);
 }
 void LinkedCellContainer::addParticle(const Particle& value) {
     if (!fitsDomain(value.getX())) {
         return;
     }
     data.push_back(value);
-    Particle* p = &data.back();  // NOLINT
-    cells[findCellIndex(p->getX())].addParticle(p);
+    cells[findCellIndex(value.getX())].addParticle(data.size() - 1);
 }
 
 void LinkedCellContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg) {
@@ -339,8 +326,7 @@ void LinkedCellContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double e
         return;
     }
     data.emplace_back(x_arg, v_arg, m_arg, epsilon_arg, sigma_arg);
-    Particle* p = &data.back();  // NOLINT
-    cells[findCellIndex(p->getX())].addParticle(p);
+    cells[findCellIndex(x_arg)].addParticle(data.size() - 1);
 }
 void LinkedCellContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg,
                                       int type) {
@@ -348,17 +334,16 @@ void LinkedCellContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double e
         return;
     }
     data.emplace_back(x_arg, v_arg, m_arg, epsilon_arg, sigma_arg, type);
-    Particle* p = &data.back();  // NOLINT
-    cells[findCellIndex(p->getX())].addParticle(p);
+    cells[findCellIndex(x_arg)].addParticle(data.size() - 1);
 }
 
-void LinkedCellContainer::removeParticle(Particle* p) {
+void LinkedCellContainer::eraseParticle(Particle* p) {
     size_t cell_idx = findCellIndex(p->getX());
-    cells[cell_idx].removeParticle(p);
 
     auto it =
         std::find_if(data.begin(), data.end(), [p](const Particle& particle) { return &particle == p; });  // NOLINT
     if (it != data.end()) {
+        cells[cell_idx].removeParticle(it - data.begin());
         data.erase(it);
     }
 }
@@ -375,7 +360,7 @@ std::vector<Particle>::const_iterator LinkedCellContainer::cend() const { return
 LinkedCellContainer::proximity_iterator LinkedCellContainer::proximityBegin(R3 center, double radius,
                                                                             [[maybe_unused]] size_t offset) {
     std::vector<Cell*> adjacent_cells = findAdjacentCells(findCellIndex(center));
-    return proximity_iterator{center, radius, adjacent_cells.front()->particles().data(), adjacent_cells};
+    return proximity_iterator{center, radius, adjacent_cells.front()->particles().data(), adjacent_cells, &data};
 }
 
 LinkedCellContainer::proximity_iterator LinkedCellContainer::proximityEnd(R3 center, double radius) {
@@ -383,20 +368,20 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::proximityEnd(R3 cen
     return proximity_iterator{
         center, radius,
         adjacent_cells.back()->particles().data() + adjacent_cells.back()->particles().size(),  // NOLINT
-        adjacent_cells};
+        adjacent_cells, &data};
 }
 
 LinkedCellContainer::const_proximity_iterator LinkedCellContainer::proximityBegin(
     R3 center, double radius, [[maybe_unused]] size_t offset) const {
     std::vector<const Cell*> adjacent_cells = findAdjacentCells(findCellIndex(center));
-    return const_proximity_iterator{center, radius, adjacent_cells.front()->particles().data(), adjacent_cells};
+    return const_proximity_iterator{center, radius, adjacent_cells.front()->particles().data(), adjacent_cells, &data};
 }
 LinkedCellContainer::const_proximity_iterator LinkedCellContainer::proximityEnd(R3 center, double radius) const {
     std::vector<const Cell*> adjacent_cells = findAdjacentCells(findCellIndex(center));
     return const_proximity_iterator{
         center, radius,
         adjacent_cells.back()->particles().data() + adjacent_cells.back()->particles().size(),  // NOLINT
-        adjacent_cells};
+        adjacent_cells, &data};
 }
 
 // boundary and halo iterators
@@ -407,9 +392,19 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::haloBegin(const std
         findBoundaryCells(type, relevant_cells, 0);
     }
 
+    std::unordered_set<Cell*> seen;
+    std::vector<Cell*> unique_cells;
+
+    unique_cells.reserve(cells.size());
+    for (Cell* c : relevant_cells) {
+        if (seen.insert(c).second) {
+            unique_cells.push_back(c);
+        }
+    }
+
     return proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
-                              relevant_cells.back()->particles().data(),  // NOLINT
-                              relevant_cells};
+                              unique_cells.back()->particles().data(),  // NOLINT
+                              unique_cells, &data};
 }
 LinkedCellContainer::const_proximity_iterator LinkedCellContainer::haloBegin(
     const std::set<BoundaryType>& boundary_types) const {
@@ -419,9 +414,19 @@ LinkedCellContainer::const_proximity_iterator LinkedCellContainer::haloBegin(
         findBoundaryCells(type, relevant_cells, 0);
     }
 
+    std::unordered_set<const Cell*> seen;
+    std::vector<const Cell*> unique_cells;
+
+    unique_cells.reserve(cells.size());
+    for (const Cell* c : relevant_cells) {
+        if (seen.insert(c).second) {
+            unique_cells.push_back(c);
+        }
+    }
+
     return const_proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
-                                    relevant_cells.back()->particles().data(),  // NOLINT
-                                    relevant_cells};
+                                    unique_cells.back()->particles().data(),  // NOLINT
+                                    unique_cells, &data};
 }
 LinkedCellContainer::proximity_iterator LinkedCellContainer::haloEnd(const std::set<BoundaryType>& boundary_types) {
     std::vector<Cell*> relevant_cells;
@@ -430,10 +435,20 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::haloEnd(const std::
         findBoundaryCells(type, relevant_cells, 0);
     }
 
+    std::unordered_set<Cell*> seen;
+    std::vector<Cell*> unique_cells;
+
+    unique_cells.reserve(cells.size());
+    for (Cell* c : relevant_cells) {
+        if (seen.insert(c).second) {
+            unique_cells.push_back(c);
+        }
+    }
+
     return proximity_iterator{
         R3{}, std::numeric_limits<double>::infinity(),
-        relevant_cells.back()->particles().data() + relevant_cells.back()->particles().size(),  // NOLINT
-        relevant_cells};
+        unique_cells.back()->particles().data() + unique_cells.back()->particles().size(),  // NOLINT
+        unique_cells, &data};
 }
 LinkedCellContainer::const_proximity_iterator LinkedCellContainer::haloEnd(
     const std::set<BoundaryType>& boundary_types) const {
@@ -443,10 +458,20 @@ LinkedCellContainer::const_proximity_iterator LinkedCellContainer::haloEnd(
         findBoundaryCells(type, relevant_cells, 0);
     }
 
+    std::unordered_set<const Cell*> seen;
+    std::vector<const Cell*> unique_cells;
+
+    unique_cells.reserve(cells.size());
+    for (const Cell* c : relevant_cells) {
+        if (seen.insert(c).second) {
+            unique_cells.push_back(c);
+        }
+    }
+
     return const_proximity_iterator{
         R3{}, std::numeric_limits<double>::infinity(),
-        relevant_cells.back()->particles().data() + relevant_cells.back()->particles().size(),  // NOLINT
-        relevant_cells};
+        unique_cells.back()->particles().data() + unique_cells.back()->particles().size(),  // NOLINT
+        unique_cells, &data};
 }
 
 LinkedCellContainer::proximity_iterator LinkedCellContainer::boundaryBegin(
@@ -457,9 +482,19 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::boundaryBegin(
         findBoundaryCells(type, relevant_cells, 1);
     }
 
+    std::unordered_set<Cell*> seen;
+    std::vector<Cell*> unique_cells;
+
+    unique_cells.reserve(cells.size());
+    for (Cell* c : relevant_cells) {
+        if (seen.insert(c).second) {
+            unique_cells.push_back(c);
+        }
+    }
+
     return proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
-                              relevant_cells.back()->particles().data(),  // NOLINT
-                              relevant_cells};
+                              unique_cells.back()->particles().data(),  // NOLINT
+                              unique_cells, &data};
 }
 LinkedCellContainer::const_proximity_iterator LinkedCellContainer::boundaryBegin(
     const std::set<BoundaryType>& boundary_types) const {
@@ -469,9 +504,19 @@ LinkedCellContainer::const_proximity_iterator LinkedCellContainer::boundaryBegin
         findBoundaryCells(type, relevant_cells, 1);
     }
 
+    std::unordered_set<const Cell*> seen;
+    std::vector<const Cell*> unique_cells;
+
+    unique_cells.reserve(cells.size());
+    for (const Cell* c : relevant_cells) {
+        if (seen.insert(c).second) {
+            unique_cells.push_back(c);
+        }
+    }
+
     return const_proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
-                                    relevant_cells.back()->particles().data(),  // NOLINT
-                                    relevant_cells};
+                                    unique_cells.back()->particles().data(),  // NOLINT
+                                    unique_cells, &data};
 }
 LinkedCellContainer::proximity_iterator LinkedCellContainer::boundaryEnd(const std::set<BoundaryType>& boundary_types) {
     std::vector<Cell*> relevant_cells;
@@ -480,10 +525,20 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::boundaryEnd(const s
         findBoundaryCells(type, relevant_cells, 1);
     }
 
+    std::unordered_set<Cell*> seen;
+    std::vector<Cell*> unique_cells;
+
+    unique_cells.reserve(cells.size());
+    for (Cell* c : relevant_cells) {
+        if (seen.insert(c).second) {
+            unique_cells.push_back(c);
+        }
+    }
+
     return proximity_iterator{
         R3{}, std::numeric_limits<double>::infinity(),
-        relevant_cells.back()->particles().data() + relevant_cells.back()->particles().size(),  // NOLINT
-        relevant_cells};
+        unique_cells.back()->particles().data() + unique_cells.back()->particles().size(),  // NOLINT
+        unique_cells, &data};
 }
 LinkedCellContainer::const_proximity_iterator LinkedCellContainer::boundaryEnd(
     const std::set<BoundaryType>& boundary_types) const {
@@ -493,10 +548,20 @@ LinkedCellContainer::const_proximity_iterator LinkedCellContainer::boundaryEnd(
         findBoundaryCells(type, relevant_cells, 1);
     }
 
+    std::unordered_set<const Cell*> seen;
+    std::vector<const Cell*> unique_cells;
+
+    unique_cells.reserve(cells.size());
+    for (const Cell* c : relevant_cells) {
+        if (seen.insert(c).second) {
+            unique_cells.push_back(c);
+        }
+    }
+
     return const_proximity_iterator{
         R3{}, std::numeric_limits<double>::infinity(),
-        relevant_cells.back()->particles().data() + relevant_cells.back()->particles().size(),  // NOLINT
-        relevant_cells};
+        unique_cells.back()->particles().data() + unique_cells.back()->particles().size(),  // NOLINT
+        unique_cells, &data};
 }
 
 static_assert(ParticleContainer<LinkedCellContainer>);

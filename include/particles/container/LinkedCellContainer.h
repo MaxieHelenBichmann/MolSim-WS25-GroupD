@@ -48,23 +48,18 @@ class LinkedCellContainer {
         Cell(CellType cell_type, std::array<double, 6> bounds);
 
         /**
-         * @brief Adding a pointer to an existing Particle to the cell.
+         * @brief Adding an index (of the std::vector data from the LinkedCellContainer) to an existing Particle to the
+         * cell.
          *
-         * @param value Pointer to already constructed Particle.
+         * @param idx Index of already constructed Particle.
          */
-        void addParticle(Particle* value);
+        void addParticle(size_t idx);
         /**
-         * @brief Remove a pointer at a specific index from the cell.
+         * @brief Remove a index (of the std::vector data from the LinkedCellContainer) to a Particle from the cell.
          *
          * @param idx Index of the pointer to remove.
          */
         void removeParticle(size_t idx);
-        /**
-         * @brief Remove a specific pointer from the cell.
-         *
-         * @param p Pointer to remove.
-         */
-        void removeParticle(Particle* p);
         /**
          * @brief Clear the entire cell, destructing no Particles.
          */
@@ -74,16 +69,16 @@ class LinkedCellContainer {
          *
          * @return Reference to the vector of Particle pointers.
          */
-        std::vector<Particle*>& particles();
+        std::vector<size_t>& particles();
 
         /**
          * @brief Access the const vector of Particle pointers in the cell.
          *
          * @return Reference to the vector of Particle pointers.
          */
-        [[nodiscard]] const std::vector<Particle*>& particles() const;
+        [[nodiscard]] const std::vector<size_t>& particles() const;
 
-        Particle* operator[](size_t idx);
+        size_t operator[](size_t idx);
 
         /**
          * @brief Check whether a Particle fits into the cell boundaries.
@@ -92,13 +87,14 @@ class LinkedCellContainer {
          *
          * @return True if Particle is within cell boundaries.
          */
-        bool fits(Particle* p) const;
+        bool fits(Particle& p) const;
 
        private:
         /**
-         * std::vector storing pointers to all Particles in the cell.
+         * std::vector storing the indices (of the std::vector data from the LinkedCellContainer) to all Particles in
+         * the cell.
          */
-        std::vector<Particle*> data;
+        std::vector<size_t> indices;
         /**
          * Type of the cell. [INNER, BOUNDARY, HALO]
          */
@@ -108,24 +104,6 @@ class LinkedCellContainer {
          */
         std::array<double, 6> bounds;
     };
-
-    /**
-     * @brief Switch a Particle from one cell to another. [HELPER FUNCTION]
-     *
-     * @param p Reference to Particle to switch.
-     * @param old_cell_idx Index of the old cell.
-     * @param new_cell_idx Index of the new cell.
-     */
-    void switchCell(Particle& p, size_t old_cell_idx, size_t new_cell_idx);
-
-    /**
-     * @brief Switch a Particle from one cell to another. [HELPER FUNCTION]
-     *
-     * @param p Pointer to Particle to switch.
-     * @param old_cell_idx Index of the old cell.
-     * @param new_cell_idx Index of the new cell.
-     */
-    void switchCell(Particle* p, size_t old_cell_idx, size_t new_cell_idx);
 
     /**
      * @brief Switch a Particle from one cell to another. [HELPER FUNCTION]
@@ -309,7 +287,7 @@ class LinkedCellContainer {
      *
      * @param p Pointer to the Particle to remove.
      */
-    void removeParticle(Particle* p);
+    void eraseParticle(Particle* p);
 
     // iterators
 
@@ -364,10 +342,11 @@ class LinkedCellContainer {
      * Enables cutoff radius, and iterates only over the particles in the adjacent cells.
      */
     class proximity_iterator {
-        Particle** cur;
-        Particle** end;
-        Particle** cell_end;
+        size_t* cur;
+        size_t* end;
+        size_t* cell_end;
         std::vector<Cell*> cells;
+        std::vector<Particle>* container_data;
         double radius;
         R3 center;
 
@@ -385,7 +364,7 @@ class LinkedCellContainer {
             if (std::isinf(radius)) {
                 return;
             }
-            while (cur != end && !((center - (*cur)->getX()).euclidNorm() <= radius)) {
+            while (cur != end && !((center - (*container_data)[*cur].getX()).euclidNorm() <= radius)) {
                 inc();
             }
         }
@@ -397,19 +376,21 @@ class LinkedCellContainer {
         using pointer = Particle*;
         using reference = Particle&;
 
-        proximity_iterator() noexcept : cur(nullptr), end(nullptr), cell_end(nullptr), radius(0.0) {}
-        proximity_iterator(R3 center, double radius, Particle** cur, std::vector<Cell*> cells)
+        proximity_iterator() noexcept
+            : cur(nullptr), end(nullptr), cell_end(nullptr), container_data(nullptr), radius(0.0) {}
+        proximity_iterator(R3 center, double radius, size_t* cur, std::vector<Cell*> cells, std::vector<Particle>* data)
             : cur(cur),
               end(cells.back()->particles().data() + cells.back()->particles().size()),         // NOLINT
               cell_end(cells.front()->particles().data() + cells.front()->particles().size()),  // NOLINT
               cells(cells),
+              container_data(data),
               radius(radius),
               center(center) {
             satisfy();
         }
 
-        reference operator*() const { return **cur; }
-        pointer operator->() const { return *cur; }
+        reference operator*() const { return (*container_data)[*cur]; }
+        pointer operator->() const { return &(*container_data)[*cur]; }
 
         proximity_iterator& operator++() {
             inc();
@@ -437,10 +418,11 @@ class LinkedCellContainer {
      * Enables cutoff radius, and iterates only over the particles in the adjacent cells.
      */
     class const_proximity_iterator {
-        const Particle* const* cur;
-        const Particle* const* end;
-        const Particle* const* cell_end;
+        const size_t* cur;
+        const size_t* end;
+        const size_t* cell_end;
         std::vector<const Cell*> cells;
+        const std::vector<Particle>* container_data;
         double radius;
         R3 center;
 
@@ -458,7 +440,7 @@ class LinkedCellContainer {
             if (std::isinf(radius)) {
                 return;
             }
-            while (cur != end && !((center - (*cur)->getX()).euclidNorm() <= radius)) {
+            while (cur != end && !((center - (*container_data)[*cur].getX()).euclidNorm() <= radius)) {
                 inc();
             }
         }
@@ -470,19 +452,22 @@ class LinkedCellContainer {
         using pointer = const Particle*;
         using reference = const Particle&;
 
-        const_proximity_iterator() noexcept : cur(nullptr), end(nullptr), cell_end(nullptr), radius(0.0) {}
-        const_proximity_iterator(R3 center, double radius, const Particle* const* cur, std::vector<const Cell*> cells)
+        const_proximity_iterator() noexcept
+            : cur(nullptr), end(nullptr), cell_end(nullptr), container_data(nullptr), radius(0.0) {}
+        const_proximity_iterator(R3 center, double radius, const size_t* cur, std::vector<const Cell*> cells,
+                                 const std::vector<Particle>* container_data)
             : cur(cur),
               end(cells.back()->particles().data() + cells.back()->particles().size()),         // NOLINT
               cell_end(cells.front()->particles().data() + cells.front()->particles().size()),  // NOLINT
               cells(cells),
+              container_data(container_data),
               radius(radius),
               center(center) {
             satisfy();
         }
 
-        reference operator*() const { return **cur; }
-        pointer operator->() const { return *cur; }
+        reference operator*() const { return (*container_data)[*cur]; }
+        pointer operator->() const { return &(*container_data)[*cur]; }
 
         const_proximity_iterator& operator++() {
             inc();
