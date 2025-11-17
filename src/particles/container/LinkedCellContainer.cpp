@@ -20,6 +20,14 @@ void LinkedCellContainer::Cell::removeParticle(size_t idx) {
         }
     }
 }
+void LinkedCellContainer::Cell::updateParticleIndex(size_t old_idx, size_t new_idx) {
+    for (size_t i = 0; i < indices.size(); ++i) {
+        if (indices[i] == old_idx) {
+            indices[i] = new_idx;
+            return;
+        }
+    }
+}
 void LinkedCellContainer::Cell::clear() { indices.clear(); }
 std::vector<size_t>& LinkedCellContainer::Cell::particles() { return indices; }
 const std::vector<size_t>& LinkedCellContainer::Cell::particles() const { return indices; }
@@ -280,6 +288,13 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryType type, std::vector
     }
 }
 
+void LinkedCellContainer::decreaseCellIndices(size_t starting_idx) {
+    for (size_t i = starting_idx; i < data.size(); ++i) {
+        size_t cell_idx = findCellIndex(data[i].getX());
+        cells[cell_idx].updateParticleIndex(i, i - 1);
+    }
+}
+
 bool LinkedCellContainer::fitsDomain(R3 v) const {
     return (v[0] >= 0.0 && v[0] < domain_size[0]) && (v[1] >= 0.0 && v[1] < domain_size[1]) &&
            (v[2] >= 0.0 && v[2] < domain_size[2]);
@@ -345,6 +360,7 @@ void LinkedCellContainer::eraseParticle(Particle* p) {
     if (it != data.end()) {
         cells[cell_idx].removeParticle(it - data.begin());
         data.erase(it);
+        decreaseCellIndices(it - data.begin());
     }
 }
 

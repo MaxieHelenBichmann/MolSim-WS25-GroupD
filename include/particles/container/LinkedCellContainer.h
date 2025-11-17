@@ -61,6 +61,13 @@ class LinkedCellContainer {
          */
         void removeParticle(size_t idx);
         /**
+         * @brief Update the index of a Particle in the cell.
+         *
+         * @param old_idx Old index of the Particle.
+         * @param new_idx New index of the Particle.
+         */
+        void updateParticleIndex(size_t old_idx, size_t new_idx);
+        /**
          * @brief Clear the entire cell, destructing no Particles.
          */
         void clear();
@@ -158,6 +165,13 @@ class LinkedCellContainer {
      * @param offset Offset to consider for halo cells. (0 = halo cells, 1 = boundary cells)
      */
     void findBoundaryCells(BoundaryType type, std::vector<Cell*>& boundary_cells, size_t offset = 0);
+
+    /**
+     * @brief Update the indices of Particles in cells after erasing a Particle. [HELPER FUNCTION]
+     *
+     * @param starting_idx Index from which to start updating.
+     */
+    void decreaseCellIndices(size_t starting_idx);
 
     /**
      * std::vector storing all Particles in the container.
