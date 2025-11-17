@@ -22,6 +22,8 @@ bool LinkedCellContainer::Cell::fits(Particle* p) const {
     return bounds[0] <= p->getX()[0] && p->getX()[0] < bounds[1] && bounds[2] <= p->getX()[1] &&
            p->getX()[1] < bounds[3] && bounds[4] <= p->getX()[2] && p->getX()[2] < bounds[5];
 }
+size_t LinkedCellContainer::Cell::size() { return data.size(); }
+LinkedCellContainer::Cell::CellType LinkedCellContainer::Cell::getType() { return type; }
 
 // ------------------- LinkedCellContainer methods -------------------
 
@@ -123,7 +125,7 @@ void LinkedCellContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double e
 }
 void LinkedCellContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg,
                                       int type) {
-    if (!fits(x_arg)) {
+    if (!fits(x_arg) && type != -1) {
         return;
     }
     data.emplace_back(x_arg, v_arg, m_arg, epsilon_arg, sigma_arg, type);
@@ -167,3 +169,15 @@ LinkedCellContainer::const_proximity_iterator LinkedCellContainer::proximityEnd(
 }
 
 // static_assert(ParticleContainer<LinkedCellContainer>);
+
+bool LinkedCellContainer::isOnBoundary(Particle& p) {
+    return (cells[findCellIndex(&p)].getType() == Cell::CellType::BOUNDARY);
+}
+
+void LinkedCellContainer::removeParticle(Particle& p) { 
+    cells[findCellIndex(&p)].removeParticle(&p); 
+}
+
+R3 LinkedCellContainer::getDomainSize() {
+    return domain_size;
+}

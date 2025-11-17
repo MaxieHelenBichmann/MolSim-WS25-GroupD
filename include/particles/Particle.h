@@ -55,8 +55,9 @@ class Particle {
      */
     double sigma;
     /**
-     * Type of the particle. Use it for whatever you want (e.g. to separate
-     * molecules belonging to different bodies, matters, and so on)
+     * Type of the particle. 
+     * -1 if particle is GHOST particle
+     *  0 default
      */
     int type;
 

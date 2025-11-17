@@ -52,6 +52,18 @@ class LinkedCellContainer {
          * @brief Clear the entire cell, destructing no Particles.
          */
         void clear();
+        /**
+         * @brief Get the cell type (INNER, BOUNDARY, HALO)
+         *  
+         * @return CellType 
+         */
+        CellType getType();
+        /**
+         * @brief Returns the number of particles contained in the cell 
+         * 
+         * @return size_t 
+         */
+        size_t size();
 
         Particle* operator[](size_t idx);
 
@@ -148,7 +160,7 @@ class LinkedCellContainer {
      * @brief Constructor, initializing a LinkedCellContainer.
      */
     LinkedCellContainer(R3 domain_size, double cutoff_radius);
-
+    
     // retrieve data
 
     /**
@@ -325,6 +337,31 @@ class LinkedCellContainer {
      * @return Const iterator after the last particle within the given radius of the center.
      */
     [[nodiscard]] const_proximity_iterator proximityEnd(R3 center, double radius) const;
+
+    /**
+     * @brief Checks whether a given particle resides within a boundary cell.
+     * 
+     * @param p the Particle. 
+     * @return true if the particle lies within a boundary cell. 
+     * @return false if the particle does NOT lie within a boundary cell.
+     */
+    [[nodiscard]] bool isOnBoundary(Particle& p);
+
+    /**
+     * @brief Removes a given particle from the container. 
+     * CAREFUL: This method assumes that no particle is contained more than once within the same container. 
+     * 
+     * @param p The particle to be removed. 
+     */
+    void removeParticle(Particle& p);
+
+    /**
+     * @brief Returns the domain size, i.e. the vector going from (0, 0, 0) to (x_max, y_max, z_max).
+     * 
+     * @return R3 The vector containing the domain size.
+     */
+    [[nodiscard]] R3 getDomainSize();
+
 };
 
 }  // namespace mol_sim

@@ -5,6 +5,8 @@
 
 #include <cstddef>
 #include <limits>
+#include <typeinfo>
+#include <memory>
 
 #include "io/outputWriter/VTKWriter.h"
 #include "io/outputWriter/XYZWriter.h"
@@ -12,6 +14,9 @@
 #include "particles/ParticleContainer.h"
 #include "physics/ForceSource.h"
 #include "utils/Settings.h"
+#include "particles/boundaries/BoundaryCondition.h"
+#include "particles/boundaries/Reflecting.h"
+#include "particles/boundaries/Outflow.h"
 
 /**
  * @namespace mol_sim
@@ -57,6 +62,7 @@ class Simulation {
     double end_time;
 
     size_t frequency;
+
     std::string base_name;
 
     /**
@@ -64,6 +70,8 @@ class Simulation {
      * Default value is infinity.
      */
     double cutoff_radius = std::numeric_limits<double>::infinity();
+
+    std::unique_ptr<BoundaryCondition> boundary_condition = nullptr;
 
    public:
     /**
@@ -110,6 +118,18 @@ class Simulation {
         }
     }
 
+    void applyBoundary() {
+        if (boundary_condition == nullptr) { return; }
+        for (auto& p : particles) {
+            boundary_condition->applyBoundary(p);
+        }
+    }
+
+    void cleanBoundary() {
+        if (boundary_condition == nullptr) { return; }
+        boundary_condition->clean();
+    }
+
     /**
      * @brief Construct a new Simulation object and prepare for run() call
      * This class implements a Builder Pattern, meaning all parameters need to be set before the run() call, which will
@@ -129,6 +149,19 @@ class Simulation {
         end_time = settings.end_time.value();
         frequency = settings.frequency.value();
         base_name = settings.base_name.value();
+/*         if (typeid(containerType) == typeid(LinkedCellContainer)) {
+        switch(settings.boundary_condition.value()) {
+            case OUTFLOW:  
+                boundary_condition = std::make_unique<Outflow>(particles);
+                break;
+            case REFLECTING:
+                boundary_condition = std::make_unique<Reflecting>(particles);
+                break;
+            default:
+                SPDLOG_ERROR("Unknown boundary condition!");
+                break;
+        }
+        } */
     }
 
     /**
@@ -144,7 +177,9 @@ class Simulation {
             // calculate new x
             calculateX();
             // calculate new f
+            applyBoundary();
             calculateF();
+            cleanBoundary(); 
             // calculate new v
             calculateV();
 
