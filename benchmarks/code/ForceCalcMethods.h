@@ -1,12 +1,9 @@
 #ifndef FORCE_CALC_H
 #define FORCE_CALC_H
-#include <memory>
 #include <vector>
 
-#include "AbstractForce.h"
 #include "ForceConcept.h"
 #include "particles/ParticleContainer.h"
-#include "physics/ForceSource.h"
 namespace mol_sim {
 
 /**

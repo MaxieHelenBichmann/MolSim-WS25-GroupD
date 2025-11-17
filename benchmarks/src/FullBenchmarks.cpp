@@ -41,6 +41,7 @@ static void bmSimulationGiven(benchmark::State& state) {
         generator1.generateParticles(part_container);
         generator2.generateParticles(part_container);
         SettingsParam settings(0.14, 0, 1000, 0.0, 1.0);
+        settings.setDefaults();
         auto force_source = std::make_unique<LennardJonesForce>();
         auto writer = std::make_unique<XYZWriter>();
         Simulation<SimpleContainer> simulation(part_container, std::move(force_source), settings, std::move(writer));
