@@ -2,6 +2,7 @@
 #define LJ_FORCE_H
 
 #include "particles/Particle.h"
+#include "physics/ForceSource.h"
 #include "utils/Vector.h"
 
 namespace mol_sim {
@@ -12,7 +13,7 @@ namespace mol_sim {
  * Class to calculate Lennard-Jones forces between two different objects.
  * Implements the ForceSource concept.
  */
-class LennardJonesForce {
+class LennardJonesForce : public ForceSource {
    public:
     /**
      * @brief Calculates the Lennard-Jones force a particle p2 exerts on a different particle p1.
@@ -23,7 +24,7 @@ class LennardJonesForce {
      *
      * Calculates the Lennard-Jones force a particle p2 exerts on a different particle p1.
      */
-    [[nodiscard]] Vector<double, 3> applyForce(const Particle& p1, const Particle& p2) const;
+    [[nodiscard]] Vector<double, 3> applyForce(const Particle& p1, const Particle& p2) const override;
 };
 
 }  // namespace mol_sim

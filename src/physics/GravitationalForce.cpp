@@ -1,4 +1,5 @@
 #include "physics/GravitationalForce.h"
+
 #include "utils/Vector.h"
 
 using namespace mol_sim;
