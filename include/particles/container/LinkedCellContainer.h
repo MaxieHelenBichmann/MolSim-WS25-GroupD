@@ -373,12 +373,13 @@ class LinkedCellContainer {
         R3 center;
 
         void inc() {
-            if (cur == cell_end) {  // reached end of current cell
+            if (cur != cell_end) {
+                ++cur;
+            }
+            while (cur == cell_end && cur != end) {  // reached end of current cell
                 cells.erase(cells.begin());
                 cur = cells.front()->particles().data();
                 cell_end = cur + cells.front()->particles().size();  // NOLINT
-            } else {                                                 // iterate within current cell
-                ++cur;                                               // NOLINT
             }
         }
 
@@ -386,7 +387,8 @@ class LinkedCellContainer {
             if (std::isinf(radius)) {
                 return;
             }
-            while (cur != end && !((center - (*container_data)[*cur].getX()).euclidNorm() <= radius)) {
+            while (cur != end &&
+                   (cur == cell_end || !((center - (*container_data)[*cur].getX()).euclidNorm() <= radius))) {
                 inc();
             }
         }
@@ -449,12 +451,13 @@ class LinkedCellContainer {
         R3 center;
 
         void inc() {
-            if (cur == cell_end) {  // reached end of current cell
+            if (cur != cell_end) {
+                ++cur;
+            }
+            while (cur == cell_end && cur != end) {  // reached end of current cell
                 cells.erase(cells.begin());
                 cur = cells.front()->particles().data();
                 cell_end = cur + cells.front()->particles().size();  // NOLINT
-            } else {                                                 // iterate within current cell
-                ++cur;                                               // NOLINT
             }
         }
 
@@ -462,7 +465,8 @@ class LinkedCellContainer {
             if (std::isinf(radius)) {
                 return;
             }
-            while (cur != end && !((center - (*container_data)[*cur].getX()).euclidNorm() <= radius)) {
+            while (cur != end &&
+                   (cur == cell_end || !((center - (*container_data)[*cur].getX()).euclidNorm() <= radius))) {
                 inc();
             }
         }

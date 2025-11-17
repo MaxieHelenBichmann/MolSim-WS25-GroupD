@@ -322,14 +322,14 @@ void LinkedCellContainer::clear() {
 void LinkedCellContainer::reserve(size_t n) { data.reserve(n); }
 
 void LinkedCellContainer::addParticle(Particle&& value) {
-    if (!fitsDomain(value.getX())) {
+    if (!fitsContainer(value.getX())) {
         return;
     }
     data.push_back(value);
     cells[findCellIndex(value.getX())].addParticle(data.size() - 1);
 }
 void LinkedCellContainer::addParticle(const Particle& value) {
-    if (!fitsDomain(value.getX())) {
+    if (!fitsContainer(value.getX())) {
         return;
     }
     data.push_back(value);
@@ -337,7 +337,7 @@ void LinkedCellContainer::addParticle(const Particle& value) {
 }
 
 void LinkedCellContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg) {
-    if (!fitsDomain(x_arg)) {
+    if (!fitsContainer(x_arg)) {
         return;
     }
     data.emplace_back(x_arg, v_arg, m_arg, epsilon_arg, sigma_arg);
@@ -345,7 +345,7 @@ void LinkedCellContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double e
 }
 void LinkedCellContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg,
                                       int type) {
-    if (!fitsDomain(x_arg)) {
+    if (!fitsContainer(x_arg)) {
         return;
     }
     data.emplace_back(x_arg, v_arg, m_arg, epsilon_arg, sigma_arg, type);
@@ -369,7 +369,7 @@ void LinkedCellContainer::updateParticlePosition(std::vector<Particle>::iterator
     if (!cells[old_cell_idx].fits(new_x)) {
         size_t new_cell_idx = findCellIndex(new_x);
         if (new_cell_idx == cells.size()) {
-            SPDLOG_INFO("New position not in container!");
+            eraseParticle(&(*p));
             return;
         }
         switchCell(static_cast<size_t>(p - data.begin()), old_cell_idx, new_cell_idx);
