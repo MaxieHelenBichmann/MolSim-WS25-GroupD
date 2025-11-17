@@ -1,6 +1,8 @@
 #ifndef LINKEDCELL_CONTAINER_H
 #define LINKEDCELL_CONTAINER_H
 
+#include <spdlog/spdlog.h>
+
 #include <array>
 #include <cstdint>
 #include <set>
@@ -373,6 +375,7 @@ class LinkedCellContainer {
         R3 center;
 
         void inc() {
+            SPDLOG_DEBUG("Incrementing proximity iterator");
             if (cur != cell_end) {
                 ++cur;
             }
@@ -384,9 +387,6 @@ class LinkedCellContainer {
         }
 
         void satisfy() {
-            if (std::isinf(radius)) {
-                return;
-            }
             while (cur != end &&
                    (cur == cell_end || !((center - (*container_data)[*cur].getX()).euclidNorm() <= radius))) {
                 inc();
@@ -451,6 +451,7 @@ class LinkedCellContainer {
         R3 center;
 
         void inc() {
+            SPDLOG_DEBUG("Incrementing const proximity iterator");
             if (cur != cell_end) {
                 ++cur;
             }
