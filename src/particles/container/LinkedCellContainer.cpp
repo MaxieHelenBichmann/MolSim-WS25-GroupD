@@ -7,38 +7,6 @@
 
 using namespace mol_sim;
 
-// ------------------- Cell methods -------------------
-
-LinkedCellContainer::Cell::Cell(CellType cell_type, std::array<double, 6> bounds) : type(cell_type), bounds(bounds) {}
-
-void LinkedCellContainer::Cell::addParticle(size_t idx) { indices.push_back(idx); }
-void LinkedCellContainer::Cell::removeParticle(size_t idx) {
-    for (size_t i = 0; i < indices.size(); ++i) {  // NOLINT
-        if (indices[i] == idx) {
-            indices.erase(indices.begin() + i);  // NOLINT
-            return;
-        }
-    }
-}
-void LinkedCellContainer::Cell::updateParticleIndex(size_t old_idx, size_t new_idx) {
-    for (size_t i = 0; i < indices.size(); ++i) {  // NOLINT
-        if (indices[i] == old_idx) {
-            indices[i] = new_idx;
-            return;
-        }
-    }
-}
-void LinkedCellContainer::Cell::clear() { indices.clear(); }
-std::vector<size_t>& LinkedCellContainer::Cell::particles() { return indices; }
-const std::vector<size_t>& LinkedCellContainer::Cell::particles() const { return indices; }
-size_t LinkedCellContainer::Cell::operator[](size_t idx) { return indices[idx]; }
-bool LinkedCellContainer::Cell::fits(R3 x) const {
-    return bounds[0] <= x[0] && x[0] <= bounds[1] && bounds[2] <= x[1] && x[1] <= bounds[3] && bounds[4] <= x[2] &&
-           x[2] <= bounds[5];
-}
-
-// ------------------- LinkedCellContainer methods -------------------
-
 LinkedCellContainer::LinkedCellContainer(R3 domain_size, double cutoff_radius) : domain_size(domain_size) {
     for (size_t dim = 0; dim < 3; ++dim) {
         size_t inner_cells = 0U;
@@ -120,7 +88,7 @@ size_t LinkedCellContainer::findCellIndex(R3 vec) const {
     return (z_idx * num_cells[1] * num_cells[0]) + (y_idx * num_cells[0]) + x_idx;
 }
 
-std::vector<LinkedCellContainer::Cell*> LinkedCellContainer::findAdjacentCells(size_t cell_idx) {
+std::vector<Cell*> LinkedCellContainer::findAdjacentCells(size_t cell_idx) {
     std::vector<Cell*> adjacent_cells;
     size_t z_idx = cell_idx / (num_cells[0] * num_cells[1]);
     size_t y_idx = (cell_idx / num_cells[0]) % num_cells[1];
@@ -143,7 +111,7 @@ std::vector<LinkedCellContainer::Cell*> LinkedCellContainer::findAdjacentCells(s
 
     return adjacent_cells;
 }
-std::vector<const LinkedCellContainer::Cell*> LinkedCellContainer::findAdjacentCells(size_t cell_idx) const {
+std::vector<const Cell*> LinkedCellContainer::findAdjacentCells(size_t cell_idx) const {
     std::vector<const Cell*> adjacent_cells;
     size_t z_idx = cell_idx / (num_cells[0] * num_cells[1]);
     size_t y_idx = (cell_idx / num_cells[0]) % num_cells[1];
