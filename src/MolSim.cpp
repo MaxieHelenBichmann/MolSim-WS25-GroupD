@@ -1,6 +1,7 @@
 #include <spdlog/spdlog.h>
 
 #include <memory>
+#include <optional>
 
 #include "exceptions/CLIException.h"
 #include "exceptions/SimulationException.h"
@@ -14,7 +15,7 @@
 #include "utils/Simulation.h"
 
 using namespace mol_sim;
-
+// NOLINTNEXTLINE(bugprone-exception-escape)
 int main(int argc, char* argsv[]) {
     SimpleContainer particles;
     SettingsParam settings;
@@ -24,7 +25,9 @@ int main(int argc, char* argsv[]) {
         SPDLOG_ERROR("CLI parsing failed: {}", e.what());
         exit(-1);
     }
+
     settings.setDefaults();
+
     SPDLOG_INFO("Simulation configured with {} particles, delta_t={} end_time={}", particles.size(),
                 settings.delta_t.value(), settings.end_time.value());
 
