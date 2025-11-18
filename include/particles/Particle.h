@@ -77,7 +77,7 @@ class Particle {
         // -> in case of 2d, we use only the first and the second
         R3 x_arg, R3 v_arg, R3 f_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg = 0);
 
-    virtual ~Particle();
+    ~Particle();
 
     /**
      * @brief Access the current coordinates of a Particle.

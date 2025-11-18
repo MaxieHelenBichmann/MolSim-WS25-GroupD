@@ -1,12 +1,31 @@
 #ifndef LINKEDCELL_CONTAINER_H
 #define LINKEDCELL_CONTAINER_H
 
+#include <array>
 #include <cstdint>
+#include <set>
 #include <vector>
 
 #include "particles/ParticleContainer.h"
 
 namespace mol_sim {
+
+/**
+ * @brief Enum for boundary types in the Linked-Cell Container.
+ *
+ * UPPER: +z direction (x-y plane at max z)
+ * LOWER: -z direction (x-y plane at min z)
+ * FRONT: -y direction (x-z plane at min y)
+ * BACK: +y direction (x-z plane at max y)
+ * LEFT: -x direction (y-z plane at min x)
+ * RIGHT: +x direction (y-z plane at max x)
+ */
+enum class BoundaryType : std::uint8_t { UPPER, LOWER, FRONT, BACK, LEFT, RIGHT };
+
+/**
+ * @brief Enum for cell types in the Linked-Cell Container.
+ */
+enum class CellType : std::uint8_t { INNER, BOUNDARY, HALO };
 
 /**
  * @brief Linked-Cell Container for Particles
@@ -23,31 +42,31 @@ class LinkedCellContainer {
      * Unites methods for access and modification of Particles in the cell.
      */
     struct Cell {
-        enum class CellType : std::uint8_t { INNER, BOUNDARY, HALO };
-
         /**
          * @brief Constructor, initializing a Cell with type and boundaries.
          */
         Cell(CellType cell_type, std::array<double, 6> bounds);
 
         /**
-         * @brief Adding a pointer to an existing Particle to the cell.
+         * @brief Adding an index (of the std::vector data from the LinkedCellContainer) to an existing Particle to the
+         * cell.
          *
-         * @param value Pointer to already constructed Particle.
+         * @param idx Index of already constructed Particle.
          */
-        void addParticle(Particle* value);
+        void addParticle(size_t idx);
         /**
-         * @brief Remove a pointer at a specific index from the cell.
+         * @brief Remove a index (of the std::vector data from the LinkedCellContainer) to a Particle from the cell.
          *
          * @param idx Index of the pointer to remove.
          */
         void removeParticle(size_t idx);
         /**
-         * @brief Remove a specific pointer from the cell.
+         * @brief Update the index of a Particle in the cell.
          *
-         * @param p Pointer to remove.
+         * @param old_idx Old index of the Particle.
+         * @param new_idx New index of the Particle.
          */
-        void removeParticle(Particle* p);
+        void updateParticleIndex(size_t old_idx, size_t new_idx);
         /**
          * @brief Clear the entire cell, destructing no Particles.
          */
@@ -65,22 +84,36 @@ class LinkedCellContainer {
          */
         size_t size();
 
-        Particle* operator[](size_t idx);
+        size_t operator[](size_t idx);
+        /**
+         * @brief Access the vector of Particle pointers in the cell.
+         *
+         * @return Reference to the vector of Particle pointers.
+         */
+        std::vector<size_t>& particles();
+
+        /**
+         * @brief Access the const vector of Particle pointers in the cell.
+         *
+         * @return Reference to the vector of Particle pointers.
+         */
+        [[nodiscard]] const std::vector<size_t>& particles() const;
 
         /**
          * @brief Check whether a Particle fits into the cell boundaries.
          *
-         * @param p Pointer to Particle to check.
+         * @param x Coordinates to check.
          *
          * @return True if Particle is within cell boundaries.
          */
-        bool fits(Particle* p) const;
+        [[nodiscard]] bool fits(R3 x) const;
 
        private:
         /**
-         * std::vector storing pointers to all Particles in the cell.
+         * std::vector storing the indices (of the std::vector data from the LinkedCellContainer) to all Particles in
+         * the cell.
          */
-        std::vector<Particle*> data;
+        std::vector<size_t> indices;
         /**
          * Type of the cell. [INNER, BOUNDARY, HALO]
          */
@@ -94,24 +127,6 @@ class LinkedCellContainer {
     /**
      * @brief Switch a Particle from one cell to another. [HELPER FUNCTION]
      *
-     * @param p Reference to Particle to switch.
-     * @param old_cell_idx Index of the old cell.
-     * @param new_cell_idx Index of the new cell.
-     */
-    void switchCell(Particle& p, size_t old_cell_idx, size_t new_cell_idx);
-
-    /**
-     * @brief Switch a Particle from one cell to another. [HELPER FUNCTION]
-     *
-     * @param p Pointer to Particle to switch.
-     * @param old_cell_idx Index of the old cell.
-     * @param new_cell_idx Index of the new cell.
-     */
-    void switchCell(Particle* p, size_t old_cell_idx, size_t new_cell_idx);
-
-    /**
-     * @brief Switch a Particle from one cell to another. [HELPER FUNCTION]
-     *
      * @param p Index of the Particle in the old cell, which should be switched.
      * @param old_cell_idx Index of the old cell.
      * @param new_cell_idx Index of the new cell.
@@ -121,11 +136,54 @@ class LinkedCellContainer {
     /**
      * @brief Find the index of the cell, in which a Particle is located. [HELPER FUNCTION]
      *
-     * @param p Pointer to the Particle.
+     * @param x Coordinates of the Particle.
      *
      * @return Index of the cell, in which the Particle is located.
      */
-    size_t findCellIndex(Particle* p);
+    [[nodiscard]] size_t findCellIndex(R3 vec) const;
+
+    /**
+     * @brief Find the adjacent cells of a cell. [HELPER FUNCTION]
+     *
+     * @param cell_idx Index of the cell.
+     *
+     * @return Vector of pointers to the adjacent cells, including the cell itself.
+     */
+    std::vector<Cell*> findAdjacentCells(size_t cell_idx);
+
+    /**
+     * @brief Find the adjacent cells of a cell. [HELPER FUNCTION]
+     *
+     * @param cell_idx Index of the cell.
+     *
+     * @return Vector of const pointers to the adjacent cells, including the cell itself.
+     */
+    [[nodiscard]] std::vector<const Cell*> findAdjacentCells(size_t cell_idx) const;
+
+    /**
+     * @brief Find the boundary or halo cells. [HELPER FUNCTION]
+     *
+     * @param type Type of the boundary.
+     * @param boundary_cells Vector to store the found boundary cells.
+     * @param offset Offset to consider for halo cells. (0 = halo cells, 1 = boundary cells)
+     */
+    void findBoundaryCells(BoundaryType type, std::vector<const Cell*>& boundary_cells, size_t offset = 0) const;
+
+    /**
+     * @brief Find the boundary or halo cells. [HELPER FUNCTION]
+     *
+     * @param type Type of the boundary.
+     * @param boundary_cells Vector to store the found boundary cells.
+     * @param offset Offset to consider for halo cells. (0 = halo cells, 1 = boundary cells)
+     */
+    void findBoundaryCells(BoundaryType type, std::vector<Cell*>& boundary_cells, size_t offset = 0);
+
+    /**
+     * @brief Update the indices of Particles in cells after erasing a Particle. [HELPER FUNCTION]
+     *
+     * @param starting_idx Index from which to start updating.
+     */
+    void decreaseCellIndices(size_t starting_idx);
 
     /**
      * std::vector storing all Particles in the container.
@@ -144,14 +202,15 @@ class LinkedCellContainer {
     R3 domain_size;
 
     /**
-     * Number of cells in each dimension.
+     * Number of cells in each dimension, including halo cells.
      */
     std::array<size_t, 3> num_cells;
 
     /**
-     * Cutoff radius used for cell size.
+     * Effective edge length of a single cell in each spatial dimension.
+     * At least as big as the given cutoff radius, to still only check the immediate neighbors.
      */
-    double cutoff_radius;
+    std::array<double, 3> cell_length{};
 
    public:
     // constructors
@@ -170,7 +229,16 @@ class LinkedCellContainer {
      *
      * @return True if position is within domain boundaries.
      */
-    [[nodiscard]] bool fits(R3 v) const;
+    [[nodiscard]] bool fitsDomain(R3 v) const;
+
+    /**
+     * @brief Check whether a (potential) Particle fits into the container (so including halo cells).
+     *
+     * @param v Coordinates of the Particle to check.
+     *
+     * @return True if position is within container boundaries.
+     */
+    [[nodiscard]] bool fitsContainer(R3 v) const;
 
     Particle& operator[](size_t idx);
     const Particle& operator[](size_t idx) const;
@@ -240,6 +308,21 @@ class LinkedCellContainer {
      */
     void addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type);
 
+    /**
+     * @brief Remove a Particle if it lies in a halo cell.
+     *
+     * @param p Pointer to the Particle to remove.
+     */
+    void eraseParticle(Particle* p);
+
+    /**
+     * @brief Update the position of a given Particle in the Container.
+     *
+     * @param p Iterator to the Particle to update.
+     * @param new_x New position to set.
+     */
+    void updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x);
+
     // iterators
 
     /**
@@ -284,17 +367,166 @@ class LinkedCellContainer {
      */
     [[nodiscard]] std::vector<Particle>::const_iterator cend() const;
 
+    /**
+     * @brief Iterator that iterates over all particles that apply a force on a given particle.
+     *
+     * Satisfies the forward iterator concept.
+     * Only iterates over particles within the given radius of the center, or all if the radius is infinite.
+     *
+     * Enables cutoff radius, and iterates only over the particles in the adjacent cells.
+     */
     class proximity_iterator {
-       public:
-        proximity_iterator() = default;
-    };
-    // static_assert(std::forward_iterator<proximity_iterator>);
+        size_t* cur;
+        size_t* end;
+        size_t* cell_end;
+        std::vector<Cell*> cells;
+        std::vector<Particle>* container_data;
+        double radius;
+        R3 center;
 
-    class const_proximity_iterator {
+        void inc() {
+            if (cur != cell_end) {
+                ++cur;
+            }
+            while (cur == cell_end && cur != end) {  // reached end of current cell
+                cells.erase(cells.begin());
+                cur = cells.front()->particles().data();
+                cell_end = cur + cells.front()->particles().size();  // NOLINT
+            }
+        }
+
+        void satisfy() {
+            if (std::isinf(radius)) {
+                return;
+            }
+            while (cur != end &&
+                   (cur == cell_end || !((center - (*container_data)[*cur].getX()).euclidNorm() <= radius))) {
+                inc();
+            }
+        }
+
        public:
-        const_proximity_iterator() = default;
+        using iterator_category = std::forward_iterator_tag;
+        using value_type = Particle;
+        using difference_type = std::ptrdiff_t;
+        using pointer = Particle*;
+        using reference = Particle&;
+
+        proximity_iterator() noexcept
+            : cur(nullptr), end(nullptr), cell_end(nullptr), container_data(nullptr), radius(0.0) {}
+        proximity_iterator(R3 center, double radius, size_t* cur, std::vector<Cell*> cells, std::vector<Particle>* data)
+            : cur(cur),
+              end(cells.back()->particles().data() + cells.back()->particles().size()),         // NOLINT
+              cell_end(cells.front()->particles().data() + cells.front()->particles().size()),  // NOLINT
+              cells(cells),
+              container_data(data),
+              radius(radius),
+              center(center) {
+            satisfy();
+        }
+
+        reference operator*() const { return (*container_data)[*cur]; }
+        pointer operator->() const { return &(*container_data)[*cur]; }
+
+        proximity_iterator& operator++() {
+            inc();
+            satisfy();
+            return *this;
+        }
+
+        proximity_iterator operator++(int) {
+            proximity_iterator tmp = *this;
+            ++(*this);
+            return tmp;
+        }
+
+        friend bool operator==(const proximity_iterator& a, const proximity_iterator& b) { return a.cur == b.cur; }
+        friend bool operator!=(const proximity_iterator& a, const proximity_iterator& b) { return !(a == b); }
     };
-    // static_assert(std::forward_iterator<const_proximity_iterator>);
+    static_assert(std::forward_iterator<proximity_iterator>);
+
+    /**
+     * @brief Iterator that iterates over all particles that apply a force on a given particle.
+     *
+     * Satisfies the forward iterator concept.
+     * Only iterates over particles within the given radius of the center, or all if the radius is infinite.
+     *
+     * Enables cutoff radius, and iterates only over the particles in the adjacent cells.
+     */
+    class const_proximity_iterator {
+        const size_t* cur;
+        const size_t* end;
+        const size_t* cell_end;
+        std::vector<const Cell*> cells;
+        const std::vector<Particle>* container_data;
+        double radius;
+        R3 center;
+
+        void inc() {
+            if (cur != cell_end) {
+                ++cur;
+            }
+            while (cur == cell_end && cur != end) {  // reached end of current cell
+                cells.erase(cells.begin());
+                cur = cells.front()->particles().data();
+                cell_end = cur + cells.front()->particles().size();  // NOLINT
+            }
+        }
+
+        void satisfy() {
+            if (std::isinf(radius)) {
+                return;
+            }
+            while (cur != end &&
+                   (cur == cell_end || !((center - (*container_data)[*cur].getX()).euclidNorm() <= radius))) {
+                inc();
+            }
+        }
+
+       public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type = const Particle;
+        using difference_type = std::ptrdiff_t;
+        using pointer = const Particle*;
+        using reference = const Particle&;
+
+        const_proximity_iterator() noexcept
+            : cur(nullptr), end(nullptr), cell_end(nullptr), container_data(nullptr), radius(0.0) {}
+        const_proximity_iterator(R3 center, double radius, const size_t* cur, std::vector<const Cell*> cells,
+                                 const std::vector<Particle>* container_data)
+            : cur(cur),
+              end(cells.back()->particles().data() + cells.back()->particles().size()),         // NOLINT
+              cell_end(cells.front()->particles().data() + cells.front()->particles().size()),  // NOLINT
+              cells(cells),
+              container_data(container_data),
+              radius(radius),
+              center(center) {
+            satisfy();
+        }
+
+        reference operator*() const { return (*container_data)[*cur]; }
+        pointer operator->() const { return &(*container_data)[*cur]; }
+
+        const_proximity_iterator& operator++() {
+            inc();
+            satisfy();
+            return *this;
+        }
+
+        const_proximity_iterator operator++(int) {
+            const_proximity_iterator tmp = *this;
+            ++(*this);
+            return tmp;
+        }
+
+        friend bool operator==(const const_proximity_iterator& a, const const_proximity_iterator& b) {
+            return a.cur == b.cur;
+        }
+        friend bool operator!=(const const_proximity_iterator& a, const const_proximity_iterator& b) {
+            return !(a == b);
+        }
+    };
+    static_assert(std::forward_iterator<const_proximity_iterator>);
 
     /**
      * @brief Mutable Iterator over particles in proximity.
@@ -361,6 +593,101 @@ class LinkedCellContainer {
      * @return R3 The vector containing the domain size.
      */
     [[nodiscard]] R3 getDomainSize();
+
+
+    // boundary and halo iterators
+
+    /**
+     * @brief Iterator over particles in halo cells.
+     *
+     * @param boundary_types Boundary types to specify which halo cells to iterate over. Defaults to all sides.
+     *
+     * @return Iterator to the first particle within the given halo cells.
+     */
+    [[nodiscard]] proximity_iterator haloBegin(const std::set<BoundaryType>& boundary_types = {
+                                                   BoundaryType::UPPER, BoundaryType::LOWER, BoundaryType::FRONT,
+                                                   BoundaryType::BACK, BoundaryType::LEFT, BoundaryType::RIGHT});
+
+    /**
+     * @brief Const Iterator over particles in halo cells.
+     *
+     * @param boundary_types Boundary types to specify which halo cells to iterate over. Defaults to all sides.
+     *
+     * @return Const iterator to the first particle within the given halo cells.
+     */
+    [[nodiscard]] const_proximity_iterator haloBegin(const std::set<BoundaryType>& boundary_types = {
+                                                         BoundaryType::UPPER, BoundaryType::LOWER, BoundaryType::FRONT,
+                                                         BoundaryType::BACK, BoundaryType::LEFT,
+                                                         BoundaryType::RIGHT}) const;
+
+    /**
+     * @brief Iterator over particles in halo cells.
+     *
+     * @param boundary_types Boundary types to specify which halo cells to iterate over. Defaults to all sides.
+     *
+     * @return Iterator after the last particle within the given halo cells.
+     */
+    [[nodiscard]] proximity_iterator haloEnd(const std::set<BoundaryType>& boundary_types = {
+                                                 BoundaryType::UPPER, BoundaryType::LOWER, BoundaryType::FRONT,
+                                                 BoundaryType::BACK, BoundaryType::LEFT, BoundaryType::RIGHT});
+
+    /**
+     * @brief Const Iterator over particles in halo cells.
+     *
+     * @param boundary_types Boundary types to specify which halo cells to iterate over. Defaults to all sides.
+     *
+     * @return Const iterator after the last particle within the given halo cells.
+     */
+    [[nodiscard]] const_proximity_iterator haloEnd(const std::set<BoundaryType>& boundary_types = {
+                                                       BoundaryType::UPPER, BoundaryType::LOWER, BoundaryType::FRONT,
+                                                       BoundaryType::BACK, BoundaryType::LEFT,
+                                                       BoundaryType::RIGHT}) const;
+
+    /**
+     * @brief Iterator over particles in boundary cells.
+     *
+     * @param boundary_types Boundary types to specify which boundary cells to iterate over. Defaults to all sides.
+     *
+     * @return Iterator to the first particle within the given boundary cells.
+     */
+    [[nodiscard]] proximity_iterator boundaryBegin(const std::set<BoundaryType>& boundary_types = {
+                                                       BoundaryType::UPPER, BoundaryType::LOWER, BoundaryType::FRONT,
+                                                       BoundaryType::BACK, BoundaryType::LEFT, BoundaryType::RIGHT});
+
+    /**
+     * @brief Const Iterator over particles in boundary cells.
+     *
+     * @param boundary_types Boundary types to specify which boundary cells to iterate over. Defaults to all sides.
+     *
+     * @return Const iterator to the first particle within the given boundary cells.
+     */
+    [[nodiscard]] const_proximity_iterator boundaryBegin(const std::set<BoundaryType>& boundary_types = {
+                                                             BoundaryType::UPPER, BoundaryType::LOWER,
+                                                             BoundaryType::FRONT, BoundaryType::BACK,
+                                                             BoundaryType::LEFT, BoundaryType::RIGHT}) const;
+
+    /**
+     * @brief Iterator over particles in boundary cells.
+     *
+     * @param boundary_types Boundary types to specify which boundary cells to iterate over. Defaults to all sides.
+     *
+     * @return Iterator after the last particle within the given boundary cells.
+     */
+    [[nodiscard]] proximity_iterator boundaryEnd(const std::set<BoundaryType>& boundary_types = {
+                                                     BoundaryType::UPPER, BoundaryType::LOWER, BoundaryType::FRONT,
+                                                     BoundaryType::BACK, BoundaryType::LEFT, BoundaryType::RIGHT});
+
+    /**
+     * @brief Const Iterator over particles in boundary cells.
+     *
+     * @param boundary_types Boundary types to specify which boundary cells to iterate over. Defaults to all sides.
+     *
+     * @return Const iterator after the last particle within the given boundary cells.
+     */
+    [[nodiscard]] const_proximity_iterator boundaryEnd(const std::set<BoundaryType>& boundary_types = {
+                                                           BoundaryType::UPPER, BoundaryType::LOWER,
+                                                           BoundaryType::FRONT, BoundaryType::BACK, BoundaryType::LEFT,
+                                                           BoundaryType::RIGHT}) const;
 
 };
 

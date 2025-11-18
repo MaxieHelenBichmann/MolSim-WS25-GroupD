@@ -9,6 +9,7 @@
 #include "particles/Particle.h"
 #include "physics/ForceSource.h"
 #include "physics/LennardJonesForce.h"
+#include "particles/boundaries/BoundaryCondition.h"
 
 namespace mol_sim {
 /**
@@ -64,6 +65,11 @@ class SettingsParam {
      *
      */
     constexpr static double CUTOFF_DEFAULT = 0.5;
+    /**
+     * @brief Default boundary condition.
+     *
+     */
+    constexpr static BoundaryConditions BOUNDARY_CONDITION_DEFAULT = OUTFLOW; 
 
     /**
      * @brief delta_t of the simulation.
@@ -115,7 +121,11 @@ class SettingsParam {
      *
      */
     std::optional<R3> domain;
-
+    /**
+     * @brief Boundary condition
+     *
+     */
+    std::optional<BoundaryConditions> boundary_condition; 
     /**
      * @brief Construct new SettingsParam.
      * All values will be set to null_opt if not specified otherwise.
@@ -130,12 +140,14 @@ class SettingsParam {
      * @param frequency
      * @param cutoff
      * @param domain
+     * @param boundary_condition
      */
     SettingsParam(std::optional<double> delta_t = std::nullopt, std::optional<double> start_time = std::nullopt,
                   std::optional<double> end_time = std::nullopt, std::optional<double> epsilon = std::nullopt,
                   std::optional<double> sigma = std::nullopt, std::optional<std::string> base_name = std::nullopt,
                   std::optional<Force> force = std::nullopt, std::optional<size_t> frequency = std::nullopt,
-                  std::optional<double> cutoff = std::nullopt, std::optional<R3> domain = std::nullopt)
+                  std::optional<double> cutoff = std::nullopt, std::optional<R3> domain = std::nullopt,
+                  std::optional<BoundaryConditions> boundary_condition = std::nullopt)
         : delta_t(delta_t),
           start_time(start_time),
           end_time(end_time),
@@ -145,7 +157,8 @@ class SettingsParam {
           force(force),
           frequency(frequency),
           cutoff(cutoff),
-          domain(domain) {}
+          domain(domain),
+          boundary_condition(boundary_condition) {}
 
     /**
      * @brief Provide default values for settings that have not been set.
@@ -182,6 +195,9 @@ class SettingsParam {
         }
         if (!domain.has_value()) {
             domain = {1., 1., 1.};
+        }
+        if (!boundary_condition.has_value()) {
+            boundary_condition = BOUNDARY_CONDITION_DEFAULT;
         }
     }
 };
