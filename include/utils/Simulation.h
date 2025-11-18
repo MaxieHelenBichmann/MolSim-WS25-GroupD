@@ -108,14 +108,16 @@ class Simulation {
      * Additionally updates the cell information of the LinkedCellContainer, which is not necessary for other
      * containers.
      */
-    template <>
-    void calculateX<LinkedCellContainer>() {
-        for (auto it = particles.begin(); it != particles.end(); ++it) {
-            const auto new_position =
-                it->getX() + (delta_t * it->getV()) + ((0.5 * delta_t * delta_t / it->getM()) * it->getF());
-            particles.updateParticlePosition(it, new_position);
-        }
-    }
+    /**
+   template <>
+   void calculateX<LinkedCellContainer>() {
+       for (auto it = particles.begin(); it != particles.end(); ++it) {
+           const auto new_position =
+               it->getX() + (delta_t * it->getV()) + ((0.5 * delta_t * delta_t / it->getM()) * it->getF());
+           particles.updateParticlePosition(it, new_position);
+       }
+   }
+       */
 
     /**
      * @brief Calculates the velocities of every particle for the next time step.

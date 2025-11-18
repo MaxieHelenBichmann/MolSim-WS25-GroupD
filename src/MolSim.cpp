@@ -1,7 +1,7 @@
 #include <spdlog/spdlog.h>
 
+#include "exceptions/CLIException.h"
 #include "io/CLIParse.h"
-#include "io/fileReader/YAMLReaderException.h"
 #include "particles/container/SimpleContainer.h"
 #include "physics/GravitationalForce.h"
 #include "physics/LennardJonesForce.h"
@@ -9,14 +9,14 @@
 #include "utils/Simulation.h"
 
 using namespace mol_sim;
-// NOLINTNEXTLINE(bugprone-exception-escape)
+
 int main(int argc, char* argsv[]) {
     SimpleContainer particles;
     SettingsParam settings;
     try {
         cliParse(argc, argsv, particles, settings);
-    } catch (YAMLReaderException& e) {
-        SPDLOG_ERROR("YAML Reader failed with: {}", e.what());
+    } catch (const CLIException& e) {
+        SPDLOG_ERROR("CLI parsing failed: {}", e.what());
         exit(-1);
     }
     settings.setDefaults();
