@@ -131,6 +131,16 @@ TEST_F(SimpleContainerTest, testAddParticleEmplace) {
     EXPECT_EQ(particles_empty.size(), static_cast<size_t>(1));
 }
 
+/**
+ * @brief Tests correct behaviour of the method updateParticlePosition.
+ */
+TEST_F(SimpleContainerTest, testUpdateParticlePosition) {
+    R3 new_x = {9.0, 8.0, 7.0};
+    auto it = particles_full.begin();
+    particles_full.updateParticlePosition(it, new_x);
+    EXPECT_EQ(particles_full[0].getX(), new_x);
+}
+
 // iterators
 
 /**

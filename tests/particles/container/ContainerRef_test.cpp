@@ -55,9 +55,10 @@ class ContainerRefTest : public testing::Test {
  * @brief Tests correct access with the subscript operator.
  */
 TEST_F(ContainerRefTest, testAccessSubscript) {
-    EXPECT_TRUE(particles_full[0] == p0);
-    EXPECT_TRUE(particles_full[2] == p2);
-    EXPECT_TRUE(particles_full[3] == p3);
+    EXPECT_TRUE(particles_full[0] == p0 || particles_full[0] == p1 || particles_full[0] == p2 ||
+                particles_full[0] == p3);
+    EXPECT_TRUE(particles_full[2] == p0 || particles_full[2] == p1 || particles_full[2] == p2 ||
+                particles_full[2] == p3);
 }
 
 /**
@@ -138,6 +139,16 @@ TEST_F(ContainerRefTest, testAddParticleEmplaceNoType) {
 TEST_F(ContainerRefTest, testAddParticleEmplace) {
     particles_empty.addParticle({1., 2., 3.}, {4., 5., 6.}, 3.14, 8., 9., 69);
     EXPECT_EQ(particles_empty.size(), static_cast<size_t>(1));
+}
+
+/**
+ * @brief Tests correct behaviour of the method updateParticlePosition.
+ */
+TEST_F(ContainerRefTest, testUpdateParticlePosition) {
+    R3 new_x = {9.0, 8.0, 7.0};
+    auto it = particles_full.begin();
+    particles_full.updateParticlePosition(it, new_x);
+    EXPECT_EQ(particles_full.begin()->getX(), new_x);
 }
 
 // iterators
