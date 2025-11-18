@@ -182,6 +182,9 @@ TEST_F(LinkedCellContainerTest, testBeginConstInterator) {
 
 // proximity iterators
 
+/**
+ * @brief Tests correct behaviour of proximity iterator with infinite radius.
+ */
 TEST_F(LinkedCellContainerTest, testProximityIteratorInfiniteRadius) {
     R3 v{0.0, 0.0, 0.0};
     particles_empty.addParticle(R3{2.0, 2.0, 2.0}, v, 1.0, 1.0, 1.0);
@@ -203,6 +206,9 @@ TEST_F(LinkedCellContainerTest, testProximityIteratorInfiniteRadius) {
     EXPECT_EQ(count, 3);  // Assuming only three particles are within the radius
 }
 
+/**
+ * @brief Tests correct behaviour of proximity iterator with finite radius.
+ */
 TEST_F(LinkedCellContainerTest, testProximityIterator) {
     R3 v{0.0, 0.0, 0.0};
     particles_empty.addParticle(R3{2.5, 3.0, 3.0}, v, 1.0, 1.0, 1.0);
@@ -227,7 +233,7 @@ TEST_F(LinkedCellContainerTest, testProximityIterator) {
 // ParticleContainer: complex tests
 
 /**
- * @brief Tests a sequence of read and write operations on a ContainerRef.
+ * @brief Tests a sequence of read and write operations on a LinkedCellContainer.
  */
 TEST(LinkedCellContainer, testSizeEmptyClearReserve) {
     LinkedCellContainer c({15., 10., 10.}, 2.);
@@ -277,6 +283,7 @@ TEST_F(LinkedCellContainerTest, testFitDomain) {
     EXPECT_FALSE(particles_empty.fitsDomain(outside_y));
     EXPECT_FALSE(particles_empty.fitsDomain(outside_z));
 }
+
 /**
  * @brief Tests correct behaviour of method fitsContainer, which also considers halo cells.
  */
@@ -296,6 +303,10 @@ TEST_F(LinkedCellContainerTest, testFitContainer) {
     R3 close_outside{12.5, 12.5, 12.7};
     EXPECT_FALSE(particles_empty.fitsContainer(close_outside));
 }
+
+/**
+ * @brief Tests correct behaviour of the method updateParticlePosition, with different scenarios.
+ */
 TEST_F(LinkedCellContainerTest, testUpdateParticlePosition) {
     R3 v{0.0, 0.0, 0.0};
 
@@ -322,6 +333,9 @@ TEST_F(LinkedCellContainerTest, testUpdateParticlePosition) {
     EXPECT_TRUE((particles_empty.begin() + 1)->getX() == (R3{-1.0, -1.0, -1.0}));
 }
 
+/**
+ * @brief Tests correct behaviour of the boundary iterator for all and a specific side.
+ */
 TEST_F(LinkedCellContainerTest, testBoundaryIterator) {  // NOLINT
     R3 v{0.0, 0.0, 0.0};
 
@@ -360,6 +374,10 @@ TEST_F(LinkedCellContainerTest, testBoundaryIterator) {  // NOLINT
     EXPECT_TRUE(std::count(boundary_right.begin(), boundary_right.end(), par_boundary_right) > 0);
     EXPECT_FALSE(std::count(boundary_right.begin(), boundary_right.end(), par_inside) > 0);
 }
+
+/**
+ * @brief Tests correct behaviour of the halo iterator for all and a specific side.
+ */
 TEST_F(LinkedCellContainerTest, testHaloIterator) {  // NOLINT
     R3 v{0.0, 0.0, 0.0};
 
@@ -401,7 +419,5 @@ TEST_F(LinkedCellContainerTest, testHaloIterator) {  // NOLINT
     EXPECT_FALSE(std::count(halo_right.begin(), halo_right.end(), par_inside) > 0);
     EXPECT_FALSE(std::count(halo_right.begin(), halo_right.end(), par_boundary) > 0);
 }
-
-// LinkedCellContainer: complex tests
 
 }  // namespace mol_sim

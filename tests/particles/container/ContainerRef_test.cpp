@@ -173,6 +173,56 @@ TEST_F(ContainerRefTest, testBeginConstInterator) {
     EXPECT_NE(particles_full.cbegin(), particles_full.cend());
 }
 
+// proximity iterators
+
+/**
+ * @brief Tests correct behaviour of proximity iterator with infinite radius.
+ */
+TEST_F(ContainerRefTest, testProximityIteratorInfiniteRadius) {
+    R3 v{0.0, 0.0, 0.0};
+    particles_empty.addParticle(R3{2.0, 2.0, 2.0}, v, 1.0, 1.0, 1.0);
+    particles_empty.addParticle(R3{4.0, 4.0, 4.0}, v, 1.0, 1.0, 1.0);
+    particles_empty.addParticle(R3{6.0, 6.0, 6.0}, v, 1.0, 1.0, 1.0);
+
+    R3 center{3.0, 3.0, 3.0};
+    double radius = std::numeric_limits<double>::infinity();
+
+    auto it = particles_empty.proximityBegin(center, radius);
+    auto end = particles_empty.proximityEnd(center, radius);
+
+    size_t count = 0;
+    while (it != end) {
+        EXPECT_LE((it->getX() - center).euclidNorm(), radius);
+        ++it;
+        ++count;
+    }
+    EXPECT_EQ(count, 3);  // Assuming only three particles are within the radius
+}
+
+/**
+ * @brief Tests correct behaviour of proximity iterator with finite radius.
+ */
+TEST_F(ContainerRefTest, testProximityIterator) {
+    R3 v{0.0, 0.0, 0.0};
+    particles_empty.addParticle(R3{2.5, 3.0, 3.0}, v, 1.0, 1.0, 1.0);
+    particles_empty.addParticle(R3{5.0, 5.0, 5.0}, v, 1.0, 1.0, 1.0);
+    particles_empty.addParticle(R3{6.0, 6.0, 6.0}, v, 1.0, 1.0, 1.0);
+
+    R3 center{3.0, 3.0, 3.0};
+    double radius = 1.0;
+
+    auto it = particles_empty.proximityBegin(center, radius);
+    auto end = particles_empty.proximityEnd(center, radius);
+
+    size_t count = 0;
+    while (it != end) {
+        EXPECT_LE((it->getX() - center).euclidNorm(), radius);
+        ++it;
+        ++count;
+    }
+    EXPECT_EQ(count, 1);  // Assuming only one particle is within the radius
+}
+
 // ParticleContainer: complex tests
 
 /**
