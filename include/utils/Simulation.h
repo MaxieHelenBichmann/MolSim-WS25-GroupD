@@ -5,7 +5,10 @@
 
 #include <cstddef>
 #include <limits>
+#include <optional>
+#include <stdexcept>
 
+#include "exceptions/SimulationException.h"
 #include "io/outputWriter/VTKWriter.h"
 #include "io/outputWriter/XYZWriter.h"
 #include "particles/Particle.h"
@@ -140,11 +143,8 @@ class Simulation {
      */
     Simulation(containerType& particles, forceType& force_source, SettingsParam& settings)
         : particles(particles), force_source(force_source) {
-        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
         delta_t = settings.delta_t.value();
-        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
         start_time = settings.start_time.value();
-        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
         end_time = settings.end_time.value();
         frequency = settings.frequency.value();
         base_name = settings.base_name.value();
@@ -168,7 +168,7 @@ class Simulation {
             calculateV();
 
             iteration++;
-#ifndef DISABLE_IO
+            #ifndef DISABLE_IO
             if (iteration % frequency == 0) {
                 try {
                     std::string out_name = base_name;
@@ -180,11 +180,12 @@ class Simulation {
                     XYZWriter writer;
 #endif
                     writer.plotParticles(particles, out_name, iteration);
-                } catch (...) {
-                    SPDLOG_ERROR("Something went wrong with plotting the Particles.");
+                } catch (std::runtime_error& e) {
+                    SPDLOG_ERROR("Something went wrong with plotting the Particles: ", e.what());
+                    throw SimulationException("Error while plotting Particles.");
                 }
             }
-#endif
+            #endif
             SPDLOG_INFO("Iteration {} finished.", iteration);
             current_time += delta_t;
         }

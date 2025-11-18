@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <string>
 
-#include "io/fileReader/YAMLReaderException.h"
+#include "exceptions/YAMLReaderException.h"
 #include "particles/generators/CuboidGenerator.h"
 #include "particles/generators/DiscGenerator.h"
 #include "physics/ForceSource.h"

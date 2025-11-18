@@ -8,7 +8,7 @@
 namespace mol_sim {
 
 /**
- * @brief Exception thrown by the YAMLReader;
+ * @brief Exception thrown by the XVMReader;
  *
  */
 class XVMReaderException : public InputException {
