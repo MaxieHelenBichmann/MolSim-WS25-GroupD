@@ -200,7 +200,7 @@ TEST_F(LinkedCellContainerTest, testProximityIteratorInfiniteRadius) {
         ++it;
         ++count;
     }
-    EXPECT_EQ(count, 2);  // Assuming only two particles are within the radius
+    EXPECT_EQ(count, 3);  // Assuming only three particles are within the radius
 }
 
 TEST_F(LinkedCellContainerTest, testProximityIterator) {
@@ -337,7 +337,9 @@ TEST_F(LinkedCellContainerTest, testBoundaryIterator) {  // NOLINT
 
     // All boundary sides
     std::vector<Particle> boundary_all;
-    for (auto it = particles_empty.boundaryBegin(); it != particles_empty.boundaryEnd(); ++it) {
+    auto it = particles_empty.boundaryBegin();
+    auto end = particles_empty.boundaryEnd();
+    for (; it != end; ++it) {
         boundary_all.push_back(*it);
     }
 
@@ -375,7 +377,9 @@ TEST_F(LinkedCellContainerTest, testHaloIterator) {  // NOLINT
 
     // All boundary sides
     std::vector<Particle> halo_all;
-    for (auto it = particles_empty.haloBegin(); it != particles_empty.haloEnd(); ++it) {
+    auto it = particles_empty.haloBegin();
+    auto end = particles_empty.haloEnd();
+    for (; it != end; ++it) {
         halo_all.push_back(*it);
     }
 

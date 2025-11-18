@@ -1,12 +1,15 @@
 #ifndef LINKEDCELL_CONTAINER_H
 #define LINKEDCELL_CONTAINER_H
 
+#include <spdlog/spdlog.h>
+
 #include <array>
 #include <cstdint>
 #include <set>
 #include <vector>
 
 #include "particles/ParticleContainer.h"
+#include "particles/container/cells/Cell.h"
 
 namespace mol_sim {
 
@@ -23,11 +26,6 @@ namespace mol_sim {
 enum class BoundaryType : std::uint8_t { UPPER, LOWER, FRONT, BACK, LEFT, RIGHT };
 
 /**
- * @brief Enum for cell types in the Linked-Cell Container.
- */
-enum class CellType : std::uint8_t { INNER, BOUNDARY, HALO };
-
-/**
  * @brief Linked-Cell Container for Particles
  *
  * This container implements the concept ParticleContainer.
@@ -36,94 +34,6 @@ enum class CellType : std::uint8_t { INNER, BOUNDARY, HALO };
  *
  */
 class LinkedCellContainer {
-    /**
-     * @brief Cell with specific boundaries and type in the Linked-Cell container.
-     *
-     * Unites methods for access and modification of Particles in the cell.
-     */
-    struct Cell {
-        /**
-         * @brief Constructor, initializing a Cell with type and boundaries.
-         */
-        Cell(CellType cell_type, std::array<double, 6> bounds);
-
-        /**
-         * @brief Adding an index (of the std::vector data from the LinkedCellContainer) to an existing Particle to the
-         * cell.
-         *
-         * @param idx Index of already constructed Particle.
-         */
-        void addParticle(size_t idx);
-        /**
-         * @brief Remove a index (of the std::vector data from the LinkedCellContainer) to a Particle from the cell.
-         *
-         * @param idx Index of the pointer to remove.
-         */
-        void removeParticle(size_t idx);
-        /**
-         * @brief Update the index of a Particle in the cell.
-         *
-         * @param old_idx Old index of the Particle.
-         * @param new_idx New index of the Particle.
-         */
-        void updateParticleIndex(size_t old_idx, size_t new_idx);
-        /**
-         * @brief Clear the entire cell, destructing no Particles.
-         */
-        void clear();
-        /**
-         * @brief Get the cell type (INNER, BOUNDARY, HALO)
-         *  
-         * @return CellType 
-         */
-        CellType getType();
-        /**
-         * @brief Returns the number of particles contained in the cell 
-         * 
-         * @return size_t 
-         */
-        size_t size();
-
-        size_t operator[](size_t idx);
-        /**
-         * @brief Access the vector of Particle pointers in the cell.
-         *
-         * @return Reference to the vector of Particle pointers.
-         */
-        std::vector<size_t>& particles();
-
-        /**
-         * @brief Access the const vector of Particle pointers in the cell.
-         *
-         * @return Reference to the vector of Particle pointers.
-         */
-        [[nodiscard]] const std::vector<size_t>& particles() const;
-
-        /**
-         * @brief Check whether a Particle fits into the cell boundaries.
-         *
-         * @param x Coordinates to check.
-         *
-         * @return True if Particle is within cell boundaries.
-         */
-        [[nodiscard]] bool fits(R3 x) const;
-
-       private:
-        /**
-         * std::vector storing the indices (of the std::vector data from the LinkedCellContainer) to all Particles in
-         * the cell.
-         */
-        std::vector<size_t> indices;
-        /**
-         * Type of the cell. [INNER, BOUNDARY, HALO]
-         */
-        [[maybe_unused]] CellType type = CellType::INNER;
-        /**
-         * Boundaries of the cell. [xmin, xmax, ymin, ymax, zmin, zmax]
-         */
-        std::array<double, 6> bounds;
-    };
-
     /**
      * @brief Switch a Particle from one cell to another. [HELPER FUNCTION]
      *
@@ -219,7 +129,7 @@ class LinkedCellContainer {
      * @brief Constructor, initializing a LinkedCellContainer.
      */
     LinkedCellContainer(R3 domain_size, double cutoff_radius);
-    
+
     // retrieve data
 
     /**
@@ -385,6 +295,7 @@ class LinkedCellContainer {
         R3 center;
 
         void inc() {
+            SPDLOG_DEBUG("Incrementing proximity iterator");
             if (cur != cell_end) {
                 ++cur;
             }
@@ -396,9 +307,6 @@ class LinkedCellContainer {
         }
 
         void satisfy() {
-            if (std::isinf(radius)) {
-                return;
-            }
             while (cur != end &&
                    (cur == cell_end || !((center - (*container_data)[*cur].getX()).euclidNorm() <= radius))) {
                 inc();
@@ -463,6 +371,7 @@ class LinkedCellContainer {
         R3 center;
 
         void inc() {
+            SPDLOG_DEBUG("Incrementing const proximity iterator");
             if (cur != cell_end) {
                 ++cur;
             }
@@ -570,31 +479,6 @@ class LinkedCellContainer {
      */
     [[nodiscard]] const_proximity_iterator proximityEnd(R3 center, double radius) const;
 
-    /**
-     * @brief Checks whether a given particle resides within a boundary cell.
-     * 
-     * @param p the Particle. 
-     * @return true if the particle lies within a boundary cell. 
-     * @return false if the particle does NOT lie within a boundary cell.
-     */
-    [[nodiscard]] bool isOnBoundary(Particle& p);
-
-    /**
-     * @brief Removes a given particle from the container. 
-     * CAREFUL: This method assumes that no particle is contained more than once within the same container. 
-     * 
-     * @param p The particle to be removed. 
-     */
-    void removeParticle(Particle& p);
-
-    /**
-     * @brief Returns the domain size, i.e. the vector going from (0, 0, 0) to (x_max, y_max, z_max).
-     * 
-     * @return R3 The vector containing the domain size.
-     */
-    [[nodiscard]] R3 getDomainSize();
-
-
     // boundary and halo iterators
 
     /**
@@ -688,7 +572,21 @@ class LinkedCellContainer {
                                                            BoundaryType::UPPER, BoundaryType::LOWER,
                                                            BoundaryType::FRONT, BoundaryType::BACK, BoundaryType::LEFT,
                                                            BoundaryType::RIGHT}) const;
+    /**
+     * @brief Checks whether a given particle resides within a boundary cell.
+     * 
+     * @param p the Particle. 
+     * @return true if the particle lies within a boundary cell. 
+     * @return false if the particle does NOT lie within a boundary cell.
+     */
+    [[nodiscard]] bool isOnBoundary(Particle& p);
 
+    /**
+     * @brief Returns the domain size, i.e. the vector going from (0, 0, 0) to (x_max, y_max, z_max).
+     * 
+     * @return R3 The vector containing the domain size.
+     */
+    [[nodiscard]] R3 getDomainSize();
 };
 
 }  // namespace mol_sim
