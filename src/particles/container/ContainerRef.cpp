@@ -44,6 +44,10 @@ void ContainerRef::addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_
                instance);
 }
 
+void ContainerRef::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x) {
+    std::visit([&p, &new_x](auto& c) { return c->updateParticlePosition(p, new_x); }, instance);
+}
+
 // normal iterators
 std::vector<Particle>::iterator ContainerRef::begin() {
     return std::visit([](auto& c) { return c->begin(); }, instance);

@@ -48,6 +48,8 @@ concept ParticleContainer = requires(C c) {
     { c.addParticle(R3(), R3(), 0., 0., 0.) };
     { c.addParticle(R3(), R3(), 0., 0., 0., 0) };
 
+    { c.updateParticlePosition(std::vector<Particle>::iterator(), R3()) };
+
     // iterators all particles
     { c.begin() } -> std::forward_iterator;
     { (*static_cast<const C*>(&c)).begin() } -> std::forward_iterator;

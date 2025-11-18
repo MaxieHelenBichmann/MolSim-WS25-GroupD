@@ -54,7 +54,7 @@ TEST_F(SimulationTest, calculateX_dt) {
     R3 v = {10.0, -20.0, 0.0};
     particles.addParticle(x, v, 1.0, 5., 1.);
     Simulation<SimpleContainer, GravitationalForce> simulation(particles, grav_force, settings);
-    simulation.calculateX<SimpleContainer>();
+    simulation.calculateX();
     R3 expected = {5.0, -10.0, 0.0};
     EXPECT_EQ(particles[0].getX(), expected);
 }
@@ -73,7 +73,7 @@ TEST_F(SimulationTest, calculateX_force) {
     p.getF() = f;
     particles.addParticle(p);
     Simulation<SimpleContainer, GravitationalForce> simulation(particles, grav_force, settings);
-    simulation.calculateX<SimpleContainer>();
+    simulation.calculateX();
     R3 expected = {10.0, 5.0, 0.0};
     EXPECT_EQ(particles[0].getX(), expected);
 }

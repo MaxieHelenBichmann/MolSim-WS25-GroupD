@@ -5,20 +5,20 @@
 
 #include <cstddef>
 #include <limits>
-#include <typeinfo>
 #include <memory>
+#include <typeinfo>
 
 #include "io/outputWriter/VTKWriter.h"
 #include "io/outputWriter/XYZWriter.h"
 #include "particles/Particle.h"
 #include "particles/ParticleContainer.h"
+#include "particles/boundaries/BoundaryCondition.h"
+#include "particles/boundaries/Outflow.h"
+#include "particles/boundaries/Reflecting.h"
 #include "particles/container/LinkedCellContainer.h"
 #include "particles/container/SimpleContainer.h"
 #include "physics/ForceSource.h"
 #include "utils/Settings.h"
-#include "particles/boundaries/BoundaryCondition.h"
-#include "particles/boundaries/Reflecting.h"
-#include "particles/boundaries/Outflow.h"
 
 /**
  * @namespace mol_sim
@@ -105,22 +105,10 @@ class Simulation {
      * Calculates the forces of every particle for the next time step, specified by delta_t, for the provided
      * container.
      */
-    template <ParticleContainer conTy>
     void calculateX() {
-        for (auto& p : particles) {
-            p.getX() = p.getX() + (delta_t * p.getV()) + ((0.5 * delta_t * delta_t / p.getM()) * p.getF());
-        }
-    }
-    /**
-     * @brief Specialization of calculate for LinkedCellContainer.
-     * Additionally updates the cell information of the LinkedCellContainer, which is not necessary for other
-     * containers.
-     */
-    template <>
-    void calculateX<LinkedCellContainer>() {
         for (auto it = particles.begin(); it != particles.end(); ++it) {
             const auto new_position =
-                it->getX() + (delta_t * it->getV()) + ((0.5 * delta_t * delta_t / it->getM()) * it->getF());
+                (*it).getX() + (delta_t * (*it).getV()) + ((0.5 * delta_t * delta_t / (*it).getM()) * (*it).getF());
             particles.updateParticlePosition(it, new_position);
         }
     }
@@ -136,14 +124,18 @@ class Simulation {
     }
 
     void applyBoundary() {
-        if (boundary_condition == nullptr) { return; }
+        if (boundary_condition == nullptr) {
+            return;
+        }
         for (auto& p : particles) {
             boundary_condition->applyBoundary(p);
         }
     }
 
     void cleanBoundary() {
-        if (boundary_condition == nullptr) { return; }
+        if (boundary_condition == nullptr) {
+            return;
+        }
         boundary_condition->clean();
     }
 
@@ -166,19 +158,19 @@ class Simulation {
         end_time = settings.end_time.value();
         frequency = settings.frequency.value();
         base_name = settings.base_name.value();
-/*         if (typeid(containerType) == typeid(LinkedCellContainer)) {
-        switch(settings.boundary_condition.value()) {
-            case OUTFLOW:  
-                boundary_condition = std::make_unique<Outflow>(particles);
-                break;
-            case REFLECTING:
-                boundary_condition = std::make_unique<Reflecting>(particles);
-                break;
-            default:
-                SPDLOG_ERROR("Unknown boundary condition!");
-                break;
-        }
-        } */
+        /*         if (typeid(containerType) == typeid(LinkedCellContainer)) {
+                switch(settings.boundary_condition.value()) {
+                    case OUTFLOW:
+                        boundary_condition = std::make_unique<Outflow>(particles);
+                        break;
+                    case REFLECTING:
+                        boundary_condition = std::make_unique<Reflecting>(particles);
+                        break;
+                    default:
+                        SPDLOG_ERROR("Unknown boundary condition!");
+                        break;
+                }
+                } */
     }
 
     /**
@@ -192,11 +184,11 @@ class Simulation {
         // for this loop, we assume: current x, current f and current v are known
         while (current_time < end_time) {
             // calculate new x
-            calculateX<containerType>();
+            calculateX();
             // calculate new f
             applyBoundary();
             calculateF();
-            cleanBoundary(); 
+            cleanBoundary();
             // calculate new v
             calculateV();
 
