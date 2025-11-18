@@ -61,6 +61,13 @@ class LinkedCellContainer {
          */
         void removeParticle(size_t idx);
         /**
+         * @brief Update the index of a Particle in the cell.
+         *
+         * @param old_idx Old index of the Particle.
+         * @param new_idx New index of the Particle.
+         */
+        void updateParticleIndex(size_t old_idx, size_t new_idx);
+        /**
          * @brief Clear the entire cell, destructing no Particles.
          */
         void clear();
@@ -158,6 +165,13 @@ class LinkedCellContainer {
      * @param offset Offset to consider for halo cells. (0 = halo cells, 1 = boundary cells)
      */
     void findBoundaryCells(BoundaryType type, std::vector<Cell*>& boundary_cells, size_t offset = 0);
+
+    /**
+     * @brief Update the indices of Particles in cells after erasing a Particle. [HELPER FUNCTION]
+     *
+     * @param starting_idx Index from which to start updating.
+     */
+    void decreaseCellIndices(size_t starting_idx);
 
     /**
      * std::vector storing all Particles in the container.
@@ -359,12 +373,13 @@ class LinkedCellContainer {
         R3 center;
 
         void inc() {
-            if (cur == cell_end) {  // reached end of current cell
+            if (cur != cell_end) {
+                ++cur;
+            }
+            while (cur == cell_end && cur != end) {  // reached end of current cell
                 cells.erase(cells.begin());
                 cur = cells.front()->particles().data();
                 cell_end = cur + cells.front()->particles().size();  // NOLINT
-            } else {                                                 // iterate within current cell
-                ++cur;                                               // NOLINT
             }
         }
 
@@ -372,7 +387,8 @@ class LinkedCellContainer {
             if (std::isinf(radius)) {
                 return;
             }
-            while (cur != end && !((center - (*container_data)[*cur].getX()).euclidNorm() <= radius)) {
+            while (cur != end &&
+                   (cur == cell_end || !((center - (*container_data)[*cur].getX()).euclidNorm() <= radius))) {
                 inc();
             }
         }
@@ -435,12 +451,13 @@ class LinkedCellContainer {
         R3 center;
 
         void inc() {
-            if (cur == cell_end) {  // reached end of current cell
+            if (cur != cell_end) {
+                ++cur;
+            }
+            while (cur == cell_end && cur != end) {  // reached end of current cell
                 cells.erase(cells.begin());
                 cur = cells.front()->particles().data();
                 cell_end = cur + cells.front()->particles().size();  // NOLINT
-            } else {                                                 // iterate within current cell
-                ++cur;                                               // NOLINT
             }
         }
 
@@ -448,7 +465,8 @@ class LinkedCellContainer {
             if (std::isinf(radius)) {
                 return;
             }
-            while (cur != end && !((center - (*container_data)[*cur].getX()).euclidNorm() <= radius)) {
+            while (cur != end &&
+                   (cur == cell_end || !((center - (*container_data)[*cur].getX()).euclidNorm() <= radius))) {
                 inc();
             }
         }

@@ -13,9 +13,17 @@ LinkedCellContainer::Cell::Cell(CellType cell_type, std::array<double, 6> bounds
 
 void LinkedCellContainer::Cell::addParticle(size_t idx) { indices.push_back(idx); }
 void LinkedCellContainer::Cell::removeParticle(size_t idx) {
-    for (size_t i = 0; i < indices.size(); ++i) {
+    for (size_t i = 0; i < indices.size(); ++i) {  // NOLINT
         if (indices[i] == idx) {
             indices.erase(indices.begin() + i);  // NOLINT
+            return;
+        }
+    }
+}
+void LinkedCellContainer::Cell::updateParticleIndex(size_t old_idx, size_t new_idx) {
+    for (size_t i = 0; i < indices.size(); ++i) {  // NOLINT
+        if (indices[i] == old_idx) {
+            indices[i] = new_idx;
             return;
         }
     }
@@ -25,8 +33,8 @@ std::vector<size_t>& LinkedCellContainer::Cell::particles() { return indices; }
 const std::vector<size_t>& LinkedCellContainer::Cell::particles() const { return indices; }
 size_t LinkedCellContainer::Cell::operator[](size_t idx) { return indices[idx]; }
 bool LinkedCellContainer::Cell::fits(R3 x) const {
-    return bounds[0] <= x[0] && x[0] < bounds[1] && bounds[2] <= x[1] && x[1] < bounds[3] && bounds[4] <= x[2] &&
-           x[2] < bounds[5];
+    return bounds[0] <= x[0] && x[0] <= bounds[1] && bounds[2] <= x[1] && x[1] <= bounds[3] && bounds[4] <= x[2] &&
+           x[2] <= bounds[5];
 }
 
 // ------------------- LinkedCellContainer methods -------------------
@@ -280,9 +288,16 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryType type, std::vector
     }
 }
 
+void LinkedCellContainer::decreaseCellIndices(size_t starting_idx) {
+    for (size_t i = starting_idx; i < data.size(); ++i) {
+        size_t cell_idx = findCellIndex(data[i].getX());
+        cells[cell_idx].updateParticleIndex(i, i - 1);
+    }
+}
+
 bool LinkedCellContainer::fitsDomain(R3 v) const {
-    return (v[0] >= 0.0 && v[0] < domain_size[0]) && (v[1] >= 0.0 && v[1] < domain_size[1]) &&
-           (v[2] >= 0.0 && v[2] < domain_size[2]);
+    return (v[0] >= 0.0 && v[0] <= domain_size[0]) && (v[1] >= 0.0 && v[1] <= domain_size[1]) &&
+           (v[2] >= 0.0 && v[2] <= domain_size[2]);
 }
 
 bool LinkedCellContainer::fitsContainer(R3 v) const {
@@ -307,14 +322,14 @@ void LinkedCellContainer::clear() {
 void LinkedCellContainer::reserve(size_t n) { data.reserve(n); }
 
 void LinkedCellContainer::addParticle(Particle&& value) {
-    if (!fitsDomain(value.getX())) {
+    if (!fitsContainer(value.getX())) {
         return;
     }
     data.push_back(value);
     cells[findCellIndex(value.getX())].addParticle(data.size() - 1);
 }
 void LinkedCellContainer::addParticle(const Particle& value) {
-    if (!fitsDomain(value.getX())) {
+    if (!fitsContainer(value.getX())) {
         return;
     }
     data.push_back(value);
@@ -322,7 +337,7 @@ void LinkedCellContainer::addParticle(const Particle& value) {
 }
 
 void LinkedCellContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg) {
-    if (!fitsDomain(x_arg)) {
+    if (!fitsContainer(x_arg)) {
         return;
     }
     data.emplace_back(x_arg, v_arg, m_arg, epsilon_arg, sigma_arg);
@@ -330,7 +345,7 @@ void LinkedCellContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double e
 }
 void LinkedCellContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg,
                                       int type) {
-    if (!fitsDomain(x_arg)) {
+    if (!fitsContainer(x_arg)) {
         return;
     }
     data.emplace_back(x_arg, v_arg, m_arg, epsilon_arg, sigma_arg, type);
@@ -345,6 +360,7 @@ void LinkedCellContainer::eraseParticle(Particle* p) {
     if (it != data.end()) {
         cells[cell_idx].removeParticle(it - data.begin());
         data.erase(it);
+        decreaseCellIndices(it - data.begin());
     }
 }
 
@@ -353,7 +369,7 @@ void LinkedCellContainer::updateParticlePosition(std::vector<Particle>::iterator
     if (!cells[old_cell_idx].fits(new_x)) {
         size_t new_cell_idx = findCellIndex(new_x);
         if (new_cell_idx == cells.size()) {
-            SPDLOG_INFO("New position not in container!");
+            eraseParticle(&(*p));
             return;
         }
         switchCell(static_cast<size_t>(p - data.begin()), old_cell_idx, new_cell_idx);
