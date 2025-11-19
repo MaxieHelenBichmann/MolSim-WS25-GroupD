@@ -5,20 +5,16 @@ using namespace mol_sim;
 CellUnorderedSet::CellUnorderedSet(std::array<double, 6> bounds) : bounds(bounds) {}
 void CellUnorderedSet::addParticle(size_t idx) { indices.insert(idx); }
 void CellUnorderedSet::removeParticle(size_t idx) {
-    for (auto it = indices.begin(); it != indices.end(); ++it) {  // NOLINT
-        if (*it == idx) {
-            indices.erase(it);
-            return;
-        }
+    auto it = indices.find(idx);
+    if (it != indices.end()) {
+        indices.erase(it);
     }
 }
 void CellUnorderedSet::updateParticleIndex(size_t old_idx, size_t new_idx) {
-    for (auto it = indices.begin(); it != indices.end(); ++it) {  // NOLINT
-        if (*it == old_idx) {
-            indices.erase(it);
-            indices.insert(new_idx);
-            return;
-        }
+    auto it = indices.find(old_idx);
+    if (it != indices.end()) {
+        indices.erase(it);
+        indices.insert(new_idx);
     }
 }
 void CellUnorderedSet::clear() { indices.clear(); }
