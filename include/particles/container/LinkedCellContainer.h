@@ -286,9 +286,9 @@ class LinkedCellContainer {
      * Enables cutoff radius, and iterates only over the particles in the adjacent cells.
      */
     class proximity_iterator {
-        size_t* cur;
-        size_t* end;
-        size_t* cell_end;
+        std::set<size_t>::iterator cur;
+        std::set<size_t>::iterator end;
+        std::set<size_t>::iterator cell_end;
         std::vector<Cell*> cells;
         std::vector<Particle>* container_data;
         double radius;
@@ -301,8 +301,8 @@ class LinkedCellContainer {
             }
             while (cur == cell_end && cur != end) {  // reached end of current cell
                 cells.erase(cells.begin());
-                cur = cells.front()->particles().data();
-                cell_end = cur + cells.front()->particles().size();  // NOLINT
+                cur = cells.front()->particles().begin();
+                cell_end = cells.front()->particles().end();
             }
         }
 
@@ -320,12 +320,12 @@ class LinkedCellContainer {
         using pointer = Particle*;
         using reference = Particle&;
 
-        proximity_iterator() noexcept
-            : cur(nullptr), end(nullptr), cell_end(nullptr), container_data(nullptr), radius(0.0) {}
-        proximity_iterator(R3 center, double radius, size_t* cur, std::vector<Cell*> cells, std::vector<Particle>* data)
+        proximity_iterator() noexcept : container_data(nullptr), radius(0.0) {}
+        proximity_iterator(R3 center, double radius, std::set<size_t>::iterator cur, std::vector<Cell*> cells,
+                           std::vector<Particle>* data)
             : cur(cur),
-              end(cells.back()->particles().data() + cells.back()->particles().size()),         // NOLINT
-              cell_end(cells.front()->particles().data() + cells.front()->particles().size()),  // NOLINT
+              end(cells.back()->particles().end()),
+              cell_end(cells.front()->particles().end()),
               cells(cells),
               container_data(data),
               radius(radius),
@@ -362,9 +362,9 @@ class LinkedCellContainer {
      * Enables cutoff radius, and iterates only over the particles in the adjacent cells.
      */
     class const_proximity_iterator {
-        const size_t* cur;
-        const size_t* end;
-        const size_t* cell_end;
+        std::set<size_t>::const_iterator cur;
+        std::set<size_t>::const_iterator end;
+        std::set<size_t>::const_iterator cell_end;
         std::vector<const Cell*> cells;
         const std::vector<Particle>* container_data;
         double radius;
@@ -377,8 +377,8 @@ class LinkedCellContainer {
             }
             while (cur == cell_end && cur != end) {  // reached end of current cell
                 cells.erase(cells.begin());
-                cur = cells.front()->particles().data();
-                cell_end = cur + cells.front()->particles().size();  // NOLINT
+                cur = cells.front()->particles().begin();
+                cell_end = cells.front()->particles().end();
             }
         }
 
@@ -399,13 +399,12 @@ class LinkedCellContainer {
         using pointer = const Particle*;
         using reference = const Particle&;
 
-        const_proximity_iterator() noexcept
-            : cur(nullptr), end(nullptr), cell_end(nullptr), container_data(nullptr), radius(0.0) {}
-        const_proximity_iterator(R3 center, double radius, const size_t* cur, std::vector<const Cell*> cells,
-                                 const std::vector<Particle>* container_data)
+        const_proximity_iterator() noexcept : container_data(nullptr), radius(0.0) {}
+        const_proximity_iterator(R3 center, double radius, std::set<size_t>::const_iterator cur,
+                                 std::vector<const Cell*> cells, const std::vector<Particle>* container_data)
             : cur(cur),
-              end(cells.back()->particles().data() + cells.back()->particles().size()),         // NOLINT
-              cell_end(cells.front()->particles().data() + cells.front()->particles().size()),  // NOLINT
+              end(cells.back()->particles().end()),
+              cell_end(cells.front()->particles().end()),
               cells(cells),
               container_data(container_data),
               radius(radius),
@@ -574,16 +573,16 @@ class LinkedCellContainer {
                                                            BoundaryType::RIGHT}) const;
     /**
      * @brief Checks whether a given particle resides within a boundary cell.
-     * 
-     * @param p the Particle. 
-     * @return true if the particle lies within a boundary cell. 
+     *
+     * @param p the Particle.
+     * @return true if the particle lies within a boundary cell.
      * @return false if the particle does NOT lie within a boundary cell.
      */
     [[nodiscard]] bool isOnBoundary(Particle& p);
 
     /**
      * @brief Returns the domain size, i.e. the vector going from (0, 0, 0) to (x_max, y_max, z_max).
-     * 
+     *
      * @return R3 The vector containing the domain size.
      */
     [[nodiscard]] R3 getDomainSize();

@@ -28,9 +28,7 @@ TEST_F(CellTest, testAddParticle) {
     inner_cell.addParticle(99);
 
     EXPECT_EQ(inner_cell.size(), old_size + 1);
-    EXPECT_TRUE(
-        std::find(inner_cell.particles().begin(), inner_cell.particles().end(), static_cast<size_t>(99)) !=  // NOLINT
-        inner_cell.particles().end());
+    EXPECT_TRUE(inner_cell.particles().contains(99));
 }
 
 TEST_F(CellTest, testAddParticleNOP) {
@@ -45,10 +43,10 @@ TEST_F(CellTest, testRemoveParticle) {
 
     const auto& p = inner_cell.particles();
     EXPECT_EQ(p.size(), static_cast<size_t>(2));
-    EXPECT_EQ(p[0], static_cast<size_t>(1));
-    EXPECT_EQ(p[1], static_cast<size_t>(3));
 
-    EXPECT_TRUE(std::find(p.begin(), p.end(), 2) == p.end());  // NOLINT
+    EXPECT_TRUE(p.contains(1));
+    EXPECT_TRUE(p.contains(3));
+    EXPECT_FALSE(p.contains(2));
 }
 
 TEST_F(CellTest, testRemoveParticleNOP) {
@@ -57,9 +55,9 @@ TEST_F(CellTest, testRemoveParticleNOP) {
 
     EXPECT_EQ(inner_cell.size(), old_size);
     const auto& p = inner_cell.particles();
-    EXPECT_EQ(p[0], static_cast<size_t>(1));
-    EXPECT_EQ(p[1], static_cast<size_t>(2));
-    EXPECT_EQ(p[2], static_cast<size_t>(3));
+    EXPECT_TRUE(p.contains(1));
+    EXPECT_TRUE(p.contains(2));
+    EXPECT_TRUE(p.contains(3));
 }
 
 TEST_F(CellTest, testUpdateParticleIndex) {
@@ -68,8 +66,8 @@ TEST_F(CellTest, testUpdateParticleIndex) {
     const auto& p = inner_cell.particles();
     EXPECT_EQ(p.size(), static_cast<size_t>(3));
 
-    EXPECT_TRUE(std::find(p.begin(), p.end(), 2) == p.end());   // NOLINT
-    EXPECT_TRUE(std::find(p.begin(), p.end(), 20) != p.end());  // NOLINT
+    EXPECT_FALSE(p.contains(2));
+    EXPECT_TRUE(p.contains(20));
 }
 
 TEST_F(CellTest, testUpdateParticleIndexNOP) {
@@ -91,10 +89,10 @@ TEST_F(CellTest, testClear) {
 TEST_F(CellTest, testParticles) {
     auto& vec = inner_cell.particles();
 
-    vec.push_back(777);
+    vec.insert(777);
 
     EXPECT_EQ(inner_cell.size(), static_cast<size_t>(4));
-    EXPECT_TRUE(std::find(vec.begin(), vec.end(), 777) != vec.end());  // NOLINT
+    EXPECT_TRUE(vec.contains(777));
 }
 
 TEST_F(CellTest, testConstParticles) {
@@ -102,15 +100,6 @@ TEST_F(CellTest, testConstParticles) {
     const auto& vec = c_ref.particles();
 
     EXPECT_EQ(vec.size(), static_cast<size_t>(3));
-}
-
-TEST_F(CellTest, testAccessSubscript) {
-    EXPECT_TRUE(inner_cell[0] == static_cast<size_t>(1) || inner_cell[0] == static_cast<size_t>(2) ||
-                inner_cell[0] == static_cast<size_t>(3));
-    EXPECT_TRUE(inner_cell[1] == static_cast<size_t>(1) || inner_cell[1] == static_cast<size_t>(2) ||
-                inner_cell[1] == static_cast<size_t>(3));
-    EXPECT_TRUE(inner_cell[2] == static_cast<size_t>(1) || inner_cell[2] == static_cast<size_t>(2) ||
-                inner_cell[2] == static_cast<size_t>(3));
 }
 
 TEST_F(CellTest, testFits) {

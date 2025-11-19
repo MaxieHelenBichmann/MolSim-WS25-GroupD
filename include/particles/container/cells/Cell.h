@@ -3,6 +3,7 @@
 
 #include <array>
 #include <cstdint>
+#include <set>
 #include <vector>
 
 #include "particles/Particle.h"
@@ -22,10 +23,10 @@ enum class CellType : std::uint8_t { INNER, BOUNDARY, HALO };
  */
 class Cell {
     /**
-     * std::vector storing the indices (of the std::vector data from the LinkedCellContainer) to all Particles in
-     * the cell.
+     * std::set storing the indices (of the std::vector data from the LinkedCellContainer) to all Particles in
+     * the cell. Not std::unordered_set to have stable iteration order for proximity iterators.
      */
-    std::vector<size_t> indices;
+    std::set<size_t> indices;
     /**
      * Type of the cell. [INNER, BOUNDARY, HALO]
      */
@@ -66,20 +67,18 @@ class Cell {
      */
     void clear();
     /**
-     * @brief Access the vector of Particle pointers in the cell.
+     * @brief Access the set of Particle pointers in the cell.
      *
-     * @return Reference to the vector of Particle pointers.
+     * @return Reference to the set of Particle pointers.
      */
-    std::vector<size_t>& particles();
+    std::set<size_t>& particles();
 
     /**
-     * @brief Access the const vector of Particle pointers in the cell.
+     * @brief Access the const set of Particle pointers in the cell.
      *
-     * @return Reference to the vector of Particle pointers.
+     * @return Reference to the set of Particle pointers.
      */
-    [[nodiscard]] const std::vector<size_t>& particles() const;
-
-    size_t operator[](size_t idx);
+    [[nodiscard]] const std::set<size_t>& particles() const;
 
     /**
      * @brief Check whether a Particle fits into the cell boundaries.
@@ -91,14 +90,14 @@ class Cell {
     [[nodiscard]] bool fits(R3 x) const;
     /**
      * @brief Returns the number of particles contained within the cell.
-     * 
-     * @return size_t the number of particles contained within the cell. 
+     *
+     * @return size_t the number of particles contained within the cell.
      */
     size_t size();
     /**
      * @brief Returns the type of the cell (INNER, BOUNDARY, HALO).
-     * 
-     * @return CellType the type of the cell. 
+     *
+     * @return CellType the type of the cell.
      */
     CellType getType();
 };
