@@ -227,7 +227,7 @@ TEST_F(YAMLReaderTest, ReadFullConfigFile) {
 
     R3 expected_domain = {1., 1., 1.};
     ASSERT_TRUE(settings.domain.has_value());
-    EXPECT_EQ(settings.domain.value(), expected_domain);
+    EXPECT_EQ(settings.domain.value().dimension, expected_domain);
 
     EXPECT_EQ(output.find("Error"), std::string::npos);
 }
