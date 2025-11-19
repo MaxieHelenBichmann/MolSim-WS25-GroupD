@@ -122,7 +122,9 @@ void YAMLReader::readSettings(SettingsParam& settings, const YAML::Node& node) {
         auto x = domain_node["x"].as<double>();
         auto y = domain_node["y"].as<double>();
         auto z = domain_node["z"].as<double>();
-        settings.domain = {x, y, z};
+        Domain domain;
+        domain.dimension = {x, y, z};
+        settings.domain = domain;
     }
 }
 // Add these new methods that parse without generating
