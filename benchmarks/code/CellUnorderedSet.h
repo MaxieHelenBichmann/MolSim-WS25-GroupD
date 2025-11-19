@@ -3,6 +3,7 @@
 
 #include <array>
 #include <unordered_set>
+#include <vector>
 
 #include "particles/Particle.h"
 #include "particles/container/cells/Cell.h"
@@ -28,6 +29,20 @@ class CellUnorderedSet {
      * Boundaries of the cell. [xmin, xmax, ymin, ymax, zmin, zmax]
      */
     std::array<double, 6> bounds;
+
+    /**
+     * Cache for sorted particle indices to provide stable iteration.
+     */
+    std::vector<size_t> sorted_cache;
+    /**
+     * Flag indicating whether the cache is dirty and needs to be updated.
+     */
+    bool cache_dirty = true;
+
+    /**
+     * @brief Update the sorted cache if it is dirty.
+     */
+    void updateCache();
 
    public:
     /**
@@ -72,6 +87,20 @@ class CellUnorderedSet {
      * @return Reference to the set of Particle pointers.
      */
     [[nodiscard]] const std::unordered_set<size_t>& particles() const;
+
+    /**
+     * @brief Stable iterator to the beginning of the sorted particle indices.
+     *
+     * @return Iterator to the beginning of the sorted particle indices.
+     */
+    std::vector<size_t>::iterator stableIteratorBegin();
+
+    /**
+     * @brief Stable iterator to the end of the sorted particle indices.
+     *
+     * @return Iterator to the end of the sorted particle indices.
+     */
+    std::vector<size_t>::iterator stableIteratorEnd();
 
     /**
      * @brief Check whether a Particle fits into the cell boundaries.
