@@ -24,9 +24,11 @@ void bmTemplatedContainer(benchmark::State& state) {
         for (size_t i = 0; i < n; i++) {
             particles.addParticle({static_cast<double>(i), 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0, 0., 0.);
         }
+        benchmark::ClobberMemory();
         for (auto& p : particles) {
             res += p.getX()[0];
         }
+        benchmark::DoNotOptimize(particles);
     }
     benchmark::DoNotOptimize(res);
 };
@@ -56,9 +58,11 @@ void bmContainerRef(benchmark::State& state) {
         for (size_t i = 0; i < n; i++) {
             particles.addParticle({static_cast<double>(i), 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0, 0., 0.);
         }
+        benchmark::ClobberMemory();
         for (auto& p : particles) {
             res += p.getX()[0];
         }
+        benchmark::DoNotOptimize(particles);
     }
     benchmark::DoNotOptimize(res);
 };
@@ -88,9 +92,11 @@ void bmAbstractContainer(benchmark::State& state) {
         for (size_t i = 0; i < n; i++) {
             particles->addParticle({static_cast<double>(i), 0.0, 0.0}, {0.0, 0.0, 0.0}, 0.0, 5., 1.);
         }
+        benchmark::ClobberMemory();
         for (auto& p : *particles) {
             res += p.getX()[0];
         }
+        benchmark::DoNotOptimize(particles);
     }
     benchmark::DoNotOptimize(res);
 };

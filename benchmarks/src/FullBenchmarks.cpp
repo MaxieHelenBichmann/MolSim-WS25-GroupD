@@ -22,7 +22,9 @@ namespace mol_sim {
     Simulation<SimpleContainer, LennardJonesForce> simulation(part_container, lj_force, settings);
     for ([[maybe_unused]] auto _ : state) {
         generator.generateParticles(particles);
+        benchmark::ClobberMemory();
         simulation.run();
+        benchmark::DoNotOptimize(particles);
     }
 }
 BENCHMARK(bmSimulationBig)->RangeMultiplier(2)->Range(2, 2 << 6)->Repetitions(10)->Unit(benchmark::kMillisecond);
@@ -42,7 +44,9 @@ static void bmSimulationGiven(benchmark::State& state) {
     for ([[maybe_unused]] auto _ : state) {
         generator1.generateParticles(particles);
         generator2.generateParticles(particles);
+        benchmark::ClobberMemory();
         simulation.run();
+        benchmark::DoNotOptimize(particles);
     }
 }
 BENCHMARK(bmSimulationGiven)->Repetitions(10)->Unit(benchmark::kMillisecond);

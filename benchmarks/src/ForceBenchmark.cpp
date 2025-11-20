@@ -19,10 +19,13 @@ void bmAbstractForce(benchmark::State& state) {
     std::unique_ptr<ForceAbstract> force = std::make_unique<GravitationalAbstract>();
     Particle p1 = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0, 5., 1.};
     Particle p2 = {{1.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0, 5., 1.};
+    benchmark::DoNotOptimize(p1);
+    benchmark::DoNotOptimize(p2);
     size_t n = state.range(0);
     for ([[maybe_unused]] auto _ : state) {
         for (size_t i = 0; i < n; i++) {
-            [[maybe_unused]] auto x = force->applyForce(p1, p2);
+            auto x = force->applyForce(p1, p2);
+            benchmark::DoNotOptimize(x);
         }
     }
 };
@@ -44,10 +47,13 @@ void bmConceptForce(benchmark::State& state) {
     forceType force;
     Particle p1 = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0, 5., 1.};
     Particle p2 = {{1.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0, 5., 1.};
+    benchmark::DoNotOptimize(p1);
+    benchmark::DoNotOptimize(p2);
     size_t n = state.range(0);
     for ([[maybe_unused]] auto _ : state) {
         for (size_t i = 0; i < n; i++) {
-            [[maybe_unused]] auto x = force.applyForce(p1, p2);
+            auto x = force.applyForce(p1, p2);
+            benchmark::DoNotOptimize(x);
         }
     }
 };
