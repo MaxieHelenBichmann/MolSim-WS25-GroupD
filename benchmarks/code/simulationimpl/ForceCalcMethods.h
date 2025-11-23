@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 
-#include "AbstractForce.h"
+#include "../forceimpl/AbstractForce.h"
 #include "particles/ParticleContainer.h"
 #include "physics/ForceSource.h"
 namespace mol_sim {

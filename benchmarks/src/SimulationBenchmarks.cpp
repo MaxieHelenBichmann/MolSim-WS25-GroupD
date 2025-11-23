@@ -1,6 +1,6 @@
 #include <benchmark/benchmark.h>
 
-#include "../code/ForceCalcMethods.h"
+#include "../code/simulationimpl/ForceCalcMethods.h"
 #include "BenchmarkingUtils.h"
 #include "particles/container/SimpleContainer.h"
 #include "physics/ForceSource.h"

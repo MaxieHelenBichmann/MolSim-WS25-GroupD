@@ -2,8 +2,8 @@
 
 #include <memory>
 
-#include "../code/AbstractForce.h"
-#include "../code/GravtiationalAbstract.h"
+#include "../code/forceimpl/AbstractForce.h"
+#include "../code/forceimpl/GravtiationalAbstract.h"
 #include "particles/Particle.h"
 #include "physics/ForceSource.h"
 #include "physics/GravitationalForce.h"

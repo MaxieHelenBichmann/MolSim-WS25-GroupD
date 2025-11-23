@@ -2,8 +2,8 @@
 
 #include <memory>
 
-#include "../code/AbstractContainer.h"
-#include "../code/ContainerImpl.h"
+#include "../code/containerimpl/AbstractContainer.h"
+#include "../code/containerimpl/ContainerImpl.h"
 #include "particles/ParticleContainer.h"
 #include "particles/container/ContainerRef.h"
 #include "particles/container/SimpleContainer.h"
