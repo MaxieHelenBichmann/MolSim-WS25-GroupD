@@ -325,14 +325,20 @@ void LinkedCellContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double e
 }
 
 void LinkedCellContainer::eraseParticle(Particle* p) {
+    // TODO: change to use cells[cell_idx].particles().find() and take an iterator/index as an argument!
     size_t cell_idx = findCellIndex(p->getX());
 
-    auto it =
-        std::find_if(data.begin(), data.end(), [p](const Particle& particle) { return &particle == p; });  // NOLINT
-    if (it != data.end()) {
-        cells[cell_idx].removeParticle(it - data.begin());
-        data.erase(it);
-        decreaseCellIndices(it - data.begin());
+    if (cell_idx < cells.size()) {
+        for (auto it = cells[cell_idx].particles().begin(); it != cells[cell_idx].particles().end(); ++it) {  // NOLINT
+            SPDLOG_DEBUG("Index {}", *it);
+            if (&(data[*it]) == p) {
+                size_t idx = *it;
+                cells[cell_idx].removeParticle(idx);
+                data.erase(data.begin() + idx);  // NOLINT
+                decreaseCellIndices(idx);
+                return;
+            }
+        }
     }
 }
 
