@@ -1,13 +1,20 @@
 #include "CellVector.h"
 
+#include <algorithm>
+
 using namespace mol_sim;
 
 CellVector::CellVector(std::array<double, 6> bounds) : bounds(bounds) {}
-void CellVector::addParticle(size_t idx) { indices.push_back(idx); }
+void CellVector::addParticle(size_t idx) {
+    auto it = std::find(indices.begin(), indices.end(), idx);  // NOLINT
+    if (it == indices.end()) {
+        indices.push_back(idx);
+    }
+}
 void CellVector::removeParticle(size_t idx) {
-    for (size_t i = 0; i < indices.size(); ++i) {  // NOLINT
-        if (indices[i] == idx) {
-            indices.erase(indices.begin() + i);  // NOLINT
+    for (auto it = indices.begin(); it != indices.end(); ++it) {  // NOLINT
+        if (*it == idx) {
+            indices.erase(it);
             return;
         }
     }
