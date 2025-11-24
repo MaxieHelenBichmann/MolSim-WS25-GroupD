@@ -39,8 +39,9 @@ static void bmSimulationGiven(benchmark::State& state) {
     ContainerRef particles(part_container);
     CuboidGenerator generator1({20.0, 0.0, 0.0}, {0., 0.0, 0.0}, {100U, 20U, 1U}, 1.0, 1.1225, 0.1, 5.0, 1.0);
     CuboidGenerator generator2({70.0, 60.0, 0.0}, {0.0, -10.0, 0.0}, {10U, 20U, 1U}, 1.0, 1.1225, 0.1, 5.0, 1.0);
-    SettingsParam settings(0.0005, 0, 20, 5.0, 1.0, );
-
+    SettingsParam settings(0.0005, 0, 20, 5.0, 1.0);
+    settings.cutoff = 3.0;
+    settings.domain = {.dimension = {180.0, 9.0, 1.}};
     Simulation<SimpleContainer, LennardJonesForce> simulation(part_container, lj_force, settings);
     for ([[maybe_unused]] auto _ : state) {
         generator1.generateParticles(particles);
