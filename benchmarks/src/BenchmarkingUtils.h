@@ -6,13 +6,17 @@
 #include "particles/Particle.h"
 
 namespace mol_sim {
+inline std::mt19937& getGenerator() {
+    static thread_local std::random_device rd{};
+    static thread_local std::mt19937 gen{rd()};
+    return gen;
+}
+
 inline double randomBounded(double lower, double upper) {
-    std::random_device rd{};
-    std::mt19937 gen{rd()};
     std::normal_distribution<double> dist{};
     double res;
     do {
-        res = dist(gen);
+        res = dist(getGenerator());
     } while (res < lower || res > upper);
     return res;
 }
@@ -22,10 +26,8 @@ inline double randomBounded(double lower, double upper) {
  * @return R3
  */
 inline R3 randomR3() {
-    std::random_device rd{};
-    std::mt19937 gen{rd()};
     std::normal_distribution<double> dist{};
-
+    auto& gen = getGenerator();
     return {dist(gen), dist(gen), dist(gen)};
 }
 inline R3 randomR3(std::array<double, 6> bounds) {
@@ -43,10 +45,8 @@ inline R3 randomR3(std::array<double, 6> bounds) {
  */
 
 inline Particle randomParticle() {
-    std::random_device rd{};
-    std::mt19937 gen{rd()};
     std::normal_distribution<double> dist{};
-
+    auto& gen = getGenerator();
     return {randomR3(), randomR3(), dist(gen), dist(gen), dist(gen)};
 }
 
