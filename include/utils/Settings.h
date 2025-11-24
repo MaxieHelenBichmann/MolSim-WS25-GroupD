@@ -5,23 +5,23 @@
 #include <optional>
 #include <string>
 #include <utility>
+#include <variant>
 
 #include "particles/Particle.h"
 #include "particles/boundaries/BoundaryCondition.h"
 #include "particles/container/LinkedCellContainer.h"
+#include "particles/container/domain/Domain.h"
 #include "physics/ForceSource.h"
 #include "physics/LennardJonesForce.h"
-#include "particles/container/domain/Domain.h"
 
 namespace mol_sim {
 /**
  * @brief Provides a wrapper for settings of the simulation set during config
  *
  */
-using DOMAIN = std::variant<
-Domain<SimpleContainer>, 
-Domain<LinkedCellContainer>
->; //if more container types are needed, just add another Domain<containerType> here.
+using DomainVariant =
+    std::variant<Domain<SimpleContainer>, Domain<LinkedCellContainer>>;  // if more container types are needed, just add
+                                                                         // another Domain<containerType> here.
 
 class SettingsParam {
    public:
@@ -118,7 +118,7 @@ class SettingsParam {
      */
     std::optional<double> cutoff;
 
-    DOMAIN& domain;
+    DomainVariant domain;
     /**
      * @brief Construct new SettingsParam.
      * All values will be set to nullopt if not specified otherwise.
@@ -137,7 +137,7 @@ class SettingsParam {
                   std::optional<double> end_time = std::nullopt, std::optional<double> epsilon = std::nullopt,
                   std::optional<double> sigma = std::nullopt, std::optional<std::string> base_name = std::nullopt,
                   std::optional<Force> force = std::nullopt, std::optional<size_t> frequency = std::nullopt,
-                  std::optional<double> cutoff = std::nullopt, DOMAIN domain)
+                  std::optional<double> cutoff = std::nullopt, DomainVariant domain = DomainVariant())
         : delta_t(delta_t),
           start_time(start_time),
           end_time(end_time),
@@ -147,7 +147,7 @@ class SettingsParam {
           force(force),
           frequency(frequency),
           cutoff(cutoff),
-          domain(domain) {}
+          domain(std::move(domain)) {}
     /**
      * @brief Provide default values for settings that have not been set.
      *

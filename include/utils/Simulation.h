@@ -17,9 +17,9 @@
 #include "particles/boundaries/Reflecting.h"
 #include "particles/container/LinkedCellContainer.h"
 #include "particles/container/SimpleContainer.h"
+#include "particles/container/domain/Domain.h"
 #include "physics/ForceSource.h"
 #include "utils/Settings.h"
-#include "particles/container/domain/Domain.h"
 
 /**
  * @namespace mol_sim
@@ -77,7 +77,7 @@ class Simulation {
     double cutoff_radius = std::numeric_limits<double>::infinity();
 
     /**
-     * @deprecated 
+     * @deprecated
      */
     std::unique_ptr<BoundaryCondition> boundary_condition = nullptr;
 
@@ -100,7 +100,7 @@ class Simulation {
         // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
         end_time = settings.end_time.value();
         frequency = settings.frequency.value();
-        base_name = settings.base_name.value(); 
+        base_name = settings.base_name.value();
     }
 
     Simulation(Domain<containerType>& domain, forceType& force_source, SettingsParam& settings)
@@ -112,7 +112,7 @@ class Simulation {
         // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
         end_time = settings.end_time.value();
         frequency = settings.frequency.value();
-        base_name = settings.base_name.value(); 
+        base_name = settings.base_name.value();
     }
 
     /**
@@ -162,27 +162,28 @@ class Simulation {
     }
 
     void applyBoundary() {
-        if (domain == nullptr) { return; }
-        domain.get_boundary(BoundaryConditionDeclaration::BoundaryType::LEFT )->applyBoundary();  
-        domain.get_boundary(BoundaryConditionDeclaration::BoundaryType::RIGHT)->applyBoundary();  
-        domain.get_boundary(BoundaryConditionDeclaration::BoundaryType::UPPER)->applyBoundary();  
-        domain.get_boundary(BoundaryConditionDeclaration::BoundaryType::LOWER)->applyBoundary();  
-        domain.get_boundary(BoundaryConditionDeclaration::BoundaryType::FRONT)->applyBoundary();  
-        domain.get_boundary(BoundaryConditionDeclaration::BoundaryType::BACK )->applyBoundary();  
+        if (domain == nullptr) {
+            return;
+        }
+        domain.getBoundary(BoundaryType::LEFT)->applyBoundary();
+        domain.getBoundary(BoundaryType::RIGHT)->applyBoundary();
+        domain.getBoundary(BoundaryType::UPPER)->applyBoundary();
+        domain.getBoundary(BoundaryType::LOWER)->applyBoundary();
+        domain.getBoundary(BoundaryType::FRONT)->applyBoundary();
+        domain.getBoundary(BoundaryType::BACK)->applyBoundary();
     }
 
     /**
-     * @brief Clears the halo cells, i.e. removes all particles that are beyond the specified simulation domain. 
-     * 
+     * @brief Clears the halo cells, i.e. removes all particles that are beyond the specified simulation domain.
+     *
      */
     void cleanBoundary() {
         if (typeid(containerType) == typeid(LinkedCellContainer)) {
             for (auto& it = particles.haloBegin(); it != particles.haloEnd(); it++) {
                 particles.eraseParticle(it);
-            }  
+            }
         }
     }
-
 
     /**
      * @brief Performs a full simulation run.

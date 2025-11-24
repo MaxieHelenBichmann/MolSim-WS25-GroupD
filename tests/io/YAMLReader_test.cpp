@@ -37,7 +37,7 @@ class YAMLReaderTest : public testing::Test {
     static std::mutex mtx;
 
     void SetUp() override {
-        std::lock_guard<std::mutex> lock(mtx);
+        std::lock_guard<std::mutex> lock(mtx);  // NOLINT
         // 1. Save the existing default logger so we can restore it later.
         original_logger = spdlog::default_logger();
 
@@ -58,7 +58,7 @@ class YAMLReaderTest : public testing::Test {
     }
 
     void TearDown() override {
-        std::lock_guard<std::mutex> lock(mtx);
+        std::lock_guard<std::mutex> lock(mtx);  // NOLINT
         // Restore the original logger to avoid side-effects between tests.
         spdlog::set_default_logger(original_logger);
     }
