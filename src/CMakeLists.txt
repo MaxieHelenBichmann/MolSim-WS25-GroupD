@@ -7,7 +7,7 @@ list(FILTER SRCS EXCLUDE REGEX ".*\/MolSim\.cpp")
 
 
 add_library(LibMolSim STATIC ${SRCS})
-target_link_libraries(LibMolSim PUBLIC yaml-cpp::yaml-cpp spdlog::spdlog)
+target_link_libraries(LibMolSim PUBLIC yaml-cpp::yaml-cpp spdlog::spdlog CLI11::CLI11)
 target_compile_options(LibMolSim PRIVATE -Wextra -Wall -Werror)
 include(vtk)
 
@@ -23,8 +23,16 @@ target_compile_options(MolSim
             $<$<CXX_COMPILER_ID:Intel>:-w3 -wd383,981,1418,1572,2259>
 )
 
+include(profiling)
+
 
 if(COVERAGE)
     include(GenerateCoverage)
     enable_coverage(MolSim)
+endif()
+
+
+if(ENABLE_PROFILING)
+    add_perf_targets(MolSim)
+    add_valgrind_targets(MolSim)
 endif()
