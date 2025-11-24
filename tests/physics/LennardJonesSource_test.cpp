@@ -44,10 +44,10 @@ class LennardJonesForceTest : public testing::Test {
     LennardJonesForceTest() : p1{p1_x, p1_v, 1.0, 5., 1.}, p2{p2_x, p2_v, 1.0, 5., 1.} {}
 
     void SetUp() override {
-        p1.setEpsilon(big_epsilon);
-        p2.setEpsilon(big_epsilon);
-        p1.setSigma(small_sigma);
-        p2.setSigma(small_sigma);
+        p1.getEpsilon() = big_epsilon;
+        p2.getEpsilon() = big_epsilon;
+        p1.getSigma() = small_sigma;
+        p2.getSigma() = small_sigma;
     }
 };
 
@@ -126,8 +126,8 @@ class LennardJonesForceAtBottomTest : public LennardJonesForceTest {
 
 TEST_F(LennardJonesForceAtBottomTest, PotentialWellAtRadius2_Cardinal) {
     double sigma = 1.78179743599999995673499597615;  // 2^{5/6}
-    p1.setSigma(sigma);
-    p2.setSigma(sigma);
+    p1.getSigma() = sigma;
+    p2.getSigma() = sigma;
     const double expected_force = 0.0;
 
     p2.getX() = {2.0, 0.0, 0.0};
@@ -151,8 +151,8 @@ TEST_F(LennardJonesForceAtBottomTest, PotentialWellAtRadius2_Cardinal) {
 TEST_F(LennardJonesForceAtBottomTest, PotentialWellAtRadius2_Diagonal) {
     double sigma = 1.78179743599999995673499597615;  // 2^{5/6}
     double bottom_diagonal = std::numbers::sqrt2;
-    p1.setSigma(sigma);
-    p2.setSigma(sigma);
+    p1.getSigma() = sigma;
+    p2.getSigma() = sigma;
     const double expected_force = 0.;
 
     p2.getX() = {bottom_diagonal, bottom_diagonal, 0.0};
@@ -174,10 +174,10 @@ TEST_F(LennardJonesForceAtBottomTest, PotentialWellAtRadius2_Diagonal) {
 
 TEST_F(LennardJonesForceAtBottomTest, PotentialWellAtRadius1_Cardinal) {
     double sigma = 8.90898718099999986641535087983E-1;  // 2^{-1/6}
-    p1.setEpsilon(small_epsilon);
-    p2.setEpsilon(small_epsilon);
-    p1.setSigma(sigma);
-    p2.setSigma(sigma);
+    p1.getEpsilon() = small_epsilon;
+    p2.getEpsilon() = small_epsilon;
+    p1.getSigma() = sigma;
+    p2.getSigma() = sigma;
     const double expected_force = 0.;
 
     p2.getX() = {1.0, 0.0, 0.0};
@@ -201,10 +201,10 @@ TEST_F(LennardJonesForceAtBottomTest, PotentialWellAtRadius1_Cardinal) {
 TEST_F(LennardJonesForceAtBottomTest, PotentialWellAtRadius1_Diagonal) {
     double sigma = 8.90898718099999986641535087983E-1;  // 2^{-1/6}
     double bottom_diagonal = 1.0 / std::numbers::sqrt2;
-    p1.setEpsilon(small_epsilon);
-    p2.setEpsilon(small_epsilon);
-    p1.setSigma(sigma);
-    p2.setSigma(sigma);
+    p1.getEpsilon() = small_epsilon;
+    p2.getEpsilon() = small_epsilon;
+    p1.getSigma() = sigma;
+    p2.getSigma() = sigma;
     const double expected_force = 0.;
 
     p2.getX() = {bottom_diagonal, bottom_diagonal, 0.0};
@@ -283,10 +283,10 @@ TEST_F(LennardJonesForceAtSigmaTest, Diagonal) {
  *
  * */
 TEST_F(LennardJonesForceTest, Newton3) {
-    p1.setEpsilon(big_epsilon);
-    p2.setEpsilon(big_epsilon);
-    p1.setSigma(small_sigma);
-    p2.setSigma(small_sigma);
+    p1.getEpsilon() = big_epsilon;
+    p2.getEpsilon() = big_epsilon;
+    p1.getSigma() = small_sigma;
+    p2.getSigma() = small_sigma;
     p2.getX() = {4.0, 4.0, 0.0};
     R3 result1 = LennardJonesForce().applyForce(p1, p2);
     R3 result2 = LennardJonesForce().applyForce(p2, p1);
@@ -312,10 +312,10 @@ TEST_F(LennardJonesForceTest, TestForceCalcZeroDistance) {
  *
  */
 TEST_F(LennardJonesForceTest, MixingRules) {
-    p1.setSigma(1.0);
-    p1.setEpsilon(5.0);
-    p2.setSigma(2.0);
-    p2.setEpsilon(10.0);
+    p1.getSigma() = 1.0;
+    p1.getEpsilon() = 5.0;
+    p2.getSigma() = 2.0;
+    p2.getEpsilon() = 10.0;
 
     p2.getX() = {3.0, 4.0, 0.0};
 

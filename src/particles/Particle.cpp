@@ -93,11 +93,11 @@ int Particle::getType() const { return type; }
 
 double Particle::getSigma() const { return sigma; }
 
+double& Particle::getSigma() { return sigma; }
+
 double Particle::getEpsilon() const { return epsilon; }
 
-void Particle::setEpsilon(double epsilon_arg) { epsilon = epsilon_arg; }
-
-void Particle::setSigma(double sigma_arg) { sigma = sigma_arg; }
+double& Particle::getEpsilon() { return epsilon; }
 
 std::string Particle::toString() const {
     std::stringstream stream;
