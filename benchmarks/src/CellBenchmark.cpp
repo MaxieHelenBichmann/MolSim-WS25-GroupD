@@ -90,9 +90,10 @@ void bmIteratorUnOrdSet(benchmark::State& state) {
         cell.addParticle(i);
     }
     size_t res = 0;
-    auto it = cell.stableIteratorBegin();
-    auto end = cell.stableIteratorEnd();
+
     for ([[maybe_unused]] auto _ : state) {
+        auto it = cell.stableIteratorBegin();
+        auto end = cell.stableIteratorEnd();
         for (; it != end; ++it) {
             res += *it;
         }

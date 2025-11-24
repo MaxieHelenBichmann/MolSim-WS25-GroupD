@@ -32,17 +32,7 @@ void bmTemplatedContainer(benchmark::State& state) {
     }
     benchmark::DoNotOptimize(res);
 };
-BENCHMARK(bmTemplatedContainer<SimpleContainer>)
-    ->Range(8 << 0, 8 << 6)
-    ->Repetitions(10)
-    ->DisplayAggregatesOnly(true)
-    ->Unit(benchmark::kNanosecond);
-BENCHMARK(bmTemplatedContainer<SimpleContainer>)
-    ->Range(16 << 6, 16 << 10)
-    ->Repetitions(10)
-    ->DisplayAggregatesOnly(true)
-    ->Unit(benchmark::kMicrosecond);
-;
+
 /**
  * @brief Benchmarks the ContainerRef.
  * By running the same Benchmark as for the templated Container but wrapping the templated Container in a ContainerRef.
@@ -67,17 +57,6 @@ void bmContainerRef(benchmark::State& state) {
     benchmark::DoNotOptimize(res);
 };
 
-BENCHMARK(bmContainerRef<SimpleContainer>)
-    ->Range(8 << 0, 8 << 6)
-    ->Repetitions(10)
-    ->DisplayAggregatesOnly(true)
-    ->Unit(benchmark::kNanosecond);
-BENCHMARK(bmContainerRef<SimpleContainer>)
-    ->Range(16 << 6, 16 << 10)
-    ->Repetitions(10)
-    ->DisplayAggregatesOnly(true)
-    ->Unit(benchmark::kMicrosecond);
-
 /**
  * @brief Benchmarks a Container implemented using an abstract class.
  * Adds 8-8192 particles to the container, then iterates over all of them.
@@ -100,6 +79,29 @@ void bmAbstractContainer(benchmark::State& state) {
     }
     benchmark::DoNotOptimize(res);
 };
+
+BENCHMARK(bmTemplatedContainer<SimpleContainer>)
+    ->Range(8 << 0, 8 << 6)
+    ->Repetitions(10)
+    ->DisplayAggregatesOnly(true)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK(bmTemplatedContainer<SimpleContainer>)
+    ->Range(16 << 6, 16 << 10)
+    ->Repetitions(10)
+    ->DisplayAggregatesOnly(true)
+    ->Unit(benchmark::kMicrosecond);
+
+BENCHMARK(bmContainerRef<SimpleContainer>)
+    ->Range(8 << 0, 8 << 6)
+    ->Repetitions(10)
+    ->DisplayAggregatesOnly(true)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK(bmContainerRef<SimpleContainer>)
+    ->Range(16 << 6, 16 << 10)
+    ->Repetitions(10)
+    ->DisplayAggregatesOnly(true)
+    ->Unit(benchmark::kMicrosecond);
+
 BENCHMARK(bmAbstractContainer)
     ->Range(8 << 0, 8 << 6)
     ->Repetitions(10)

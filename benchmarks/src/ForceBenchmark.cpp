@@ -30,12 +30,6 @@ void bmAbstractForce(benchmark::State& state) {
     }
 };
 
-BENCHMARK(bmAbstractForce)
-    ->RangeMultiplier(10)
-    ->Range(1000, 1000000)
-    ->Repetitions(10)
-    ->DisplayAggregatesOnly(true)
-    ->Unit(benchmark::kMicrosecond);
 /**
  * @brief Benchmarks a force Source implemented using a concept.
  * Runs the gravitational force calculation 1.000-1.000.000 times
@@ -58,11 +52,19 @@ void bmConceptForce(benchmark::State& state) {
     }
 };
 
-BENCHMARK(bmConceptForce<GravitationalConcept>)
+BENCHMARK(bmAbstractForce)
     ->RangeMultiplier(10)
     ->Range(1000, 1000000)
+    ->Complexity()
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kMicrosecond);
 
+BENCHMARK(bmConceptForce<GravitationalConcept>)
+    ->RangeMultiplier(10)
+    ->Range(1000, 1000000)
+    ->Complexity()
+    ->Repetitions(10)
+    ->DisplayAggregatesOnly(true)
+    ->Unit(benchmark::kMicrosecond);
 }  // namespace mol_sim

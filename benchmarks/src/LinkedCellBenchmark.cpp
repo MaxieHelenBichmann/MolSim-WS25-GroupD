@@ -200,48 +200,6 @@ void bmUpdatePositionExplicit(benchmark::State& state) {
     }
 }
 
-// Clear Benchmark
-
-void bmClearDirect(benchmark::State& state) {
-    size_t n = state.range(0);
-    R3 domain_size = {100.0, 100.0, 100.0};
-    double cutoff = 3.0;
-    std::array<double, 6> bounds = {0., domain_size[0], 0., domain_size[1], 0., domain_size[2]};
-
-    for ([[maybe_unused]] auto _ : state) {
-        state.PauseTiming();
-        LinkedCellContainerDirect container(domain_size, cutoff);
-        for (size_t i = 0; i < n; i++) {
-            R3 pos = randomR3(bounds);
-            R3 vel = randomR3();
-            container.addParticle(pos, vel, 1.0, 1.0, 1.0);
-        }
-        state.ResumeTiming();
-        container.clear();
-        benchmark::DoNotOptimize(container);
-    }
-}
-
-void bmClearExplicit(benchmark::State& state) {
-    size_t n = state.range(0);
-    R3 domain_size = {100.0, 100.0, 100.0};
-    double cutoff = 3.0;
-    std::array<double, 6> bounds = {0., domain_size[0], 0., domain_size[1], 0., domain_size[2]};
-
-    for ([[maybe_unused]] auto _ : state) {
-        state.PauseTiming();
-        LinkedCellContainerExplicit container(domain_size, cutoff);
-        for (size_t i = 0; i < n; i++) {
-            R3 pos = randomR3(bounds);
-            R3 vel = randomR3();
-            container.addParticle(pos, vel, 1.0, 1.0, 1.0);
-        }
-        state.ResumeTiming();
-        container.clear();
-        benchmark::DoNotOptimize(container);
-    }
-}
-
 // Mixed Operations Benchmark
 
 void bmMixedDirect(benchmark::State& state) {
@@ -471,21 +429,6 @@ BENCHMARK(bmUpdatePositionExplicit)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kMillisecond);
-
-BENCHMARK(bmClearDirect)
-    ->RangeMultiplier(2)
-    ->Range(128, 8192)
-    ->Repetitions(10)
-    ->DisplayAggregatesOnly(true)
-    ->Unit(benchmark::kMicrosecond)
-    ->Complexity();
-BENCHMARK(bmClearExplicit)
-    ->RangeMultiplier(2)
-    ->Range(128, 8192)
-    ->Repetitions(10)
-    ->DisplayAggregatesOnly(true)
-    ->Unit(benchmark::kMicrosecond)
-    ->Complexity();
 
 BENCHMARK(bmBoundaryIteratorDirect)
     ->RangeMultiplier(2)
