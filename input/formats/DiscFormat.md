@@ -27,7 +27,7 @@ The Disc object has the following keys:
 ## Example
 
 ```yaml
-my_cuboid:
+my_disc:
     format: Disc
     coordinates:
       x: 0.0
