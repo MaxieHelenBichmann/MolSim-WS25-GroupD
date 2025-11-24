@@ -7,22 +7,15 @@
 #include <memory>
 #include <optional>
 #include <stdexcept>
-#include <type_traits>
-#include <limits>
-#include <memory>
-#include <typeinfo>
 
 #include "exceptions/SimulationException.h"
 #include "io/OutputWriter.h"
 #include "particles/Particle.h"
 #include "particles/ParticleContainer.h"
 #include "particles/boundaries/BoundaryCondition.h"
-#include "particles/boundaries/Outflow.h"
-#include "particles/boundaries/Reflecting.h"
-#include "particles/container/LinkedCellContainer.h"
-#include "particles/container/SimpleContainer.h"
 #include "physics/ForceSource.h"
 #include "utils/Settings.h"
+
 
 /**
  * @namespace mol_sim

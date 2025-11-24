@@ -4,7 +4,6 @@
 #include <spdlog/spdlog.h>
 
 #include <CLI/CLI.hpp>
-#include <algorithm>
 #include <cstring>
 #include <filesystem>
 #include <iostream>
@@ -18,6 +17,7 @@
 #include "physics/ForceSource.h"
 #include "utils/Logging.h"
 #include "utils/Settings.h"
+
 
 namespace mol_sim {
 
@@ -43,7 +43,8 @@ void cliParse(int argc, char** argv, SimpleContainer& particles, SettingsParam& 
     std::unique_ptr<FileReader> file_reader;
     std::filesystem::path filepath;
     std::string force;
-    std::string log_level = "Default";
+
+    std::string log_level = "Default";  // NOLINT
 
     // Define custom validator for file extensions
     auto file_ext_validator = [](const std::string& filename) -> std::string {

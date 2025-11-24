@@ -63,7 +63,7 @@ TEST_F(SimulationTest, calculateX_dt) {
     auto force_source = std::make_unique<GravitationalForce>();
     auto writer = std::make_unique<OutputWriterMock>();
     Simulation<SimpleContainer> simulation(particles, std::move(force_source), settings, std::move(writer));
-    simulation.calculateX<SimpleContainer>();
+    simulation.calculateX();
     R3 expected = {5.0, -10.0, 0.0};
     EXPECT_EQ(particles[0].getX(), expected);
 }
@@ -84,7 +84,7 @@ TEST_F(SimulationTest, calculateX_force) {
     auto force_source = std::make_unique<GravitationalForce>();
     auto writer = std::make_unique<OutputWriterMock>();
     Simulation<SimpleContainer> simulation(particles, std::move(force_source), settings, std::move(writer));
-    simulation.calculateX<SimpleContainer>();
+    simulation.calculateX();
     R3 expected = {10.0, 5.0, 0.0};
     EXPECT_EQ(particles[0].getX(), expected);
 }
