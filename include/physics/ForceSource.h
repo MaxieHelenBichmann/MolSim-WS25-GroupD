@@ -12,9 +12,10 @@ namespace mol_sim {
  * @brief Concept of a ForceSource.
  * Each Force must implement this applyForce Method, which calculates the force between two particles.
  */
-template <typename C>
-concept ForceSource = requires(C c, const Particle& p1, const Particle& p2) {
-    { c.applyForce(p1, p2) } -> std::same_as<Vector<double, 3>>;
+class ForceSource {
+   public:
+    [[nodiscard]] virtual Vector<double, 3> applyForce(const Particle& p1, const Particle& p2) const = 0;
+    virtual ~ForceSource() = default;
 };
 /**
  * @brief Enum of all available Force Sources.

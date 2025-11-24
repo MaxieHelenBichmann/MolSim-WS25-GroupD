@@ -7,7 +7,7 @@
 #include <mutex>
 #include <string>
 
-#include "io/fileReader/YAMLReaderException.h"
+#include "exceptions/YAMLReaderException.h"
 #include "particles/Particle.h"
 #include "particles/container/ContainerRef.h"
 #include "particles/container/SimpleContainer.h"

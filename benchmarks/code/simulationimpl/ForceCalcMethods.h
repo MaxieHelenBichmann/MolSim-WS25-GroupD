@@ -1,11 +1,9 @@
 #ifndef FORCE_CALC_H
 #define FORCE_CALC_H
-#include <memory>
 #include <vector>
 
 #include "../forceimpl/AbstractForce.h"
 #include "particles/ParticleContainer.h"
-#include "physics/ForceSource.h"
 namespace mol_sim {
 
 /**
@@ -16,7 +14,7 @@ namespace mol_sim {
  * @param particles Particle Container to calculate forces for.
  * @param force_source Force source to be used for calculation
  */
-template <ParticleContainer containerType, ForceSource forceType>
+template <ParticleContainer containerType, ForceConcept forceType>
 void calculateF(containerType& particles) {
     std::vector<Vector<double, 3>> forces(particles.size(), Vector<double, 3>());
     forceType force_source;
@@ -49,9 +47,9 @@ void calculateF(containerType& particles) {
  * @param particles Particle Container to calculate forces for.
  * @param force_source Force source to be used for calculation
  */
-template <ParticleContainer containerType, ForceSource forceType>
+template <ParticleContainer containerType, ForceConcept forceType>
 void calculateFAlt(containerType& particles) {
-    forceType force_source;
+    forceType force_source{};
     for (auto& p : particles) {
         p.getOldF() = p.getF();
         p.getF() = Vector<double, 3>();
@@ -77,9 +75,9 @@ void calculateFAlt(containerType& particles) {
  * @param particles Particle Container to calculate forces for.
  * @param force_source Force source to be used for calculation
  */
-template <ParticleContainer containerType, ForceSource forceType>
+template <ParticleContainer containerType, ForceConcept forceType>
 void calculateFUnoptimized(containerType& particles) {
-    forceType force_source;
+    forceType force_source{};
     for (auto& p1 : particles) {
         p1.getOldF() = p1.getF();
         p1.getF() = Vector<double, 3>();

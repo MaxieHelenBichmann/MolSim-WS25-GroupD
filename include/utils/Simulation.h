@@ -4,21 +4,18 @@
 #include <spdlog/spdlog.h>
 
 #include <cstddef>
-#include <limits>
 #include <memory>
-#include <typeinfo>
+#include <optional>
+#include <stdexcept>
 
-#include "io/outputWriter/VTKWriter.h"
-#include "io/outputWriter/XYZWriter.h"
+#include "exceptions/SimulationException.h"
+#include "io/OutputWriter.h"
 #include "particles/Particle.h"
 #include "particles/ParticleContainer.h"
 #include "particles/boundaries/BoundaryCondition.h"
-#include "particles/boundaries/Outflow.h"
-#include "particles/boundaries/Reflecting.h"
-#include "particles/container/LinkedCellContainer.h"
-#include "particles/container/SimpleContainer.h"
 #include "physics/ForceSource.h"
 #include "utils/Settings.h"
+
 
 /**
  * @namespace mol_sim
@@ -34,7 +31,7 @@ namespace mol_sim {
  * and then execute run().
  * @tparam containerType Type of container used for this simulation. Templated to work with Concept.
  */
-template <ParticleContainer containerType, ForceSource forceType>
+template <ParticleContainer containerType>
 class Simulation {
    private:
     /**
@@ -46,7 +43,9 @@ class Simulation {
      * @brief Pointer to our force source.
      * Pointer to our force source, for easy switching, force Source determined by forceType in constructor.
      */
-    forceType& force_source;
+    std::unique_ptr<ForceSource> force_source;
+
+    std::unique_ptr<OutputWriter> writer;
     /**
      * @brief Time step of simulation.
      * Default value is 0.014.
@@ -71,7 +70,7 @@ class Simulation {
      * @brief Cutoff radius for particles in proximity.
      * Default value is infinity.
      */
-    double cutoff_radius = std::numeric_limits<double>::infinity();
+    double cutoff_radius;
 
     std::unique_ptr<BoundaryCondition> boundary_condition = nullptr;
 
@@ -92,7 +91,7 @@ class Simulation {
             for (auto it_prox = particles.proximityBegin(p1.getX(), cutoff_radius, idx);
                  it_prox != particles.proximityEnd(p1.getX(), cutoff_radius); ++it_prox) {
                 Particle& p2 = *it_prox;
-                Vector<double, 3> force = force_source.applyForce(p1, p2);
+                Vector<double, 3> force = force_source->applyForce(p1, p2);
                 // Apply force directly (Newton's 3rd law: equal and opposite)
                 p1.getF() = p1.getF() + force;
                 p2.getF() = p2.getF() - force;
@@ -148,16 +147,19 @@ class Simulation {
      * @param settings Simulation parameters. If relevant values are not set their default values in
      * include/utils/Default.h will be used instead.
      */
-    Simulation(containerType& particles, forceType& force_source, SettingsParam& settings)
-        : particles(particles), force_source(force_source) {
-        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+    Simulation(containerType& particles, std::unique_ptr<ForceSource> force_source, SettingsParam& settings,
+               std::unique_ptr<OutputWriter> writer)
+        : particles(particles),
+          force_source(std::move(force_source)),
+          writer(std::move(writer))
+
+    {
         delta_t = settings.delta_t.value();
-        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
         start_time = settings.start_time.value();
-        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
         end_time = settings.end_time.value();
         frequency = settings.frequency.value();
         base_name = settings.base_name.value();
+        cutoff_radius = settings.cutoff.value();
         /*         if (typeid(containerType) == typeid(LinkedCellContainer)) {
                 switch(settings.boundary_condition.value()) {
                     case OUTFLOW:
@@ -197,16 +199,10 @@ class Simulation {
             if (iteration % frequency == 0) {
                 try {
                     std::string out_name = base_name;
-#ifdef ENABLE_VTK_OUTPUT
-                    out_name += "_vtk";
-                    VTKWriter writer;
-#else
-                    out_name += "_xyz";
-                    XYZWriter writer;
-#endif
-                    writer.plotParticles(particles, out_name, iteration);
-                } catch (...) {
-                    SPDLOG_ERROR("Something went wrong with plotting the Particles.");
+                    writer->plotParticles(particles, out_name, iteration);
+                } catch (std::runtime_error& e) {
+                    SPDLOG_ERROR("Something went wrong with plotting the Particles: ", e.what());
+                    throw SimulationException("Error while plotting Particles.");
                 }
             }
 #endif

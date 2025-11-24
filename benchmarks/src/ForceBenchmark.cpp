@@ -5,7 +5,6 @@
 #include "../code/forceimpl/AbstractForce.h"
 #include "../code/forceimpl/GravtiationalAbstract.h"
 #include "particles/Particle.h"
-#include "physics/ForceSource.h"
 #include "physics/GravitationalForce.h"
 
 namespace mol_sim {
@@ -42,7 +41,7 @@ BENCHMARK(bmAbstractForce)
  * Reruns this Benchmark 10 Times
  * @tparam forceType Type of force to benchmark
  */
-template <ForceSource forceType>
+template <ForceConcept forceType>
 void bmConceptForce(benchmark::State& state) {
     forceType force;
     Particle p1 = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0, 5., 1.};
@@ -58,7 +57,7 @@ void bmConceptForce(benchmark::State& state) {
     }
 };
 
-BENCHMARK(bmConceptForce<GravitationalForce>)
+BENCHMARK(bmConceptForce<GravitationalConcept>)
     ->RangeMultiplier(10)
     ->Range(1000, 1000000)
     ->Repetitions(10)

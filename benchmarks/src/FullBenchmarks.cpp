@@ -1,6 +1,8 @@
 #include <benchmark/benchmark.h>
 
-#include "particles/container/ContainerRef.h"
+#include <memory>
+
+#include "io/outputWriter/XYZWriter.h"
 #include "particles/container/SimpleContainer.h"
 #include "particles/generators/CuboidGenerator.h"
 #include "physics/LennardJonesForce.h"
@@ -13,15 +15,15 @@ namespace mol_sim {
  *
  */
 [[maybe_unused]] static void bmSimulationBig(benchmark::State& state) {
-    LennardJonesForce lj_force;
-    SimpleContainer part_container;
-    ContainerRef particles(part_container);
     size_t n = state.range(0);
-    CuboidGenerator generator({0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {n, n, n}, 1.0, 1.0, 0.5, 5.0, 1.0);
-    SettingsParam settings(0.1, 0, 1000, 5.0, 1.0);
-    Simulation<SimpleContainer, LennardJonesForce> simulation(part_container, lj_force, settings);
     for ([[maybe_unused]] auto _ : state) {
-        generator.generateParticles(particles);
+        SimpleContainer part_container;
+        CuboidGenerator generator({0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {n, n, n}, 1.0, 1.0, 0.5, 5.0, 1.0);
+        generator.generateParticles(part_container);
+        SettingsParam settings(0.1, 0, 1000, 5.0, 1.0);
+        auto force_source = std::make_unique<LennardJonesForce>();
+        auto writer = std::make_unique<XYZWriter>();
+        Simulation<SimpleContainer> simulation(part_container, std::move(force_source), settings, std::move(writer));
         benchmark::ClobberMemory();
         simulation.run();
         benchmark::DoNotOptimize(particles);
@@ -42,7 +44,11 @@ static void bmSimulationGiven(benchmark::State& state) {
     SettingsParam settings(0.0005, 0, 20, 5.0, 1.0);
     settings.cutoff = 3.0;
     settings.domain = {.dimension = {180.0, 9.0, 1.}};
-    Simulation<SimpleContainer, LennardJonesForce> simulation(part_container, lj_force, settings);
+    settings.setDefaults();
+    auto force_source = std::make_unique<LennardJonesForce>();
+    auto writer = std::make_unique<XYZWriter>();
+    Simulation<SimpleContainer> simulation(part_container, std::move(force_source), settings, std::move(writer));
+    simulation.run();
     for ([[maybe_unused]] auto _ : state) {
         generator1.generateParticles(particles);
         generator2.generateParticles(particles);
