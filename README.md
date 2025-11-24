@@ -238,7 +238,9 @@ Output location: `build/coverage/`
 
 ### Customizing Profiling Inputs
 
-Customize input files and arguments for profiling runs:
+<details>
+<summary><b>Customize input files and arguments for profiling runs</summary>
+
 
 | Option | Description |
 |--------|-------------|
@@ -246,6 +248,7 @@ Customize input files and arguments for profiling runs:
 | `PERF_ARGS` | Extra arguments passed to perf calls |
 | `VALGRIND_INPUT_FILE` | Input file used by all valgrind calls |
 | `VALGRIND_ARGS` | Extra arguments passed to valgrind calls |
+</details>  
 
 > **Note:** Valgrind runs much slower, so use shorter simulations for memory checks.
 
