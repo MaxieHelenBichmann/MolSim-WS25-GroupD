@@ -112,6 +112,14 @@ class ContainerRef {
      */
     void addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type);
 
+    /**
+     * @brief Update the position of a given Particle in the Container.
+     *
+     * @param p Iterator to the Particle to update.
+     * @param new_x New position to set.
+     */
+    void updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x);
+
     // iterators
 
     /**

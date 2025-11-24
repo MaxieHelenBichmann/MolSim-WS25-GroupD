@@ -8,11 +8,17 @@
 #include <optional>
 #include <stdexcept>
 #include <type_traits>
+#include <limits>
+#include <memory>
+#include <typeinfo>
 
 #include "exceptions/SimulationException.h"
 #include "io/OutputWriter.h"
 #include "particles/Particle.h"
 #include "particles/ParticleContainer.h"
+#include "particles/boundaries/BoundaryCondition.h"
+#include "particles/boundaries/Outflow.h"
+#include "particles/boundaries/Reflecting.h"
 #include "particles/container/LinkedCellContainer.h"
 #include "particles/container/SimpleContainer.h"
 #include "physics/ForceSource.h"
@@ -64,6 +70,7 @@ class Simulation {
     double end_time;
 
     size_t frequency;
+
     std::string base_name;
 
     /**
@@ -71,6 +78,8 @@ class Simulation {
      * Default value is infinity.
      */
     double cutoff_radius;
+
+    std::unique_ptr<BoundaryCondition> boundary_condition = nullptr;
 
    public:
     /**
@@ -102,20 +111,11 @@ class Simulation {
      * Calculates the forces of every particle for the next time step, specified by delta_t, for the provided
      * container.
      */
-    template <ParticleContainer conTy>
     void calculateX() {
-        if constexpr (std::is_same_v<conTy, LinkedCellContainer>) {
-            // Specialization for LinkedCellContainer - updates cell information
-            for (auto it = particles.begin(); it != particles.end(); ++it) {
-                const auto new_position =
-                    it->getX() + (delta_t * it->getV()) + ((0.5 * delta_t * delta_t / it->getM()) * it->getF());
-                particles.updateParticlePosition(it, new_position);
-            }
-        } else {
-            // Default implementation for other containers
-            for (auto& p : particles) {
-                p.getX() = p.getX() + (delta_t * p.getV()) + ((0.5 * delta_t * delta_t / p.getM()) * p.getF());
-            }
+        for (auto it = particles.begin(); it != particles.end(); ++it) {
+            const auto new_position =
+                (*it).getX() + (delta_t * (*it).getV()) + ((0.5 * delta_t * delta_t / (*it).getM()) * (*it).getF());
+            particles.updateParticlePosition(it, new_position);
         }
     }
 
@@ -127,6 +127,22 @@ class Simulation {
         for (auto& p : particles) {
             p.getV() = p.getV() + ((0.5 * delta_t / p.getM()) * (p.getOldF() + p.getF()));
         }
+    }
+
+    void applyBoundary() {
+        if (boundary_condition == nullptr) {
+            return;
+        }
+        for (auto& p : particles) {
+            boundary_condition->applyBoundary(p);
+        }
+    }
+
+    void cleanBoundary() {
+        if (boundary_condition == nullptr) {
+            return;
+        }
+        boundary_condition->clean();
     }
 
     /**
@@ -151,6 +167,19 @@ class Simulation {
         frequency = settings.frequency.value();
         base_name = settings.base_name.value();
         cutoff_radius = settings.cutoff.value();
+        /*         if (typeid(containerType) == typeid(LinkedCellContainer)) {
+                switch(settings.boundary_condition.value()) {
+                    case OUTFLOW:
+                        boundary_condition = std::make_unique<Outflow>(particles);
+                        break;
+                    case REFLECTING:
+                        boundary_condition = std::make_unique<Reflecting>(particles);
+                        break;
+                    default:
+                        SPDLOG_ERROR("Unknown boundary condition!");
+                        break;
+                }
+                } */
     }
 
     /**
@@ -164,9 +193,11 @@ class Simulation {
         // for this loop, we assume: current x, current f and current v are known
         while (current_time < end_time) {
             // calculate new x
-            calculateX<containerType>();
+            calculateX();
             // calculate new f
+            applyBoundary();
             calculateF();
+            cleanBoundary();
             // calculate new v
             calculateV();
 

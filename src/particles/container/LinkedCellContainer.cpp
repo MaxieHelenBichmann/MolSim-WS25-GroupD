@@ -7,38 +7,6 @@
 
 using namespace mol_sim;
 
-// ------------------- Cell methods -------------------
-
-LinkedCellContainer::Cell::Cell(CellType cell_type, std::array<double, 6> bounds) : type(cell_type), bounds(bounds) {}
-
-void LinkedCellContainer::Cell::addParticle(size_t idx) { indices.push_back(idx); }
-void LinkedCellContainer::Cell::removeParticle(size_t idx) {
-    for (size_t i = 0; i < indices.size(); ++i) {  // NOLINT
-        if (indices[i] == idx) {
-            indices.erase(indices.begin() + i);  // NOLINT
-            return;
-        }
-    }
-}
-void LinkedCellContainer::Cell::updateParticleIndex(size_t old_idx, size_t new_idx) {
-    for (size_t i = 0; i < indices.size(); ++i) {  // NOLINT
-        if (indices[i] == old_idx) {
-            indices[i] = new_idx;
-            return;
-        }
-    }
-}
-void LinkedCellContainer::Cell::clear() { indices.clear(); }
-std::vector<size_t>& LinkedCellContainer::Cell::particles() { return indices; }
-const std::vector<size_t>& LinkedCellContainer::Cell::particles() const { return indices; }
-size_t LinkedCellContainer::Cell::operator[](size_t idx) { return indices[idx]; }
-bool LinkedCellContainer::Cell::fits(R3 x) const {
-    return bounds[0] <= x[0] && x[0] <= bounds[1] && bounds[2] <= x[1] && x[1] <= bounds[3] && bounds[4] <= x[2] &&
-           x[2] <= bounds[5];
-}
-
-// ------------------- LinkedCellContainer methods -------------------
-
 LinkedCellContainer::LinkedCellContainer(R3 domain_size, double cutoff_radius) : domain_size(domain_size) {
     for (size_t dim = 0; dim < 3; ++dim) {
         size_t inner_cells = 0U;
@@ -51,6 +19,10 @@ LinkedCellContainer::LinkedCellContainer(R3 domain_size, double cutoff_radius) :
         cell_length[dim] = domain_size[dim] / static_cast<double>(inner_cells);
         num_cells[dim] = inner_cells + 2U;
     }
+
+    SPDLOG_DEBUG("Initializing Linked-Cell Container with dimensions: {} x {} x {}", num_cells[0], num_cells[1],
+                 num_cells[2]);
+    SPDLOG_DEBUG("and cell lengths: {} x {} x {}", cell_length[0], cell_length[1], cell_length[2]);
 
     cells.reserve(num_cells[0] * num_cells[1] * num_cells[2]);
     for (size_t z = 0; z < num_cells[2]; ++z) {
@@ -116,7 +88,7 @@ size_t LinkedCellContainer::findCellIndex(R3 vec) const {
     return (z_idx * num_cells[1] * num_cells[0]) + (y_idx * num_cells[0]) + x_idx;
 }
 
-std::vector<LinkedCellContainer::Cell*> LinkedCellContainer::findAdjacentCells(size_t cell_idx) {
+std::vector<Cell*> LinkedCellContainer::findAdjacentCells(size_t cell_idx) {
     std::vector<Cell*> adjacent_cells;
     size_t z_idx = cell_idx / (num_cells[0] * num_cells[1]);
     size_t y_idx = (cell_idx / num_cells[0]) % num_cells[1];
@@ -139,7 +111,7 @@ std::vector<LinkedCellContainer::Cell*> LinkedCellContainer::findAdjacentCells(s
 
     return adjacent_cells;
 }
-std::vector<const LinkedCellContainer::Cell*> LinkedCellContainer::findAdjacentCells(size_t cell_idx) const {
+std::vector<const Cell*> LinkedCellContainer::findAdjacentCells(size_t cell_idx) const {
     std::vector<const Cell*> adjacent_cells;
     size_t z_idx = cell_idx / (num_cells[0] * num_cells[1]);
     size_t y_idx = (cell_idx / num_cells[0]) % num_cells[1];
@@ -167,8 +139,8 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryType type,  // NOLINT
                                             std::vector<const Cell*>& boundary_cells, size_t offset) const {
     switch (type) {
         case BoundaryType::UPPER: {
-            for (size_t y = 0; y < num_cells[1]; ++y) {
-                for (size_t x = 0; x < num_cells[0]; ++x) {
+            for (size_t y = offset; y < num_cells[1] - offset; ++y) {
+                for (size_t x = offset; x < num_cells[0] - offset; ++x) {
                     size_t idx =
                         ((num_cells[2] - (1U + offset)) * num_cells[1] * num_cells[0]) + (y * num_cells[0]) + x;
                     boundary_cells.push_back(&cells[idx]);
@@ -177,8 +149,8 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryType type,  // NOLINT
             return;
         }
         case BoundaryType::LOWER: {
-            for (size_t y = 0; y < num_cells[1]; ++y) {
-                for (size_t x = 0; x < num_cells[0]; ++x) {
+            for (size_t y = offset; y < num_cells[1] - offset; ++y) {
+                for (size_t x = offset; x < num_cells[0] - offset; ++x) {
                     size_t idx = (offset * num_cells[1] * num_cells[0]) + (y * num_cells[0]) + x;
                     boundary_cells.push_back(&cells[idx]);
                 }
@@ -186,8 +158,8 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryType type,  // NOLINT
             return;
         }
         case BoundaryType::LEFT: {
-            for (size_t z = 0; z < num_cells[2]; ++z) {
-                for (size_t y = 0; y < num_cells[1]; ++y) {
+            for (size_t z = offset; z < num_cells[2] - offset; ++z) {
+                for (size_t y = offset; y < num_cells[1] - offset; ++y) {
                     size_t idx = (z * num_cells[1] * num_cells[0]) + (y * num_cells[0]) + offset;
                     boundary_cells.push_back(&cells[idx]);
                 }
@@ -195,8 +167,8 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryType type,  // NOLINT
             return;
         }
         case BoundaryType::RIGHT: {
-            for (size_t z = 0; z < num_cells[2]; ++z) {
-                for (size_t y = 0; y < num_cells[1]; ++y) {
+            for (size_t z = offset; z < num_cells[2] - offset; ++z) {
+                for (size_t y = offset; y < num_cells[1] - offset; ++y) {
                     size_t idx =
                         (z * num_cells[1] * num_cells[0]) + (y * num_cells[0]) + (num_cells[0] - (1U + offset));
                     boundary_cells.push_back(&cells[idx]);
@@ -205,8 +177,8 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryType type,  // NOLINT
             return;
         }
         case BoundaryType::FRONT: {
-            for (size_t z = 0; z < num_cells[2]; ++z) {
-                for (size_t x = 0; x < num_cells[0]; ++x) {
+            for (size_t z = offset; z < num_cells[2] - offset; ++z) {
+                for (size_t x = offset; x < num_cells[0] - offset; ++x) {
                     size_t idx = (z * num_cells[1] * num_cells[0]) + (offset * num_cells[0]) + x;
                     boundary_cells.push_back(&cells[idx]);
                 }
@@ -214,8 +186,8 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryType type,  // NOLINT
             return;
         }
         case BoundaryType::BACK: {
-            for (size_t z = 0; z < num_cells[2]; ++z) {
-                for (size_t x = 0; x < num_cells[0]; ++x) {
+            for (size_t z = offset; z < num_cells[2] - offset; ++z) {
+                for (size_t x = offset; x < num_cells[0] - offset; ++x) {
                     size_t idx =
                         (z * num_cells[1] * num_cells[0]) + ((num_cells[1] - (1U + offset)) * num_cells[0]) + x;
                     boundary_cells.push_back(&cells[idx]);
@@ -229,8 +201,8 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryType type, std::vector
                                             size_t offset) {
     switch (type) {
         case BoundaryType::UPPER: {
-            for (size_t y = 0; y < num_cells[1]; ++y) {
-                for (size_t x = 0; x < num_cells[0]; ++x) {
+            for (size_t y = offset; y < num_cells[1] - offset; ++y) {
+                for (size_t x = offset; x < num_cells[0] - offset; ++x) {
                     size_t idx =
                         ((num_cells[2] - (1U + offset)) * num_cells[1] * num_cells[0]) + (y * num_cells[0]) + x;
                     boundary_cells.push_back(&cells[idx]);
@@ -239,8 +211,8 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryType type, std::vector
             return;
         }
         case BoundaryType::LOWER: {
-            for (size_t y = 0; y < num_cells[1]; ++y) {
-                for (size_t x = 0; x < num_cells[0]; ++x) {
+            for (size_t y = offset; y < num_cells[1] - offset; ++y) {
+                for (size_t x = offset; x < num_cells[0] - offset; ++x) {
                     size_t idx = (offset * num_cells[1] * num_cells[0]) + (y * num_cells[0]) + x;
                     boundary_cells.push_back(&cells[idx]);
                 }
@@ -248,8 +220,8 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryType type, std::vector
             return;
         }
         case BoundaryType::LEFT: {
-            for (size_t z = 0; z < num_cells[2]; ++z) {
-                for (size_t y = 0; y < num_cells[1]; ++y) {
+            for (size_t z = offset; z < num_cells[2] - offset; ++z) {
+                for (size_t y = offset; y < num_cells[1] - offset; ++y) {
                     size_t idx = (z * num_cells[1] * num_cells[0]) + (y * num_cells[0]) + offset;
                     boundary_cells.push_back(&cells[idx]);
                 }
@@ -257,8 +229,8 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryType type, std::vector
             return;
         }
         case BoundaryType::RIGHT: {
-            for (size_t z = 0; z < num_cells[2]; ++z) {
-                for (size_t y = 0; y < num_cells[1]; ++y) {
+            for (size_t z = offset; z < num_cells[2] - offset; ++z) {
+                for (size_t y = offset; y < num_cells[1] - offset; ++y) {
                     size_t idx =
                         (z * num_cells[1] * num_cells[0]) + (y * num_cells[0]) + (num_cells[0] - (1U + offset));
                     boundary_cells.push_back(&cells[idx]);
@@ -267,8 +239,8 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryType type, std::vector
             return;
         }
         case BoundaryType::FRONT: {
-            for (size_t z = 0; z < num_cells[2]; ++z) {
-                for (size_t x = 0; x < num_cells[0]; ++x) {
+            for (size_t z = offset; z < num_cells[2] - offset; ++z) {
+                for (size_t x = offset; x < num_cells[0] - offset; ++x) {
                     size_t idx = (z * num_cells[1] * num_cells[0]) + (offset * num_cells[0]) + x;
                     boundary_cells.push_back(&cells[idx]);
                 }
@@ -276,8 +248,8 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryType type, std::vector
             return;
         }
         case BoundaryType::BACK: {
-            for (size_t z = 0; z < num_cells[2]; ++z) {
-                for (size_t x = 0; x < num_cells[0]; ++x) {
+            for (size_t z = offset; z < num_cells[2] - offset; ++z) {
+                for (size_t x = offset; x < num_cells[0] - offset; ++x) {
                     size_t idx =
                         (z * num_cells[1] * num_cells[0]) + ((num_cells[1] - (1U + offset)) * num_cells[0]) + x;
                     boundary_cells.push_back(&cells[idx]);
@@ -353,14 +325,20 @@ void LinkedCellContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double e
 }
 
 void LinkedCellContainer::eraseParticle(Particle* p) {
+    // TODO: change to use cells[cell_idx].particles().find() and take an iterator/index as an argument!
     size_t cell_idx = findCellIndex(p->getX());
 
-    auto it =
-        std::find_if(data.begin(), data.end(), [p](const Particle& particle) { return &particle == p; });  // NOLINT
-    if (it != data.end()) {
-        cells[cell_idx].removeParticle(it - data.begin());
-        data.erase(it);
-        decreaseCellIndices(it - data.begin());
+    if (cell_idx < cells.size()) {
+        for (auto it = cells[cell_idx].particles().begin(); it != cells[cell_idx].particles().end(); ++it) {  // NOLINT
+            SPDLOG_DEBUG("Index {}", *it);
+            if (&(data[*it]) == p) {
+                size_t idx = *it;
+                cells[cell_idx].removeParticle(idx);
+                data.erase(data.begin() + idx);  // NOLINT
+                decreaseCellIndices(idx);
+                return;
+            }
+        }
     }
 }
 
@@ -390,28 +368,62 @@ std::vector<Particle>::const_iterator LinkedCellContainer::cend() const { return
 LinkedCellContainer::proximity_iterator LinkedCellContainer::proximityBegin(R3 center, double radius,
                                                                             [[maybe_unused]] size_t offset) {
     std::vector<Cell*> adjacent_cells = findAdjacentCells(findCellIndex(center));
-    return proximity_iterator{center, radius, adjacent_cells.front()->particles().data(), adjacent_cells, &data};
+    std::vector<Cell*> nonempty_adjacent_cells;
+
+    nonempty_adjacent_cells.reserve(cells.size());
+    for (Cell* c : adjacent_cells) {
+        if (!c->particles().empty()) {
+            nonempty_adjacent_cells.push_back(c);
+        }
+    }
+
+    return proximity_iterator{center, radius, nonempty_adjacent_cells.front()->particles().begin(),
+                              nonempty_adjacent_cells, &data};
 }
 
 LinkedCellContainer::proximity_iterator LinkedCellContainer::proximityEnd(R3 center, double radius) {
     std::vector<Cell*> adjacent_cells = findAdjacentCells(findCellIndex(center));
-    return proximity_iterator{
-        center, radius,
-        adjacent_cells.back()->particles().data() + adjacent_cells.back()->particles().size(),  // NOLINT
-        adjacent_cells, &data};
+    std::vector<Cell*> nonempty_adjacent_cells;
+
+    nonempty_adjacent_cells.reserve(cells.size());
+    for (Cell* c : adjacent_cells) {
+        if (!c->particles().empty()) {
+            nonempty_adjacent_cells.push_back(c);
+        }
+    }
+
+    return proximity_iterator{center, radius, nonempty_adjacent_cells.back()->particles().end(),
+                              nonempty_adjacent_cells, &data};
 }
 
 LinkedCellContainer::const_proximity_iterator LinkedCellContainer::proximityBegin(
     R3 center, double radius, [[maybe_unused]] size_t offset) const {
     std::vector<const Cell*> adjacent_cells = findAdjacentCells(findCellIndex(center));
-    return const_proximity_iterator{center, radius, adjacent_cells.front()->particles().data(), adjacent_cells, &data};
+    std::vector<const Cell*> nonempty_adjacent_cells;
+
+    nonempty_adjacent_cells.reserve(cells.size());
+    for (const Cell* c : adjacent_cells) {
+        if (!c->particles().empty()) {
+            nonempty_adjacent_cells.push_back(c);
+        }
+    }
+
+    return const_proximity_iterator{center, radius, nonempty_adjacent_cells.front()->particles().begin(),
+                                    nonempty_adjacent_cells, &data};
 }
 LinkedCellContainer::const_proximity_iterator LinkedCellContainer::proximityEnd(R3 center, double radius) const {
     std::vector<const Cell*> adjacent_cells = findAdjacentCells(findCellIndex(center));
-    return const_proximity_iterator{
-        center, radius,
-        adjacent_cells.back()->particles().data() + adjacent_cells.back()->particles().size(),  // NOLINT
-        adjacent_cells, &data};
+    std::vector<const Cell*> nonempty_adjacent_cells;
+
+    nonempty_adjacent_cells.reserve(cells.size());
+    for (const Cell* c : adjacent_cells) {
+        if (!c->particles().empty()) {
+            nonempty_adjacent_cells.push_back(c);
+        }
+    }
+
+    return const_proximity_iterator{center, radius, nonempty_adjacent_cells.back()->particles().end(),
+                                    nonempty_adjacent_cells, &data};
 }
 
 // boundary and halo iterators
@@ -422,19 +434,18 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::haloBegin(const std
         findBoundaryCells(type, relevant_cells, 0);
     }
 
-    std::unordered_set<Cell*> seen;
-    std::vector<Cell*> unique_cells;
+    std::set<Cell*> seen;
+    std::vector<Cell*> unique_and_nonempty_cells;
 
-    unique_cells.reserve(cells.size());
+    unique_and_nonempty_cells.reserve(cells.size());
     for (Cell* c : relevant_cells) {
-        if (seen.insert(c).second) {
-            unique_cells.push_back(c);
+        if (seen.insert(c).second && !c->particles().empty()) {
+            unique_and_nonempty_cells.push_back(c);
         }
     }
 
     return proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
-                              unique_cells.back()->particles().data(),  // NOLINT
-                              unique_cells, &data};
+                              unique_and_nonempty_cells.front()->particles().begin(), unique_and_nonempty_cells, &data};
 }
 LinkedCellContainer::const_proximity_iterator LinkedCellContainer::haloBegin(
     const std::set<BoundaryType>& boundary_types) const {
@@ -444,19 +455,19 @@ LinkedCellContainer::const_proximity_iterator LinkedCellContainer::haloBegin(
         findBoundaryCells(type, relevant_cells, 0);
     }
 
-    std::unordered_set<const Cell*> seen;
-    std::vector<const Cell*> unique_cells;
+    std::set<const Cell*> seen;
+    std::vector<const Cell*> unique_and_nonempty_cells;
 
-    unique_cells.reserve(cells.size());
+    unique_and_nonempty_cells.reserve(cells.size());
     for (const Cell* c : relevant_cells) {
-        if (seen.insert(c).second) {
-            unique_cells.push_back(c);
+        if (seen.insert(c).second && !c->particles().empty()) {
+            unique_and_nonempty_cells.push_back(c);
         }
     }
 
     return const_proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
-                                    unique_cells.back()->particles().data(),  // NOLINT
-                                    unique_cells, &data};
+                                    unique_and_nonempty_cells.front()->particles().begin(), unique_and_nonempty_cells,
+                                    &data};
 }
 LinkedCellContainer::proximity_iterator LinkedCellContainer::haloEnd(const std::set<BoundaryType>& boundary_types) {
     std::vector<Cell*> relevant_cells;
@@ -466,19 +477,17 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::haloEnd(const std::
     }
 
     std::unordered_set<Cell*> seen;
-    std::vector<Cell*> unique_cells;
+    std::vector<Cell*> unique_and_nonempty_cells;
 
-    unique_cells.reserve(cells.size());
+    unique_and_nonempty_cells.reserve(cells.size());
     for (Cell* c : relevant_cells) {
-        if (seen.insert(c).second) {
-            unique_cells.push_back(c);
+        if (seen.insert(c).second && !c->particles().empty()) {
+            unique_and_nonempty_cells.push_back(c);
         }
     }
 
-    return proximity_iterator{
-        R3{}, std::numeric_limits<double>::infinity(),
-        unique_cells.back()->particles().data() + unique_cells.back()->particles().size(),  // NOLINT
-        unique_cells, &data};
+    return proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
+                              unique_and_nonempty_cells.back()->particles().end(), unique_and_nonempty_cells, &data};
 }
 LinkedCellContainer::const_proximity_iterator LinkedCellContainer::haloEnd(
     const std::set<BoundaryType>& boundary_types) const {
@@ -489,19 +498,18 @@ LinkedCellContainer::const_proximity_iterator LinkedCellContainer::haloEnd(
     }
 
     std::unordered_set<const Cell*> seen;
-    std::vector<const Cell*> unique_cells;
+    std::vector<const Cell*> unique_and_nonempty_cells;
 
-    unique_cells.reserve(cells.size());
+    unique_and_nonempty_cells.reserve(cells.size());
     for (const Cell* c : relevant_cells) {
-        if (seen.insert(c).second) {
-            unique_cells.push_back(c);
+        if (seen.insert(c).second && !c->particles().empty()) {
+            unique_and_nonempty_cells.push_back(c);
         }
     }
 
-    return const_proximity_iterator{
-        R3{}, std::numeric_limits<double>::infinity(),
-        unique_cells.back()->particles().data() + unique_cells.back()->particles().size(),  // NOLINT
-        unique_cells, &data};
+    return const_proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
+                                    unique_and_nonempty_cells.back()->particles().end(), unique_and_nonempty_cells,
+                                    &data};
 }
 
 LinkedCellContainer::proximity_iterator LinkedCellContainer::boundaryBegin(
@@ -513,18 +521,17 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::boundaryBegin(
     }
 
     std::unordered_set<Cell*> seen;
-    std::vector<Cell*> unique_cells;
+    std::vector<Cell*> unique_and_nonempty_cells;
 
-    unique_cells.reserve(cells.size());
+    unique_and_nonempty_cells.reserve(cells.size());
     for (Cell* c : relevant_cells) {
-        if (seen.insert(c).second) {
-            unique_cells.push_back(c);
+        if (seen.insert(c).second && !c->particles().empty()) {
+            unique_and_nonempty_cells.push_back(c);
         }
     }
 
     return proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
-                              unique_cells.back()->particles().data(),  // NOLINT
-                              unique_cells, &data};
+                              unique_and_nonempty_cells.front()->particles().begin(), unique_and_nonempty_cells, &data};
 }
 LinkedCellContainer::const_proximity_iterator LinkedCellContainer::boundaryBegin(
     const std::set<BoundaryType>& boundary_types) const {
@@ -535,18 +542,18 @@ LinkedCellContainer::const_proximity_iterator LinkedCellContainer::boundaryBegin
     }
 
     std::unordered_set<const Cell*> seen;
-    std::vector<const Cell*> unique_cells;
+    std::vector<const Cell*> unique_and_nonempty_cells;
 
-    unique_cells.reserve(cells.size());
+    unique_and_nonempty_cells.reserve(cells.size());
     for (const Cell* c : relevant_cells) {
-        if (seen.insert(c).second) {
-            unique_cells.push_back(c);
+        if (seen.insert(c).second && !c->particles().empty()) {
+            unique_and_nonempty_cells.push_back(c);
         }
     }
 
     return const_proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
-                                    unique_cells.back()->particles().data(),  // NOLINT
-                                    unique_cells, &data};
+                                    unique_and_nonempty_cells.front()->particles().begin(), unique_and_nonempty_cells,
+                                    &data};
 }
 LinkedCellContainer::proximity_iterator LinkedCellContainer::boundaryEnd(const std::set<BoundaryType>& boundary_types) {
     std::vector<Cell*> relevant_cells;
@@ -556,19 +563,17 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::boundaryEnd(const s
     }
 
     std::unordered_set<Cell*> seen;
-    std::vector<Cell*> unique_cells;
+    std::vector<Cell*> unique_and_nonempty_cells;
 
-    unique_cells.reserve(cells.size());
+    unique_and_nonempty_cells.reserve(cells.size());
     for (Cell* c : relevant_cells) {
-        if (seen.insert(c).second) {
-            unique_cells.push_back(c);
+        if (seen.insert(c).second && !c->particles().empty()) {
+            unique_and_nonempty_cells.push_back(c);
         }
     }
 
-    return proximity_iterator{
-        R3{}, std::numeric_limits<double>::infinity(),
-        unique_cells.back()->particles().data() + unique_cells.back()->particles().size(),  // NOLINT
-        unique_cells, &data};
+    return proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
+                              unique_and_nonempty_cells.back()->particles().end(), unique_and_nonempty_cells, &data};
 }
 LinkedCellContainer::const_proximity_iterator LinkedCellContainer::boundaryEnd(
     const std::set<BoundaryType>& boundary_types) const {
@@ -579,19 +584,24 @@ LinkedCellContainer::const_proximity_iterator LinkedCellContainer::boundaryEnd(
     }
 
     std::unordered_set<const Cell*> seen;
-    std::vector<const Cell*> unique_cells;
+    std::vector<const Cell*> unique_and_nonempty_cells;
 
-    unique_cells.reserve(cells.size());
+    unique_and_nonempty_cells.reserve(cells.size());
     for (const Cell* c : relevant_cells) {
-        if (seen.insert(c).second) {
-            unique_cells.push_back(c);
+        if (seen.insert(c).second && !c->particles().empty()) {
+            unique_and_nonempty_cells.push_back(c);
         }
     }
 
-    return const_proximity_iterator{
-        R3{}, std::numeric_limits<double>::infinity(),
-        unique_cells.back()->particles().data() + unique_cells.back()->particles().size(),  // NOLINT
-        unique_cells, &data};
+    return const_proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
+                                    unique_and_nonempty_cells.back()->particles().end(), unique_and_nonempty_cells,
+                                    &data};
 }
 
 static_assert(ParticleContainer<LinkedCellContainer>);
+
+bool LinkedCellContainer::isOnBoundary(Particle& p) {
+    return (cells[findCellIndex(p.getX())].getType() == CellType::BOUNDARY);
+}
+
+R3 LinkedCellContainer::getDomainSize() { return domain_size; }

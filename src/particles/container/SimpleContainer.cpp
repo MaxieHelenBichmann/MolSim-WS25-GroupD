@@ -12,6 +12,8 @@ void SimpleContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsil
     emplace_back(x_arg, v_arg, m_arg, epsilon_arg, sigma_arg, type);
 };
 
+void SimpleContainer::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x) { p->getX() = new_x; }
+
 // proximity iterators
 SimpleContainer::proximity_iterator SimpleContainer::proximityBegin(R3 center, double radius, size_t offset) {
     return proximity_iterator{center, radius, data(), data() + size(), offset};  // NOLINT

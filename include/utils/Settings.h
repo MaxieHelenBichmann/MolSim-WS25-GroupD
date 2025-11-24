@@ -8,10 +8,53 @@
 #include <utility>
 
 #include "particles/Particle.h"
+#include "particles/boundaries/BoundaryCondition.h"
+#include "particles/container/LinkedCellContainer.h"
 #include "physics/ForceSource.h"
 #include "physics/LennardJonesForce.h"
 
 namespace mol_sim {
+/**
+ * @brief Provides a wrapper for domain configuration
+ *
+ */
+struct Domain {
+    /**
+     * @brief Dimensions/size of the domain
+     *
+     */
+    R3 dimension;
+    /**
+     * @brief Boundary Type of the left (x) boundary
+     *
+     */
+    BoundaryConditions left_boundary = OUTFLOW;
+    /**
+     * @brief Boundary Type of the right (x) boundary
+     *
+     */
+    BoundaryConditions right_boundary = OUTFLOW;
+    /**
+     * @brief Boundary Type of the back (z) boundary
+     *
+     */
+    BoundaryConditions back_boundary = OUTFLOW;
+    /**
+     * @brief Boundary Type of the front (z) boundary
+     *
+     */
+    BoundaryConditions front_boundary = OUTFLOW;
+    /**
+     * @brief Boundary Type of the lower (y) boundary
+     *
+     */
+    BoundaryConditions lower_boundary = OUTFLOW;
+    /**
+     * @brief Boundary Type of the upper (y) boundary
+     *
+     */
+    BoundaryConditions upper_boundary = OUTFLOW;
+};
 /**
  * @brief Provides a wrapper for settings of the simulation set during config
  *
@@ -65,6 +108,11 @@ class SettingsParam {
      *
      */
     constexpr static double CUTOFF_DEFAULT = std::numeric_limits<double>::infinity();
+    /**
+     * @brief Default boundary condition.
+     *
+     */
+    constexpr static BoundaryConditions BOUNDARY_CONDITION_DEFAULT = OUTFLOW;
 
     /**
      * @brief delta_t of the simulation.
@@ -115,8 +163,12 @@ class SettingsParam {
      * @brief Domain of the simulation
      *
      */
-    std::optional<R3> domain;
-
+    std::optional<Domain> domain;
+    /**
+     * @brief Boundary condition
+     *
+     */
+    std::optional<BoundaryConditions> boundary_condition;
     /**
      * @brief Construct new SettingsParam.
      * All values will be set to null_opt if not specified otherwise.
@@ -131,12 +183,14 @@ class SettingsParam {
      * @param frequency
      * @param cutoff
      * @param domain
+     * @param boundary_condition
      */
     SettingsParam(std::optional<double> delta_t = std::nullopt, std::optional<double> start_time = std::nullopt,
                   std::optional<double> end_time = std::nullopt, std::optional<double> epsilon = std::nullopt,
                   std::optional<double> sigma = std::nullopt, std::optional<std::string> base_name = std::nullopt,
                   std::optional<Force> force = std::nullopt, std::optional<size_t> frequency = std::nullopt,
-                  std::optional<double> cutoff = std::nullopt, std::optional<R3> domain = std::nullopt)
+                  std::optional<double> cutoff = std::nullopt, std::optional<R3> domain = std::nullopt,
+                  std::optional<BoundaryConditions> boundary_condition = std::nullopt)
         : delta_t(delta_t),
           start_time(start_time),
           end_time(end_time),
@@ -146,7 +200,8 @@ class SettingsParam {
           force(force),
           frequency(frequency),
           cutoff(cutoff),
-          domain(domain) {}
+          domain(domain),
+          boundary_condition(boundary_condition) {}
 
     /**
      * @brief Provide default values for settings that have not been set.
@@ -182,7 +237,11 @@ class SettingsParam {
             cutoff = CUTOFF_DEFAULT;
         }
         if (!domain.has_value()) {
-            domain = {1., 1., 1.};
+            domain = Domain();
+            domain->dimension = R3{1., 1., 1.};
+        }
+        if (!boundary_condition.has_value()) {
+            boundary_condition = BOUNDARY_CONDITION_DEFAULT;
         }
     }
 };

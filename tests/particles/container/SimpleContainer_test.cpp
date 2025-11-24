@@ -131,6 +131,16 @@ TEST_F(SimpleContainerTest, testAddParticleEmplace) {
     EXPECT_EQ(particles_empty.size(), static_cast<size_t>(1));
 }
 
+/**
+ * @brief Tests correct behaviour of the method updateParticlePosition.
+ */
+TEST_F(SimpleContainerTest, testUpdateParticlePosition) {
+    R3 new_x = {9.0, 8.0, 7.0};
+    auto it = particles_full.begin();
+    particles_full.updateParticlePosition(it, new_x);
+    EXPECT_EQ(particles_full[0].getX(), new_x);
+}
+
 // iterators
 
 /**
@@ -185,6 +195,56 @@ TEST_F(SimpleContainerTest, testEndConstInterator) {
     // cend()
     auto nc = static_cast<std::ptrdiff_t>(particles_full.size());
     EXPECT_EQ(&*(particles_full.cend() - 1), particles_full.data() + (nc - 1));  // NOLINT
+}
+
+// proximity iterators
+
+/**
+ * @brief Tests correct behaviour of proximity iterator with infinite radius.
+ */
+TEST_F(SimpleContainerTest, testProximityIteratorInfiniteRadius) {
+    R3 v{0.0, 0.0, 0.0};
+    particles_empty.addParticle(R3{2.0, 2.0, 2.0}, v, 1.0, 1.0, 1.0);
+    particles_empty.addParticle(R3{4.0, 4.0, 4.0}, v, 1.0, 1.0, 1.0);
+    particles_empty.addParticle(R3{6.0, 6.0, 6.0}, v, 1.0, 1.0, 1.0);
+
+    R3 center{3.0, 3.0, 3.0};
+    double radius = std::numeric_limits<double>::infinity();
+
+    auto it = particles_empty.proximityBegin(center, radius);
+    auto end = particles_empty.proximityEnd(center, radius);
+
+    size_t count = 0;
+    while (it != end) {
+        EXPECT_LE((it->getX() - center).euclidNorm(), radius);
+        ++it;
+        ++count;
+    }
+    EXPECT_EQ(count, 3);  // Assuming only three particles are within the radius
+}
+
+/**
+ * @brief Tests correct behaviour of proximity iterator with finite radius.
+ */
+TEST_F(SimpleContainerTest, testProximityIterator) {
+    R3 v{0.0, 0.0, 0.0};
+    particles_empty.addParticle(R3{2.5, 3.0, 3.0}, v, 1.0, 1.0, 1.0);
+    particles_empty.addParticle(R3{5.0, 5.0, 5.0}, v, 1.0, 1.0, 1.0);
+    particles_empty.addParticle(R3{6.0, 6.0, 6.0}, v, 1.0, 1.0, 1.0);
+
+    R3 center{3.0, 3.0, 3.0};
+    double radius = 1.0;
+
+    auto it = particles_empty.proximityBegin(center, radius);
+    auto end = particles_empty.proximityEnd(center, radius);
+
+    size_t count = 0;
+    while (it != end) {
+        EXPECT_LE((it->getX() - center).euclidNorm(), radius);
+        ++it;
+        ++count;
+    }
+    EXPECT_EQ(count, 1);  // Assuming only one particle is within the radius
 }
 
 // ParticleContainer: complex tests
