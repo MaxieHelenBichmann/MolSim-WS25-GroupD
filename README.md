@@ -1,176 +1,192 @@
-MolSim Group D
-===
+# MolSim Group D
 
-Contributors:
+[![CI MolSim](https://github.com/MaxieHelenBichmann/MolSim-WS25-GroupD/actions/workflows/ci.yml/badge.svg)](https://github.com/MaxieHelenBichmann/MolSim-WS25-GroupD/actions/workflows/ci.yml)
 
+**Contributors:**
 - Maxie Helen Bichmann
 - Georg Sebastian Eisner
 - Henry Jacob Meyran
 
-[![CI MolSim](https://github.com/MaxieHelenBichmann/MolSim-WS25-GroupD/actions/workflows/ci.yml/badge.svg)](https://github.com/MaxieHelenBichmann/MolSim-WS25-GroupD/actions/workflows/ci.yml)
+---
 
 ## Dependencies
 
-- **Essential:**
-    - CMake Version 3.10+
-    - Make 4.3+
-    - C++ compiler with C++20 support (tested with g++ 14.2.0)
-- **VTK Output:**
-    - VTK Version 8.9+
-- **Optional Tools:**
-    - clang-format
-    - clang-tidy
-- **Doxygen Support:**
-    - Doxygen
-    - Graphviz 
-- **Profiling**
-    - Perf
-    - Valgrind
+### Essential
+- CMake Version 3.10+
+- Make 4.3+
+- C++ compiler with C++20 support (tested with clang 18.1.3)
 
-## Building the project
+### VTK Output
+- VTK Version 8.9+
 
-**How do you build the project?**
+### Optional Tools
+- clang-format
+- clang-tidy
 
-0. Make sure to be in the project root.
+### Doxygen Support
+- Doxygen
+- Graphviz
 
-1. Configure the project with CMake by running these commands:
+### Profiling
+- Perf
+- Valgrind
 
-    ```
-    mkdir build && cd build
-    ccmake ..
-    ```
+---
 
-2. Now you can interactively change the options.
-    <details><summary>Configure Options</summary>
-    - <b>ENABLE_TESTING</b> enables all tests.<br />
-    - <b>ENABLE_BENCHMARK</b> enables benchmarking. (<b>BENCHMARK_DOWNLOAD_DEPENDENCIES</b> should also be enabled)<br />
-    - <b>ENABLE_DOXYGEN</b> enables doxygen.<br />
-    - <b>ENABLE_PROFILING</b> enables profiling tools (perf and valgrind).<br />
-    - <b>COVERAGE</b> enables code coverage reports.<br />
-    - <b>ENABLE_VTK_OUTPUT</b> enables output in the vtk format.<br />
-    - <b>CMAKE_BUILD_TYPE</b> specifies the build type (Debug, Release,...).<br />
-   </details>  
+## Building the Project
 
-3. Build the executable with the Makefile by running the command:
+**1. Navigate to project root**
 
-    ```
-    make -j $(nproc)
-    ```
+**2. Configure with CMake**
+```bash
+mkdir build && cd build
+ccmake ..
+```
 
-## Running the project
+**3. Configure build options interactively**
 
-**How do I run the project?**
+<details>
+<summary><b>CMake Configuration Options</b></summary>
 
-0. Make sure to be in the project root after you built the project.
+| Option | Description |
+|--------|-------------|
+| `ENABLE_TESTING` | Enable all tests |
+| `ENABLE_BENCHMARK` | Enable benchmarking (requires `BENCHMARK_DOWNLOAD_DEPENDENCIES`) |
+| `ENABLE_DOXYGEN` | Enable Doxygen documentation generation |
+| `ENABLE_PROFILING` | Enable profiling tools (perf and valgrind) |
+| `COVERAGE` | Enable code coverage reports |
+| `ENABLE_VTK_OUTPUT` | Enable output in VTK format |
+| `CMAKE_BUILD_TYPE` | Build type: `Debug`, `Release`, `RelWithDebInfo`, `MinSizeRel` |
 
-1. Run the executable with the given input file and optional desired delta_T (-d), end_T (-t) and force (-f):
+</details>
 
-    ```
-    ./build/project/MolSim ./input/planets.yaml -d 0.014 -t 1000 -f GRAV
-    ```
-    ```
-    ./build/project/MolSim ./input/particles.yaml -d 0.0002 -t 5
-    ```
+**4. Build the executable**
+```bash
+make -j $(nproc)
+```
 
-## Testing the project
+---
 
-**How do I test the project?**
+## Running the Project
 
-0. Make sure to be in the project root and to have built the project with the according CMake configuration.
+From the project root:
 
-1. Run the test executable or use ctest:
-    ```
-    ./build/tests/tests
-    ```
-    ```
-    ctest -V --test-dir ./build/tests 
-    ```
+**Planets simulation:**
+```bash
+./build/project/MolSim ./input/planets.yaml -d 0.014 -t 1000 -f GRAV
+```
 
-## Benchmarking the project
+**Particles simulation:**
+```bash
+./build/project/MolSim ./input/particles.yaml -d 0.0002 -t 5
+```
 
-**How do I benchmark the project?**
+**Parameters:**
+- `-d` : Delta T (time step)
+- `-t` : End T (simulation end time)
+- `-f` : Force type
 
-0. Make sure to be in the project root and to have built the project with the according CMake configuration.
+## Testing the Project
 
-1. Run the benchmark executable:
-    ```
-    ./build/benchmarks/MolSimBench
-    ```
+> **Note:** Ensure `ENABLE_TESTING` is enabled in CMake configuration.
+
+**Run tests directly:**
+```bash
+./build/tests/tests
+```
+
+**Run with CTest (verbose output):**
+```bash
+ctest -V --test-dir ./build/tests
+```
+
+## Benchmarking the Project
+
+> **Note:** Ensure `ENABLE_BENCHMARK` is enabled in CMake configuration.
+
+```bash
+./build/benchmarks/MolSimBench
+```
+
+---
 
 ## Optional Tools
 
-**Doxygen**  
-If `doxygen` support was enabled:
+### Doxygen Documentation
 
-```
+Generate documentation (requires `ENABLE_DOXYGEN`):
+```bash
 make doc_doxygen
 ```
+Output location: `doxys_documentation/`
 
-Creates the `doxygen` documentation in the doxys_documentation directory.
+---
 
-**Clang-tidy**  
-If `clang-tidy` support was enabled, `clang-tidy` will automatically run the checks specified in the .clang-tidy file.  
-There is also:
+### Clang-Tidy
 
-```
+When enabled, clang-tidy automatically runs checks from `.clang-tidy` during build.
+
+**Apply automatic fixes:**
+```bash
 make fix
 ```
 
-Which automatically applies fixes where `clang-tidy` finds them.
+---
 
-**Test Coverage**  
-If coverage was enabled:
+### Test Coverage
 
-```
+Generate coverage reports (requires `COVERAGE` enabled):
+```bash
 make coverage_report
 ```
+Output location: `build/coverage/`
 
-Creates a coverage report on the coverage directory inside the build directory.
+---
 
-### Profiling
+## Profiling
 
-If profiling is enabled both `perf` (for CPU profiling) and `valgrind` (for memory analysis) are available.
+### Prerequisites
+| Tool | Purpose |
+|------|---------|
+| `perf` | CPU profiling (requires Linux kernel support) |
+| `valgrind` | Memory debugging and profiling suite |
+| `ms_print` | View massif output (included with valgrind) |
 
-It is recommended to run `perf` on a `Release` or `RelWithDebInfo` build for accurate performance measurements.  
-`Valgrind` relies on debug symblos (`-g`) so only use it with `Debug` or `RelWithDebInfo`.
- 
-The input and arguments for `valgrind` and `perf` can be customized using CMake Arguments `PERF_INPUT_FILE`. `PERF_ARGS`, `VALGRIND_INPUT_FILE` and `VALGRIND_ARGS`.
 
-**Note:** Valgrind runs much slower, so use shorter simulations for memory checks.
+### Build Configuration for Profiling
 
-#### Perf Profiling
+| Profiling Type | Recommended Build Type | Notes |
+|----------------|------------------------|-------|
+| **Performance (perf)** | `RelWithDebInfo` | Optimized code with debug symbols for accurate profiling<br> Debug builds dont show accurate performance |
+| **Memory (valgrind)** | `Debug` or `RelWithDebInfo` | Debug symbols (-g) required for detailed stack traces<br> Release builds may not show accurate line numbers |
 
-**Available Targets:**
+### Customizing Profiling Inputs
 
-1. **perf-record**: Record performance data with call graph information
-   ```bash
-   make perf-record
-   ```
-   Creates `perf.data` in the build directory with detailed sampling information.
+Customize input files and arguments for profiling runs:
 
-2. **perf-report**: Interactive analysis of recorded data
-   ```bash
-   make perf-report
-   ```
-   Opens an interactive TUI to explore hotspots and call chains.
+| Option | Description |
+|--------|-------------|
+| `PERF_INPUT_FILE` | Input file used by all perf calls |
+| `PERF_ARGS` | Extra arguments passed to perf calls |
+| `VALGRIND_INPUT_FILE` | Input file used by all valgrind calls |
+| `VALGRIND_ARGS` | Extra arguments passed to valgrind calls |
 
-3. **perf-report-text**: Generate text-based performance report
-   ```bash
-   make perf-report-text
-   ```
-   Saves analysis to `build/perf-report.txt` for review or sharing.
+> **Note:** Valgrind runs much slower, so use shorter simulations for memory checks.
 
-4. **perf-stat**: Display hardware counter statistics
-   ```bash
-   make perf-stat
-   ```
-   Shows CPU cycles, instructions, cache misses, and other hardware events.
+### Perf Profiling
 
-5. **perf-cache**: Analyze cache performance in detail
-   ```bash
-   make perf-cache
-   ```
-   Reports cache references, misses, and L1 cache behavior.
+<details>
+<summary><b>Available Targets</b></summary>
+
+| Target | Command | Description |
+|--------|---------|-------------|
+| **perf-record** | `make perf-record` | Record performance data with call graph information<br>Creates `perf.data` in build directory |
+| **perf-report** | `make perf-report` | Interactive analysis of recorded data<br>Opens TUI to explore hotspots and call chains |
+| **perf-report-text** | `make perf-report-text` | Generate text-based performance report<br>Saves to `build/perf-report.txt` |
+| **perf-stat** | `make perf-stat` | Display hardware counter statistics<br>CPU cycles, instructions, cache misses |
+| **perf-cache** | `make perf-cache` | Analyze cache performance in detail<br>Cache references, misses, L1 behavior |
+
+</details>
 
 **Recommended Workflow:**
 ```bash
@@ -191,24 +207,33 @@ make perf-stat
 make perf-cache
 ```
 
-#### Valgrind Memory Analysis
+---
 
-**Available Targets:**
+### Valgrind Memory Analysis
 
-1. **valgrind-memcheck**: Detect memory leaks and errors
-   ```bash
-   make valgrind-memcheck
-   ```
-   Results saved to `build/valgrind/memcheck.log`
+<details>
+<summary><b>Available Targets</b></summary>
 
-2. **valgrind-massif**: Heap memory profiling
-   ```bash
-   make valgrind-massif
-   ```
-   Tracks heap memory usage over time. Analyze with:
-   ```bash
-   ms_print build/valgrind/massif.out
-   ```
+#### Memory Check
+```bash
+make valgrind-memcheck
+```
+
+
+Results: `build/valgrind/memcheck.log`
+
+#### Heap Profiling
+```bash
+make valgrind-massif
+```
+Tracks heap memory usage over time.
+
+**Analyze results:**
+```bash
+ms_print build/valgrind/massif.out
+```
+
+</details>
 
 **Recommended Workflow:**
 ```bash
@@ -224,4 +249,7 @@ cat build/valgrind/memcheck.log  # Review findings
 make valgrind-massif
 ms_print build/valgrind/massif.out | less
 ```
+
+---
+
 
