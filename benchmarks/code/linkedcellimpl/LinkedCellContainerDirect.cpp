@@ -368,11 +368,11 @@ void LinkedCellContainerDirect::eraseParticle(Particle* p) {
     }
 }
 
-void LinkedCellContainerDirect::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x) {
-    size_t old_cell_idx = findCellIndex(p->getX());
+void LinkedCellContainerDirect::updateParticlePosition(Particle& p, R3 new_x) {
+    size_t old_cell_idx = findCellIndex(p.getX());
     if (!cells[old_cell_idx].fits(new_x)) {
         size_t new_cell_idx = findCellIndex(new_x);
-        size_t old_idx = std::find(cells[old_cell_idx].particles().begin(), cells[old_cell_idx].particles().end(), *p) -
+        size_t old_idx = std::find(cells[old_cell_idx].particles().begin(), cells[old_cell_idx].particles().end(), p) -
                          cells[old_cell_idx].particles().begin();
         if (new_cell_idx == cells.size()) {
             cells[old_cell_idx].removeParticle(old_idx);
@@ -381,7 +381,7 @@ void LinkedCellContainerDirect::updateParticlePosition(std::vector<Particle>::it
         cells[new_cell_idx].addParticle(cells[old_cell_idx].removeParticle(old_idx));
     }
 
-    p->getX() = new_x;
+    p.getX() = new_x;
 }
 
 // normal iterators

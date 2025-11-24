@@ -89,7 +89,7 @@ class LinkedCellContainerDirect {
     void addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg);
     void addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type);
     void eraseParticle(Particle* p);
-    void updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x);
+    void updateParticlePosition(Particle& p, R3 new_x);
 
     // iterators
 
