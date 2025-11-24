@@ -239,7 +239,7 @@ Output location: `build/coverage/`
 ### Customizing Profiling Inputs
 
 <details>
-<summary><b>Customize input files and arguments for profiling runs</summary>
+<summary><b>Customize input files and arguments for profiling runs</b></summary>
 
 
 | Option | Description |
