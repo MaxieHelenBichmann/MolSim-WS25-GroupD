@@ -44,10 +44,10 @@ class Vector {
     /**
      * @brief Constructor copies N given values into the components of a Vector
      *
-     * @param inits arbitrary number (smaller or equal N) of elements of fitting type
+     * @param inits arbitrary number (smaller or equal N) of elements or references of fitting type
      */
     template <typename... Ts>
-        requires(... && (std::integral<Ts> || std::floating_point<Ts>))
+        requires(... && (std::integral<std::decay_t<Ts>> || std::floating_point<std::decay_t<Ts>>))
     Vector(Ts&&... inits) : data_{inits...} {}
 
     // memory management
@@ -249,7 +249,7 @@ class Vector {
         str_stream << surround[0];
         for (size_t i = 0; i < N; ++i) {
             if (i != 0U) {
-                str_stream << ", ";
+                str_stream << delimiter;
             }
             str_stream << data_[i];
         }
@@ -276,6 +276,8 @@ std::ostream& operator<<(std::ostream& os, const Vector<T, N>& v) {
 
 }  // namespace mol_sim
 
+// --------------------  STRUCTURED BINDINGS  --------------------
+
 /**
  * @brief Allows for structured bindings
  * The following partial specializations of std templates allow for
@@ -285,19 +287,9 @@ std::ostream& operator<<(std::ostream& os, const Vector<T, N>& v) {
 namespace std {
 
 template <class T, size_t N>
-struct tuple_size<mol_sim::Vector<T, N>> {
+struct tuple_size<mol_sim::Vector<T, N>> : std::integral_constant<std::size_t, N> {
     static constexpr size_t VALUE = N;
 };
-
-template <size_t I, class T, size_t N>
-constexpr T& get(mol_sim::Vector<T, N>&& v) {
-    return v[I];
-}
-
-template <size_t I, class T, size_t N>
-constexpr T get(const mol_sim::Vector<T, N>& v) {
-    return v[I];
-}
 
 template <size_t I, class T, size_t N>
 struct tuple_element<I, mol_sim::Vector<T, N>> {
@@ -305,5 +297,38 @@ struct tuple_element<I, mol_sim::Vector<T, N>> {
 };
 
 }  // namespace std
+
+namespace mol_sim {
+
+template <size_t I, class T, size_t N>
+constexpr T& get(Vector<T, N>& v) noexcept {
+    return v[I];
+}
+
+template <size_t I, class T, size_t N>
+constexpr const T& get(const Vector<T, N>& v) noexcept {
+    return v[I];
+}
+
+template <size_t I, class T, size_t N>
+constexpr T&& get(Vector<T, N>&& v) noexcept {
+    return std::move(v[I]);
+}
+
+template <size_t I, class T, size_t N>
+constexpr const T&& get(const Vector<T, N>&& v) noexcept {
+    return std::move(v[I]);
+}
+
+/**
+ * @brief Alias for a mathematical 3-dimensional real-valued (double-precision) vector.
+ *
+ * @see Vector
+ */
+using R3 = Vector<double, 3>;
+
+}  // namespace mol_sim
+
+// --------------------  STRUCTURED BINDINGS  --------------------
 
 #endif

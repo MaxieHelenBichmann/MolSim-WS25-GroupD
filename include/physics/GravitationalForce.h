@@ -1,18 +1,18 @@
 #ifndef GRAV_FORCE_H
 #define GRAV_FORCE_H
 
-#include "physics/ForceSource.h"
+#include "particles/Particle.h"
 #include "utils/Vector.h"
 
 namespace mol_sim {
 
 /**
- * @brief Class to calculate gravitational forces between two different objects. Implements the ForceSource interface.
+ * @brief Class to calculate gravitational forces between two different objects. Implements the ForceSource concept.
  *
  * Class to calculate gravitational forces between two different objects.
- * Implements the ForceSource interface.
+ * Implements the ForceSource concept.
  */
-class GravitationalForce : public ForceSource {
+class GravitationalForce {
    public:
     /**
      * @brief Calculates the gravitational force a particle p2 exerts on a different particle p1.
@@ -23,7 +23,7 @@ class GravitationalForce : public ForceSource {
      *
      * Calculates the gravitational force a particle p2 exerts on a different particle p1.
      */
-    [[nodiscard]] Vector<double, 3> calculateForce(const Particle& p1, const Particle& p2) const override;
+    [[nodiscard]] Vector<double, 3> applyForce(const Particle& p1, const Particle& p2) const;
 };
 
 }  // namespace mol_sim

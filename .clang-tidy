@@ -1,8 +1,8 @@
 # All the checks executed by clang-tidy
-Checks: 'clang-analyzer-*, performance-*, readability-*, modernize-*, bugprone-*, openmp-*, google-readability-casting, llvm-namespace-comment, misc-redundant-expression, cppcoreguidelines-macro-usage, -modernize-use-trailing-return-type, -readability-identifier-length, -readability-magic-numbers, -bugprone-easily-swappable-parameters'
+Checks: 'clang-analyzer-*, performance-*, readability-*, modernize-*, bugprone-*, openmp-*, google-readability-casting, llvm-namespace-comment, misc-redundant-expression, cppcoreguidelines-macro-usage, -modernize-use-trailing-return-type, -readability-identifier-length, -readability-magic-numbers, -bugprone-easily-swappable-parameters, -readability-convert-member-functions-to-static'
 
 # If we want to use specific Warnings as Errors they are to be added here
-WarningsAsErrors: ""
+WarningsAsErrors: "*"
 
 # So we can get colored output while using make, might have to change this later if we have problems with log files 
 UseColor: True

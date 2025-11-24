@@ -1,0 +1,3 @@
+format: cuboid
+  data:
+    - position: [0, 0, 0]

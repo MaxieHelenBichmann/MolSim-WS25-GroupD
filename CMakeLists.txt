@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 
-# Enable C++17. You may raise the standard if you want
+# Enable C++20. You may raise the standard if you want
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_POLICY_VERSION_MINIMUM 3.10)
 
 # define project name, version
 project(MolSim_GroupD VERSION 0.0.1 LANGUAGES CXX)
@@ -19,34 +20,41 @@ if(NOT CMAKE_BUILD_TYPE)
             "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
-# collect all cpp files
-file(GLOB_RECURSE SRCS 
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
-    "${CMAKE_SOURCE_DIR}/include/*.h"
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_options(-O0)
+else()
+    add_compile_options(-O3)
+endif()
+
+add_compile_definitions(
+    SPDLOG_USE_STD_FORMAT
+    $<$<CONFIG:Debug>:SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE>
+    $<$<CONFIG:RelWithDebInfo>:SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE>
+    $<$<CONFIG:Release>:SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_WARN>
+    $<$<CONFIG:MinSizeRel>:SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_WARN>
 )
+
 
 # add additional modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
-
-include(clang-format)
+include(CTest)
 include(doxygen)
+include(gtest)
+include(clang-format)
+include(yaml-cpp)
+include(spdlog)
+include(benchmark)
 include(clang-tidy)
 
-add_library(LibMolSim STATIC ${SRCS})
+option(COVERAGE "Enable generation of LLVM coverage artifacts" OFF)
 
-# create make target
-add_executable(MolSim ${CMAKE_SOURCE_DIR}/src/MolSim.cpp)
 
-target_link_libraries(MolSim PRIVATE LibMolSim)
+add_subdirectory(src project)
+add_subdirectory(tests)
+add_subdirectory(benchmarks)
 
-# activate all compiler warnings. Clean up your code :P
-# depending on the compiler different flags are used
-target_compile_options(MolSim
-        PRIVATE
-            $<$<CXX_COMPILER_ID:GNU>:-Wall>
-            # disable some spam warnings for icpc...
-            $<$<CXX_COMPILER_ID:Intel>:-w3 -wd383,981,1418,1572,2259>
-)
-
-include(vtk)
+if(COVERAGE)
+    include(GenerateCoverage)
+    add_coverage_report_target()
+endif()

@@ -1,0 +1,122 @@
+name: CI MolSim
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: mini-arc-runner-set # ubuntu-latest 
+    container:
+      image: mbichmann/molsim-vtk
+    env:
+      BUILD_TYPE: Release
+      BUILD_DIR: build
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configure CMake
+      run: cmake -G Ninja -S . -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" -DENABLE_VTK_OUTPUT=ON -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCOVERAGE=ON -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
+
+    - name: Build
+      run: cmake --build "$BUILD_DIR" --config "${BUILD_TYPE}"
+
+    - name: Test
+      run: ctest --test-dir "$BUILD_DIR/tests" --output-on-failure
+      env:
+        LLVM_PROFILE_FILE: ${{ env.BUILD_DIR }}/%p-%m.profraw
+    
+    - name: Generate coverage report
+      if: ${{ always() }}
+      run: cmake --build "$BUILD_DIR" --target coverage_report
+
+    - name: Upload coverage artifact
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: ${{ env.BUILD_DIR }}/coverage
+        if-no-files-found: ignore
+
+  sanitizer:
+    runs-on: mini-arc-runner-set # ubuntu-latest
+    container:
+      image: mbichmann/molsim-vtk
+    env:
+      BUILD_DIR: build-asan
+      BUILD_TYPE: Debug
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configure (ASan, Clang)
+      run: cmake -G Ninja -S . -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fsanitize=address -fno-omit-frame-pointer" -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DENABLE_VTK_OUTPUT=ON -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
+
+    - name: Build
+      run: cmake --build "$BUILD_DIR" --config "${BUILD_TYPE}"
+
+    - name: Run MolSim with ASan
+      run: ./"$BUILD_DIR"/project/MolSim ./input/particles.yaml -d 0.02 -t 1 # don't run for too long or create too many files
+      env:
+        ASAN_OPTIONS: halt_on_error=1
+
+  documentation:
+    runs-on: mini-arc-runner-set # ubuntu-latest
+    container:
+      image: mbichmann/molsim-vtk
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Pages
+      uses: actions/configure-pages@v5
+
+    - name: Configure
+      run: cmake -G Ninja -S . -B build
+      
+    - name: Build Documentation
+      run: cmake --build build --target doc_doxygen
+
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: './doxys_documentation/html'
+  
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
+
+  upload-codecov:
+    runs-on: mini-arc-runner-set # ubuntu-latest
+    needs: build
+    container:
+      image: mbichmann/molsim-vtk
+    # disable conditional execution until workflow is merged into main, so that gh actually renders the button
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 
+
+    - name: Download sanitizer coverage artifact
+      uses: actions/download-artifact@v5
+      with:
+        name: coverage-report
+
+    - name: Upload to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        files: coverage-artifact/coverage/coverage.lcov
+        flags: coverage
+        verbose: true
+        token: ${{ secrets.CODECOV_TOKEN }}

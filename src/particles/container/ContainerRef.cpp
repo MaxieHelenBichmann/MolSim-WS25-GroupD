@@ -29,11 +29,21 @@ void ContainerRef::reserve(size_t n) {
 void ContainerRef::addParticle(Particle&& value) {
     std::visit([&value](auto& c) { return c->addParticle(value); }, instance);
 }
-void ContainerRef::addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg) {
-    std::visit([&x_arg, &v_arg, m_arg](auto& c) { return c->addParticle(x_arg, v_arg, m_arg); }, instance);
+void ContainerRef::addParticle(const Particle& value) {
+    std::visit([&value](auto& c) { return c->addParticle(value); }, instance);
 }
-void ContainerRef::addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, int type) {
-    std::visit([&x_arg, &v_arg, m_arg, type](auto& c) { return c->addParticle(x_arg, v_arg, m_arg, type); }, instance);
+
+void ContainerRef::addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, double epsilon_arg,
+                               double sigma_arg) {
+    std::visit([&x_arg, &v_arg, m_arg, epsilon_arg,
+                sigma_arg](auto& c) { return c->addParticle(x_arg, v_arg, m_arg, epsilon_arg, sigma_arg); },
+               instance);
+}
+void ContainerRef::addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, double epsilon_arg,
+                               double sigma_arg, int type) {
+    std::visit([&x_arg, &v_arg, m_arg, epsilon_arg, sigma_arg,
+                type](auto& c) { return c->addParticle(x_arg, v_arg, m_arg, epsilon_arg, sigma_arg, type); },
+               instance);
 }
 
 // iterators

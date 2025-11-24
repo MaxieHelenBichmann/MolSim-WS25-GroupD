@@ -12,6 +12,10 @@ if(ENABLE_CLANG_TIDY)
         file(GLOB_RECURSE ALL_CXX_SOURCES CONFIGURE_DEPENDS
             "${CMAKE_SOURCE_DIR}/src/*.cpp"
             "${CMAKE_SOURCE_DIR}/include/*.h"
+            "${CMAKE_SOURCE_DIR}/tests/*.cpp"
+            "${CMAKE_SOURCE_DIR}/benchmarks/*.cpp"
+            "${CMAKE_SOURCE_DIR}/benchmarks/*.h)"
+
         )
 
         add_custom_target(
@@ -21,6 +25,7 @@ if(ENABLE_CLANG_TIDY)
             --fix-errors
             --fix-notes
             -p=${CMAKE_BINARY_DIR}
+            --config-file=${CMAKE_SOURCE_DIR}/.clang-tidy
             ${ALL_CXX_SOURCES}
             COMMENT "Running clang-tidy with fixes"
         )

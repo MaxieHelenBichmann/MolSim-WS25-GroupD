@@ -15,13 +15,6 @@
 namespace mol_sim {
 
 /**
- * @brief Alias for a mathematical 3-dimensional real-valued (double-precision) vector.
- *
- * @see Vector
- */
-using R3 = Vector<double, 3>;
-
-/**
  * @brief Stores all important attributes of a Particle.
  *
  */
@@ -51,7 +44,16 @@ class Particle {
      * Mass of this particle
      */
     double m;
-
+    /**
+     * @brief Epsilon of this particle.
+     *
+     */
+    double epsilon;
+    /**
+     * @brief sigma of this particle.
+     *
+     */
+    double sigma;
     /**
      * Type of the particle. Use it for whatever you want (e.g. to separate
      * molecules belonging to different bodies, matters, and so on)
@@ -63,10 +65,16 @@ class Particle {
 
     Particle(const Particle& other);
 
+    Particle& operator=(const Particle& other);
+
     Particle(
         // for visualization, we need always 3 coordinates
         // -> in case of 2d, we use only the first and the second
-        R3 x_arg, R3 v_arg, double m_arg, int type = 0);
+        R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg = 0);
+    Particle(
+        // for visualization, we need always 3 coordinates
+        // -> in case of 2d, we use only the first and the second
+        R3 x_arg, R3 v_arg, R3 f_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg = 0);
 
     virtual ~Particle();
 
@@ -135,6 +143,34 @@ class Particle {
      * @return Int of the type of the Particle.
      */
     [[nodiscard]] int getType() const;
+
+    /**
+     * @brief Access to the sigma of this Particle
+     *
+     * @return double of the sigma of the Particle
+     */
+    [[nodiscard]] double getSigma() const;
+
+    /**
+     * @brief Access to the sigma of this Particle
+     *
+     * @return Reference to the double of the sigma of the Particle
+     */
+    double& getSigma();
+
+    /**
+     * @brief Access to the epsilon of this Particle
+     *
+     * @return double of the epsilon of the Particle
+     */
+    [[nodiscard]] double getEpsilon() const;
+
+    /**
+     * @brief Access to the epsilon of this Particle
+     *
+     * @return Reference to the double of the epsilon of the Particle
+     */
+    double& getEpsilon();
 
     bool operator==(const Particle& other) const;
 

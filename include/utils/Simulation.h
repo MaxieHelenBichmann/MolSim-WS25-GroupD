@@ -1,14 +1,14 @@
 #ifndef SIMULATION_H
 #define SIMULATION_H
 
-#include <iostream>
-#include <memory>
+#include <spdlog/spdlog.h>
 
 #include "io/outputWriter/VTKWriter.h"
 #include "io/outputWriter/XYZWriter.h"
+#include "particles/Particle.h"
 #include "particles/ParticleContainer.h"
 #include "physics/ForceSource.h"
-#include "physics/GravitationalForce.h"
+#include "utils/Settings.h"
 
 /**
  * @namespace mol_sim
@@ -24,7 +24,7 @@ namespace mol_sim {
  * and then execute run().
  * @tparam containerType Type of container used for this simulation. Templated to work with Concept.
  */
-template <ParticleContainer containerType>
+template <ParticleContainer containerType, ForceSource forceType>
 class Simulation {
    private:
     /**
@@ -36,7 +36,7 @@ class Simulation {
      * @brief Pointer to our force source.
      * Pointer to our force source, for easy switching, force Source determined by forceType in constructor.
      */
-    std::unique_ptr<ForceSource> force_source;
+    forceType& force_source;
     /**
      * @brief Time step of simulation.
      * Default value is 0.014.
@@ -53,19 +53,25 @@ class Simulation {
      */
     double end_time;
 
+   public:
     /**
      * @brief Calculates the forces of every particle for the next time step.
      * Calculates the forces of every particle. for the next time step. Using the specified force source and delta_t.
      */
     void calculateF() {
-        for (auto& p1 : particles) {
-            p1.getOldF() = p1.getF();
-            p1.getF() = Vector<double, 3>();
-            for (auto& p2 : particles) {
-                if (p1 == p2) {
-                    continue;
-                }
-                p1.getF() = p1.getF() + force_source->calculateForce(p1, p2);
+        for (auto& p : particles) {
+            p.getOldF() = p.getF();
+            p.getF() = Vector<double, 3>();
+        }
+
+        for (size_t i = 0; i < particles.size(); i++) {
+            Particle& p1 = particles[i];
+            for (size_t j = i + 1; j < particles.size(); j++) {
+                Particle& p2 = particles[j];
+                Vector<double, 3> force = force_source.applyForce(p1, p2);
+                // Apply force directly (Newton's 3rd law: equal and opposite)
+                p1.getF() = p1.getF() + force;
+                p2.getF() = p2.getF() - force;
             }
         }
     }
@@ -90,26 +96,23 @@ class Simulation {
         }
     }
 
-   public:
     /**
      * @brief Construct a new Simulation object and prepare for run() call
      * This class implements a Builder Pattern, meaning all parameters need to be set before the run() call, which will
      * run the simulation.
      * @param particles Container of particles to be used in the simulation.
-     * @param forceType Type of force to be used for calculation.
-     * @param delta_t Time step of simulation.
-     * @param start_time Start time of simulation.
-     * @param end_time End time of simulation.
+     * @param force_source Force source to be used in the simulation.
+     * @param settings Simulation parameters. If relevant values are not set their default values in
+     * include/utils/Default.h will be used instead.
      */
-    Simulation(containerType& particles, Force forceType, double delta_t, double start_time, double end_time)
-        : particles(particles), delta_t(delta_t), start_time(start_time), end_time(end_time) {
-        switch (forceType) {
-            case GRAVITATIONAL:
-                this->force_source = std::make_unique<GravitationalForce>();
-                break;
-            default:
-                break;
-        }
+    Simulation(containerType& particles, forceType& force_source, SettingsParam& settings)
+        : particles(particles), force_source(force_source) {
+        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+        delta_t = settings.delta_t.value();
+        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+        start_time = settings.start_time.value();
+        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+        end_time = settings.end_time.value();
     }
 
     /**
@@ -118,7 +121,7 @@ class Simulation {
      */
     void run() {
         double current_time = start_time;
-        int iteration = 0;
+        [[maybe_unused]] int iteration = 0;
 
         // for this loop, we assume: current x, current f and current v are known
         while (current_time < end_time) {
@@ -130,6 +133,7 @@ class Simulation {
             calculateV();
 
             iteration++;
+#ifndef DISABLE_IO
             if (iteration % 10 == 0) {
                 try {
 #ifdef ENABLE_VTK_OUTPUT
@@ -141,15 +145,14 @@ class Simulation {
 #endif
                     writer.plotParticles(particles, out_name, iteration);
                 } catch (...) {
-                    std::cout << "Something went wrong with plotting the Particles." << '\n';
+                    SPDLOG_ERROR("Something went wrong with plotting the Particles.");
                 }
             }
-            std::cout << "Iteration " << iteration << " finished. " << '\r' << std::flush;
-
+#endif
+            SPDLOG_INFO("Iteration {} finished.", iteration);
             current_time += delta_t;
         }
-        std::cout << '\n';  // Final newline after loop
-        std::cout << "output written. Terminating..." << '\n';
+        SPDLOG_INFO("Output written. Terminating...");
     }
 };
 

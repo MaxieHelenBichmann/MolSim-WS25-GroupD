@@ -7,10 +7,14 @@
 
 #include "io/fileReader/XVMReader.h"
 
+#include <spdlog/spdlog.h>
+
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <sstream>
+
+#include "utils/Settings.h"
 
 using namespace mol_sim;
 
@@ -18,7 +22,8 @@ XVMReader::XVMReader() = default;
 
 XVMReader::~XVMReader() = default;
 
-void XVMReader::readFile(ContainerRef particles, const std::string& filename) {
+void XVMReader::readFile(ContainerRef particles, [[maybe_unused]] SettingsParam& settings,
+                         const std::string& filename) {
     std::array<double, 3> x;
     std::array<double, 3> v;
     double m;
@@ -29,18 +34,19 @@ void XVMReader::readFile(ContainerRef particles, const std::string& filename) {
 
     if (input_file.is_open()) {
         getline(input_file, tmp_string);
-        std::cout << "Read line: " << tmp_string << '\n';
+
+        SPDLOG_TRACE("Read line: {}", tmp_string);
 
         while (tmp_string.empty() or tmp_string[0] == '#') {
             getline(input_file, tmp_string);
-            std::cout << "Read line: " << tmp_string << '\n';
+            SPDLOG_TRACE("Read line: {}", tmp_string);
         }
 
         std::istringstream numstream(tmp_string);
         numstream >> num_particles;
-        std::cout << "Reading " << num_particles << "." << '\n';
+        SPDLOG_TRACE("Reading {} particles", num_particles);
         getline(input_file, tmp_string);
-        std::cout << "Read line: " << tmp_string << '\n';
+        SPDLOG_TRACE("Read line: {}", tmp_string);
 
         particles.reserve(num_particles);
 
@@ -54,17 +60,17 @@ void XVMReader::readFile(ContainerRef particles, const std::string& filename) {
                 datastream >> vj;
             }
             if (datastream.eof()) {
-                std::cout << "Error reading file: eof reached unexpectedly reading from line " << i << '\n';
+                SPDLOG_ERROR("Error reading file: eof reached unexpectedly reading from line {}", i);
                 exit(-1);
             }
             datastream >> m;
-            particles.addParticle(x, v, m);
+            particles.addParticle(x, v, m, SettingsParam::EPSILON_DEFAULT, SettingsParam::SIGMA_DEFAULT);
 
             getline(input_file, tmp_string);
-            std::cout << "Read line: " << tmp_string << '\n';
+            SPDLOG_TRACE("Read line: {}", tmp_string);
         }
     } else {
-        std::cout << "Error: could not open file " << filename << '\n';
+        SPDLOG_ERROR("Error: could not open file {}", filename);
         exit(-1);
     }
 }
