@@ -141,8 +141,8 @@ TEST_F(LennardJonesForceAtBottomTest, PotentialWellAtRadius2_Cardinal) {
 TEST_F(LennardJonesForceAtBottomTest, PotentialWellAtRadius2_Diagonal) {
     double sigma = 1.78179743599999995673499597615;  // 2^{5/6}
     double bottom_diagonal = std::numbers::sqrt2;
-    p1.setSigma(sigma);
-    p2.setSigma(sigma);
+    p1.getSigma() = sigma;
+    p2.getSigma() = sigma;
     R3 expected_force = {0., 0., 0.};
 
     p2.getX() = {bottom_diagonal, bottom_diagonal, 0.0};
@@ -159,10 +159,10 @@ TEST_F(LennardJonesForceAtBottomTest, PotentialWellAtRadius2_Diagonal) {
 
 TEST_F(LennardJonesForceAtBottomTest, PotentialWellAtRadius1_Cardinal) {
     double sigma = 8.90898718099999986641535087983E-1;  // 2^{-1/6}
-    p1.setEpsilon(small_epsilon);
-    p2.setEpsilon(small_epsilon);
-    p1.setSigma(sigma);
-    p2.setSigma(sigma);
+    p1.getEpsilon() = small_epsilon;
+    p2.getEpsilon() = small_epsilon;
+    p1.getSigma() = sigma;
+    p2.getSigma() = sigma;
     R3 expected_force = {0., 0., 0.};
 
     p2.getX() = {1.0, 0.0, 0.0};
@@ -182,10 +182,10 @@ TEST_F(LennardJonesForceAtBottomTest, PotentialWellAtRadius1_Cardinal) {
 TEST_F(LennardJonesForceAtBottomTest, PotentialWellAtRadius1_Diagonal) {
     double sigma = 8.90898718099999986641535087983E-1;  // 2^{-1/6}
     double bottom_diagonal = 1.0 / std::numbers::sqrt2;
-    p1.setEpsilon(small_epsilon);
-    p2.setEpsilon(small_epsilon);
-    p1.setSigma(sigma);
-    p2.setSigma(sigma);
+    p1.getEpsilon() = small_epsilon;
+    p2.getEpsilon() = small_epsilon;
+    p1.getSigma() = sigma;
+    p2.getSigma() = sigma;
     R3 expected_force = {0., 0., 0.};
 
     p2.getX() = {bottom_diagonal, bottom_diagonal, 0.0};
