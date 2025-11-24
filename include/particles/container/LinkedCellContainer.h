@@ -10,20 +10,9 @@
 
 #include "particles/ParticleContainer.h"
 #include "particles/container/cells/Cell.h"
+#include "particles/boundaries/BoundaryCondition.h"
 
 namespace mol_sim {
-
-/**
- * @brief Enum for boundary types in the Linked-Cell Container.
- *
- * UPPER: +z direction (x-y plane at max z)
- * LOWER: -z direction (x-y plane at min z)
- * FRONT: -y direction (x-z plane at min y)
- * BACK: +y direction (x-z plane at max y)
- * LEFT: -x direction (y-z plane at min x)
- * RIGHT: +x direction (y-z plane at max x)
- */
-enum class BoundaryType : std::uint8_t { UPPER, LOWER, FRONT, BACK, LEFT, RIGHT };
 
 /**
  * @brief Linked-Cell Container for Particles

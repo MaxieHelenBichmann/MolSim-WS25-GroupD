@@ -11,53 +11,18 @@
 #include "particles/container/LinkedCellContainer.h"
 #include "physics/ForceSource.h"
 #include "physics/LennardJonesForce.h"
+#include "particles/container/domain/Domain.h"
 
 namespace mol_sim {
-/**
- * @brief Provides a wrapper for domain configuration
- *
- */
-struct Domain {
-    /**
-     * @brief Dimensions/size of the domain
-     *
-     */
-    R3 dimension;
-    /**
-     * @brief Boundary Type of the left (x) boundary
-     *
-     */
-    BoundaryConditions left_boundary = OUTFLOW;
-    /**
-     * @brief Boundary Type of the right (x) boundary
-     *
-     */
-    BoundaryConditions right_boundary = OUTFLOW;
-    /**
-     * @brief Boundary Type of the back (z) boundary
-     *
-     */
-    BoundaryConditions back_boundary = OUTFLOW;
-    /**
-     * @brief Boundary Type of the front (z) boundary
-     *
-     */
-    BoundaryConditions front_boundary = OUTFLOW;
-    /**
-     * @brief Boundary Type of the lower (y) boundary
-     *
-     */
-    BoundaryConditions lower_boundary = OUTFLOW;
-    /**
-     * @brief Boundary Type of the upper (y) boundary
-     *
-     */
-    BoundaryConditions upper_boundary = OUTFLOW;
-};
 /**
  * @brief Provides a wrapper for settings of the simulation set during config
  *
  */
+using DOMAIN = std::variant<
+Domain<SimpleContainer>, 
+Domain<LinkedCellContainer>
+>; //if more container types are needed, just add another Domain<containerType> here.
+
 class SettingsParam {
    public:
     /**
@@ -108,12 +73,6 @@ class SettingsParam {
      */
     constexpr static double CUTOFF_DEFAULT = 0.5;
     /**
-     * @brief Default boundary condition.
-     *
-     */
-    constexpr static BoundaryConditions BOUNDARY_CONDITION_DEFAULT = OUTFLOW;
-
-    /**
      * @brief delta_t of the simulation.
      *
      */
@@ -158,19 +117,11 @@ class SettingsParam {
      *
      */
     std::optional<double> cutoff;
-    /**
-     * @brief Domain of the simulation
-     *
-     */
-    std::optional<Domain> domain;
-    /**
-     * @brief Boundary condition
-     *
-     */
-    std::optional<BoundaryConditions> boundary_condition;
+
+    DOMAIN& domain;
     /**
      * @brief Construct new SettingsParam.
-     * All values will be set to null_opt if not specified otherwise.
+     * All values will be set to nullopt if not specified otherwise.
      * Default Values will be set in MolSim.cpp
      * @param delta_t
      * @param start_time
@@ -181,15 +132,12 @@ class SettingsParam {
      * @param force
      * @param frequency
      * @param cutoff
-     * @param domain
-     * @param boundary_condition
      */
     SettingsParam(std::optional<double> delta_t = std::nullopt, std::optional<double> start_time = std::nullopt,
                   std::optional<double> end_time = std::nullopt, std::optional<double> epsilon = std::nullopt,
                   std::optional<double> sigma = std::nullopt, std::optional<std::string> base_name = std::nullopt,
                   std::optional<Force> force = std::nullopt, std::optional<size_t> frequency = std::nullopt,
-                  std::optional<double> cutoff = std::nullopt, std::optional<R3> domain = std::nullopt,
-                  std::optional<BoundaryConditions> boundary_condition = std::nullopt)
+                  std::optional<double> cutoff = std::nullopt, DOMAIN domain)
         : delta_t(delta_t),
           start_time(start_time),
           end_time(end_time),
@@ -199,14 +147,11 @@ class SettingsParam {
           force(force),
           frequency(frequency),
           cutoff(cutoff),
-          domain(domain),
-          boundary_condition(boundary_condition) {}
-
+          domain(domain) {}
     /**
      * @brief Provide default values for settings that have not been set.
      *
      * */
-
     void setDefaults() {
         if (!delta_t.has_value()) {
             delta_t = DELTA_T_DEFAULT;
@@ -234,13 +179,6 @@ class SettingsParam {
         }
         if (!cutoff.has_value()) {
             cutoff = CUTOFF_DEFAULT;
-        }
-        if (!domain.has_value()) {
-            domain = Domain();
-            domain->dimension = R3{1., 1., 1.};
-        }
-        if (!boundary_condition.has_value()) {
-            boundary_condition = BOUNDARY_CONDITION_DEFAULT;
         }
     }
 };

@@ -2,14 +2,14 @@
 
 namespace mol_sim {
 
-Outflow::Outflow(LinkedCellContainer& particles)
-: BoundaryCondition(particles) {}
+template<ParticleContainer containerType>
+Outflow<containerType>::Outflow(containerType& particles, BoundaryType location)
+: BoundaryCondition(particles, location) {}
 
-void Outflow::boundaryStrategy(Particle& p) {
-    particles.eraseParticle(&p);
-}
+template<ParticleContainer containerType>
+bool Outflow<containerType>::boundaryConditionApplies(Particle& p) { return false; } 
 
-void Outflow::clean() {}
-
+template<ParticleContainer containerType>
+void Outflow<containerType>::boundaryStrategy(Particle& p) {}
 } // namespace mol_sim
 

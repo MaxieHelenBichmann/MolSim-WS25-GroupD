@@ -6,34 +6,67 @@
 
 namespace mol_sim {
 
-enum BoundaryConditions : uint8_t { OUTFLOW, REFLECTING, PERIODIC };
+class BoundaryConditionDeclaration {
+  public:
+  /**
+   * @brief Enum for boundary types in the Linked-Cell Container.
+   *
+   * UPPER: +z direction (x-y plane at max z)
+   * LOWER: -z direction (x-y plane at min z)
+   * FRONT: -y direction (x-z plane at min y)
+   * BACK: +y direction (x-z plane at max y)
+   * LEFT: -x direction (y-z plane at min x)
+   * RIGHT: +x direction (y-z plane at max x)
+  */
+  enum class BoundaryType : std::uint8_t { UPPER, LOWER, FRONT, BACK, LEFT, RIGHT };
+  enum class BoundaryConditionType : std::uint8_t { OUTFLOW, REFLECTING, PERIODIC }; 
+  BoundaryConditionDeclaration& set_type(BoundaryConditionType type);
+  BoundaryConditionDeclaration& set_location(BoundaryType location);
+  BoundaryConditionDeclaration& set_counter_sigma(double counter_sigma);
+  BoundaryConditionDeclaration& set_counter_epsilon(double counter_epsilon);
 
+  BoundaryConditionType get_type();
+  BoundaryType get_location();
+  std::optional<double> get_counter_sigma();
+  std::optional<double> get_counter_epsilon();
+
+  BoundaryConditionDeclaration() = default;
+
+  BoundaryConditionDeclaration(BoundaryType location, BoundaryConditionType type);
+
+  ~BoundaryConditionDeclaration() = default;
+
+  private:
+  BoundaryConditionType type;
+  BoundaryType location;
+  std::optional<double> counter_sigma = std::nullopt;
+  std::optional<double> counter_epsilon = std::nullopt;
+};
+
+using BoundaryType = BoundaryConditionDeclaration::BoundaryType;
+using BoundaryConditionType = BoundaryConditionDeclaration::BoundaryConditionType;
+
+template <ParticleContainer containerType>
 class BoundaryCondition {
-    protected:
-    LinkedCellContainer& particles;
-    virtual void boundaryStrategy(Particle& p) = 0;
+    virtual bool boundaryConditionApplies(Particle& p) = 0;
+    virtual void boundaryStrategy(Particle& p) = 0;  
+  protected:
+    containerType& particles;
+    BoundaryType location;
 
-    public:
-    BoundaryCondition(LinkedCellContainer& particles) : particles(particles) {}
-    virtual ~BoundaryCondition() = default;
+  public:
+    BoundaryCondition(const BoundaryCondition& other) { 
+      this->particles = other.particles;
+      this->location = other.location;
+      this->counter_sigma = other.counter_sigma;
+      this->counter_epsilon = other.counter_epsilon;
+    }
+    BoundaryCondition(containerType& particles, BoundaryType location);
+    ~BoundaryCondition() = default;
     /***
     * @brief Iterates over the boundary cells and applies the boundary condtion if necessary.
-    * 
-    * (Comment below just for clarity. Will be removed in final product)
-      we are only gonna iterate over the boundary cells. Yes i know that given
-      a large enough velocity any particle in any inner cell could also "hit" or even
-      cross the boundary within one timestep. However that can be fixed by making
-      delta_t smaller. So yes that means more fiddling with delta_t for a given simulation
-      so the boundary conditions hold but that to me seems like an ok tradeoff for the faster
-      run-time. I think that on average this would actually by O(1) assuming constant density
-      of the particles
     */
-    void applyBoundary(Particle& p) {
-        if (!particles.isOnBoundary(p)) { return; }
-        boundaryStrategy(p); 
-    }
-    
-    virtual void clean() = 0;
+    void applyBoundary();
 };
 
 } // namespace mol_sim

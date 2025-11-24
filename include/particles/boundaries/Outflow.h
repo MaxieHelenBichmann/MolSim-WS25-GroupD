@@ -4,14 +4,14 @@
 #include "particles/boundaries/BoundaryCondition.h"
 
 namespace mol_sim {
-using Outflow = class Outflow;
 
-class Outflow : public BoundaryCondition {
+template<ParticleContainer containerType>
+class Outflow : public BoundaryCondition<containerType> {
+    bool boundaryConditionApplies(Particle& p) override;
     void boundaryStrategy(Particle& p) override;
-    void clean() override;
-
+    
     public:
-    Outflow(LinkedCellContainer& particles);
+    Outflow(containerType& particles, BoundaryType location);
     ~Outflow() override = default;
 };
 } // namespace mol_sim

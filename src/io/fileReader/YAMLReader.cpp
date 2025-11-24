@@ -6,12 +6,15 @@
 #include <cstddef>
 #include <cstdlib>
 #include <string>
+#include <bits/stdc++.h>
+#include <variant>
 
 #include "io/fileReader/YAMLReaderException.h"
 #include "particles/generators/CuboidGenerator.h"
 #include "particles/generators/DiscGenerator.h"
 #include "physics/ForceSource.h"
 #include "utils/Settings.h"
+#include "particles/boundaries/BoundaryCondition.h"
 
 namespace mol_sim {
 YAMLReader::YAMLReader() = default;
@@ -117,14 +120,36 @@ void YAMLReader::readSettings(SettingsParam& settings, const YAML::Node& node) {
     if (node["cutoff"] && !settings.cutoff.has_value()) {
         settings.cutoff = node["cutoff"].as<double>();
     }
-    if (node["domain"] && !settings.domain.has_value()) {
+    if (node["domain"]) {
         const YAML::Node& domain_node = node["domain"];
+        auto domain_type = domain_node["domain_type"].as<std::string>();
         auto x = domain_node["x"].as<double>();
         auto y = domain_node["y"].as<double>();
         auto z = domain_node["z"].as<double>();
-        Domain domain;
-        domain.dimension = {x, y, z};
-        settings.domain = domain;
+        R3 dimension = {x, y, z};
+        /**
+         * INSERT BOUNDARY CONDITION PARSING HERE
+         */
+        std::optional<BoundaryConditionDeclaration> left_boundary = std::nullopt; 
+        std::optional<BoundaryConditionDeclaration> right_boundary = std::nullopt; 
+        std::optional<BoundaryConditionDeclaration> front_boundary = std::nullopt; 
+        std::optional<BoundaryConditionDeclaration> back_boundary = std::nullopt; 
+        std::optional<BoundaryConditionDeclaration> top_boundary = std::nullopt; 
+        std::optional<BoundaryConditionDeclaration> bottom_boundary = std::nullopt;
+        std::vector<std::optional<BoundaryConditionDeclaration>> boundaries = {left_boundary, right_boundary, front_boundary, back_boundary, top_boundary, bottom_boundary};
+
+        std::variant<Domain<SimpleContainer>, Domain<LinkedCellContainer>> domain_var;
+        Domain<SimpleContainer> domain;
+        domain_var = domain;
+
+/*         if (domain_type.compare("SIMPLE") == 0) {
+            Domain<SimpleContainer> domain(dimension, boundaries);
+            settings.domain = domain;
+        } else if (domain_type.compare("LINKED") == 0) {
+            domain = Domain<LinkedCellContainer>(dimension, boundaries);
+        }
+        // and then also template settings and then add domain to settings. then this should work. 
+        settings.domain = domain; */
     }
 }
 // Add these new methods that parse without generating

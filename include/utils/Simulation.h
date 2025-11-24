@@ -19,6 +19,7 @@
 #include "particles/container/SimpleContainer.h"
 #include "physics/ForceSource.h"
 #include "utils/Settings.h"
+#include "particles/container/domain/Domain.h"
 
 /**
  * @namespace mol_sim
@@ -42,6 +43,8 @@ class Simulation {
      * Container of Particles to simulate. Container type is templated to work with our container concept.
      */
     containerType& particles;
+
+    Domain<containerType>& domain = nullptr;
     /**
      * @brief Pointer to our force source.
      * Pointer to our force source, for easy switching, force Source determined by forceType in constructor.
@@ -73,9 +76,45 @@ class Simulation {
      */
     double cutoff_radius = std::numeric_limits<double>::infinity();
 
+    /**
+     * @deprecated 
+     */
     std::unique_ptr<BoundaryCondition> boundary_condition = nullptr;
 
    public:
+    /**
+     * @brief Construct a new Simulation object and prepare for run() call
+     * This class implements a Builder Pattern, meaning all parameters need to be set before the run() call, which will
+     * run the simulation.
+     * @param particles Container of particles to be used in the simulation.
+     * @param force_source Force source to be used in the simulation.
+     * @param settings Simulation parameters. If relevant values are not set their default values in
+     * include/utils/Default.h will be used instead.
+     */
+    Simulation(containerType& particles, forceType& force_source, SettingsParam& settings)
+        : particles(particles), force_source(force_source) {
+        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+        delta_t = settings.delta_t.value();
+        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+        start_time = settings.start_time.value();
+        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+        end_time = settings.end_time.value();
+        frequency = settings.frequency.value();
+        base_name = settings.base_name.value(); 
+    }
+
+    Simulation(Domain<containerType>& domain, forceType& force_source, SettingsParam& settings)
+        : domain(domain), force_source(force_source) {
+        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+        delta_t = settings.delta_t.value();
+        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+        start_time = settings.start_time.value();
+        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+        end_time = settings.end_time.value();
+        frequency = settings.frequency.value();
+        base_name = settings.base_name.value(); 
+    }
+
     /**
      * @brief Calculates the forces of every particle for the next time step.
      * Calculates the forces of every particle. for the next time step. Using the specified force source and delta_t.
@@ -86,8 +125,7 @@ class Simulation {
             p.getF() = Vector<double, 3>();
         }
 
-        size_t idx = 1;
-        for (auto it = particles.begin(); it != particles.end(); ++it, idx++) {
+        for (auto it = particles.begin(), size_t idx = 1; it != particles.end(); ++it, idx++) {
             Particle& p1 = *it;
             for (auto it_prox = particles.proximityBegin(p1.getX(), cutoff_radius, idx);
                  it_prox != particles.proximityEnd(p1.getX(), cutoff_radius); ++it_prox) {
@@ -124,54 +162,27 @@ class Simulation {
     }
 
     void applyBoundary() {
-        if (boundary_condition == nullptr) {
-            return;
-        }
-        for (auto& p : particles) {
-            boundary_condition->applyBoundary(p);
-        }
-    }
-
-    void cleanBoundary() {
-        if (boundary_condition == nullptr) {
-            return;
-        }
-        boundary_condition->clean();
+        if (domain == nullptr) { return; }
+        domain.get_boundary(BoundaryConditionDeclaration::BoundaryType::LEFT )->applyBoundary();  
+        domain.get_boundary(BoundaryConditionDeclaration::BoundaryType::RIGHT)->applyBoundary();  
+        domain.get_boundary(BoundaryConditionDeclaration::BoundaryType::UPPER)->applyBoundary();  
+        domain.get_boundary(BoundaryConditionDeclaration::BoundaryType::LOWER)->applyBoundary();  
+        domain.get_boundary(BoundaryConditionDeclaration::BoundaryType::FRONT)->applyBoundary();  
+        domain.get_boundary(BoundaryConditionDeclaration::BoundaryType::BACK )->applyBoundary();  
     }
 
     /**
-     * @brief Construct a new Simulation object and prepare for run() call
-     * This class implements a Builder Pattern, meaning all parameters need to be set before the run() call, which will
-     * run the simulation.
-     * @param particles Container of particles to be used in the simulation.
-     * @param force_source Force source to be used in the simulation.
-     * @param settings Simulation parameters. If relevant values are not set their default values in
-     * include/utils/Default.h will be used instead.
+     * @brief Clears the halo cells, i.e. removes all particles that are beyond the specified simulation domain. 
+     * 
      */
-    Simulation(containerType& particles, forceType& force_source, SettingsParam& settings)
-        : particles(particles), force_source(force_source) {
-        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-        delta_t = settings.delta_t.value();
-        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-        start_time = settings.start_time.value();
-        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-        end_time = settings.end_time.value();
-        frequency = settings.frequency.value();
-        base_name = settings.base_name.value();
-        /*         if (typeid(containerType) == typeid(LinkedCellContainer)) {
-                switch(settings.boundary_condition.value()) {
-                    case OUTFLOW:
-                        boundary_condition = std::make_unique<Outflow>(particles);
-                        break;
-                    case REFLECTING:
-                        boundary_condition = std::make_unique<Reflecting>(particles);
-                        break;
-                    default:
-                        SPDLOG_ERROR("Unknown boundary condition!");
-                        break;
-                }
-                } */
+    void cleanBoundary() {
+        if (typeid(containerType) == typeid(LinkedCellContainer)) {
+            for (auto& it = particles.haloBegin(); it != particles.haloEnd(); it++) {
+                particles.eraseParticle(it);
+            }  
+        }
     }
+
 
     /**
      * @brief Performs a full simulation run.
@@ -186,6 +197,7 @@ class Simulation {
             // calculate new x
             calculateX();
             // calculate new f
+            cleanBoundary();
             applyBoundary();
             calculateF();
             cleanBoundary();
