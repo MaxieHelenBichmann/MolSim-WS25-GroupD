@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "../code/ForceCalcMethods.h"
+#include "../code/simulationimpl/ForceCalcMethods.h"
 #include "BenchmarkingUtils.h"
 #include "io/outputWriter/XYZWriter.h"
 #include "particles/container/SimpleContainer.h"

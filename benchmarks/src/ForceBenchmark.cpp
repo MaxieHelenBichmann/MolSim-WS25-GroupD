@@ -3,9 +3,10 @@
 #include <memory>
 
 #include "../code/forceimpl/AbstractForce.h"
-#include "../code/forceimpl/GravtiationalAbstract.h"
+#include "../code/forceimpl/ForceConcept.h"
+#include "../code/forceimpl/GravitationalAbstract.h"
+#include "../code/forceimpl/GravitationalConcept.h"
 #include "particles/Particle.h"
-#include "physics/GravitationalForce.h"
 
 namespace mol_sim {
 /**

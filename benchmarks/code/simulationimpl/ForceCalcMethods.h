@@ -2,7 +2,7 @@
 #define FORCE_CALC_H
 #include <vector>
 
-#include "../forceimpl/AbstractForce.h"
+#include "../forceimpl/ForceConcept.h"
 #include "particles/ParticleContainer.h"
 namespace mol_sim {
 
