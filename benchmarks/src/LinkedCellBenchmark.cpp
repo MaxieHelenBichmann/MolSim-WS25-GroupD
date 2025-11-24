@@ -169,7 +169,7 @@ void bmUpdatePositionDirect(benchmark::State& state) {
         for (auto it = container.begin(); it != container.end(); ++it) {
             R3 new_pos = it->getX() + R3{1.5, 1.5, 1.5};
             if (container.fitsContainer(new_pos)) {
-                container.updateParticlePosition(it, new_pos);
+                container.updateParticlePosition(*it, new_pos);
             }
         }
         benchmark::DoNotOptimize(container);
