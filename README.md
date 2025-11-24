@@ -7,6 +7,59 @@
 - Georg Sebastian Eisner
 - Henry Jacob Meyran
 
+**Documentation:** [https://maxiehelenbichmann.github.io/MolSim-WS25-GroupD/](https://maxiehelenbichmann.github.io/MolSim-WS25-GroupD/)
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Project Structure](#project-structure)
+- [Dependencies](#dependencies)
+- [Building the Project](#building-the-project)
+- [Running the Project](#running-the-project)
+- [Documentation](#documentation)
+- [Testing the Project](#testing-the-project)
+- [Benchmarking the Project](#benchmarking-the-project)
+- [Optional Tools](#optional-tools)
+- [Profiling](#profiling)
+
+---
+
+## Overview
+
+MolSim is a molecular dynamics simulation framework developed as part of the PSE Molekulardynamik course. The application simulates the physical behavior of particle systems using numerical integration methods and various force models.
+
+**Key Features:**
+- Multiple force implementations (Gravitational, Lennard-Jones)
+- Efficient particle containers (Direct Sum, Linked Cell)
+- Boundary condition support (Reflecting, Periodic, Outflow)
+- Particle generators utilities (Cuboid, Disc) with Brownian Motion
+- Output formats (VTK, XYZ)
+- Configurable via YAML input files
+
+**Supported Simulations:**
+- Gravitational N-body problems (planetary systems, stellar dynamics)
+- Molecular dynamics with Lennard-Jones potentials (fluids, collisions)
+- Large-scale particle systems using spatial optimization (Linked Cells)
+
+---
+
+## Project Structure
+
+```
+MolSim-WS25-GroupD/
+├── src/                        # Source code
+│   └── MolSim.cpp              # Main application entry point
+├── include/                    # Public headers
+├── tests/                      # Unit and integration tests
+├── benchmarks/                 # Performance benchmarks
+├── input/                      # Example simulation configurations 
+│   └── formats/                # Explanation of all available input formats
+├── build/                      # Build artifacts (generated)
+└── doxys_documentation/        # Generated documentation (generated)
+```
+
 ---
 
 ## Dependencies
@@ -85,6 +138,29 @@ From the project root:
 - `-d` : Delta T (time step)
 - `-t` : End T (simulation end time)
 - `-f` : Force type
+
+---
+
+## Documentation
+
+**Online API Documentation:**
+
+Complete API and input format documentation is available at:
+- **[https://maxiehelenbichmann.github.io/MolSim-WS25-GroupD/](https://maxiehelenbichmann.github.io/MolSim-WS25-GroupD/)**
+
+**Local Documentation:**
+
+You can also generate the documentation locally using Doxygen (see [Optional Tools](#optional-tools) section).
+
+**Input File Format Reference:**
+
+Additional format documentation files are available in `input/formats/`:
+- `SettingsFormat.md` - Simulation settings configuration
+- `CuboidFormat.md` - Cuboid particle generation
+- `DiscFormat.md` - Disc particle generation
+- `XVMFormat.md` - Individual particle specification
+
+---
 
 ## Testing the Project
 
