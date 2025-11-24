@@ -3,6 +3,7 @@
 using namespace mol_sim;
 
 ContainerRef::ContainerRef(SimpleContainer& c) : instance(&c) {}
+ContainerRef::ContainerRef(LinkedCellContainer& c) : instance(&c) {}
 
 Particle& ContainerRef::operator[](size_t idx) {
     return std::visit([idx](auto& c) -> Particle& { return (*c)[idx]; }, instance);
@@ -69,23 +70,30 @@ std::vector<Particle>::const_iterator ContainerRef::cend() const {
 }
 
 // proximity iterators
-SimpleContainer::proximity_iterator ContainerRef::proximityBegin(R3 center, double radius, size_t offset) {
-    return std::visit([center, radius, offset](auto& c) { return c->proximityBegin(center, radius, offset); },
-                      instance);
-}
-
-SimpleContainer::proximity_iterator ContainerRef::proximityEnd(R3 center, double radius) {
-    return std::visit([center, radius](auto& c) { return c->proximityEnd(center, radius); }, instance);
-}
-
-SimpleContainer::const_proximity_iterator ContainerRef::proximityBegin(R3 center, double radius, size_t offset) const {
+ContainerRef::proximity_iterator ContainerRef::proximityBegin(R3 center, double radius, size_t offset) {
     return std::visit(
-        [center, radius, offset](const auto& c) { return std::as_const(*c).proximityBegin(center, radius, offset); },
+        [center, radius, offset](auto& c) { return proximity_iterator{c->proximityBegin(center, radius, offset)}; },
         instance);
 }
-SimpleContainer::const_proximity_iterator ContainerRef::proximityEnd(R3 center, double radius) const {
-    return std::visit([center, radius](const auto& c) { return std::as_const(*c).proximityEnd(center, radius); },
+
+ContainerRef::proximity_iterator ContainerRef::proximityEnd(R3 center, double radius) {
+    return std::visit([center, radius](auto& c) { return proximity_iterator{c->proximityEnd(center, radius)}; },
                       instance);
+}
+
+ContainerRef::const_proximity_iterator ContainerRef::proximityBegin(R3 center, double radius, size_t offset) const {
+    return std::visit(
+        [center, radius, offset](const auto& c) {
+            return const_proximity_iterator{std::as_const(*c).proximityBegin(center, radius, offset)};
+        },
+        instance);
+}
+ContainerRef::const_proximity_iterator ContainerRef::proximityEnd(R3 center, double radius) const {
+    return std::visit(
+        [center, radius](const auto& c) {
+            return const_proximity_iterator{std::as_const(*c).proximityEnd(center, radius)};
+        },
+        instance);
 }
 
 static_assert(ParticleContainer<ContainerRef>);
