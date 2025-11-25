@@ -5,12 +5,11 @@
 #include <string>
 #include <utility>
 #include <variant>
-#include <variant>
 
 #include "particles/Particle.h"
 #include "particles/boundaries/BoundaryCondition.h"
+#include "particles/container/SimpleContainer.h"
 #include "particles/container/LinkedCellContainer.h"
-#include "particles/container/domain/Domain.h"
 #include "particles/container/domain/Domain.h"
 #include "physics/ForceSource.h"
 #include "physics/LennardJonesForce.h"
@@ -131,7 +130,6 @@ class SettingsParam {
      */
     std::optional<std::string> domain_type;
 
-    DomainVariant domain;
     DomainVariant domain;
     /**
      * @brief Construct new SettingsParam.

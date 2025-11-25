@@ -2,7 +2,6 @@
 #define BOUNDARY_CONDITION_H
 
 #include <optional>
-#include <optional>
 #include <vector>
 #include <cstdint>
 #include <set>
@@ -10,8 +9,6 @@
 #include "particles/Particle.h"
 #include "particles/ParticleContainer.h"
 
-#include "particles/Particle.h"
-#include "particles/ParticleContainer.h"
 namespace mol_sim {
 /**
    * @brief Enum for boundary types in the Linked-Cell Container.
@@ -52,7 +49,6 @@ class BoundaryConditionDeclaration {
 };
 
 template <ParticleContainer containerType>
-class BoundaryCondition : public BoundaryConditionDeclaration {
 class BoundaryCondition : public BoundaryConditionDeclaration {
     virtual bool boundaryConditionApplies(Particle& p) = 0;
     virtual void boundaryStrategy(Particle& p) = 0;  

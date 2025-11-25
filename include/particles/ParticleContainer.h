@@ -2,6 +2,7 @@
 #define PARTICLE_CONTAINER_H
 
 #include <concepts>
+#include <vector>
 
 #include "particles/Particle.h"
 

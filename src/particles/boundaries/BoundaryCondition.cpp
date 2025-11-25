@@ -51,7 +51,6 @@ BoundaryCondition<containerType>::BoundaryCondition(containerType* particles, Bo
     }
 
 template <ParticleContainer containerType>
-template <ParticleContainer containerType>
 void BoundaryCondition<containerType>::applyBoundary() {
     const std::set<BoundaryLocation> boundary{location};
     for (auto& it = particles->boundaryBegin(boundary); it != particles->boundaryEnd(boundary); it++) {
@@ -61,5 +60,4 @@ void BoundaryCondition<containerType>::applyBoundary() {
     }  
 }
 
-}  // namespace mol_sim
 }  // namespace mol_sim

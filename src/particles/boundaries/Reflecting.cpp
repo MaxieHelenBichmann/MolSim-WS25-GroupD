@@ -34,7 +34,6 @@ void Reflecting<containerType>::addCounterParticle(int sign, size_t coordinate, 
 }
 
 template <ParticleContainer containerType>
-template <ParticleContainer containerType>
 void Reflecting<containerType>::boundaryStrategy(Particle& p) {
     addCounterParticle(1, 0, this->particles, p); 
     addCounterParticle(-1, 0, this->particles, p); 
@@ -43,5 +42,4 @@ void Reflecting<containerType>::boundaryStrategy(Particle& p) {
     addCounterParticle(1, 2, this->particles, p); 
     addCounterParticle(-1, 2, this->particles, p); 
 }
-}  // namespace mol_sim
 }  // namespace mol_sim

@@ -7,9 +7,6 @@
 #include "particles/boundaries/Outflow.h"
 #include "particles/boundaries/Reflecting.h"
 #include "utils/Vector.h"
-#include "particles/boundaries/Outflow.h"
-#include "particles/boundaries/Reflecting.h"
-#include "utils/Vector.h"
 
 namespace mol_sim {
 /**
@@ -111,7 +108,6 @@ class Domain {
     }
 
     Domain(R3 dimension, std::vector<std::optional<BoundaryConditionDeclaration>> boundaries) : dimension(dimension) {
-    Domain(R3 dimension, std::vector<std::optional<BoundaryConditionDeclaration>> boundaries) : dimension(dimension) {
         for (auto& boundary : boundaries) {
             if (boundary.has_value()) { 
                 setBoundary(boundary.value()); 
@@ -142,8 +138,6 @@ class Domain {
 
     R3 getDimension() { return dimension; }
 };
-
-}  // namespace mol_sim
 }  // namespace mol_sim
 
 #endif
