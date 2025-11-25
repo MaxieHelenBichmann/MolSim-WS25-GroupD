@@ -4,6 +4,10 @@ using namespace mol_sim;
 
 ContainerRef::ContainerRef(SimpleContainer& c) : instance(&c) {}
 
+ContainerRef::ContainerRef(LinkedCellContainer& c) : instance(&c) {}
+
+ContainerRef::ContainerRef(PARTICLE_CONTAINER_REF c) : instance(c) {}
+
 Particle& ContainerRef::operator[](size_t idx) {
     return std::visit([idx](auto& c) -> Particle& { return (*c)[idx]; }, instance);
 }

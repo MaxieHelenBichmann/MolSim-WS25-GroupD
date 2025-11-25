@@ -5,9 +5,11 @@
 #include <variant>
 
 #include "particles/container/SimpleContainer.h"
+#include "particles/container/LinkedCellContainer.h"
+#include "utils/Settings.h"
 
 namespace mol_sim {
-
+using PARTICLE_CONTAINER_REF = std::variant<SimpleContainer*, LinkedCellContainer*>; 
 /**
  * @brief Container Reference for Particles
  *
@@ -33,15 +35,24 @@ class ContainerRef {
      * Pointer to the current instance of the ContainerRef.
      * More containers can be added in the std::variant later.
      */
-    std::variant<SimpleContainer*> instance;  // NOLINT
+    PARTICLE_CONTAINER_REF instance;  // NOLINT
 
    public:
     // constructors
-
     /**
      * @brief Constructor, initializing ContainerRef with a reference to a SimpleContainer.
      */
     ContainerRef(SimpleContainer& c);
+
+    /**
+     * @brief Constructor, initializing ContainerRef with a reference to a LinkedCellContainer.
+     */
+    ContainerRef(LinkedCellContainer& c);
+
+    /**
+     * @brief Constructor, initializing ContainerRef with a reference to a LinkedCellContainer.
+     */
+    ContainerRef(PARTICLE_CONTAINER_REF c);
 
     // retrieve data
     Particle& operator[](size_t idx);

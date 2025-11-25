@@ -3,7 +3,6 @@
 
 #include <sys/stat.h>
 #include <yaml-cpp/node/node.h>
-
 #include <cstddef>
 
 #include "io/FileReader.h"
@@ -14,17 +13,27 @@
 
 namespace mol_sim {
 using N3 = Vector<size_t, 3>;
+
 /**
- * @brief Struct to hold Cuboid Generation Data
- *
- */
+  * @brief Names of the supported ParticleContainers.
+  * @note May be deprecated soon-ish
+  * 
+  * SIMPLE = SimpleContainer 
+  * LINKED = LinkedCellContainer
+  */
+const std::string SIMPLE = "SIMPLE";
+const std::string LINKED = "LINKED";
 
 /**
  * @brief Reads in .yaml files that follow supported Structure
- * Supported formats: XVM, Cuboid
+ * Supported formats: XVM, Cuboid, Disc
  */
 class YAMLReader : public FileReader {
    public:
+    /**
+     * @brief Struct to hold Cuboid Generation Data
+    *
+    */
     struct CuboidData {
         R3 position;
         R3 velocity;
@@ -63,8 +72,10 @@ class YAMLReader : public FileReader {
     std::vector<YAMLReader::DiscData> parseDiscs(const YAML::Node& node);
 
    private:
-    static void readXVM(ContainerRef particles, const YAML::Node& node);
-    static void readSettings(SettingsParam& Settings, const YAML::Node& node);
+    static void readSettings(SettingsParam& settings, const YAML::Node& node);
+    static void parseDomain(SettingsParam& settings, const YAML::Node& node);
+    static void readBoundaryCondition(std::optional<BoundaryConditionDeclaration>& declaration, BoundaryLocation location, const YAML::Node& node);
+    void readXVM(ContainerRef particles, const YAML::Node& node);
     void readCube(ContainerRef particles, const YAML::Node& node);
     void readDisc(ContainerRef particles, const YAML::Node& node);
 };

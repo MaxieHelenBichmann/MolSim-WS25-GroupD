@@ -135,10 +135,10 @@ std::vector<const Cell*> LinkedCellContainer::findAdjacentCells(size_t cell_idx)
     return adjacent_cells;
 }
 
-void LinkedCellContainer::findBoundaryCells(const BoundaryType type,  // NOLINT
+void LinkedCellContainer::findBoundaryCells(const BoundaryLocation type,  // NOLINT
                                             std::vector<const Cell*>& boundary_cells, size_t offset) const {
     switch (type) {
-        case BoundaryType::UPPER: {
+        case BoundaryLocation::UPPER: {
             for (size_t y = offset; y < num_cells[1] - offset; ++y) {
                 for (size_t x = offset; x < num_cells[0] - offset; ++x) {
                     size_t idx =
@@ -148,7 +148,7 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryType type,  // NOLINT
             }
             return;
         }
-        case BoundaryType::LOWER: {
+        case BoundaryLocation::LOWER: {
             for (size_t y = offset; y < num_cells[1] - offset; ++y) {
                 for (size_t x = offset; x < num_cells[0] - offset; ++x) {
                     size_t idx = (offset * num_cells[1] * num_cells[0]) + (y * num_cells[0]) + x;
@@ -157,7 +157,7 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryType type,  // NOLINT
             }
             return;
         }
-        case BoundaryType::LEFT: {
+        case BoundaryLocation::LEFT: {
             for (size_t z = offset; z < num_cells[2] - offset; ++z) {
                 for (size_t y = offset; y < num_cells[1] - offset; ++y) {
                     size_t idx = (z * num_cells[1] * num_cells[0]) + (y * num_cells[0]) + offset;
@@ -166,7 +166,7 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryType type,  // NOLINT
             }
             return;
         }
-        case BoundaryType::RIGHT: {
+        case BoundaryLocation::RIGHT: {
             for (size_t z = offset; z < num_cells[2] - offset; ++z) {
                 for (size_t y = offset; y < num_cells[1] - offset; ++y) {
                     size_t idx =
@@ -176,7 +176,7 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryType type,  // NOLINT
             }
             return;
         }
-        case BoundaryType::FRONT: {
+        case BoundaryLocation::FRONT: {
             for (size_t z = offset; z < num_cells[2] - offset; ++z) {
                 for (size_t x = offset; x < num_cells[0] - offset; ++x) {
                     size_t idx = (z * num_cells[1] * num_cells[0]) + (offset * num_cells[0]) + x;
@@ -185,7 +185,7 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryType type,  // NOLINT
             }
             return;
         }
-        case BoundaryType::BACK: {
+        case BoundaryLocation::BACK: {
             for (size_t z = offset; z < num_cells[2] - offset; ++z) {
                 for (size_t x = offset; x < num_cells[0] - offset; ++x) {
                     size_t idx =
@@ -197,10 +197,10 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryType type,  // NOLINT
         }
     }
 }
-void LinkedCellContainer::findBoundaryCells(const BoundaryType type, std::vector<Cell*>& boundary_cells,  // NOLINT
+void LinkedCellContainer::findBoundaryCells(const BoundaryLocation type, std::vector<Cell*>& boundary_cells,  // NOLINT
                                             size_t offset) {
     switch (type) {
-        case BoundaryType::UPPER: {
+        case BoundaryLocation::UPPER: {
             for (size_t y = offset; y < num_cells[1] - offset; ++y) {
                 for (size_t x = offset; x < num_cells[0] - offset; ++x) {
                     size_t idx =
@@ -210,7 +210,7 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryType type, std::vector
             }
             return;
         }
-        case BoundaryType::LOWER: {
+        case BoundaryLocation::LOWER: {
             for (size_t y = offset; y < num_cells[1] - offset; ++y) {
                 for (size_t x = offset; x < num_cells[0] - offset; ++x) {
                     size_t idx = (offset * num_cells[1] * num_cells[0]) + (y * num_cells[0]) + x;
@@ -219,7 +219,7 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryType type, std::vector
             }
             return;
         }
-        case BoundaryType::LEFT: {
+        case BoundaryLocation::LEFT: {
             for (size_t z = offset; z < num_cells[2] - offset; ++z) {
                 for (size_t y = offset; y < num_cells[1] - offset; ++y) {
                     size_t idx = (z * num_cells[1] * num_cells[0]) + (y * num_cells[0]) + offset;
@@ -228,7 +228,7 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryType type, std::vector
             }
             return;
         }
-        case BoundaryType::RIGHT: {
+        case BoundaryLocation::RIGHT: {
             for (size_t z = offset; z < num_cells[2] - offset; ++z) {
                 for (size_t y = offset; y < num_cells[1] - offset; ++y) {
                     size_t idx =
@@ -238,7 +238,7 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryType type, std::vector
             }
             return;
         }
-        case BoundaryType::FRONT: {
+        case BoundaryLocation::FRONT: {
             for (size_t z = offset; z < num_cells[2] - offset; ++z) {
                 for (size_t x = offset; x < num_cells[0] - offset; ++x) {
                     size_t idx = (z * num_cells[1] * num_cells[0]) + (offset * num_cells[0]) + x;
@@ -247,7 +247,7 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryType type, std::vector
             }
             return;
         }
-        case BoundaryType::BACK: {
+        case BoundaryLocation::BACK: {
             for (size_t z = offset; z < num_cells[2] - offset; ++z) {
                 for (size_t x = offset; x < num_cells[0] - offset; ++x) {
                     size_t idx =
@@ -421,7 +421,7 @@ LinkedCellContainer::const_proximity_iterator LinkedCellContainer::proximityEnd(
 }
 
 // boundary and halo iterators
-LinkedCellContainer::proximity_iterator LinkedCellContainer::haloBegin(const std::set<BoundaryType>& boundary_types) {
+LinkedCellContainer::proximity_iterator LinkedCellContainer::haloBegin(const std::set<BoundaryLocation>& boundary_types) {
     std::vector<Cell*> relevant_cells;
 
     for (const auto type : boundary_types) {
@@ -442,7 +442,7 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::haloBegin(const std
                               unique_and_nonempty_cells.front()->particles().begin(), unique_and_nonempty_cells, &data};
 }
 LinkedCellContainer::const_proximity_iterator LinkedCellContainer::haloBegin(
-    const std::set<BoundaryType>& boundary_types) const {
+    const std::set<BoundaryLocation>& boundary_types) const {
     std::vector<const Cell*> relevant_cells;
 
     for (const auto type : boundary_types) {
@@ -463,7 +463,7 @@ LinkedCellContainer::const_proximity_iterator LinkedCellContainer::haloBegin(
                                     unique_and_nonempty_cells.front()->particles().begin(), unique_and_nonempty_cells,
                                     &data};
 }
-LinkedCellContainer::proximity_iterator LinkedCellContainer::haloEnd(const std::set<BoundaryType>& boundary_types) {
+LinkedCellContainer::proximity_iterator LinkedCellContainer::haloEnd(const std::set<BoundaryLocation>& boundary_types) {
     std::vector<Cell*> relevant_cells;
 
     for (const auto type : boundary_types) {
@@ -484,7 +484,7 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::haloEnd(const std::
                               unique_and_nonempty_cells.back()->particles().end(), unique_and_nonempty_cells, &data};
 }
 LinkedCellContainer::const_proximity_iterator LinkedCellContainer::haloEnd(
-    const std::set<BoundaryType>& boundary_types) const {
+    const std::set<BoundaryLocation>& boundary_types) const {
     std::vector<const Cell*> relevant_cells;
 
     for (const auto type : boundary_types) {
@@ -507,7 +507,7 @@ LinkedCellContainer::const_proximity_iterator LinkedCellContainer::haloEnd(
 }
 
 LinkedCellContainer::proximity_iterator LinkedCellContainer::boundaryBegin(
-    const std::set<BoundaryType>& boundary_types) {
+    const std::set<BoundaryLocation>& boundary_types) {
     std::vector<Cell*> relevant_cells;
 
     for (const auto type : boundary_types) {
@@ -528,7 +528,7 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::boundaryBegin(
                               unique_and_nonempty_cells.front()->particles().begin(), unique_and_nonempty_cells, &data};
 }
 LinkedCellContainer::const_proximity_iterator LinkedCellContainer::boundaryBegin(
-    const std::set<BoundaryType>& boundary_types) const {
+    const std::set<BoundaryLocation>& boundary_types) const {
     std::vector<const Cell*> relevant_cells;
 
     for (const auto type : boundary_types) {
@@ -549,7 +549,7 @@ LinkedCellContainer::const_proximity_iterator LinkedCellContainer::boundaryBegin
                                     unique_and_nonempty_cells.front()->particles().begin(), unique_and_nonempty_cells,
                                     &data};
 }
-LinkedCellContainer::proximity_iterator LinkedCellContainer::boundaryEnd(const std::set<BoundaryType>& boundary_types) {
+LinkedCellContainer::proximity_iterator LinkedCellContainer::boundaryEnd(const std::set<BoundaryLocation>& boundary_types) {
     std::vector<Cell*> relevant_cells;
 
     for (const auto type : boundary_types) {
@@ -570,7 +570,7 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::boundaryEnd(const s
                               unique_and_nonempty_cells.back()->particles().end(), unique_and_nonempty_cells, &data};
 }
 LinkedCellContainer::const_proximity_iterator LinkedCellContainer::boundaryEnd(
-    const std::set<BoundaryType>& boundary_types) const {
+    const std::set<BoundaryLocation>& boundary_types) const {
     std::vector<const Cell*> relevant_cells;
 
     for (const auto type : boundary_types) {

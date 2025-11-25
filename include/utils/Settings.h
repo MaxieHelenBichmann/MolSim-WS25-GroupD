@@ -1,27 +1,26 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-#include <cstddef>
 #include <optional>
 #include <string>
 #include <utility>
+#include <variant>
 
 #include "particles/Particle.h"
 #include "particles/boundaries/BoundaryCondition.h"
 #include "particles/container/LinkedCellContainer.h"
+#include "particles/container/domain/Domain.h"
 #include "physics/ForceSource.h"
 #include "physics/LennardJonesForce.h"
-#include "particles/container/domain/Domain.h"
 
 namespace mol_sim {
 /**
  * @brief Provides a wrapper for settings of the simulation set during config
  *
  */
-using DOMAIN = std::variant<
-Domain<SimpleContainer>, 
-Domain<LinkedCellContainer>
->; //if more container types are needed, just add another Domain<containerType> here.
+using DomainVariant = 
+    std::variant<Domain<SimpleContainer>, Domain<LinkedCellContainer>>; //if more container types are needed, just add 
+                                                                        //another Domain<containerType> here.
 
 class SettingsParam {
    public:
@@ -73,6 +72,11 @@ class SettingsParam {
      */
     constexpr static double CUTOFF_DEFAULT = 0.5;
     /**
+     * @brief Default container type. SIMPLE = SimpleContainer
+     *
+     */
+    constexpr static std::string CONTAINER_TYPE_DEFAULT = "SIMPLE";
+    /**
      * @brief delta_t of the simulation.
      *
      */
@@ -117,12 +121,19 @@ class SettingsParam {
      *
      */
     std::optional<double> cutoff;
+    /**
+     * @brief The type in string format (as it would be expected in the .yaml files) of the particle container.
+     * 
+     * SIMPLE = SimpleContainer
+     * LINKED = LinkedCellContainer
+     */
+    std::optional<std::string> domain_type;
 
-    DOMAIN& domain;
+    DomainVariant domain;
     /**
      * @brief Construct new SettingsParam.
      * All values will be set to nullopt if not specified otherwise.
-     * Default Values will be set in MolSim.cpp
+     * Default values will be set in YAMLReader.cpp::readFile
      * @param delta_t
      * @param start_time
      * @param end_time
@@ -132,12 +143,14 @@ class SettingsParam {
      * @param force
      * @param frequency
      * @param cutoff
+     * @param domain_type
      */
     SettingsParam(std::optional<double> delta_t = std::nullopt, std::optional<double> start_time = std::nullopt,
                   std::optional<double> end_time = std::nullopt, std::optional<double> epsilon = std::nullopt,
                   std::optional<double> sigma = std::nullopt, std::optional<std::string> base_name = std::nullopt,
                   std::optional<Force> force = std::nullopt, std::optional<size_t> frequency = std::nullopt,
-                  std::optional<double> cutoff = std::nullopt, DOMAIN domain)
+                  std::optional<double> cutoff = std::nullopt, std::optional<std::string> domain_type = std::nullopt,
+                  DomainVariant domain = DomainVariant())
         : delta_t(delta_t),
           start_time(start_time),
           end_time(end_time),
@@ -147,7 +160,8 @@ class SettingsParam {
           force(force),
           frequency(frequency),
           cutoff(cutoff),
-          domain(domain) {}
+          domain_type(std::move(domain_type)),
+          domain(std::move(domain)) {}
     /**
      * @brief Provide default values for settings that have not been set.
      *
@@ -179,6 +193,9 @@ class SettingsParam {
         }
         if (!cutoff.has_value()) {
             cutoff = CUTOFF_DEFAULT;
+        }
+        if (!domain_type.has_value()) {
+            domain_type = CONTAINER_TYPE_DEFAULT;
         }
     }
 };

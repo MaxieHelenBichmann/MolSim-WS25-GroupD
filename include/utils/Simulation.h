@@ -17,9 +17,9 @@
 #include "particles/boundaries/Reflecting.h"
 #include "particles/container/LinkedCellContainer.h"
 #include "particles/container/SimpleContainer.h"
+#include "particles/container/domain/Domain.h"
 #include "physics/ForceSource.h"
 #include "utils/Settings.h"
-#include "particles/container/domain/Domain.h"
 
 /**
  * @namespace mol_sim
@@ -39,12 +39,15 @@ template <ParticleContainer containerType, ForceSource forceType>
 class Simulation {
    private:
     /**
+     * @brief Simulation domain.
+     * 
+     */
+    Domain<containerType>& domain;
+    /**
      * @brief Container of Particles to simulate.
      * Container of Particles to simulate. Container type is templated to work with our container concept.
      */
     containerType& particles;
-
-    Domain<containerType>& domain = nullptr;
     /**
      * @brief Pointer to our force source.
      * Pointer to our force source, for easy switching, force Source determined by forceType in constructor.
@@ -86,13 +89,12 @@ class Simulation {
      * @brief Construct a new Simulation object and prepare for run() call
      * This class implements a Builder Pattern, meaning all parameters need to be set before the run() call, which will
      * run the simulation.
-     * @param particles Container of particles to be used in the simulation.
-     * @param force_source Force source to be used in the simulation.
      * @param settings Simulation parameters. If relevant values are not set their default values in
-     * include/utils/Default.h will be used instead.
+     * include/utils/Settings.h will be used instead.
+     * @param force_source Force source to be used in the simulation.
      */
-    Simulation(containerType& particles, forceType& force_source, SettingsParam& settings)
-        : particles(particles), force_source(force_source) {
+    Simulation(SettingsParam& settings, forceType& force_source)
+        : force_source(force_source) {
         // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
         delta_t = settings.delta_t.value();
         // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
@@ -100,19 +102,9 @@ class Simulation {
         // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
         end_time = settings.end_time.value();
         frequency = settings.frequency.value();
-        base_name = settings.base_name.value(); 
-    }
-
-    Simulation(Domain<containerType>& domain, forceType& force_source, SettingsParam& settings)
-        : domain(domain), force_source(force_source) {
-        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-        delta_t = settings.delta_t.value();
-        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-        start_time = settings.start_time.value();
-        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-        end_time = settings.end_time.value();
-        frequency = settings.frequency.value();
-        base_name = settings.base_name.value(); 
+        base_name = settings.base_name.value();
+        domain = std::get<Domain<containerType>>(settings.domain.value());
+        particles = domain.getParticles(); 
     }
 
     /**
@@ -162,13 +154,12 @@ class Simulation {
     }
 
     void applyBoundary() {
-        if (domain == nullptr) { return; }
-        domain.get_boundary(BoundaryConditionDeclaration::BoundaryType::LEFT )->applyBoundary();  
-        domain.get_boundary(BoundaryConditionDeclaration::BoundaryType::RIGHT)->applyBoundary();  
-        domain.get_boundary(BoundaryConditionDeclaration::BoundaryType::UPPER)->applyBoundary();  
-        domain.get_boundary(BoundaryConditionDeclaration::BoundaryType::LOWER)->applyBoundary();  
-        domain.get_boundary(BoundaryConditionDeclaration::BoundaryType::FRONT)->applyBoundary();  
-        domain.get_boundary(BoundaryConditionDeclaration::BoundaryType::BACK )->applyBoundary();  
+        domain.getBoundary(BoundaryConditionDeclaration::BoundaryLocation::LEFT)->applyBoundary();  
+        domain.getBoundary(BoundaryConditionDeclaration::BoundaryLocation::RIGHT)->applyBoundary();  
+        domain.getBoundary(BoundaryConditionDeclaration::BoundaryLocation::UPPER)->applyBoundary();  
+        domain.getBoundary(BoundaryConditionDeclaration::BoundaryLocation::LOWER)->applyBoundary();  
+        domain.getBoundary(BoundaryConditionDeclaration::BoundaryLocation::FRONT)->applyBoundary();  
+        domain.getBoundary(BoundaryConditionDeclaration::BoundaryLocation::BACK)->applyBoundary();  
     }
 
     /**
@@ -182,7 +173,6 @@ class Simulation {
             }  
         }
     }
-
 
     /**
      * @brief Performs a full simulation run.

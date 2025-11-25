@@ -2,6 +2,7 @@
 #define REFLECTING_H
 
 #include "particles/boundaries/BoundaryCondition.h"
+#include "utils/Vector.h"
 
 namespace mol_sim {
 
@@ -17,8 +18,9 @@ class Reflecting : public BoundaryCondition<containerType> {
     bool boundaryConditionApplies(Particle& p) override;
     void boundaryStrategy(Particle& p) override;
 
-    public: 
-    Reflecting(containerType& particles, std::optional<double> counter_sigma, std::optional<double> counter_epsilon);
+   public: 
+    Reflecting(containerType& particles, R3 dimension, BoundaryLocation location, std::optional<double> counter_sigma, std::optional<double> counter_epsilon);
+    Reflecting(containerType* particles, R3 dimension, BoundaryLocation location, std::optional<double> counter_sigma, std::optional<double> counter_epsilon);
     ~Reflecting() override = default;
 };
 

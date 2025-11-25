@@ -365,8 +365,8 @@ TEST_F(LinkedCellContainerTest, testBoundaryIterator) {  // NOLINT
 
     // Only RIGHT boundary
     std::vector<Particle> boundary_right;
-    for (auto it = particles_empty.boundaryBegin({BoundaryType::RIGHT});
-         it != particles_empty.boundaryEnd({BoundaryType::RIGHT}); ++it) {
+    for (auto it = particles_empty.boundaryBegin({BoundaryLocation::RIGHT});
+         it != particles_empty.boundaryEnd({BoundaryLocation::RIGHT}); ++it) {
         boundary_right.push_back(*it);
     }
 
@@ -409,8 +409,8 @@ TEST_F(LinkedCellContainerTest, testHaloIterator) {  // NOLINT
     EXPECT_FALSE(std::count(halo_all.begin(), halo_all.end(), par_boundary) > 0);
     // Only RIGHT boundary
     std::vector<Particle> halo_right;
-    for (auto it = particles_empty.haloBegin({BoundaryType::RIGHT});
-         it != particles_empty.haloEnd({BoundaryType::RIGHT}); ++it) {
+    for (auto it = particles_empty.haloBegin({BoundaryLocation::RIGHT});
+         it != particles_empty.haloEnd({BoundaryLocation::RIGHT}); ++it) {
         halo_right.push_back(*it);
     }
 
