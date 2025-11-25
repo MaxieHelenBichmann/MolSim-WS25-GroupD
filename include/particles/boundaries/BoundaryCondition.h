@@ -2,6 +2,7 @@
 #define BOUNDARY_CONDITION_H
 
 #include <optional>
+#include <optional>
 #include <vector>
 #include <cstdint>
 #include <set>
@@ -9,6 +10,8 @@
 #include "particles/Particle.h"
 #include "particles/ParticleContainer.h"
 
+#include "particles/Particle.h"
+#include "particles/ParticleContainer.h"
 namespace mol_sim {
 /**
    * @brief Enum for boundary types in the Linked-Cell Container.
@@ -34,12 +37,12 @@ class BoundaryConditionDeclaration {
   std::optional<double> getCounterSigma();
   std::optional<double> getCounterEpsilon();
 
-  BoundaryConditionDeclaration() = default;
+    BoundaryConditionDeclaration() = default;
 
   BoundaryConditionDeclaration(BoundaryLocation location, BoundaryType type);
   BoundaryConditionDeclaration(BoundaryLocation location, BoundaryType type, std::optional<double> counter_sigma, std::optional<double> counter_epsilon);
 
-  ~BoundaryConditionDeclaration() = default;
+    ~BoundaryConditionDeclaration() = default;
 
   protected:
     BoundaryLocation location;
@@ -49,6 +52,7 @@ class BoundaryConditionDeclaration {
 };
 
 template <ParticleContainer containerType>
+class BoundaryCondition : public BoundaryConditionDeclaration {
 class BoundaryCondition : public BoundaryConditionDeclaration {
     virtual bool boundaryConditionApplies(Particle& p) = 0;
     virtual void boundaryStrategy(Particle& p) = 0;  
@@ -61,11 +65,11 @@ class BoundaryCondition : public BoundaryConditionDeclaration {
     BoundaryCondition(containerType* particles, BoundaryLocation location);
     virtual ~BoundaryCondition() = 0;
     /***
-    * @brief Iterates over the boundary cells and applies the boundary condtion if necessary.
-    */
+     * @brief Iterates over the boundary cells and applies the boundary condtion if necessary.
+     */
     void applyBoundary();
 };
 
-} // namespace mol_sim
+}  // namespace mol_sim
 
 #endif

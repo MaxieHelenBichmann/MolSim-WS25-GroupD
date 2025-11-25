@@ -2,6 +2,8 @@
 
 #include <spdlog/spdlog.h>
 
+#include <spdlog/spdlog.h>
+
 namespace mol_sim {
     template <ParticleContainer containerType>
     void Domain<containerType>::setBoundary(BoundaryConditionDeclaration boundary) {

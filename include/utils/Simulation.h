@@ -18,6 +18,7 @@
 #include "particles/container/LinkedCellContainer.h"
 #include "particles/container/SimpleContainer.h"
 #include "particles/container/domain/Domain.h"
+#include "particles/container/domain/Domain.h"
 #include "physics/ForceSource.h"
 #include "utils/Settings.h"
 
@@ -80,7 +81,7 @@ class Simulation {
     double cutoff_radius = std::numeric_limits<double>::infinity();
 
     /**
-     * @deprecated 
+     * @deprecated
      */
     std::unique_ptr<BoundaryCondition> boundary_condition = nullptr;
 
@@ -163,14 +164,14 @@ class Simulation {
     }
 
     /**
-     * @brief Clears the halo cells, i.e. removes all particles that are beyond the specified simulation domain. 
-     * 
+     * @brief Clears the halo cells, i.e. removes all particles that are beyond the specified simulation domain.
+     *
      */
     void cleanBoundary() {
         if (typeid(containerType) == typeid(LinkedCellContainer)) {
             for (auto& it = particles.haloBegin(); it != particles.haloEnd(); it++) {
                 particles.eraseParticle(it);
-            }  
+            }
         }
     }
 

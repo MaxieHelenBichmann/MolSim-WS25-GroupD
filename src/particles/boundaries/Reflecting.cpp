@@ -1,5 +1,7 @@
 #include "particles/boundaries/Reflecting.h"
 
+#include <spdlog/spdlog.h>
+
 namespace mol_sim {
 
 template <ParticleContainer containerType>
@@ -12,9 +14,10 @@ Reflecting<containerType>::Reflecting(containerType* particles, R3 dimension, Bo
 
 template <ParticleContainer containerType>
 void Reflecting<containerType>::addCounterParticle(int sign, size_t coordinate, containerType& particles, Particle& p) {
-    double sigma = counter_sigma.value_or(p.getSigma());  
+    double sigma = counter_sigma.value_or(p.getSigma());
     double epsilon = counter_epsilon.value_or(p.getEpsilon());
     R3 check = zero;
+    check[coordinate] = sign * pow(2, 1.0 / 6.0) * sigma;
     check[coordinate] = sign * pow(2, 1.0 / 6.0) * sigma;
     if (!particles.fitsContainer(p.getX() + check)) {
         R3 pos_counter_particle = sign < 0 ? zero : max;
@@ -27,9 +30,10 @@ void Reflecting<containerType>::addCounterParticle(int sign, size_t coordinate, 
         Particle ghost(pos_counter_particle, zero, .0, epsilon, sigma, -1);
         particles.addParticle(ghost);
         ghost_particles.push_back(&ghost);
-    } 
+    }
 }
 
+template <ParticleContainer containerType>
 template <ParticleContainer containerType>
 void Reflecting<containerType>::boundaryStrategy(Particle& p) {
     addCounterParticle(1, 0, this->particles, p); 
@@ -39,4 +43,5 @@ void Reflecting<containerType>::boundaryStrategy(Particle& p) {
     addCounterParticle(1, 2, this->particles, p); 
     addCounterParticle(-1, 2, this->particles, p); 
 }
+}  // namespace mol_sim
 }  // namespace mol_sim

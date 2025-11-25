@@ -7,6 +7,9 @@
 #include "particles/boundaries/Outflow.h"
 #include "particles/boundaries/Reflecting.h"
 #include "utils/Vector.h"
+#include "particles/boundaries/Outflow.h"
+#include "particles/boundaries/Reflecting.h"
+#include "utils/Vector.h"
 
 namespace mol_sim {
 /**
@@ -23,7 +26,7 @@ class Domain {
     R3 dimension = {1., 1., 1.};
     /**
      * @brief The container containing the actual particles
-     * 
+     *
      */
     containerType* particles = nullptr;
     /**
@@ -108,6 +111,7 @@ class Domain {
     }
 
     Domain(R3 dimension, std::vector<std::optional<BoundaryConditionDeclaration>> boundaries) : dimension(dimension) {
+    Domain(R3 dimension, std::vector<std::optional<BoundaryConditionDeclaration>> boundaries) : dimension(dimension) {
         for (auto& boundary : boundaries) {
             if (boundary.has_value()) { 
                 setBoundary(boundary.value()); 
@@ -126,8 +130,8 @@ class Domain {
 
     /**
      * @brief Get the boundary object
-     * 
-     * @param boundary The boundary (LEFT, RIGHT, TOP, BOTTOM, FRONT, BACK) to be obtained. 
+     *
+     * @param boundary The boundary (LEFT, RIGHT, TOP, BOTTOM, FRONT, BACK) to be obtained.
      * @return std::unique_ptr<BoundaryCondition<containerType>> The unique pointer to the specified boundary.
      */
     std::unique_ptr<BoundaryCondition<containerType>> getBoundary(BoundaryLocation boundary);
@@ -139,6 +143,7 @@ class Domain {
     R3 getDimension() { return dimension; }
 };
 
+}  // namespace mol_sim
 }  // namespace mol_sim
 
 #endif

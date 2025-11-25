@@ -1,5 +1,6 @@
 #include "io/fileReader/YAMLReader.h"
 
+#include <bits/stdc++.h>
 #include <spdlog/spdlog.h>
 #include <yaml-cpp/node/node.h>
 
@@ -9,6 +10,7 @@
 #include <variant>
 
 #include "io/fileReader/YAMLReaderException.h"
+#include "particles/boundaries/BoundaryCondition.h"
 #include "particles/boundaries/BoundaryCondition.h"
 #include "particles/generators/CuboidGenerator.h"
 #include "particles/generators/DiscGenerator.h"
