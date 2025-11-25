@@ -59,7 +59,7 @@ class LinkedCellContainer {
      *
      * @return Vector of pointers to the adjacent cells, including the cell itself.
      */
-    std::vector<Cell*> findAdjacentCells(size_t cell_idx);
+    std::vector<Cell*> findAdjacentCellsN3L(size_t cell_idx);
 
     /**
      * @brief Find the adjacent cells of a cell. [HELPER FUNCTION]
@@ -68,7 +68,7 @@ class LinkedCellContainer {
      *
      * @return Vector of const pointers to the adjacent cells, including the cell itself.
      */
-    [[nodiscard]] std::vector<const Cell*> findAdjacentCells(size_t cell_idx) const;
+    [[nodiscard]] std::vector<const Cell*> findAdjacentCellsN3L(size_t cell_idx) const;
 
     /**
      * @brief Find the boundary or halo cells. [HELPER FUNCTION]
