@@ -127,10 +127,10 @@ class Domain {
     /**
      * @brief Get the boundary object
      *
-     * @param boundary The boundary (LEFT, RIGHT, TOP, BOTTOM, FRONT, BACK) to be obtained.
+     * @param location The location of the boundary (LEFT, RIGHT, TOP, BOTTOM, FRONT, BACK) to be obtained.
      * @return std::unique_ptr<BoundaryCondition<containerType>> The unique pointer to the specified boundary.
      */
-    std::unique_ptr<BoundaryCondition<containerType>> getBoundary(BoundaryLocation boundary);
+    std::unique_ptr<BoundaryCondition<containerType>> getBoundary(BoundaryLocation location);
 
     void setParticles(containerType& particles) { this->particles = &particles; }
 

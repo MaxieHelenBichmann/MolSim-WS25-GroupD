@@ -11,7 +11,6 @@
 
 #include "io/fileReader/YAMLReaderException.h"
 #include "particles/boundaries/BoundaryCondition.h"
-#include "particles/boundaries/BoundaryCondition.h"
 #include "particles/generators/CuboidGenerator.h"
 #include "particles/generators/DiscGenerator.h"
 #include "physics/ForceSource.h"

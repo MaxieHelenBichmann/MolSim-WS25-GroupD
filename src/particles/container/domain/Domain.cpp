@@ -2,8 +2,6 @@
 
 #include <spdlog/spdlog.h>
 
-#include <spdlog/spdlog.h>
-
 namespace mol_sim {
     template <ParticleContainer containerType>
     void Domain<containerType>::setBoundary(BoundaryConditionDeclaration boundary) {
@@ -16,10 +14,10 @@ namespace mol_sim {
                 ptr = right_boundary;
                 break; 
             case BoundaryLocation::UPPER:
-                ptr = top_boundary;
+                ptr = upper_boundary;
                 break; 
-            case BoundaryLocation::BOTTOM:
-                ptr = bottom_boundary;
+            case BoundaryLocation::LOWER:
+                ptr = lower_boundary;
                 break; 
             case BoundaryLocation::FRONT:
                 ptr = front_boundary;
@@ -49,8 +47,8 @@ namespace mol_sim {
         switch(location) {
             case BoundaryLocation::LEFT: return left_boundary;
             case BoundaryLocation::RIGHT: return right_boundary;
-            case BoundaryLocation::UPPER: return top_boundary; 
-            case BoundaryLocation::LOWER: return bottom_boundary;
+            case BoundaryLocation::UPPER: return upper_boundary; 
+            case BoundaryLocation::LOWER: return lower_boundary;
             case BoundaryLocation::FRONT: return front_boundary;
             case BoundaryLocation::BACK: return back_boundary;
             default:
