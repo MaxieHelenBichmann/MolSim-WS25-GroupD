@@ -82,6 +82,8 @@ class LinkedCellContainerExplicit {
 
     [[nodiscard]] bool fitsDomain(R3 v) const;
     [[nodiscard]] bool fitsContainer(R3 v) const;
+    Particle& operator[](size_t idx);
+    const Particle& operator[](size_t idx) const;
     [[nodiscard]] size_t size() const;
     [[nodiscard]] bool empty() const;
 
@@ -298,6 +300,7 @@ class LinkedCellContainerExplicit {
     [[nodiscard]] bool isOnBoundary(Particle& p);
     [[nodiscard]] R3 getDomainSize();
 };
+static_assert(ParticleContainer<LinkedCellContainerExplicit>);
 
 }  // namespace mol_sim
 

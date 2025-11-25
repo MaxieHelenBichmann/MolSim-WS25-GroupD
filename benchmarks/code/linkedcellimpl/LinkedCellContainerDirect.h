@@ -47,7 +47,7 @@ class CellDirect {
 /**
  * @brief Linked-Cell Container for Particles
  *
- * This container DOES NOT implement the concept ParticleContainer.
+ * This container implements the concept ParticleContainer.
  *
  * Implemented with cells that have direct access to Particles for benchmarking purposes.
  * Implements all methods of the LinkedCellContainer (so documentation is analogous), but only used for benchmarking.
@@ -78,18 +78,21 @@ class LinkedCellContainerDirect {
 
     [[nodiscard]] bool fitsDomain(R3 v) const;
     [[nodiscard]] bool fitsContainer(R3 v) const;
+    Particle& operator[](size_t idx);
+    const Particle& operator[](size_t idx) const;
     [[nodiscard]] size_t size() const;
     [[nodiscard]] bool empty() const;
 
     // modify
 
     void clear();
+    void reserve(size_t n);
     void addParticle(Particle&& value);
     void addParticle(const Particle& value);
     void addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg);
     void addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type);
     void eraseParticle(Particle* p);
-    void updateParticlePosition(Particle& p, R3 new_x);
+    void updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x);
 
     // iterators
 
@@ -160,6 +163,8 @@ class LinkedCellContainerDirect {
 
         friend bool operator==(const proximity_iterator& a, const proximity_iterator& b) { return a.cur == b.cur; }
         friend bool operator!=(const proximity_iterator& a, const proximity_iterator& b) { return !(a == b); }
+
+        operator std::vector<Particle>::iterator() const { return cur; }
     };
     static_assert(std::forward_iterator<proximity_iterator>);
 
@@ -237,6 +242,7 @@ class LinkedCellContainerDirect {
         friend bool operator!=(const const_proximity_iterator& a, const const_proximity_iterator& b) {
             return !(a == b);
         }
+        operator std::vector<Particle>::const_iterator() const { return cur; }
     };
     static_assert(std::forward_iterator<const_proximity_iterator>);
 
@@ -287,6 +293,7 @@ class LinkedCellContainerDirect {
     [[nodiscard]] bool isOnBoundary(Particle& p);
     [[nodiscard]] R3 getDomainSize();
 };
+static_assert(ParticleContainer<LinkedCellContainerDirect>);
 
 }  // namespace mol_sim
 

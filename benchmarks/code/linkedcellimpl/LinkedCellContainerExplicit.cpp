@@ -316,6 +316,9 @@ bool LinkedCellContainerExplicit::fitsContainer(R3 v) const {
            (v[2] >= -cell_length[2] && v[2] <= domain_size[2] + cell_length[2]);
 }
 
+Particle& LinkedCellContainerExplicit::operator[](size_t idx) { return data[idx]; }
+const Particle& LinkedCellContainerExplicit::operator[](size_t idx) const { return data[idx]; }
+
 size_t LinkedCellContainerExplicit::size() const { return data.size(); }
 bool LinkedCellContainerExplicit::empty() const { return data.empty(); }
 

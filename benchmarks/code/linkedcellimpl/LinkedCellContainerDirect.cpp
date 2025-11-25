@@ -313,6 +313,27 @@ bool LinkedCellContainerDirect::fitsContainer(R3 v) const {
            (v[2] >= -cell_length[2] && v[2] <= domain_size[2] + cell_length[2]);
 }
 
+Particle& LinkedCellContainerDirect::operator[](size_t idx) {
+    for (auto& cell : cells) {
+        if (idx < cell.size()) {
+            return cell.particles()[idx];
+        } else {                 // NOLINT
+            idx -= cell.size();  // NOLINT
+        }
+    }
+    return cells.back().particles().back();
+}
+const Particle& LinkedCellContainerDirect::operator[](size_t idx) const {
+    for (const auto& cell : cells) {
+        if (idx < cell.particles().size()) {
+            return cell.particles()[idx];
+        } else {                             // NOLINT
+            idx -= cell.particles().size();  // NOLINT
+        }
+    }
+    return cells.back().particles().back();
+}
+
 size_t LinkedCellContainerDirect::size() const {
     size_t n = 0;
     for (auto cell : cells) {
@@ -328,7 +349,15 @@ void LinkedCellContainerDirect::clear() {
         cell.clear();
     }
 }
-
+void LinkedCellContainerDirect::reserve(size_t n) {
+    size_t diff = n / cells.size();
+    for (size_t i = 0; i < cells.size() - 1; ++i) {
+        cells[i].particles().reserve(diff + 1);
+    }
+    if (!cells.empty()) {
+        cells.back().particles().reserve(diff + (n % cells.size()));
+    }
+}
 void LinkedCellContainerDirect::addParticle(Particle&& value) {
     if (!fitsContainer(value.getX())) {
         return;
@@ -368,11 +397,11 @@ void LinkedCellContainerDirect::eraseParticle(Particle* p) {
     }
 }
 
-void LinkedCellContainerDirect::updateParticlePosition(Particle& p, R3 new_x) {
-    size_t old_cell_idx = findCellIndex(p.getX());
+void LinkedCellContainerDirect::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x) {
+    size_t old_cell_idx = findCellIndex(p->getX());
     if (!cells[old_cell_idx].fits(new_x)) {
         size_t new_cell_idx = findCellIndex(new_x);
-        size_t old_idx = std::find(cells[old_cell_idx].particles().begin(), cells[old_cell_idx].particles().end(), p) -
+        size_t old_idx = std::find(cells[old_cell_idx].particles().begin(), cells[old_cell_idx].particles().end(), *p) -
                          cells[old_cell_idx].particles().begin();
         if (new_cell_idx == cells.size()) {
             cells[old_cell_idx].removeParticle(old_idx);
@@ -381,7 +410,7 @@ void LinkedCellContainerDirect::updateParticlePosition(Particle& p, R3 new_x) {
         cells[new_cell_idx].addParticle(cells[old_cell_idx].removeParticle(old_idx));
     }
 
-    p.getX() = new_x;
+    p->getX() = new_x;
 }
 
 // normal iterators
