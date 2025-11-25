@@ -1,15 +1,15 @@
 #ifndef CONTAINER_REF_H
 #define CONTAINER_REF_H
 
+#include <type_traits>
 #include <utility>
 #include <variant>
 
-#include "particles/container/SimpleContainer.h"
 #include "particles/container/LinkedCellContainer.h"
-#include "utils/Settings.h"
+#include "particles/container/SimpleContainer.h"
 
 namespace mol_sim {
-using PARTICLE_CONTAINER_REF = std::variant<SimpleContainer*, LinkedCellContainer*>; 
+
 /**
  * @brief Container Reference for Particles
  *
@@ -30,15 +30,17 @@ using PARTICLE_CONTAINER_REF = std::variant<SimpleContainer*, LinkedCellContaine
  * acceptable
  *
  */
+using CONTAINER_REF = std::variant<SimpleContainer*, LinkedCellContainer*>;
 class ContainerRef {
     /**
      * Pointer to the current instance of the ContainerRef.
      * More containers can be added in the std::variant later.
      */
-    PARTICLE_CONTAINER_REF instance;  // NOLINT
+    CONTAINER_REF instance;  // NOLINT
 
    public:
     // constructors
+
     /**
      * @brief Constructor, initializing ContainerRef with a reference to a SimpleContainer.
      */
@@ -50,9 +52,9 @@ class ContainerRef {
     ContainerRef(LinkedCellContainer& c);
 
     /**
-     * @brief Constructor, initializing ContainerRef with a reference to a LinkedCellContainer.
+     * @brief Constructor, initializing ContainerRef with another CONTAINER_REF.
      */
-    ContainerRef(PARTICLE_CONTAINER_REF c);
+    ContainerRef(CONTAINER_REF& c);
 
     // retrieve data
     Particle& operator[](size_t idx);
@@ -176,6 +178,117 @@ class ContainerRef {
     [[nodiscard]] std::vector<Particle>::const_iterator cend() const;
 
     /**
+     * @brief Const iterator that iterates over all particles that apply a force on a given particle.
+     *
+     * Satisfies the forward iterator concept.
+     * Only iterates over particles within the given radius of the center, or all if the radius is infinite.
+     */
+    class const_proximity_iterator {
+        std::variant<SimpleContainer::const_proximity_iterator, LinkedCellContainer::const_proximity_iterator> cur;
+
+       public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type = Particle;
+        using difference_type = std::ptrdiff_t;
+        using pointer = const Particle*;
+        using reference = const Particle&;
+
+        const_proximity_iterator() noexcept = default;
+        const_proximity_iterator(SimpleContainer::const_proximity_iterator it) : cur(it) {}
+        const_proximity_iterator(LinkedCellContainer::const_proximity_iterator it) : cur(it) {}
+
+        reference operator*() const {
+            return std::visit([](const auto& c) -> reference { return c.operator*(); }, cur);
+        }
+        pointer operator->() const {
+            return std::visit([](const auto& c) { return c.operator->(); }, cur);
+        }
+
+        const_proximity_iterator& operator++() {
+            std::visit([](auto& c) { ++c; }, cur);
+            return *this;
+        }
+
+        const_proximity_iterator operator++(int) {
+            const_proximity_iterator tmp = *this;
+            ++(*this);
+            return tmp;
+        }
+
+        friend bool operator==(const const_proximity_iterator& a, const const_proximity_iterator& b) {
+            return std::visit(
+                [](const auto& lhs, const auto& rhs) {
+                    using L = std::decay_t<decltype(lhs)>;
+                    using R = std::decay_t<decltype(rhs)>;
+                    if constexpr (!std::is_same_v<L, R>) {
+                        return false;
+                    } else {
+                        return lhs == rhs;
+                    }
+                },
+                a.cur, b.cur);
+        }
+        friend bool operator!=(const const_proximity_iterator& a, const const_proximity_iterator& b) {
+            return !(a == b);
+        }
+    };
+    static_assert(std::forward_iterator<const_proximity_iterator>);
+
+    /**
+     * @brief Iterator that iterates over all particles that apply a force on a given particle.
+     *
+     * Satisfies the forward iterator concept.
+     * Only iterates over particles within the given radius of the center, or all if the radius is infinite.
+     */
+    class proximity_iterator {
+        std::variant<SimpleContainer::proximity_iterator, LinkedCellContainer::proximity_iterator> cur;
+
+       public:
+        using iterator_category = std::forward_iterator_tag;
+        using value_type = Particle;
+        using difference_type = std::ptrdiff_t;
+        using pointer = Particle*;
+        using reference = Particle&;
+
+        proximity_iterator() noexcept = default;
+        proximity_iterator(SimpleContainer::proximity_iterator it) : cur(it) {}
+        proximity_iterator(LinkedCellContainer::proximity_iterator it) : cur(it) {}
+
+        reference operator*() const {
+            return std::visit([](auto& c) -> reference { return c.operator*(); }, cur);
+        }
+        pointer operator->() const {
+            return std::visit([](auto& c) { return c.operator->(); }, cur);
+        }
+        proximity_iterator& operator++() {
+            std::visit([](auto& c) { ++c; }, cur);
+            return *this;
+        }
+
+        proximity_iterator operator++(int) {
+            proximity_iterator tmp = *this;
+            ++(*this);
+            return tmp;
+        }
+
+        friend bool operator==(const proximity_iterator& a, const proximity_iterator& b) {
+            return std::visit(
+                [](const auto& lhs, const auto& rhs) {
+                    using L = std::decay_t<decltype(lhs)>;
+                    using R = std::decay_t<decltype(rhs)>;
+                    if constexpr (!std::is_same_v<L, R>) {
+                        return false;
+                    } else {
+                        return lhs == rhs;
+                    }
+                },
+                a.cur, b.cur);
+        }
+        friend bool operator!=(const proximity_iterator& a, const proximity_iterator& b) { return !(a == b); }
+    };
+    static_assert(std::forward_iterator<proximity_iterator>);
+
+    /**
      * @brief Mutable Iterator over particles in proximity.
      *
      * @param center Center point to check proximity from (position of the particle).
@@ -184,7 +297,7 @@ class ContainerRef {
      *
      * @return Mutable iterator to the first particle within the given radius of the center.
      */
-    [[nodiscard]] SimpleContainer::proximity_iterator proximityBegin(R3 center, double radius, size_t offset = 0);
+    [[nodiscard]] proximity_iterator proximityBegin(R3 center, double radius, size_t offset = 0);
 
     /**
      * @brief Mutable Iterator over particles in proximity.
@@ -194,7 +307,7 @@ class ContainerRef {
      *
      * @return Mutable iterator after the last particle within the given radius of the center.
      */
-    [[nodiscard]] SimpleContainer::proximity_iterator proximityEnd(R3 center, double radius);
+    [[nodiscard]] proximity_iterator proximityEnd(R3 center, double radius);
 
     /**
      * @brief Const Iterator over particles in proximity.
@@ -205,8 +318,7 @@ class ContainerRef {
      *
      * @return Const iterator to the first particle within the given radius of the center.
      */
-    [[nodiscard]] SimpleContainer::const_proximity_iterator proximityBegin(R3 center, double radius,
-                                                                           size_t offset = 0) const;
+    [[nodiscard]] const_proximity_iterator proximityBegin(R3 center, double radius, size_t offset = 0) const;
 
     /**
      * @brief Const Iterator over particles in proximity.
@@ -216,7 +328,7 @@ class ContainerRef {
      *
      * @return Const iterator after the last particle within the given radius of the center.
      */
-    [[nodiscard]] SimpleContainer::const_proximity_iterator proximityEnd(R3 center, double radius) const;
+    [[nodiscard]] const_proximity_iterator proximityEnd(R3 center, double radius) const;
 };
 
 }  // namespace mol_sim

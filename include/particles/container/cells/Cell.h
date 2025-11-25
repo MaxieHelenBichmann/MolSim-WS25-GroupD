@@ -52,7 +52,7 @@ class Cell {
     /**
      * @brief Remove a index (of the std::vector data from the LinkedCellContainer) to a Particle from the cell.
      *
-     * @param idx Index of the pointer to remove.
+     * @param idx Index of the Particle Index to remove.
      */
     void removeParticle(size_t idx);
     /**
@@ -67,16 +67,16 @@ class Cell {
      */
     void clear();
     /**
-     * @brief Access the set of Particle pointers in the cell.
+     * @brief Access the set of Particle indices in the cell.
      *
-     * @return Reference to the set of Particle pointers.
+     * @return Reference to the set of Particle indices.
      */
     std::set<size_t>& particles();
 
     /**
-     * @brief Access the const set of Particle pointers in the cell.
+     * @brief Access the const set of Particle indices in the cell.
      *
-     * @return Reference to the set of Particle pointers.
+     * @return Reference to the set of Particle indices.
      */
     [[nodiscard]] const std::set<size_t>& particles() const;
 

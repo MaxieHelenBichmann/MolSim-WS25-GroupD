@@ -71,7 +71,22 @@ class Domain {
     void setBoundary(BoundaryConditionDeclaration boundary);
    
     public:
-    Domain() = default; 
+    Domain() = default;
+    
+    Domain<containerType>& operator=(const Domain<containerType>& domain) noexcept {
+        if (this == domain) {
+            return;
+        }
+        this->dimension = domain.dimension;
+        this->particles = domain.particles;
+        left_boundary = std::move(domain.left_boundary);
+        right_boundary = std::move(domain.right_boundary);
+        upper_boundary = std::move(domain.upper_boundary);
+        lower_boundary = std::move(domain.lower_boundary);
+        front_boundary = std::move(domain.front_boundary);
+        back_boundary = std::move(domain.back_boundary);
+        return *this;
+    }
 
     Domain<containerType>& operator=(Domain<containerType>&& domain) noexcept {
         this->dimension = domain.dimension;
@@ -134,7 +149,7 @@ class Domain {
 
     void setParticles(containerType& particles) { this->particles = &particles; }
 
-    containerType& getParticles() { return particles; }
+    containerType getParticles() { return particles; }
 
     R3 getDimension() { return dimension; }
 };

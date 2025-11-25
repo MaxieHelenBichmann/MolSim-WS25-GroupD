@@ -18,7 +18,6 @@
 #include "particles/container/LinkedCellContainer.h"
 #include "particles/container/SimpleContainer.h"
 #include "particles/container/domain/Domain.h"
-#include "particles/container/domain/Domain.h"
 #include "physics/ForceSource.h"
 #include "utils/Settings.h"
 
@@ -80,12 +79,24 @@ class Simulation {
      */
     double cutoff_radius = std::numeric_limits<double>::infinity();
 
-    /**
-     * @deprecated
-     */
-    std::unique_ptr<BoundaryCondition> boundary_condition = nullptr;
-
    public:
+    /**
+     * @deprecated This constructor only exists as a hot fix for the benchmarks 
+     * after my (Georg) refactorings to the codebase.
+     */
+    Simulation(containerType& particles, forceType& force_source, SettingsParam& settings)
+        : particles(particles), force_source(force_source), 
+          domain(std::get<Domain<containerType>>(settings.domain)) {
+        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+        delta_t = settings.delta_t.value();
+        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+        start_time = settings.start_time.value();
+        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+        end_time = settings.end_time.value();
+        frequency = settings.frequency.value();
+        base_name = settings.base_name.value();
+    }
+
     /**
      * @brief Construct a new Simulation object and prepare for run() call
      * This class implements a Builder Pattern, meaning all parameters need to be set before the run() call, which will
@@ -95,7 +106,8 @@ class Simulation {
      * @param force_source Force source to be used in the simulation.
      */
     Simulation(SettingsParam& settings, forceType& force_source)
-        : force_source(force_source) {
+        : force_source(force_source),
+          domain(std::get<Domain<containerType>>(settings.domain)) {
         // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
         delta_t = settings.delta_t.value();
         // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
@@ -104,7 +116,6 @@ class Simulation {
         end_time = settings.end_time.value();
         frequency = settings.frequency.value();
         base_name = settings.base_name.value();
-        domain = std::get<Domain<containerType>>(settings.domain.value());
         particles = domain.getParticles(); 
     }
 
@@ -118,7 +129,8 @@ class Simulation {
             p.getF() = Vector<double, 3>();
         }
 
-        for (auto it = particles.begin(), size_t idx = 1; it != particles.end(); ++it, idx++) {
+        size_t idx = 1;
+        for (auto it = particles.begin(); it != particles.end(); ++it, idx++) {
             Particle& p1 = *it;
             for (auto it_prox = particles.proximityBegin(p1.getX(), cutoff_radius, idx);
                  it_prox != particles.proximityEnd(p1.getX(), cutoff_radius); ++it_prox) {
@@ -155,24 +167,24 @@ class Simulation {
     }
 
     void applyBoundary() {
-        domain.getBoundary(BoundaryConditionDeclaration::BoundaryLocation::LEFT)->applyBoundary();  
-        domain.getBoundary(BoundaryConditionDeclaration::BoundaryLocation::RIGHT)->applyBoundary();  
-        domain.getBoundary(BoundaryConditionDeclaration::BoundaryLocation::UPPER)->applyBoundary();  
-        domain.getBoundary(BoundaryConditionDeclaration::BoundaryLocation::LOWER)->applyBoundary();  
-        domain.getBoundary(BoundaryConditionDeclaration::BoundaryLocation::FRONT)->applyBoundary();  
-        domain.getBoundary(BoundaryConditionDeclaration::BoundaryLocation::BACK)->applyBoundary();  
+        domain.getBoundary(BoundaryLocation::LEFT)->applyBoundary();  
+        domain.getBoundary(BoundaryLocation::RIGHT)->applyBoundary();  
+        domain.getBoundary(BoundaryLocation::UPPER)->applyBoundary();  
+        domain.getBoundary(BoundaryLocation::LOWER)->applyBoundary();  
+        domain.getBoundary(BoundaryLocation::FRONT)->applyBoundary();  
+        domain.getBoundary(BoundaryLocation::BACK)->applyBoundary();  
     }
 
     /**
+     * TODO: Implement analogy to halo cell and boundary cell iterator in SimpleContainer.
+     * (maybe even add those to the concept) then uncomment the code inside this function.
+     * 
      * @brief Clears the halo cells, i.e. removes all particles that are beyond the specified simulation domain.
-     *
      */
     void cleanBoundary() {
-        if (typeid(containerType) == typeid(LinkedCellContainer)) {
-            for (auto& it = particles.haloBegin(); it != particles.haloEnd(); it++) {
-                particles.eraseParticle(it);
-            }
-        }
+/*         for (auto& it = particles.haloBegin(); it != particles.haloEnd(); it++) {
+            particles.eraseParticle(it);
+        } */
     }
 
     /**

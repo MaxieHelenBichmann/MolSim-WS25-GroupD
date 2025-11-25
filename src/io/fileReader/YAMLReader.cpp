@@ -24,7 +24,7 @@ YAMLReader::~YAMLReader() = default;
 
 void YAMLReader::readFile(ContainerRef particles_ref, SettingsParam& settings, const std::string& filename) {
     (void)particles_ref; /** TODO: change XVM reader so we can safely eliminate ContainerRef from the signature. */
-    PARTICLE_CONTAINER_REF placeholder;
+    CONTAINER_REF placeholder;
     ContainerRef particles(placeholder);
     try {
         YAML::Node root = YAML::LoadFile(filename);

@@ -88,49 +88,69 @@ size_t LinkedCellContainer::findCellIndex(R3 vec) const {
     return (z_idx * num_cells[1] * num_cells[0]) + (y_idx * num_cells[0]) + x_idx;
 }
 
-std::vector<Cell*> LinkedCellContainer::findAdjacentCells(size_t cell_idx) {
+std::vector<Cell*> LinkedCellContainer::findAdjacentCellsN3L(size_t cell_idx) {
     std::vector<Cell*> adjacent_cells;
     size_t z_idx = cell_idx / (num_cells[0] * num_cells[1]);
     size_t y_idx = (cell_idx / num_cells[0]) % num_cells[1];
     size_t x_idx = cell_idx % num_cells[0];
 
-    for (int dz = -1; dz <= 1; ++dz) {
-        for (int dy = -1; dy <= 1; ++dy) {
-            for (int dx = -1; dx <= 1; ++dx) {
-                size_t nx = x_idx + dx;
-                size_t ny = y_idx + dy;
-                size_t nz = z_idx + dz;
+    auto try_add_neighbor = [this, &adjacent_cells](size_t nx, size_t ny, size_t nz) {
+        if (nx < num_cells[0] && ny < num_cells[1] && nz < num_cells[2]) {
+            size_t neighbor_idx = (nz * num_cells[1] * num_cells[0]) + (ny * num_cells[0]) + nx;
+            adjacent_cells.push_back(&cells[neighbor_idx]);
+        }
+    };
 
-                if (nx < num_cells[0] && ny < num_cells[1] && nz < num_cells[2]) {
-                    size_t neighbor_idx = (nz * num_cells[1] * num_cells[0]) + (ny * num_cells[0]) + nx;
-                    adjacent_cells.push_back(&cells[neighbor_idx]);
-                }
-            }
+    // full lower layer (dz = -1)
+    for (int dy = -1; dy <= 1; ++dy) {
+        for (int dx = -1; dx <= 1; ++dx) {
+            try_add_neighbor(x_idx + dx, y_idx + dy, z_idx - 1);
         }
     }
 
+    // front strip of middle layer (dz = 0, dy = -1)
+    for (int dx = -1; dx <= 1; ++dx) {
+        try_add_neighbor(x_idx + dx, y_idx - 1, z_idx);
+    }
+
+    // single left cell of middle layer (dz = 0, dy = 0, dx = -1)
+    try_add_neighbor(x_idx - 1, y_idx, z_idx);
+
+    // middle cell of middle layer (self) (dz = 0, dy = 0, dx = 0)
+    try_add_neighbor(x_idx, y_idx, z_idx);
+
     return adjacent_cells;
 }
-std::vector<const Cell*> LinkedCellContainer::findAdjacentCells(size_t cell_idx) const {
+std::vector<const Cell*> LinkedCellContainer::findAdjacentCellsN3L(size_t cell_idx) const {
     std::vector<const Cell*> adjacent_cells;
     size_t z_idx = cell_idx / (num_cells[0] * num_cells[1]);
     size_t y_idx = (cell_idx / num_cells[0]) % num_cells[1];
     size_t x_idx = cell_idx % num_cells[0];
 
-    for (int dz = -1; dz <= 1; ++dz) {
-        for (int dy = -1; dy <= 1; ++dy) {
-            for (int dx = -1; dx <= 1; ++dx) {
-                size_t nx = x_idx + dx;
-                size_t ny = y_idx + dy;
-                size_t nz = z_idx + dz;
+    auto try_add_neighbor = [this, &adjacent_cells](size_t nx, size_t ny, size_t nz) {
+        if (nx < num_cells[0] && ny < num_cells[1] && nz < num_cells[2]) {
+            size_t neighbor_idx = (nz * num_cells[1] * num_cells[0]) + (ny * num_cells[0]) + nx;
+            adjacent_cells.push_back(&cells[neighbor_idx]);
+        }
+    };
 
-                if (nx < num_cells[0] && ny < num_cells[1] && nz < num_cells[2]) {
-                    size_t neighbor_idx = (nz * num_cells[1] * num_cells[0]) + (ny * num_cells[0]) + nx;
-                    adjacent_cells.push_back(&cells[neighbor_idx]);
-                }
-            }
+    // full lower layer (dz = -1)
+    for (int dy = -1; dy <= 1; ++dy) {
+        for (int dx = -1; dx <= 1; ++dx) {
+            try_add_neighbor(x_idx + dx, y_idx + dy, z_idx - 1);
         }
     }
+
+    // front strip of middle layer (dz = 0, dy = -1)
+    for (int dx = -1; dx <= 1; ++dx) {
+        try_add_neighbor(x_idx + dx, y_idx - 1, z_idx);
+    }
+
+    // single left cell of middle layer (dz = 0, dy = 0, dx = -1)
+    try_add_neighbor(x_idx - 1, y_idx, z_idx);
+
+    // middle cell of middle layer (self) (dz = 0, dy = 0, dx = 0)
+    try_add_neighbor(x_idx, y_idx, z_idx);
 
     return adjacent_cells;
 }
@@ -325,14 +345,20 @@ void LinkedCellContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double e
 }
 
 void LinkedCellContainer::eraseParticle(Particle* p) {
+    // TODO: change to use cells[cell_idx].particles().find() and take an iterator/index as an argument!
     size_t cell_idx = findCellIndex(p->getX());
 
-    auto it =
-        std::find_if(data.begin(), data.end(), [p](const Particle& particle) { return &particle == p; });  // NOLINT
-    if (it != data.end()) {
-        cells[cell_idx].removeParticle(it - data.begin());
-        data.erase(it);
-        decreaseCellIndices(it - data.begin());
+    if (cell_idx < cells.size()) {
+        for (auto it = cells[cell_idx].particles().begin(); it != cells[cell_idx].particles().end(); ++it) {  // NOLINT
+            SPDLOG_DEBUG("Index {}", *it);
+            if (&(data[*it]) == p) {
+                size_t idx = *it;
+                cells[cell_idx].removeParticle(idx);
+                data.erase(data.begin() + idx);  // NOLINT
+                decreaseCellIndices(idx);
+                return;
+            }
+        }
     }
 }
 
@@ -361,7 +387,7 @@ std::vector<Particle>::const_iterator LinkedCellContainer::cend() const { return
 // proximity iterators
 LinkedCellContainer::proximity_iterator LinkedCellContainer::proximityBegin(R3 center, double radius,
                                                                             [[maybe_unused]] size_t offset) {
-    std::vector<Cell*> adjacent_cells = findAdjacentCells(findCellIndex(center));
+    std::vector<Cell*> adjacent_cells = findAdjacentCellsN3L(findCellIndex(center));
     std::vector<Cell*> nonempty_adjacent_cells;
 
     nonempty_adjacent_cells.reserve(cells.size());
@@ -376,7 +402,7 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::proximityBegin(R3 c
 }
 
 LinkedCellContainer::proximity_iterator LinkedCellContainer::proximityEnd(R3 center, double radius) {
-    std::vector<Cell*> adjacent_cells = findAdjacentCells(findCellIndex(center));
+    std::vector<Cell*> adjacent_cells = findAdjacentCellsN3L(findCellIndex(center));
     std::vector<Cell*> nonempty_adjacent_cells;
 
     nonempty_adjacent_cells.reserve(cells.size());
@@ -392,7 +418,7 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::proximityEnd(R3 cen
 
 LinkedCellContainer::const_proximity_iterator LinkedCellContainer::proximityBegin(
     R3 center, double radius, [[maybe_unused]] size_t offset) const {
-    std::vector<const Cell*> adjacent_cells = findAdjacentCells(findCellIndex(center));
+    std::vector<const Cell*> adjacent_cells = findAdjacentCellsN3L(findCellIndex(center));
     std::vector<const Cell*> nonempty_adjacent_cells;
 
     nonempty_adjacent_cells.reserve(cells.size());
@@ -406,7 +432,7 @@ LinkedCellContainer::const_proximity_iterator LinkedCellContainer::proximityBegi
                                     nonempty_adjacent_cells, &data};
 }
 LinkedCellContainer::const_proximity_iterator LinkedCellContainer::proximityEnd(R3 center, double radius) const {
-    std::vector<const Cell*> adjacent_cells = findAdjacentCells(findCellIndex(center));
+    std::vector<const Cell*> adjacent_cells = findAdjacentCellsN3L(findCellIndex(center));
     std::vector<const Cell*> nonempty_adjacent_cells;
 
     nonempty_adjacent_cells.reserve(cells.size());

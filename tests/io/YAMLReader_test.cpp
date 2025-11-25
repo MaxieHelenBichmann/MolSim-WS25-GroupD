@@ -6,6 +6,7 @@
 
 #include <mutex>
 #include <string>
+#include <variant>
 
 #include "io/fileReader/YAMLReaderException.h"
 #include "particles/Particle.h"
@@ -226,8 +227,8 @@ TEST_F(YAMLReaderTest, ReadFullConfigFile) {
     EXPECT_DOUBLE_EQ(settings.cutoff.value(), 1.);
 
     R3 expected_domain = {1., 1., 1.};
-    ASSERT_TRUE(settings.domain.has_value());
-    EXPECT_EQ(settings.domain.value().dimension, expected_domain);
+    ASSERT_TRUE(std::holds_alternative<Domain<SimpleContainer>>(settings.domain));
+    EXPECT_EQ(std::get<Domain<SimpleContainer>>(settings.domain).getDimension(), expected_domain);
 
     EXPECT_EQ(output.find("Error"), std::string::npos);
 }

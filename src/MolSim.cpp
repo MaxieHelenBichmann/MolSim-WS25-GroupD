@@ -28,7 +28,7 @@ int main(int argc, char* argsv[]) {
      * compile time programming. also idk how much std::variant (in combination with std::visit) would really help here, just
      * in terms of maintainability (and code aesthetics ig (tho that parts less important)).
      */
-    if (settings.domain_type.value().compare("SIMPLE") == 0) {
+    if (settings.domain_type.value() == "SIMPLE") {
     switch (settings.force.value()) {
         case GRAVITATIONAL: {
             GravitationalForce grav_force;
@@ -45,7 +45,7 @@ int main(int argc, char* argsv[]) {
         default:
             return 0;
     }
-    } else if (settings.domain_type.value().compare("LINKED") == 0) {
+    } else if (settings.domain_type.value() == "LINKED") {
     switch (settings.force.value()) {
         case GRAVITATIONAL: {
             GravitationalForce grav_force;
