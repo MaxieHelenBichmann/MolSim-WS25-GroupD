@@ -149,7 +149,7 @@ class Domain {
 
     void setParticles(containerType& particles) { this->particles = &particles; }
 
-    containerType getParticles() { return particles; }
+    containerType* getParticles() { return particles; }
 
     R3 getDimension() { return dimension; }
 };

@@ -45,15 +45,15 @@ namespace mol_sim {
     template <ParticleContainer containerType>
     std::unique_ptr<BoundaryCondition<containerType>> Domain<containerType>::getBoundary(BoundaryLocation location) {
         switch(location) {
-            case BoundaryLocation::LEFT: return left_boundary;
-            case BoundaryLocation::RIGHT: return right_boundary;
-            case BoundaryLocation::UPPER: return upper_boundary; 
-            case BoundaryLocation::LOWER: return lower_boundary;
-            case BoundaryLocation::FRONT: return front_boundary;
-            case BoundaryLocation::BACK: return back_boundary;
+            case BoundaryLocation::LEFT: return std::move(left_boundary);
+            case BoundaryLocation::RIGHT: return std::move(right_boundary);
+            case BoundaryLocation::UPPER: return std::move(upper_boundary); 
+            case BoundaryLocation::LOWER: return std::move(lower_boundary);
+            case BoundaryLocation::FRONT: return std::move(front_boundary);
+            case BoundaryLocation::BACK: return std::move(back_boundary);
             default:
                 SPDLOG_ERROR("Unknown boundary type! Expected (LEFT, RIGHT, TOP, BOTTOM, FRONT, BACK)!");
                 return nullptr; 
         }
     }
-} //namespace mol_sim
+}  // namespace mol_sim

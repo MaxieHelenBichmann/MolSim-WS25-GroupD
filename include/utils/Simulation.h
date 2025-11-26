@@ -47,7 +47,7 @@ class Simulation {
      * @brief Container of Particles to simulate.
      * Container of Particles to simulate. Container type is templated to work with our container concept.
      */
-    containerType& particles;
+    containerType* particles;
     /**
      * @brief Pointer to our force source.
      * Pointer to our force source, for easy switching, force Source determined by forceType in constructor.
@@ -73,6 +73,7 @@ class Simulation {
 
     std::string base_name;
 
+
     /**
      * @brief Cutoff radius for particles in proximity.
      * Default value is infinity.
@@ -85,8 +86,8 @@ class Simulation {
      * after my (Georg) refactorings to the codebase.
      */
     Simulation(containerType& particles, forceType& force_source, SettingsParam& settings)
-        : particles(particles), force_source(force_source), 
-          domain(std::get<Domain<containerType>>(settings.domain)) {
+        : domain(std::get<Domain<containerType>>(settings.domain)),
+          particles(&particles), force_source(force_source) {
         // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
         delta_t = settings.delta_t.value();
         // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
@@ -124,16 +125,16 @@ class Simulation {
      * Calculates the forces of every particle. for the next time step. Using the specified force source and delta_t.
      */
     void calculateF() {
-        for (auto& p : particles) {
+        for (auto& p : *particles) {
             p.getOldF() = p.getF();
             p.getF() = Vector<double, 3>();
         }
 
         size_t idx = 1;
-        for (auto it = particles.begin(); it != particles.end(); ++it, idx++) {
+        for (auto it = particles->begin(); it != particles->end(); ++it, idx++) {
             Particle& p1 = *it;
-            for (auto it_prox = particles.proximityBegin(p1.getX(), cutoff_radius, idx);
-                 it_prox != particles.proximityEnd(p1.getX(), cutoff_radius); ++it_prox) {
+            for (auto it_prox = particles->proximityBegin(p1.getX(), cutoff_radius, idx);
+                 it_prox != particles->proximityEnd(p1.getX(), cutoff_radius); ++it_prox) {
                 Particle& p2 = *it_prox;
                 Vector<double, 3> force = force_source.applyForce(p1, p2);
                 // Apply force directly (Newton's 3rd law: equal and opposite)
@@ -149,10 +150,10 @@ class Simulation {
      * container.
      */
     void calculateX() {
-        for (auto it = particles.begin(); it != particles.end(); ++it) {
+        for (auto it = particles->begin(); it != particles->end(); ++it) {
             const auto new_position =
                 (*it).getX() + (delta_t * (*it).getV()) + ((0.5 * delta_t * delta_t / (*it).getM()) * (*it).getF());
-            particles.updateParticlePosition(it, new_position);
+            particles->updateParticlePosition(it, new_position);
         }
     }
 
@@ -161,7 +162,7 @@ class Simulation {
      * Calculates the forces of every particle for the next time step, specified by delta_t.
      */
     void calculateV() {
-        for (auto& p : particles) {
+        for (auto& p : *particles) {
             p.getV() = p.getV() + ((0.5 * delta_t / p.getM()) * (p.getOldF() + p.getF()));
         }
     }
@@ -219,7 +220,7 @@ class Simulation {
                     out_name += "_xyz";
                     XYZWriter writer;
 #endif
-                    writer.plotParticles(particles, out_name, iteration);
+                    writer.plotParticles(*particles, out_name, iteration);
                 } catch (...) {
                     SPDLOG_ERROR("Something went wrong with plotting the Particles.");
                 }
