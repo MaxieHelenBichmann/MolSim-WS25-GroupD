@@ -325,12 +325,15 @@ void bmHaloIteratorDirect(benchmark::State& state) {
     R3 domain_size = {100.0, 100.0, 100.0};
     double cutoff = 3.0;
     std::array<double, 6> bounds = {0., domain_size[0], 0., domain_size[1], 0., domain_size[2]};
-
     LinkedCellContainerDirect container(domain_size, cutoff);
-    for (size_t i = 0; i < n; i++) {
-        R3 pos = randomR3(bounds);
-        R3 vel = randomR3();
-        container.addParticle(pos, vel, 1.0, 1.0, 1.0);
+
+    for (size_t i = 0; i < 6; i++) {
+        bounds[i] += 2.0 * static_cast<double>(i % 2) - 1.0;
+        for (size_t j = 0; j < n / 6; j++) {
+            R3 pos = randomR3(bounds);
+            R3 vel = randomR3();
+            container.addParticle(pos, vel, 1.0, 1.0, 1.0);
+        }
     }
 
     size_t count = 0;
@@ -352,10 +355,13 @@ void bmHaloIteratorExplicit(benchmark::State& state) {
     std::array<double, 6> bounds = {0., domain_size[0], 0., domain_size[1], 0., domain_size[2]};
 
     LinkedCellContainerExplicit container(domain_size, cutoff);
-    for (size_t i = 0; i < n; i++) {
-        R3 pos = randomR3(bounds);
-        R3 vel = randomR3();
-        container.addParticle(pos, vel, 1.0, 1.0, 1.0);
+    for (size_t i = 0; i < 6; i++) {
+        bounds[i] += 2.0 * static_cast<double>(i % 2) - 1.0;
+        for (size_t j = 0; j < n / 6; j++) {
+            R3 pos = randomR3(bounds);
+            R3 vel = randomR3();
+            container.addParticle(pos, vel, 1.0, 1.0, 1.0);
+        }
     }
 
     size_t count = 0;
