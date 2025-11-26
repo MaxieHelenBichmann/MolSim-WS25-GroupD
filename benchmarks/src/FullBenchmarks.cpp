@@ -107,6 +107,6 @@ BENCHMARK(bmSimulationGiven)->Unit(benchmark::kMillisecond)->Repetitions(5)->Dis
 BENCHMARK(bmSimulationGivenCutOff)->Unit(benchmark::kMillisecond)->Repetitions(5)->DisplayAggregatesOnly(true);
 
 BENCHMARK(bmSimulationGivenLCDirect)->Unit(benchmark::kMillisecond)->Repetitions(5)->DisplayAggregatesOnly(true);
-BENCHMARK(bmSimulationGivenLCExplcit)->Unit(benchmark::kMillisecond)->Repetitions(5)->DisplayAggregatesOnly(true);
+BENCHMARK(bmSimulationGivenLCExplicit)->Unit(benchmark::kMillisecond)->Repetitions(5)->DisplayAggregatesOnly(true);
 
 }  // namespace mol_sim
