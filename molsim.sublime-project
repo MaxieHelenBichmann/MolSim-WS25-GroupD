@@ -1,0 +1,129 @@
+{
+	"folders":
+	[
+		{
+			"path": ".",
+			"folder_exclude_patterns": [".cache", "doxys_documentation"],
+			"file_exclude_patterns": ["*.sublime-workspace"]
+		}
+	],
+	"settings": {
+		"always_prompt_for_file_reload": false,
+		"ensure_newline_at_eof_on_save": true,
+		"lsp_format_on_save": true,
+		"tab_completion": true,
+
+			"LSP": {
+			"clangd": {
+				"enabled": true,
+				"initializationOptions": {
+					"clangd.compile-commands-dir": "${project_path:${folder}}/build",
+
+        "clangd.background-index": true,
+
+        "clangd.clang-tidy": true,
+
+        "clangd.completion-style": "detailed",
+
+        "clangd.function-arg-placeholders": true,
+
+        "clangd.header-insertion": "iwyu",
+        // Prepend a circular dot or space before the completion label, depending on whether an include line will be inserted or not
+        "clangd.header-insertion-decorators": true,
+
+        // Read user and project configuration from YAML files.
+        "clangd.enable-config": true,
+
+        //"clangd.log": "verbose",
+
+        "clangd.pretty": true,
+          },
+      }
+  },
+
+		"lsp_format_on_save": true,
+		"tab_completion": true,
+	},
+	"build_systems": [
+		{
+			"name": "CMake Configure (ccmake)",
+			"target": "terminus_open",
+			"cmd": ["ccmake", ".."],
+			"cwd": "${project_path}/build",
+		},
+		{
+			"name": "CMake Build",
+			"target": "terminus_open",
+			"cmd": ["bash", "-c", "cmake --build build -j$(nproc)"],
+			"cwd": "${project_path}",
+			"auto_close": false,
+			"panel_name": "Terminus Build"
+		},
+		{
+			"name": "CMake Build Debug",
+			"target": "terminus_open",
+			"cmd": ["bash", "-c", "cmake -B build -DCMAKE_BUILD_TYPE=Debug && cmake --build build -j$(nproc)"],
+			"cwd": "${project_path}",
+			"auto_close": false,
+			"panel_name": "Terminus Build"
+		},
+		{
+			"name": "CMake Build Release",
+			"target": "terminus_open",
+			"cmd": ["bash", "-c", "cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j$(nproc)"],
+			"cwd": "${project_path}",
+			"auto_close": false,
+			"panel_name": "Terminus Build"
+		},
+		{
+			"name": "CMake Clean",
+			"shell_cmd": "cmake --build build --target clean",
+			"working_dir": "${project_path}"
+		},
+		{
+			"name": "Run Tests",
+			"target": "terminus_open",
+			"cmd": ["ctest", "--output-on-failure"],
+			"cwd": "${project_path}/build/tests",
+			"auto_close": false,
+
+		},
+		{
+			"name": "Run Tests (Verbose)",
+			"target": "terminus_open",
+			"cmd": ["ctest", "--output-on-failure", "-V"],
+			"cwd": "${project_path}/build/tests",
+			"auto_close": false,
+
+		},
+		{
+			"name": "Run Main",
+			"target": "terminus_open",
+			"cmd": ["./MolSim", "../input/particles.yaml"],
+			"cwd": "${project_path}/build",
+			"auto_close": false,
+			"panel_name": "Terminus Build"
+		},
+		{
+			"name": "Generate Doxygen",
+			"target": "terminus_open",
+			"cmd": ["bash", "-c", "cmake --build build --target doc_doxygen"],
+			"cwd": "${project_path}",
+			"auto_close": false,
+			"panel_name": "Terminus Build"
+		},
+		{
+			"name": "Clang-Format File",
+			"shell_cmd": "clang-format -i \"$file\"",
+			"working_dir": "${project_path}"
+		},
+		{
+			"name": "Run Clang-Tidy",
+			"target": "terminus_open",
+			"cmd": ["bash", "-c", "clang-tidy -p build \"$file\""],
+			"cwd": "${project_path}",
+			"auto_close": false,
+			"panel_name": "Terminus Build"
+		}
+	]
+}
