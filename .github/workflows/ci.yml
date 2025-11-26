@@ -13,8 +13,20 @@ permissions:
   id-token: write
 
 jobs:
+  pick-runner:
+    runs-on: ubuntu-latest
+    outputs:
+      runner: ${{ steps.pick.outputs.runner }}
+    steps:
+      - id: pick
+        uses: jimmygchen/runner-fallback-action@v1
+        with:
+          primary: '["self-hosted","mini-arc-runner-set"]'
+          fallback: '["ubuntu-latest"]'
+
   build:
-    runs-on: [mini-arc-runner-set, ubuntu-latest]
+    needs: pick-runner
+    runs-on: ${{ fromJson(needs.pick-runner.outputs.runner) }}
     container:
       image: mbichmann/molsim-vtk
     env:
@@ -48,7 +60,8 @@ jobs:
         if-no-files-found: ignore
 
   sanitizer:
-    runs-on: [mini-arc-runner-set, ubuntu-latest]
+    needs: pick-runner
+    runs-on: ${{ fromJson(needs.pick-runner.outputs.runner) }}
     container:
       image: mbichmann/molsim-vtk
     env:
@@ -70,7 +83,8 @@ jobs:
         ASAN_OPTIONS: halt_on_error=1
 
   documentation:
-    runs-on: [mini-arc-runner-set, ubuntu-latest]
+    needs: pick-runner
+    runs-on: ${{ fromJson(needs.pick-runner.outputs.runner) }}
     container:
       image: mbichmann/molsim-vtk
 
@@ -96,8 +110,8 @@ jobs:
       uses: actions/deploy-pages@v4
 
   upload-codecov:
-    runs-on: [mini-arc-runner-set, ubuntu-latest]
-    needs: build
+    needs: [pick-runner, build]
+    runs-on: ${{ fromJson(needs.pick-runner.outputs.runner) }}
     container:
       image: mbichmann/molsim-vtk
     # disable conditional execution until workflow is merged into main, so that gh actually renders the button
