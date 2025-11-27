@@ -5,15 +5,11 @@
 
 namespace mol_sim {
 
-template <ParticleContainer containerType>
-class Outflow : public BoundaryCondition<containerType> {
-    bool boundaryConditionApplies(Particle& p) override;
-    void boundaryStrategy(Particle& p) override;
-    
+class Outflow : public BoundaryCondition {
     public:
-    Outflow(containerType& particles, BoundaryLocation location);
-    Outflow(containerType* particles, BoundaryLocation location);
+    Outflow(BoundaryLocation location);
     ~Outflow() override = default;
+    void boundaryStrategy(Particle& p) override;
 };
 }  // namespace mol_sim
 

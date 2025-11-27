@@ -2,6 +2,7 @@
 
 using namespace mol_sim;
 
+ContainerRef::ContainerRef() = default;
 ContainerRef::ContainerRef(SimpleContainer& c) : instance(&c) {}
 ContainerRef::ContainerRef(LinkedCellContainer& c) : instance(&c) {}
 ContainerRef::ContainerRef(CONTAINER_REF& c) : instance(c) {}
@@ -45,10 +46,15 @@ void ContainerRef::addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_
                 type](auto& c) { return c->addParticle(x_arg, v_arg, m_arg, epsilon_arg, sigma_arg, type); },
                instance);
 }
-
-void ContainerRef::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x) {
-    std::visit([&p, &new_x](auto& c) { return c->updateParticlePosition(p, new_x); }, instance);
+void ContainerRef::eraseParticle(const Particle& p) {
+    std::visit([&p](auto& c) { return c->eraseParticle(p); }, instance);
 }
+
+void ContainerRef::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x, Domain& domain) {
+    std::visit([&p, &new_x, &domain](auto& c) { return c->updateParticlePosition(p, new_x, domain); }, instance);
+}
+
+CONTAINER_REF ContainerRef::getInstance() { return instance; }
 
 // normal iterators
 std::vector<Particle>::iterator ContainerRef::begin() {

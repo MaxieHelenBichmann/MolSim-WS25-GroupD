@@ -11,7 +11,7 @@
 
 namespace mol_sim {
 /**
-   * @brief Enum for boundary types in the Linked-Cell Container.
+   * @brief Enum for boundary locations in the Linked-Cell Container.
    *
    * UPPER: +z direction (x-y plane at max z)
    * LOWER: -z direction (x-y plane at min z)
@@ -21,49 +21,36 @@ namespace mol_sim {
    * RIGHT: +x direction (y-z plane at max x)
   */
 enum class BoundaryLocation : std::uint8_t { UPPER, LOWER, FRONT, BACK, LEFT, RIGHT };
-enum class BoundaryType : std::uint8_t { OUTFLOW, REFLECTING, PERIODIC }; 
-class BoundaryConditionDeclaration {
-  public:
-  BoundaryConditionDeclaration& setType(BoundaryType type);
-  BoundaryConditionDeclaration& setLocation(BoundaryLocation location);
-  BoundaryConditionDeclaration& setCounterSigma(double counter_sigma);
-  BoundaryConditionDeclaration& setCounterEpsilon(double counter_epsilon);
 
-  BoundaryType getType();
-  BoundaryLocation getLocation();
-  std::optional<double> getCounterSigma();
-  std::optional<double> getCounterEpsilon();
+/**
+ * @brief Enum of the supported boundary types.
+ * 
+ * OUTFLOW: Outflow boundary condition: delete particles in halo cells
+ * REFLECTING: Reflecting boundary condition: add ghost particles if particle gets too close to boundary 
+ */
+enum class BoundaryType : std::uint8_t { OUTFLOW, REFLECTING }; 
 
-    BoundaryConditionDeclaration() = default;
-
-  BoundaryConditionDeclaration(BoundaryLocation location, BoundaryType type);
-  BoundaryConditionDeclaration(BoundaryLocation location, BoundaryType type, std::optional<double> counter_sigma, std::optional<double> counter_epsilon);
-
-    ~BoundaryConditionDeclaration() = default;
-
+class BoundaryCondition {
   protected:
-    BoundaryLocation location;
-    BoundaryType type;
     std::optional<double> counter_sigma = std::nullopt;
     std::optional<double> counter_epsilon = std::nullopt;
-};
-
-template <ParticleContainer containerType>
-class BoundaryCondition : public BoundaryConditionDeclaration {
-    virtual bool boundaryConditionApplies(Particle& p) = 0;
-    virtual void boundaryStrategy(Particle& p) = 0;  
+    BoundaryLocation location;
+    BoundaryType type;
   
-  protected:
-    containerType& particles;
-
   public:
-    BoundaryCondition(containerType& particles, BoundaryLocation location);
-    BoundaryCondition(containerType* particles, BoundaryLocation location);
+    BoundaryCondition(BoundaryLocation location, BoundaryType type);
+    BoundaryCondition(BoundaryLocation location, BoundaryType type, std::optional<double> counter_sigma, std::optional<double> counter_epsilon);
     virtual ~BoundaryCondition() = 0;
-    /***
-     * @brief Iterates over the boundary cells and applies the boundary condtion if necessary.
-     */
-    void applyBoundary();
+    virtual void boundaryStrategy(Particle& p) = 0;  
+    
+    BoundaryType& getType();
+    const BoundaryType& getType() const;
+    BoundaryLocation& getLocation();
+    const BoundaryLocation& getLocation() const;
+    std::optional<double>& getCounterSigma();
+    const std::optional<double>& getCounterSigma() const;
+    std::optional<double>& getCounterEpsilon();
+    const std::optional<double>& getCounterEpsilon() const;
 };
 
 }  // namespace mol_sim

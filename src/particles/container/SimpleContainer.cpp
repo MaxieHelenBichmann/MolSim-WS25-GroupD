@@ -1,5 +1,7 @@
 #include "particles/container/SimpleContainer.h"
 
+#include <algorithm>
+
 using namespace mol_sim;
 
 void SimpleContainer::addParticle(Particle&& value) { push_back(value); }
@@ -11,8 +13,12 @@ void SimpleContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsil
 void SimpleContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type) {
     emplace_back(x_arg, v_arg, m_arg, epsilon_arg, sigma_arg, type);
 };
-
-void SimpleContainer::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x) { p->getX() = new_x; }
+void SimpleContainer::eraseParticle(const Particle& p) {
+    erase(std::find(begin(), end(), p));
+};
+void SimpleContainer::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x, Domain& domain) { 
+    p->getX() = new_x; 
+}
 
 // proximity iterators
 SimpleContainer::proximity_iterator SimpleContainer::proximityBegin(R3 center, double radius, size_t offset) {

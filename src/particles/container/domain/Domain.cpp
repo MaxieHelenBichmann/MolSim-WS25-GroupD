@@ -3,57 +3,80 @@
 #include <spdlog/spdlog.h>
 
 namespace mol_sim {
-    template <ParticleContainer containerType>
-    void Domain<containerType>::setBoundary(BoundaryConditionDeclaration boundary) {
-        std::unique_ptr<BoundaryCondition<containerType>> ptr;
-        switch (boundary.getLocation()) {
-            case BoundaryLocation::LEFT:
-                ptr = left_boundary;
-                break; 
-            case BoundaryLocation::RIGHT:
-                ptr = right_boundary;
-                break; 
-            case BoundaryLocation::UPPER:
-                ptr = upper_boundary;
-                break; 
-            case BoundaryLocation::LOWER:
-                ptr = lower_boundary;
-                break; 
-            case BoundaryLocation::FRONT:
-                ptr = front_boundary;
-                break; 
-            case BoundaryLocation::BACK:
-                ptr = back_boundary;
-                break;
-            default:
-                SPDLOG_ERROR("Unknown boundary type! Expected (LEFT, RIGHT, UPPER, LOWER, FRONT, BACK)!"); 
-        }
-        
-        switch (boundary.getType()) {
-            case BoundaryType::OUTFLOW:
-                ptr.reset(new Outflow<containerType>(particles, boundary.getLocation()));
-                break;
-            case BoundaryType::REFLECTING:
-                ptr.reset(new Reflecting<containerType>(particles, dimension, boundary.getLocation(), boundary.getCounterSigma(), boundary.getCounterEpsilon()));
-                break;
-            default:
-                SPDLOG_ERROR("Unknown boundary condition!");
-                break;
+    Domain::Domain() = default;
+    
+    Domain::Domain(Domain& domain) noexcept {
+        this->dimension = domain.dimension;
+        left_boundary = domain.left_boundary;
+        right_boundary = domain.right_boundary;
+        upper_boundary = domain.upper_boundary;
+        lower_boundary = domain.lower_boundary;
+        front_boundary = domain.front_boundary;
+        back_boundary = domain.back_boundary;
+    }
+
+    Domain::Domain(Domain&& domain) noexcept {
+        this->dimension = domain.dimension;
+        left_boundary = domain.left_boundary;
+        right_boundary = domain.right_boundary;
+        upper_boundary = domain.upper_boundary;
+        lower_boundary = domain.lower_boundary;
+        front_boundary = domain.front_boundary;
+        back_boundary = domain.back_boundary;
+    }
+
+    Domain::Domain(R3 dimension, std::vector<std::optional<BoundaryCondition*>> boundaries) : dimension(dimension) {
+        for (auto& boundary : boundaries) {
+            if (boundary.has_value()) { 
+                getBoundary(boundary.value()->getLocation()) = boundary.value();
+            }
         }
     }
 
-    template <ParticleContainer containerType>
-    std::unique_ptr<BoundaryCondition<containerType>> Domain<containerType>::getBoundary(BoundaryLocation location) {
+    Domain::Domain(R3 dimension, std::vector<std::optional<BoundaryCondition&>> boundaries) : dimension(dimension) {
+        for (auto& boundary : boundaries) {
+            if (boundary.has_value()) { 
+                getBoundary(boundary.value().getLocation()) = &boundary.value();
+            }
+        }
+    }
+
+    R3 Domain::getDimension() { return dimension; }
+
+    BoundaryCondition*& Domain::getBoundary(BoundaryLocation location) {
         switch(location) {
-            case BoundaryLocation::LEFT: return std::move(left_boundary);
-            case BoundaryLocation::RIGHT: return std::move(right_boundary);
-            case BoundaryLocation::UPPER: return std::move(upper_boundary); 
-            case BoundaryLocation::LOWER: return std::move(lower_boundary);
-            case BoundaryLocation::FRONT: return std::move(front_boundary);
-            case BoundaryLocation::BACK: return std::move(back_boundary);
+            case BoundaryLocation::LEFT: return left_boundary;
+            case BoundaryLocation::RIGHT: return right_boundary;
+            case BoundaryLocation::FRONT: return front_boundary;
+            case BoundaryLocation::BACK: return back_boundary;
+            case BoundaryLocation::UPPER: return upper_boundary; 
+            case BoundaryLocation::LOWER: return lower_boundary;
             default:
                 SPDLOG_ERROR("Unknown boundary type! Expected (LEFT, RIGHT, TOP, BOTTOM, FRONT, BACK)!");
-                return nullptr; 
+                exit(-1); 
         }
+    }
+
+    const BoundaryCondition* Domain::getBoundary(BoundaryLocation location) const {
+        switch(location) {
+            case BoundaryLocation::LEFT: return left_boundary;
+            case BoundaryLocation::RIGHT: return right_boundary;
+            case BoundaryLocation::FRONT: return front_boundary;
+            case BoundaryLocation::BACK: return back_boundary;
+            case BoundaryLocation::UPPER: return upper_boundary; 
+            case BoundaryLocation::LOWER: return lower_boundary;
+            default:
+                SPDLOG_ERROR("Unknown boundary type! Expected (LEFT, RIGHT, TOP, BOTTOM, FRONT, BACK)!");
+                exit(-1); 
+        }
+    }
+
+    void Domain::applyBoundary(Particle& p) { 
+        left_boundary->boundaryStrategy(p);
+        right_boundary->boundaryStrategy(p);
+        front_boundary->boundaryStrategy(p);
+        back_boundary->boundaryStrategy(p);
+        upper_boundary->boundaryStrategy(p);
+        lower_boundary->boundaryStrategy(p); 
     }
 }  // namespace mol_sim

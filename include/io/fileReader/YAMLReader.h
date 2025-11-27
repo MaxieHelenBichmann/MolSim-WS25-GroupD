@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <yaml-cpp/node/node.h>
 #include <cstddef>
+#include <variant>
 
 #include "io/FileReader.h"
 #include "particles/container/ContainerRef.h"
@@ -29,7 +30,7 @@ const std::string LINKED = "LINKED";
  * Supported formats: XVM, Cuboid, Disc
  */
 class YAMLReader : public FileReader {
-   public:
+    public:
     /**
      * @brief Struct to hold Cuboid Generation Data
     *
@@ -74,7 +75,7 @@ class YAMLReader : public FileReader {
    private:
     static void readSettings(SettingsParam& settings, const YAML::Node& node);
     static void parseDomain(SettingsParam& settings, const YAML::Node& node);
-    static void readBoundaryCondition(std::optional<BoundaryConditionDeclaration>& declaration, BoundaryLocation location, const YAML::Node& node);
+    static void readBoundaryCondition(std::optional<BoundaryCondition&>& boundary, BoundaryLocation location, R3 dimension, const YAML::Node& node);
     void readXVM(ContainerRef particles, const YAML::Node& node);
     void readCube(ContainerRef particles, const YAML::Node& node);
     void readDisc(ContainerRef particles, const YAML::Node& node);

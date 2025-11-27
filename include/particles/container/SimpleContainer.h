@@ -65,7 +65,14 @@ class SimpleContainer : public std::vector<Particle> {
      * @param p Iterator to the Particle to update.
      * @param new_x New position to set.
      */
-    void updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x);
+    void updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x, Domain& domain);
+
+    /**
+     * @brief Removes a given particle from the container.
+     * 
+     * @param p Particle to be removed. 
+     */
+    void eraseParticle(const Particle& p);
 
     /**
      * @brief Const iterator that iterates over all particles that apply a force on a given particle.

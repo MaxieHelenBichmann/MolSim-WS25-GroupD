@@ -82,8 +82,13 @@ class Simulation {
 
    public:
     /**
-     * @deprecated This constructor only exists as a hot fix for the benchmarks 
-     * after my (Georg) refactorings to the codebase.
+     * @brief Construct a new Simulation object and prepare for run() call
+     * This class implements a Builder Pattern, meaning all parameters need to be set before the run() call, which will
+     * run the simulation.
+     * @param particles Container of particles to be simulated.
+     * @param settings Simulation parameters. If relevant values are not set their default values in
+     * include/utils/Settings.h will be used instead.
+     * @param force_source Force source to be used in the simulation.
      */
     Simulation(containerType& particles, forceType& force_source, SettingsParam& settings)
         : domain(std::get<Domain<containerType>>(settings.domain)),
@@ -98,26 +103,11 @@ class Simulation {
         base_name = settings.base_name.value();
     }
 
-    /**
-     * @brief Construct a new Simulation object and prepare for run() call
-     * This class implements a Builder Pattern, meaning all parameters need to be set before the run() call, which will
-     * run the simulation.
-     * @param settings Simulation parameters. If relevant values are not set their default values in
-     * include/utils/Settings.h will be used instead.
-     * @param force_source Force source to be used in the simulation.
-     */
-    Simulation(SettingsParam& settings, forceType& force_source)
-        : force_source(force_source),
-          domain(std::get<Domain<containerType>>(settings.domain)) {
-        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-        delta_t = settings.delta_t.value();
-        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-        start_time = settings.start_time.value();
-        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-        end_time = settings.end_time.value();
-        frequency = settings.frequency.value();
-        base_name = settings.base_name.value();
-        particles = domain.getParticles(); 
+    void applyBoundary(BoundaryCondition& boundary) {
+        const std::set<BoundaryLocation> locations{location};
+        for (auto& it = particles->boundaryBegin(locations); it != particles->boundaryEnd(locations); it++) {
+            boundary.boundaryStrategy(it);
+        }  
     }
 
     /**
@@ -142,6 +132,14 @@ class Simulation {
                 p2.getF() = p2.getF() - force;
             }
         }
+
+        //remove potential ghost particles (so far this is only relevant if there is at least 1 reflecting boundary)
+        for (auto it = particles->begin(); it != particles->end(); ++it) {
+            Particle& p = *it;
+            if (p.type == -1) {
+                particles->eraseParticle(p);
+            }
+        }
     }
 
     /**
@@ -153,7 +151,10 @@ class Simulation {
         for (auto it = particles->begin(); it != particles->end(); ++it) {
             const auto new_position =
                 (*it).getX() + (delta_t * (*it).getV()) + ((0.5 * delta_t * delta_t / (*it).getM()) * (*it).getF());
-            particles->updateParticlePosition(it, new_position);
+            /**
+             * TODO: do applyBoundary() and cleanBoundary() in updateParticlePosition
+             */
+            particles->updateParticlePosition(it, new_position, domain);
         }
     }
 
@@ -166,28 +167,7 @@ class Simulation {
             p.getV() = p.getV() + ((0.5 * delta_t / p.getM()) * (p.getOldF() + p.getF()));
         }
     }
-
-    void applyBoundary() {
-        domain.getBoundary(BoundaryLocation::LEFT)->applyBoundary();  
-        domain.getBoundary(BoundaryLocation::RIGHT)->applyBoundary();  
-        domain.getBoundary(BoundaryLocation::UPPER)->applyBoundary();  
-        domain.getBoundary(BoundaryLocation::LOWER)->applyBoundary();  
-        domain.getBoundary(BoundaryLocation::FRONT)->applyBoundary();  
-        domain.getBoundary(BoundaryLocation::BACK)->applyBoundary();  
-    }
-
-    /**
-     * TODO: Implement analogy to halo cell and boundary cell iterator in SimpleContainer.
-     * (maybe even add those to the concept) then uncomment the code inside this function.
-     * 
-     * @brief Clears the halo cells, i.e. removes all particles that are beyond the specified simulation domain.
-     */
-    void cleanBoundary() {
-/*         for (auto& it = particles.haloBegin(); it != particles.haloEnd(); it++) {
-            particles.eraseParticle(it);
-        } */
-    }
-
+    
     /**
      * @brief Performs a full simulation run.
      * Performs a full simulation run, using the specified delta_t and end_time.
@@ -201,10 +181,7 @@ class Simulation {
             // calculate new x
             calculateX();
             // calculate new f
-            cleanBoundary();
-            applyBoundary();
             calculateF();
-            cleanBoundary();
             // calculate new v
             calculateV();
 

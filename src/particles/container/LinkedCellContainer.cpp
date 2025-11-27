@@ -344,14 +344,14 @@ void LinkedCellContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double e
     cells[findCellIndex(x_arg)].addParticle(data.size() - 1);
 }
 
-void LinkedCellContainer::eraseParticle(Particle* p) {
+void LinkedCellContainer::eraseParticle(const Particle& p) {
     // TODO: change to use cells[cell_idx].particles().find() and take an iterator/index as an argument!
-    size_t cell_idx = findCellIndex(p->getX());
+    size_t cell_idx = findCellIndex(p.getX());
 
     if (cell_idx < cells.size()) {
         for (auto it = cells[cell_idx].particles().begin(); it != cells[cell_idx].particles().end(); ++it) {  // NOLINT
             SPDLOG_DEBUG("Index {}", *it);
-            if (&(data[*it]) == p) {
+            if (&(data[*it]) == &p) {
                 size_t idx = *it;
                 cells[cell_idx].removeParticle(idx);
                 data.erase(data.begin() + idx);  // NOLINT
@@ -362,18 +362,24 @@ void LinkedCellContainer::eraseParticle(Particle* p) {
     }
 }
 
-void LinkedCellContainer::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x) {
+void LinkedCellContainer::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x, Domain& domain) {
     size_t old_cell_idx = findCellIndex(p->getX());
     if (!cells[old_cell_idx].fits(new_x)) {
         size_t new_cell_idx = findCellIndex(new_x);
         if (new_cell_idx == cells.size()) {
-            eraseParticle(&(*p));
+            eraseParticle(*p);
             return;
         }
         switchCell(static_cast<size_t>(p - data.begin()), old_cell_idx, new_cell_idx);
     }
 
     p->getX() = new_x;
+    if (cells[findCellIndex(p->getX())].getType() == CellType::HALO) {
+        eraseParticle(*p);
+    }
+    else if (cells[findCellIndex(p->getX())].getType() == CellType::BOUNDARY) {
+        domain.applyBoundary(*p);
+    }
 }
 
 // normal iterators
@@ -619,9 +625,3 @@ LinkedCellContainer::const_proximity_iterator LinkedCellContainer::boundaryEnd(
 }
 
 static_assert(ParticleContainer<LinkedCellContainer>);
-
-bool LinkedCellContainer::isOnBoundary(Particle& p) {
-    return (cells[findCellIndex(p.getX())].getType() == CellType::BOUNDARY);
-}
-
-R3 LinkedCellContainer::getDomainSize() { return domain_size; }

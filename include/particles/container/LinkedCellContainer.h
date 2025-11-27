@@ -97,6 +97,8 @@ class LinkedCellContainer {
     /**
      * Vector storing the global bounds of the domain of this container.
      * The Linked-Cell container assumes a cuboidal domain from (0,0,0) to domain_size.
+     * 
+     * NOTE: All components specified here must be positive!
      */
     R3 domain_size;
 
@@ -212,7 +214,7 @@ class LinkedCellContainer {
      *
      * @param p Pointer to the Particle to remove.
      */
-    void eraseParticle(Particle* p);
+    void eraseParticle(const Particle& p);
 
     /**
      * @brief Update the position of a given Particle in the Container.
@@ -220,7 +222,7 @@ class LinkedCellContainer {
      * @param p Iterator to the Particle to update.
      * @param new_x New position to set.
      */
-    void updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x);
+    void updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x, Domain& domain);
 
     // iterators
 
@@ -560,21 +562,6 @@ class LinkedCellContainer {
                                                            BoundaryLocation::UPPER, BoundaryLocation::LOWER,
                                                            BoundaryLocation::FRONT, BoundaryLocation::BACK, BoundaryLocation::LEFT,
                                                            BoundaryLocation::RIGHT}) const;
-    /**
-     * @brief Checks whether a given particle resides within a boundary cell.
-     *
-     * @param p the Particle.
-     * @return true if the particle lies within a boundary cell.
-     * @return false if the particle does NOT lie within a boundary cell.
-     */
-    [[nodiscard]] bool isOnBoundary(Particle& p);
-
-    /**
-     * @brief Returns the domain size, i.e. the vector going from (0, 0, 0) to (x_max, y_max, z_max).
-     *
-     * @return R3 The vector containing the domain size.
-     */
-    [[nodiscard]] R3 getDomainSize();
 };
 
 }  // namespace mol_sim

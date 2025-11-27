@@ -19,10 +19,6 @@ namespace mol_sim {
  * @brief Provides a wrapper for settings of the simulation set during config
  *
  */
-using DomainVariant = 
-    std::variant<Domain<SimpleContainer>, Domain<LinkedCellContainer>>; //if more container types are needed, just add 
-                                                                        //another Domain<containerType> here.
-
 class SettingsParam {
    public:
     /**
@@ -78,6 +74,10 @@ class SettingsParam {
      */
     constexpr static std::string CONTAINER_TYPE_DEFAULT = "SIMPLE";
     /**
+     * @brief Default domain.
+     */
+    Domain DOMAIN_DEFAULT = Domain();
+    /**
      * @brief delta_t of the simulation.
      *
      */
@@ -127,10 +127,14 @@ class SettingsParam {
      * 
      * SIMPLE = SimpleContainer
      * LINKED = LinkedCellContainer
+     * 
+     * @note May be deprecated depending on future changes with typing.
      */
     std::optional<std::string> domain_type;
-
-    DomainVariant domain;
+    /**
+     * @brief The domain of the simulation
+     */
+    std::optional<Domain&> domain;
     /**
      * @brief Construct new SettingsParam.
      * All values will be set to nullopt if not specified otherwise.
@@ -145,13 +149,14 @@ class SettingsParam {
      * @param frequency
      * @param cutoff
      * @param domain_type
+     * @param domain
      */
     SettingsParam(std::optional<double> delta_t = std::nullopt, std::optional<double> start_time = std::nullopt,
                   std::optional<double> end_time = std::nullopt, std::optional<double> epsilon = std::nullopt,
                   std::optional<double> sigma = std::nullopt, std::optional<std::string> base_name = std::nullopt,
                   std::optional<Force> force = std::nullopt, std::optional<size_t> frequency = std::nullopt,
                   std::optional<double> cutoff = std::nullopt, std::optional<std::string> domain_type = std::nullopt,
-                  DomainVariant domain = DomainVariant())
+                  std::optional<Domain&> domain = std::nullopt)
         : delta_t(delta_t),
           start_time(start_time),
           end_time(end_time),
@@ -162,7 +167,7 @@ class SettingsParam {
           frequency(frequency),
           cutoff(cutoff),
           domain_type(std::move(domain_type)),
-          domain(std::move(domain)) {}
+          domain(domain) {}
     /**
      * @brief Provide default values for settings that have not been set.
      *
@@ -197,6 +202,9 @@ class SettingsParam {
         }
         if (!domain_type.has_value()) {
             domain_type = CONTAINER_TYPE_DEFAULT;
+        }
+        if (!domain.has_value()) {
+            domain = DOMAIN_DEFAULT;
         }
     }
 };

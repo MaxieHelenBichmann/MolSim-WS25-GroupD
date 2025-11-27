@@ -7,57 +7,18 @@
 
 namespace mol_sim {
 
-//---------------------------------- BoundaryConditionDeclaration--------------------------------------------    
-BoundaryConditionDeclaration& BoundaryConditionDeclaration::setType(BoundaryType type) { 
-    this->type = type; 
-    return *this; 
-}
-
-BoundaryConditionDeclaration& BoundaryConditionDeclaration::setLocation(BoundaryLocation location) { 
-    this->location = location; 
-    return *this; 
-}
-
-BoundaryConditionDeclaration& BoundaryConditionDeclaration::setCounterSigma(double counter_sigma) { 
-    this->counter_sigma.value() = counter_sigma; 
-    return *this; 
-}
-
-BoundaryConditionDeclaration& BoundaryConditionDeclaration::setCounterEpsilon(double counter_epsilon) { 
-    this->counter_epsilon.value() = counter_epsilon; 
-    return *this; 
-}
-
-BoundaryType BoundaryConditionDeclaration::getType() { return type; }
-BoundaryLocation BoundaryConditionDeclaration::getLocation() { return location; }
-std::optional<double> BoundaryConditionDeclaration::getCounterSigma() { return counter_sigma; }
-std::optional<double> BoundaryConditionDeclaration::getCounterEpsilon() { return counter_sigma; }
-BoundaryConditionDeclaration::BoundaryConditionDeclaration(BoundaryLocation location, BoundaryType type) 
+BoundaryCondition::BoundaryCondition(BoundaryLocation location, BoundaryType type) 
     : location(location), type(type) {}
-BoundaryConditionDeclaration::BoundaryConditionDeclaration(BoundaryLocation location, BoundaryType type, std::optional<double> counter_sigma, std::optional<double> counter_epsilon) 
+BoundaryCondition::BoundaryCondition(BoundaryLocation location, BoundaryType type, std::optional<double> counter_sigma, std::optional<double> counter_epsilon) 
     : location(location), type(type), counter_sigma(counter_sigma), counter_epsilon(counter_epsilon) {}
 
-//-----------------------------------------BoundaryCondition------------------------------------------------   
-template <ParticleContainer containerType>
-BoundaryCondition<containerType>::BoundaryCondition(containerType& particles, BoundaryLocation location) 
-    : particles(particles) {
-        this->location = location;
-    }
-
-template <ParticleContainer containerType>
-BoundaryCondition<containerType>::BoundaryCondition(containerType* particles, BoundaryLocation location) 
-    : particles(*particles) {
-        this->location = location;
-    }
-
-template <ParticleContainer containerType>
-void BoundaryCondition<containerType>::applyBoundary() {
-    const std::set<BoundaryLocation> boundary{location};
-    for (auto& it = particles->boundaryBegin(boundary); it != particles->boundaryEnd(boundary); it++) {
-        if (boundaryConditionApplies(it)) { 
-            boundaryStrategy(it);
-        } 
-    }  
-}
+BoundaryType& BoundaryCondition::getType() { return type; }
+const BoundaryType& BoundaryCondition::getType() const { return type; }
+BoundaryLocation& BoundaryCondition::getLocation() { return location; }
+const BoundaryLocation& BoundaryCondition::getLocation() const { return location; }
+std::optional<double>& BoundaryCondition::getCounterSigma() { return counter_sigma; }
+const std::optional<double>& BoundaryCondition::getCounterSigma() const { return counter_sigma; }
+std::optional<double>& BoundaryCondition::getCounterEpsilon() { return counter_sigma; }
+const std::optional<double>& BoundaryCondition::getCounterEpsilon() const { return counter_sigma; }
 
 }  // namespace mol_sim

@@ -51,7 +51,7 @@ const std::string& h = "-h";
 const char* GRAV = "GRAV";
 const char* LJ = "LJ";
 
-void cliParse(int argc, char** argsv, SimpleContainer& particles, SettingsParam& settings) {
+void cliParse(int argc, char** argsv, ContainerRef particles, SettingsParam& settings) {
     SPDLOG_INFO("Hello from MolSim for PSE!");
     char** help = std::find(argsv, argsv + argc, h);
     if (help != &argsv[argc]) {

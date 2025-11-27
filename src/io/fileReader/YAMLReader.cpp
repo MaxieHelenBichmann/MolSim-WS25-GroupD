@@ -22,10 +22,7 @@ YAMLReader::YAMLReader() = default;
 
 YAMLReader::~YAMLReader() = default;
 
-void YAMLReader::readFile(ContainerRef particles_ref, SettingsParam& settings, const std::string& filename) {
-    (void)particles_ref; /** TODO: change XVM reader so we can safely eliminate ContainerRef from the signature. */
-    CONTAINER_REF placeholder;
-    ContainerRef particles(placeholder);
+void YAMLReader::readFile(ContainerRef particles, SettingsParam& settings, const std::string& filename) {
     try {
         YAML::Node root = YAML::LoadFile(filename);
         bool has_particle_definition = false;
@@ -50,30 +47,19 @@ void YAMLReader::readFile(ContainerRef particles_ref, SettingsParam& settings, c
                 } else if (format == "Settings") {
                     readSettings(settings, node);
                     settings.setDefaults();
-                    /**
-                     * TODO: maybe work with std::decay_t<decltype...> here. https://medium.com/@weidagang/modern-c-std-variant-and-std-visit-3c16084db7dc
-                     * haven't quite understood it yet tho so im not gonna do that just yet. esp cause i don't think if constexpr would work here.
-                     * this way maybe we can eliminate the domain_type string inside Domain.h which would be prettier.
-                     */
-                    std::variant<SimpleContainer*, LinkedCellContainer*> particles_var;
                     if (settings.domain_type.value() == SIMPLE) {
-                        SimpleContainer particles;
-                        std::get<Domain<SimpleContainer>>(settings.domain).setParticles(particles);
-                        particles_var = &particles;
+                        SimpleContainer read_container;
+                        particles = read_container;
                     } else if (settings.domain_type.value() == LINKED) {
-                        Domain<LinkedCellContainer> domain = std::get<Domain<LinkedCellContainer>>(settings.domain);
-                        LinkedCellContainer particles(domain.getDimension(), settings.cutoff.value());
-                        domain.setParticles(particles);
-                        particles_var = &particles;
+                        Domain domain = settings.domain.value();
+                        LinkedCellContainer read_container(domain.getDimension(), settings.cutoff.value());
+                        particles = read_container;
                     }
-                    ContainerRef particles_ref(particles_var);
-                    particles = particles_ref;
                 } else {
                     SPDLOG_WARN("Unknown Format '{}' for entry '{}'", format, name);
                 }
             }
         }
-
         if (!has_particle_definition) {
             throw YAMLReaderException("No particle definitions (XVM or Cuboid) found in the input file.");
         }
@@ -117,7 +103,7 @@ void YAMLReader::readSettings(SettingsParam& settings, const YAML::Node& node) {
     }
 }
 
-void YAMLReader::readBoundaryCondition(std::optional<BoundaryConditionDeclaration>& declaration, BoundaryLocation location, const YAML::Node& node) {
+void YAMLReader::readBoundaryCondition(std::optional<BoundaryCondition&>& boundary, BoundaryLocation location, R3 dimension, const YAML::Node& node) {
     std::string location_string;
     switch (location) {
         case BoundaryLocation::LEFT: 
@@ -143,20 +129,20 @@ void YAMLReader::readBoundaryCondition(std::optional<BoundaryConditionDeclaratio
             break;
     }
     const YAML::Node& boundary_node = node[location_string];
-    std::optional<BoundaryConditionDeclaration> result = std::nullopt;
     if (!boundary_node) {
-        declaration = result;
+        boundary = std::nullopt;
         return;
     }
     auto boundary_type = boundary_node["boundary_type"].as<std::string>();
     if (boundary_type == "OUTFLOW") {
-        result = BoundaryConditionDeclaration(location, BoundaryType::OUTFLOW);
+        Outflow outflow = Outflow(location);
+        boundary = outflow;
     } else if (boundary_type == "REFLECTING") {
         std::optional<double> counter_sigma = boundary_node["counter_sigma"] ? std::optional<double>(boundary_node["counter_sigma"].as<double>()) : std::nullopt;
         std::optional<double> counter_epsilon = boundary_node["counter_epsilon"] ? std::optional<double>(boundary_node["counter_epsilon"].as<double>()) : std::nullopt;
-        result = BoundaryConditionDeclaration(location, BoundaryType::REFLECTING, counter_sigma, counter_epsilon);
+        Reflecting reflecting = Reflecting(location, dimension, counter_sigma, counter_epsilon);
+    
     }
-    declaration = result;
 }
 
 void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
@@ -166,27 +152,26 @@ void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
     auto y = domain_node["y"].as<double>();
     auto z = domain_node["z"].as<double>();
     R3 dimension = {x, y, z};
-    std::optional<BoundaryConditionDeclaration> left_boundary;
-    std::optional<BoundaryConditionDeclaration> right_boundary;
-    std::optional<BoundaryConditionDeclaration> upper_boundary;
-    std::optional<BoundaryConditionDeclaration> lower_boundary;
-    std::optional<BoundaryConditionDeclaration> front_boundary;
-    std::optional<BoundaryConditionDeclaration> back_boundary;
-    readBoundaryCondition(left_boundary, BoundaryLocation::LEFT, node);
-    readBoundaryCondition(right_boundary, BoundaryLocation::RIGHT, node);
-    readBoundaryCondition(upper_boundary, BoundaryLocation::UPPER, node);
-    readBoundaryCondition(lower_boundary, BoundaryLocation::LOWER, node);
-    readBoundaryCondition(front_boundary, BoundaryLocation::FRONT, node);
-    readBoundaryCondition(back_boundary, BoundaryLocation::BACK, node);
-    std::vector<std::optional<BoundaryConditionDeclaration>> boundaries = {
+    std::optional<BoundaryCondition&> left_boundary;
+    std::optional<BoundaryCondition&> right_boundary;
+    std::optional<BoundaryCondition&> upper_boundary;
+    std::optional<BoundaryCondition&> lower_boundary;
+    std::optional<BoundaryCondition&> front_boundary;
+    std::optional<BoundaryCondition&> back_boundary;
+    readBoundaryCondition(left_boundary, BoundaryLocation::LEFT, dimension, node);
+    readBoundaryCondition(right_boundary, BoundaryLocation::RIGHT, dimension, node);
+    readBoundaryCondition(upper_boundary, BoundaryLocation::UPPER, dimension, node);
+    readBoundaryCondition(lower_boundary, BoundaryLocation::LOWER, dimension, node);
+    readBoundaryCondition(front_boundary, BoundaryLocation::FRONT, dimension, node);
+    readBoundaryCondition(back_boundary, BoundaryLocation::BACK, dimension, node);
+    std::vector<std::optional<BoundaryCondition&>> boundaries = { 
         left_boundary, right_boundary, front_boundary, back_boundary, upper_boundary, lower_boundary};
+    Domain domain(dimension, boundaries);
     if (domain_type == SIMPLE) {
-        Domain<SimpleContainer> domain(dimension, boundaries);
-        settings.domain = std::move(domain);
+        settings.domain = domain;
         settings.domain_type = domain_type;
     } else if (domain_type == LINKED) {
-        Domain<LinkedCellContainer> domain(dimension, boundaries);
-        settings.domain = std::move(domain);
+        settings.domain = domain;
         settings.domain_type = domain_type;
     }
 }
