@@ -79,7 +79,7 @@ class Domain {
      */
     [[nodiscard]] std::vector<Particle> computeGhostParticles(const Particle& p) const;
 
-    Domain& operator=(const Domain& other);
+    Domain& operator=(const Domain& other) = delete;
     Domain& operator=(Domain&& other) noexcept;
 };
 
