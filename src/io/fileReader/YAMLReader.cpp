@@ -245,16 +245,6 @@ void YAMLReader::readDisc(ContainerRef particles, const YAML::Node& node) {
     }
 }
 
-std::optional<BoundaryType> YAMLReader::parseBoundaryType(const std::string& type_str) {
-    if (type_str == "OUTFLOW") {
-        return BoundaryType::OUTFLOW;
-    }
-    if (type_str == "REFLECTING") {
-        return BoundaryType::REFLECTING;
-    }
-    return std::nullopt;
-}
-
 double YAMLReader::getBoundaryPosition(BoundaryLocation location, const R3& dimension) {
     switch (location) {
         case BoundaryLocation::LEFT:
@@ -277,14 +267,9 @@ double YAMLReader::getBoundaryPosition(BoundaryLocation location, const R3& dime
 std::unique_ptr<Boundary> YAMLReader::parseBoundary(BoundaryLocation location, const R3& dimension,
                                                     const YAML::Node& node) {
     auto type_str = node["type"].as<std::string>("OUTFLOW");
-    auto boundary_type = parseBoundaryType(type_str);
+    BoundaryType boundary_type = mol_sim::parseBoundaryType(type_str);
 
-    if (!boundary_type.has_value()) {
-        SPDLOG_WARN("Unknown boundary type '{}', defaulting to OUTFLOW", type_str);
-        return std::make_unique<Outflow>(location);
-    }
-
-    switch (boundary_type.value()) {
+    switch (boundary_type) {
         case BoundaryType::REFLECTING: {
             std::optional<double> sigma =
                 node["sigma"] ? std::optional<double>(node["sigma"].as<double>()) : std::nullopt;

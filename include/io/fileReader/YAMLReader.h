@@ -88,14 +88,6 @@ class YAMLReader : public FileReader {
     static void parseDomain(SettingsParam& settings, const YAML::Node& node);
 
     /**
-     * @brief Converts a string to a BoundaryType enum.
-     *
-     * @param type_str String representation ("OUTFLOW", "REFLECTING").
-     * @return std::optional<BoundaryType> The boundary type, or nullopt if invalid.
-     */
-    static std::optional<BoundaryType> parseBoundaryType(const std::string& type_str);
-
-    /**
      * @brief Gets the boundary position for a given location and domain dimension.
      *
      * @param location The boundary location.
