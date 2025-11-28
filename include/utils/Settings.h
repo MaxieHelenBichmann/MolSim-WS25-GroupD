@@ -8,8 +8,8 @@
 
 #include "particles/Particle.h"
 #include "particles/boundaries/Boundary.h"
-#include "particles/container/SimpleContainer.h"
 #include "particles/container/LinkedCellContainer.h"
+#include "particles/container/SimpleContainer.h"
 #include "particles/container/domain/Domain.h"
 #include "physics/ForceSource.h"
 #include "physics/LennardJonesForce.h"
@@ -126,7 +126,7 @@ class SettingsParam {
      *
      * @note May be deprecated depending on future changes with typing.
      */
-    std::optional<std::string> domain_type;
+    std::optional<std::string> container_type;
     /**
      * @brief The domain of the simulation
      */
@@ -169,8 +169,8 @@ class SettingsParam {
         if (!cutoff.has_value()) {
             cutoff = CUTOFF_DEFAULT;
         }
-        if (!domain_type.has_value()) {
-            domain_type = CONTAINER_TYPE_DEFAULT;
+        if (!container_type.has_value()) {
+            container_type = CONTAINER_TYPE_DEFAULT;
         }
         if (!domain.has_value()) {
             domain.emplace();

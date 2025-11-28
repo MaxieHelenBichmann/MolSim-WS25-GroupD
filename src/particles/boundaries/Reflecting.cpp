@@ -4,10 +4,10 @@
 
 namespace mol_sim {
 
-Reflecting::Reflecting(BoundaryLocation location, double boundary_position, std::optional<double> sigma,
+Reflecting::Reflecting(BoundaryLocation location, R3 domain_size, std::optional<double> sigma,
                        std::optional<double> epsilon)
     : Boundary(location, BoundaryType::REFLECTING),
-      boundary_position(boundary_position),
+      domain_size(domain_size),
       boundary_epsilon(epsilon),
       boundary_sigma(sigma) {}
 
@@ -42,6 +42,12 @@ int Reflecting::getSign() const {
     }
 }
 
+double Reflecting::getBoundaryPosition() const {
+    size_t axis = getAxis();
+    int sign = getSign();
+    return (sign < 0) ? 0.0 : domain_size[axis];
+}
+
 void Reflecting::applyBoundary(Particle& p) { (void)p; }
 
 std::optional<Particle> Reflecting::computeGhostParticle(const Particle& p) const {
@@ -50,6 +56,7 @@ std::optional<Particle> Reflecting::computeGhostParticle(const Particle& p) cons
 
     size_t axis = getAxis();
     int sign = getSign();
+    double boundary_position = getBoundaryPosition();
 
     double threshold = std::pow(2.0, 1.0 / 6.0) * sigma;
     double particle_pos = p.getX()[axis];

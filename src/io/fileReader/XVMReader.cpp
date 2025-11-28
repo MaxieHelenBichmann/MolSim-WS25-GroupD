@@ -22,8 +22,12 @@ XVMReader::XVMReader() = default;
 
 XVMReader::~XVMReader() = default;
 
-void XVMReader::readFile(ContainerRef particles, [[maybe_unused]] SettingsParam& settings,
-                         const std::string& filename) {
+void XVMReader::readSettings(SettingsParam& settings, [[maybe_unused]] const std::string& filename) {
+    // XVM files have no settings, just use defaults
+    settings.setDefaults();
+}
+
+void XVMReader::readParticles(ContainerRef particles, const std::string& filename) {
     std::array<double, 3> x;
     std::array<double, 3> v;
     double m;

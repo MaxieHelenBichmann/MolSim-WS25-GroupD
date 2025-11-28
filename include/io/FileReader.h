@@ -8,6 +8,8 @@
 #ifndef FILE_READER_H
 #define FILE_READER_H
 
+#include <string>
+
 #include "particles/container/ContainerRef.h"
 #include "utils/Settings.h"
 
@@ -17,19 +19,29 @@ namespace mol_sim {
  * @brief Interface for file readers.
  *
  * Interface for file readers.
- * These classes all implement the readFile method.
+ * These classes implement two-phase reading:
+ * 1. parseSettings - reads configuration/settings only
+ * 2. readParticles - reads particles into a container
  */
 class FileReader {
    public:
     virtual ~FileReader() = default;
+
     /**
-     * @brief Reads the particles encoded in an appropriately formatted file into a ParticleContainer.
+     * @brief Phase 1: Reads settings/configuration from the file.
      *
-     * @param particles The ParticleContainer the particles contained in the file will be stored in.
-     * @param settings SettingParam where read in settings are stored.
-     * @param filename The path to the file containing the particles to be stored in 'particles'.
+     * @param settings SettingsParam where read settings are stored.
+     * @param filename The path to the input file.
      */
-    virtual void readFile(ContainerRef particles, SettingsParam& settings, const std::string& filename) = 0;
+    virtual void readSettings(SettingsParam& settings, const std::string& filename) = 0;
+
+    /**
+     * @brief Phase 2: Reads particles from the file into a container.
+     *
+     * @param particles The ParticleContainer to store particles in.
+     * @param filename The path to the input file.
+     */
+    virtual void readParticles(ContainerRef particles, const std::string& filename) = 0;
 };
 
 }  // namespace mol_sim

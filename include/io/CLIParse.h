@@ -51,7 +51,7 @@ const std::string& h = "-h";
 const char* GRAV = "GRAV";
 const char* LJ = "LJ";
 
-void cliParse(int argc, char** argsv, ContainerRef particles, SettingsParam& settings) {
+std::string cliParse(int argc, char** argsv, SettingsParam& settings) {
     SPDLOG_INFO("Hello from MolSim for PSE!");
     char** help = std::find(argsv, argsv + argc, h);
     if (help != &argsv[argc]) {
@@ -128,19 +128,8 @@ void cliParse(int argc, char** argsv, ContainerRef particles, SettingsParam& set
     if (parsed_args - argc != 0) {
         SPDLOG_WARN("Erroneous programme call!: Unrecognized arguments in programme call!");
     }
-    std::unique_ptr<FileReader> file_reader;
 
-    std::filesystem::path path = argsv[1];
-    if (path.extension() == ".txt") {
-        file_reader = std::make_unique<XVMReader>();
-    } else if (path.extension() == ".yaml") {
-        file_reader = std::make_unique<YAMLReader>();
-    } else {
-        SPDLOG_ERROR("Unsupported File Extension!");
-        exit(-1);
-    }
-
-    file_reader->readFile(particles, settings, argsv[1]);
+    return argsv[1];
 }
 
 }  // namespace mol_sim

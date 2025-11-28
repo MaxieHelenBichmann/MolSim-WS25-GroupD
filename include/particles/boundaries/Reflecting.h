@@ -10,8 +10,7 @@
 namespace mol_sim {
 
 class Reflecting : public Boundary {
-    // position of this boundary along its axis
-    double boundary_position;
+    R3 domain_size;
     std::optional<double> boundary_epsilon;
     std::optional<double> boundary_sigma;
 
@@ -27,16 +26,22 @@ class Reflecting : public Boundary {
      */
     [[nodiscard]] int getSign() const;
 
+    /**
+     * @brief Computes the boundary position along its axis from domain size.
+     * @return 0 for boundaries at min (LEFT, LOWER, FRONT), domain_size[axis] for boundaries at max.
+     */
+    [[nodiscard]] double getBoundaryPosition() const;
+
    public:
     /**
      * @brief Constructs a Reflecting boundary.
      *
      * @param location The boundary location (LEFT, RIGHT, etc.).
-     * @param boundary_position The coordinate of this boundary along its axis.
+     * @param domain_size The dimensions of the entire domain (x, y, z).
      * @param sigma Optional sigma for ghost particle interactions.
      * @param epsilon Optional epsilon for ghost particle interactions.
      */
-    Reflecting(BoundaryLocation location, double boundary_position, std::optional<double> sigma = std::nullopt,
+    Reflecting(BoundaryLocation location, R3 domain_size, std::optional<double> sigma = std::nullopt,
                std::optional<double> epsilon = std::nullopt);
     ~Reflecting() override = default;
 
@@ -45,7 +50,7 @@ class Reflecting : public Boundary {
 
     [[nodiscard]] std::optional<double> getBoundarySigma() const { return boundary_sigma; }
     [[nodiscard]] std::optional<double> getBoundaryEpsilon() const { return boundary_epsilon; }
-    [[nodiscard]] double getBoundaryPosition() const { return boundary_position; }
+    [[nodiscard]] R3 getDomainSize() const { return domain_size; }
 };
 
 }  // namespace mol_sim
