@@ -7,7 +7,7 @@
 #include <variant>
 
 #include "particles/Particle.h"
-#include "particles/boundaries/BoundaryCondition.h"
+#include "particles/boundaries/Boundary.h"
 #include "particles/container/SimpleContainer.h"
 #include "particles/container/LinkedCellContainer.h"
 #include "particles/container/domain/Domain.h"
@@ -74,10 +74,6 @@ class SettingsParam {
      */
     constexpr static std::string CONTAINER_TYPE_DEFAULT = "SIMPLE";
     /**
-     * @brief Default domain.
-     */
-    Domain DOMAIN_DEFAULT = Domain();
-    /**
      * @brief delta_t of the simulation.
      *
      */
@@ -124,50 +120,23 @@ class SettingsParam {
     std::optional<double> cutoff;
     /**
      * @brief The type in string format (as it would be expected in the .yaml files) of the particle container.
-     * 
+     *
      * SIMPLE = SimpleContainer
      * LINKED = LinkedCellContainer
-     * 
+     *
      * @note May be deprecated depending on future changes with typing.
      */
     std::optional<std::string> domain_type;
     /**
      * @brief The domain of the simulation
      */
-    std::optional<Domain&> domain;
+    std::optional<Domain> domain;
     /**
      * @brief Construct new SettingsParam.
      * All values will be set to nullopt if not specified otherwise.
      * Default values will be set in YAMLReader.cpp::readFile
-     * @param delta_t
-     * @param start_time
-     * @param end_time
-     * @param epsilon
-     * @param sigma
-     * @param base_name
-     * @param force
-     * @param frequency
-     * @param cutoff
-     * @param domain_type
-     * @param domain
      */
-    SettingsParam(std::optional<double> delta_t = std::nullopt, std::optional<double> start_time = std::nullopt,
-                  std::optional<double> end_time = std::nullopt, std::optional<double> epsilon = std::nullopt,
-                  std::optional<double> sigma = std::nullopt, std::optional<std::string> base_name = std::nullopt,
-                  std::optional<Force> force = std::nullopt, std::optional<size_t> frequency = std::nullopt,
-                  std::optional<double> cutoff = std::nullopt, std::optional<std::string> domain_type = std::nullopt,
-                  std::optional<Domain&> domain = std::nullopt)
-        : delta_t(delta_t),
-          start_time(start_time),
-          end_time(end_time),
-          epsilon(epsilon),
-          sigma(sigma),
-          base_name(std::move(base_name)),
-          force(force),
-          frequency(frequency),
-          cutoff(cutoff),
-          domain_type(std::move(domain_type)),
-          domain(domain) {}
+    SettingsParam() = default;
     /**
      * @brief Provide default values for settings that have not been set.
      *
@@ -204,7 +173,7 @@ class SettingsParam {
             domain_type = CONTAINER_TYPE_DEFAULT;
         }
         if (!domain.has_value()) {
-            domain = DOMAIN_DEFAULT;
+            domain.emplace();
         }
     }
 };

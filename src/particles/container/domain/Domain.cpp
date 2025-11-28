@@ -3,80 +3,75 @@
 #include <spdlog/spdlog.h>
 
 namespace mol_sim {
-    Domain::Domain() = default;
-    
-    Domain::Domain(Domain& domain) noexcept {
-        this->dimension = domain.dimension;
-        left_boundary = domain.left_boundary;
-        right_boundary = domain.right_boundary;
-        upper_boundary = domain.upper_boundary;
-        lower_boundary = domain.lower_boundary;
-        front_boundary = domain.front_boundary;
-        back_boundary = domain.back_boundary;
-    }
 
-    Domain::Domain(Domain&& domain) noexcept {
-        this->dimension = domain.dimension;
-        left_boundary = domain.left_boundary;
-        right_boundary = domain.right_boundary;
-        upper_boundary = domain.upper_boundary;
-        lower_boundary = domain.lower_boundary;
-        front_boundary = domain.front_boundary;
-        back_boundary = domain.back_boundary;
+size_t Domain::locationToIndex(BoundaryLocation location) {
+    switch (location) {
+        case BoundaryLocation::LEFT:
+            return 0;
+        case BoundaryLocation::RIGHT:
+            return 1;
+        case BoundaryLocation::FRONT:
+            return 2;
+        case BoundaryLocation::BACK:
+            return 3;
+        case BoundaryLocation::UPPER:
+            return 4;
+        case BoundaryLocation::LOWER:
+            return 5;
+        default:
+            SPDLOG_ERROR("Unknown boundary location!");
+            return 0;
     }
+}
 
-    Domain::Domain(R3 dimension, std::vector<std::optional<BoundaryCondition*>> boundaries) : dimension(dimension) {
-        for (auto& boundary : boundaries) {
-            if (boundary.has_value()) { 
-                getBoundary(boundary.value()->getLocation()) = boundary.value();
+Domain::Domain() {
+    boundaries[0] = std::make_unique<Outflow>(BoundaryLocation::LEFT);
+    boundaries[1] = std::make_unique<Outflow>(BoundaryLocation::RIGHT);
+    boundaries[2] = std::make_unique<Outflow>(BoundaryLocation::FRONT);
+    boundaries[3] = std::make_unique<Outflow>(BoundaryLocation::BACK);
+    boundaries[4] = std::make_unique<Outflow>(BoundaryLocation::UPPER);
+    boundaries[5] = std::make_unique<Outflow>(BoundaryLocation::LOWER);
+}
+
+Domain::Domain(Domain&& other) noexcept : dimension(other.dimension), boundaries(std::move(other.boundaries)) {}
+
+Domain::Domain(R3 dimension, std::array<std::unique_ptr<Boundary>, 6> boundaries)
+    : dimension(dimension), boundaries(std::move(boundaries)) {}
+
+R3 Domain::getDimension() const { return dimension; }
+
+Boundary* Domain::getBoundary(BoundaryLocation location) { return boundaries[locationToIndex(location)].get(); }
+
+const Boundary* Domain::getBoundary(BoundaryLocation location) const {
+    return boundaries[locationToIndex(location)].get();
+}
+
+void Domain::applyBoundary(Particle& p) {
+    for (auto& boundary : boundaries) {
+        if (boundary) {
+            boundary->applyBoundary(p);
+        }
+    }
+}
+
+std::vector<Particle> Domain::computeGhostParticles(const Particle& p) const {
+    std::vector<Particle> ghosts;
+    for (const auto& boundary : boundaries) {
+        if (boundary) {
+            if (auto ghost = boundary->computeGhostParticle(p)) {
+                ghosts.push_back(std::move(ghost.value()));
             }
         }
     }
+    return ghosts;
+}
 
-    Domain::Domain(R3 dimension, std::vector<std::optional<BoundaryCondition&>> boundaries) : dimension(dimension) {
-        for (auto& boundary : boundaries) {
-            if (boundary.has_value()) { 
-                getBoundary(boundary.value().getLocation()) = &boundary.value();
-            }
-        }
+Domain& Domain::operator=(Domain&& other) noexcept {
+    if (this != &other) {
+        dimension = other.dimension;
+        boundaries = std::move(other.boundaries);
     }
+    return *this;
+}
 
-    R3 Domain::getDimension() { return dimension; }
-
-    BoundaryCondition*& Domain::getBoundary(BoundaryLocation location) {
-        switch(location) {
-            case BoundaryLocation::LEFT: return left_boundary;
-            case BoundaryLocation::RIGHT: return right_boundary;
-            case BoundaryLocation::FRONT: return front_boundary;
-            case BoundaryLocation::BACK: return back_boundary;
-            case BoundaryLocation::UPPER: return upper_boundary; 
-            case BoundaryLocation::LOWER: return lower_boundary;
-            default:
-                SPDLOG_ERROR("Unknown boundary type! Expected (LEFT, RIGHT, TOP, BOTTOM, FRONT, BACK)!");
-                exit(-1); 
-        }
-    }
-
-    const BoundaryCondition* Domain::getBoundary(BoundaryLocation location) const {
-        switch(location) {
-            case BoundaryLocation::LEFT: return left_boundary;
-            case BoundaryLocation::RIGHT: return right_boundary;
-            case BoundaryLocation::FRONT: return front_boundary;
-            case BoundaryLocation::BACK: return back_boundary;
-            case BoundaryLocation::UPPER: return upper_boundary; 
-            case BoundaryLocation::LOWER: return lower_boundary;
-            default:
-                SPDLOG_ERROR("Unknown boundary type! Expected (LEFT, RIGHT, TOP, BOTTOM, FRONT, BACK)!");
-                exit(-1); 
-        }
-    }
-
-    void Domain::applyBoundary(Particle& p) { 
-        left_boundary->boundaryStrategy(p);
-        right_boundary->boundaryStrategy(p);
-        front_boundary->boundaryStrategy(p);
-        back_boundary->boundaryStrategy(p);
-        upper_boundary->boundaryStrategy(p);
-        lower_boundary->boundaryStrategy(p); 
-    }
 }  // namespace mol_sim

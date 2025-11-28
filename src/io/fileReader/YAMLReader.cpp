@@ -1,67 +1,79 @@
 #include "io/fileReader/YAMLReader.h"
 
-#include <bits/stdc++.h>
 #include <spdlog/spdlog.h>
 #include <yaml-cpp/node/node.h>
 
+#include <array>
 #include <cstddef>
 #include <cstdlib>
+#include <memory>
 #include <string>
-#include <variant>
+#include <utility>
 
 #include "io/fileReader/YAMLReaderException.h"
-#include "particles/boundaries/BoundaryCondition.h"
+#include "particles/boundaries/Boundary.h"
+#include "particles/boundaries/Outflow.h"
+#include "particles/boundaries/Reflecting.h"
+#include "particles/container/domain/Domain.h"
 #include "particles/generators/CuboidGenerator.h"
 #include "particles/generators/DiscGenerator.h"
 #include "physics/ForceSource.h"
 #include "utils/Settings.h"
-#include "particles/container/domain/Domain.h"
 
 namespace mol_sim {
-YAMLReader::YAMLReader() = default; 
+YAMLReader::YAMLReader() = default;
 
 YAMLReader::~YAMLReader() = default;
 
 void YAMLReader::readFile(ContainerRef particles, SettingsParam& settings, const std::string& filename) {
     try {
         YAML::Node root = YAML::LoadFile(filename);
+
+        if (root.size() == 0) {
+            throw YAMLReaderException("Empty YAML file");
+        }
+
+        // First block must be settings
+        auto first_it = root.begin();
+        YAML::Node first_node = first_it->second;
+
+        if (!first_node["format"] || first_node["format"].as<std::string>() != "Settings") {
+            throw YAMLReaderException("First block must be 'Settings' format");
+        }
+
+        readSettings(settings, first_node);
+        settings.setDefaults();
+
+        // Process remaining blocks (particle definitions)
         bool has_particle_definition = false;
-        for (YAML::const_iterator it = root.begin(); it != root.end(); ++it) {
+        for (auto it = ++root.begin(); it != root.end(); ++it) {
             const auto& name = it->first.as<std::string>();
             YAML::Node node = it->second;
-            if (it == root.begin() && (name != "settings" || node["format"].as<std::string>() != "Settings")) {
-                SPDLOG_ERROR("Expected a settings section as the very first component of the passed .yaml file! Aborting the programme!");
-                exit(-1); /** TODO: maybe find nicer solution. but that may also entail handling annoying error cases (and for what, cause ultimately this is an edge case) */
+
+            if (!node["format"]) {
+                SPDLOG_WARN("Block '{}' has no format field, skipping", name);
+                continue;
             }
-            if (node["format"]) {
-                auto format = node["format"].as<std::string>();
-                if (format == "XVM") {
-                    has_particle_definition = true;
-                    readXVM(particles, node);
-                } else if (format == "Cuboid") {
-                    has_particle_definition = true;
-                    readCube(particles, node);
-                } else if (format == "Disc") {
-                    has_particle_definition = true;
-                    readDisc(particles, node);
-                } else if (format == "Settings") {
-                    readSettings(settings, node);
-                    settings.setDefaults();
-                    if (settings.domain_type.value() == SIMPLE) {
-                        SimpleContainer read_container;
-                        particles = read_container;
-                    } else if (settings.domain_type.value() == LINKED) {
-                        Domain domain = settings.domain.value();
-                        LinkedCellContainer read_container(domain.getDimension(), settings.cutoff.value());
-                        particles = read_container;
-                    }
-                } else {
-                    SPDLOG_WARN("Unknown Format '{}' for entry '{}'", format, name);
-                }
+
+            auto format = node["format"].as<std::string>();
+            if (format == "XVM") {
+                has_particle_definition = true;
+                readXVM(particles, node);
+            } else if (format == "Cuboid") {
+                has_particle_definition = true;
+                readCube(particles, node);
+            } else if (format == "Disc") {
+                has_particle_definition = true;
+                readDisc(particles, node);
+            } else if (format == "Settings") {
+                SPDLOG_WARN("Additional Settings block '{}' ignored (only first is used)", name);
+            } else {
+                SPDLOG_WARN("Unknown format '{}' for entry '{}'", format, name);
             }
         }
+
         if (!has_particle_definition) {
-            throw YAMLReaderException("No particle definitions (XVM or Cuboid) found in the input file.");
+            throw YAMLReaderException("No particle definitions (XVM, Cuboid, or Disc) found in the input file");
         }
     } catch (const YAML::Exception& e) {
         SPDLOG_ERROR("Error parsing YAML: {}", e.what());
@@ -103,80 +115,7 @@ void YAMLReader::readSettings(SettingsParam& settings, const YAML::Node& node) {
     }
 }
 
-void YAMLReader::readBoundaryCondition(std::optional<BoundaryCondition&>& boundary, BoundaryLocation location, R3 dimension, const YAML::Node& node) {
-    std::string location_string;
-    switch (location) {
-        case BoundaryLocation::LEFT: 
-            location_string = "boundary_left";
-            break;
-        case BoundaryLocation::RIGHT: 
-            location_string = "boundary_right";
-            break;
-        case BoundaryLocation::UPPER: 
-            location_string = "boundary_upper";
-            break;
-        case BoundaryLocation::LOWER: 
-            location_string = "boundary_lower";
-            break;
-        case BoundaryLocation::FRONT: 
-            location_string = "boundary_front";
-            break;
-        case BoundaryLocation::BACK: 
-            location_string = "boundary_back";
-            break;
-        default:
-            SPDLOG_ERROR("Unrecognized BoundaryLocation! Expected (LEFT, RIGHT, UPPER, LOWER, FRONT, BACK)!");
-            break;
-    }
-    const YAML::Node& boundary_node = node[location_string];
-    if (!boundary_node) {
-        boundary = std::nullopt;
-        return;
-    }
-    auto boundary_type = boundary_node["boundary_type"].as<std::string>();
-    if (boundary_type == "OUTFLOW") {
-        Outflow outflow = Outflow(location);
-        boundary = outflow;
-    } else if (boundary_type == "REFLECTING") {
-        std::optional<double> counter_sigma = boundary_node["counter_sigma"] ? std::optional<double>(boundary_node["counter_sigma"].as<double>()) : std::nullopt;
-        std::optional<double> counter_epsilon = boundary_node["counter_epsilon"] ? std::optional<double>(boundary_node["counter_epsilon"].as<double>()) : std::nullopt;
-        Reflecting reflecting = Reflecting(location, dimension, counter_sigma, counter_epsilon);
-    
-    }
-}
-
-void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
-    const YAML::Node& domain_node = node["domain"];
-    auto domain_type = domain_node["domain_type"].as<std::string>();
-    auto x = domain_node["x"].as<double>();
-    auto y = domain_node["y"].as<double>();
-    auto z = domain_node["z"].as<double>();
-    R3 dimension = {x, y, z};
-    std::optional<BoundaryCondition&> left_boundary;
-    std::optional<BoundaryCondition&> right_boundary;
-    std::optional<BoundaryCondition&> upper_boundary;
-    std::optional<BoundaryCondition&> lower_boundary;
-    std::optional<BoundaryCondition&> front_boundary;
-    std::optional<BoundaryCondition&> back_boundary;
-    readBoundaryCondition(left_boundary, BoundaryLocation::LEFT, dimension, node);
-    readBoundaryCondition(right_boundary, BoundaryLocation::RIGHT, dimension, node);
-    readBoundaryCondition(upper_boundary, BoundaryLocation::UPPER, dimension, node);
-    readBoundaryCondition(lower_boundary, BoundaryLocation::LOWER, dimension, node);
-    readBoundaryCondition(front_boundary, BoundaryLocation::FRONT, dimension, node);
-    readBoundaryCondition(back_boundary, BoundaryLocation::BACK, dimension, node);
-    std::vector<std::optional<BoundaryCondition&>> boundaries = { 
-        left_boundary, right_boundary, front_boundary, back_boundary, upper_boundary, lower_boundary};
-    Domain domain(dimension, boundaries);
-    if (domain_type == SIMPLE) {
-        settings.domain = domain;
-        settings.domain_type = domain_type;
-    } else if (domain_type == LINKED) {
-        settings.domain = domain;
-        settings.domain_type = domain_type;
-    }
-}
-
-void YAMLReader::readXVM(ContainerRef particles, const YAML::Node& node) { 
+void YAMLReader::readXVM(ContainerRef particles, const YAML::Node& node) {
     try {
         if (node["particles"] && node["particles"].IsSequence()) {
             auto num_part = node["num_particles"].as<size_t>();
@@ -304,6 +243,91 @@ void YAMLReader::readDisc(ContainerRef particles, const YAML::Node& node) {
                                 data.epsilon, data.sigma);
         generator.generateParticles(particles);
     }
+}
+
+std::optional<BoundaryType> YAMLReader::parseBoundaryType(const std::string& type_str) {
+    if (type_str == "OUTFLOW") {
+        return BoundaryType::OUTFLOW;
+    }
+    if (type_str == "REFLECTING") {
+        return BoundaryType::REFLECTING;
+    }
+    return std::nullopt;
+}
+
+double YAMLReader::getBoundaryPosition(BoundaryLocation location, const R3& dimension) {
+    switch (location) {
+        case BoundaryLocation::LEFT:
+            return 0.0;
+        case BoundaryLocation::RIGHT:
+            return dimension[0];
+        case BoundaryLocation::LOWER:
+            return 0.0;
+        case BoundaryLocation::UPPER:
+            return dimension[1];
+        case BoundaryLocation::FRONT:
+            return 0.0;
+        case BoundaryLocation::BACK:
+            return dimension[2];
+        default:
+            return 0.0;
+    }
+}
+
+std::unique_ptr<Boundary> YAMLReader::parseBoundary(BoundaryLocation location, const R3& dimension,
+                                                    const YAML::Node& node) {
+    auto type_str = node["type"].as<std::string>("OUTFLOW");
+    auto boundary_type = parseBoundaryType(type_str);
+
+    if (!boundary_type.has_value()) {
+        SPDLOG_WARN("Unknown boundary type '{}', defaulting to OUTFLOW", type_str);
+        return std::make_unique<Outflow>(location);
+    }
+
+    switch (boundary_type.value()) {
+        case BoundaryType::REFLECTING: {
+            std::optional<double> sigma =
+                node["sigma"] ? std::optional<double>(node["sigma"].as<double>()) : std::nullopt;
+            std::optional<double> epsilon =
+                node["epsilon"] ? std::optional<double>(node["epsilon"].as<double>()) : std::nullopt;
+            double position = getBoundaryPosition(location, dimension);
+            return std::make_unique<Reflecting>(location, position, sigma, epsilon);
+        }
+        case BoundaryType::OUTFLOW:
+        default:
+            return std::make_unique<Outflow>(location);
+    }
+}
+
+void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
+    R3 dimension = {node["x"].as<double>(1.0), node["y"].as<double>(1.0), node["z"].as<double>(1.0)};
+
+    auto domain_type = node["domain_type"].as<std::string>(LINKED);
+    settings.domain_type = domain_type;
+
+    // Define boundary locations and their YAML keys
+    static const std::array<std::pair<BoundaryLocation, std::string>, 6> boundary_mappings = {{
+        {BoundaryLocation::LEFT, "left"},
+        {BoundaryLocation::RIGHT, "right"},
+        {BoundaryLocation::FRONT, "front"},
+        {BoundaryLocation::BACK, "back"},
+        {BoundaryLocation::UPPER, "upper"},
+        {BoundaryLocation::LOWER, "lower"},
+    }};
+
+    std::array<std::unique_ptr<Boundary>, 6> boundaries;
+    const YAML::Node& bounds_node = node["boundaries"];
+
+    for (size_t i = 0; i < boundary_mappings.size(); ++i) {
+        const auto& [location, key] = boundary_mappings[i];
+        if (bounds_node && bounds_node[key]) {
+            boundaries[i] = parseBoundary(location, dimension, bounds_node[key]);
+        } else {
+            boundaries[i] = std::make_unique<Outflow>(location);
+        }
+    }
+
+    settings.domain.emplace(dimension, std::move(boundaries));
 }
 
 }  // namespace mol_sim

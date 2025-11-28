@@ -362,11 +362,13 @@ void LinkedCellContainer::eraseParticle(const Particle& p) {
     }
 }
 
-void LinkedCellContainer::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x, Domain& domain) {
+void LinkedCellContainer::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x) {
     size_t old_cell_idx = findCellIndex(p->getX());
-    if (!cells[old_cell_idx].fits(new_x)) {
-        size_t new_cell_idx = findCellIndex(new_x);
-        if (new_cell_idx == cells.size()) {
+    size_t new_cell_idx = findCellIndex(new_x);
+    
+    if (new_cell_idx != old_cell_idx) {
+        if (new_cell_idx >= cells.size()) {
+            // Particle moved completely outside container
             eraseParticle(*p);
             return;
         }
@@ -374,12 +376,6 @@ void LinkedCellContainer::updateParticlePosition(std::vector<Particle>::iterator
     }
 
     p->getX() = new_x;
-    if (cells[findCellIndex(p->getX())].getType() == CellType::HALO) {
-        eraseParticle(*p);
-    }
-    else if (cells[findCellIndex(p->getX())].getType() == CellType::BOUNDARY) {
-        domain.applyBoundary(*p);
-    }
 }
 
 // normal iterators

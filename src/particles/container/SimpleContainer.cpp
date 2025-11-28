@@ -16,7 +16,7 @@ void SimpleContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsil
 void SimpleContainer::eraseParticle(const Particle& p) {
     erase(std::find(begin(), end(), p));
 };
-void SimpleContainer::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x, Domain& domain) { 
+void SimpleContainer::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x) { 
     p->getX() = new_x; 
 }
 

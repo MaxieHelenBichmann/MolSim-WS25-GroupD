@@ -6,15 +6,13 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
-#include <typeinfo>
+#include <vector>
 
 #include "io/outputWriter/VTKWriter.h"
 #include "io/outputWriter/XYZWriter.h"
 #include "particles/Particle.h"
 #include "particles/ParticleContainer.h"
-#include "particles/boundaries/BoundaryCondition.h"
-#include "particles/boundaries/Outflow.h"
-#include "particles/boundaries/Reflecting.h"
+#include "particles/boundaries/Boundary.h"
 #include "particles/container/LinkedCellContainer.h"
 #include "particles/container/SimpleContainer.h"
 #include "particles/container/domain/Domain.h"
@@ -34,97 +32,124 @@ namespace mol_sim {
  * This Class implements a Builder Pattern. To run a full simulation, specify all needed parameters in the constructor
  * and then execute run().
  * @tparam containerType Type of container used for this simulation. Templated to work with Concept.
+ * @tparam forceType Type of force source used for this simulation.
  */
 template <ParticleContainer containerType, ForceSource forceType>
 class Simulation {
    private:
     /**
-     * @brief Simulation domain.
-     * 
+     * @brief Simulation domain containing boundary conditions.
      */
-    Domain<containerType>& domain;
+    Domain domain;
+
     /**
      * @brief Container of Particles to simulate.
-     * Container of Particles to simulate. Container type is templated to work with our container concept.
      */
-    containerType* particles;
+    containerType& particles;
+
     /**
-     * @brief Pointer to our force source.
-     * Pointer to our force source, for easy switching, force Source determined by forceType in constructor.
+     * @brief Force source for calculating particle interactions.
      */
     forceType& force_source;
+
     /**
      * @brief Time step of simulation.
-     * Default value is 0.014.
      */
     double delta_t;
+
     /**
      * @brief Start time of simulation.
-     * Default value is 0.
      */
     double start_time;
+
     /**
      * @brief End time of simulation.
-     * Default value is 1000.
      */
     double end_time;
 
+    /**
+     * @brief Frequency of output file writing.
+     */
     size_t frequency;
 
+    /**
+     * @brief Base name for output files.
+     */
     std::string base_name;
-
 
     /**
      * @brief Cutoff radius for particles in proximity.
-     * Default value is infinity.
      */
     double cutoff_radius = std::numeric_limits<double>::infinity();
 
    public:
     /**
-     * @brief Construct a new Simulation object and prepare for run() call
-     * This class implements a Builder Pattern, meaning all parameters need to be set before the run() call, which will
-     * run the simulation.
+     * @brief Construct a new Simulation object and prepare for run() call.
+     *
      * @param particles Container of particles to be simulated.
-     * @param settings Simulation parameters. If relevant values are not set their default values in
-     * include/utils/Settings.h will be used instead.
      * @param force_source Force source to be used in the simulation.
+     * @param settings Simulation parameters.
      */
     Simulation(containerType& particles, forceType& force_source, SettingsParam& settings)
-        : domain(std::get<Domain<containerType>>(settings.domain)),
-          particles(&particles), force_source(force_source) {
-        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-        delta_t = settings.delta_t.value();
-        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-        start_time = settings.start_time.value();
-        // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-        end_time = settings.end_time.value();
-        frequency = settings.frequency.value();
-        base_name = settings.base_name.value();
+        : domain(std::move(settings.domain.value())),
+          particles(particles),
+          force_source(force_source),
+          delta_t(settings.delta_t.value()),
+          start_time(settings.start_time.value()),
+          end_time(settings.end_time.value()),
+          frequency(settings.frequency.value()),
+          base_name(settings.base_name.value()) {}
+
+    /**
+     * @brief Applies boundary conditions by creating ghost particles for reflecting boundaries.
+     */
+    void applyReflectingBoundaries() {
+        std::vector<Particle> ghosts;
+        // TODO: OPtimze using boundary iterator
+        for (const auto& p : particles) {
+            if (p.getType() != -1) {  // Don't create ghosts for ghost particles
+                auto new_ghosts = domain.computeGhostParticles(p);
+                for (auto& ghost : new_ghosts) {
+                    ghosts.push_back(std::move(ghost));
+                }
+            }
+        }
+        for (auto& ghost : ghosts) {
+            particles.addParticle(std::move(ghost));
+        }
     }
 
-    void applyBoundary(BoundaryCondition& boundary) {
-        const std::set<BoundaryLocation> locations{location};
-        for (auto& it = particles->boundaryBegin(locations); it != particles->boundaryEnd(locations); it++) {
-            boundary.boundaryStrategy(it);
-        }  
+    /**
+     * @brief Removes all ghost particles (type == -1) from the container.
+     */
+    void removeGhostParticles() {
+        // Collect particles to remove (can't modify while iterating)
+        std::vector<Particle> to_remove;
+        // TODO: Optimize using halo
+        for (const auto& p : particles) {
+            if (p.getType() == -1) {
+                to_remove.push_back(p);
+            }
+        }
+        for (const auto& p : to_remove) {
+            particles.eraseParticle(p);
+        }
     }
 
     /**
      * @brief Calculates the forces of every particle for the next time step.
-     * Calculates the forces of every particle. for the next time step. Using the specified force source and delta_t.
      */
     void calculateF() {
-        for (auto& p : *particles) {
+        for (auto& p : particles) {
             p.getOldF() = p.getF();
             p.getF() = Vector<double, 3>();
         }
 
         size_t idx = 1;
-        for (auto it = particles->begin(); it != particles->end(); ++it, idx++) {
+        for (auto it = particles.begin(); it != particles.end(); ++it, idx++) {
             Particle& p1 = *it;
-            for (auto it_prox = particles->proximityBegin(p1.getX(), cutoff_radius, idx);
-                 it_prox != particles->proximityEnd(p1.getX(), cutoff_radius); ++it_prox) {
+            for (auto it_prox = particles.proximityBegin(p1.getX(), cutoff_radius, idx);
+                 it_prox != particles.proximityEnd(p1.getX(), cutoff_radius); ++it_prox) {
                 Particle& p2 = *it_prox;
                 Vector<double, 3> force = force_source.applyForce(p1, p2);
                 // Apply force directly (Newton's 3rd law: equal and opposite)
@@ -132,45 +157,30 @@ class Simulation {
                 p2.getF() = p2.getF() - force;
             }
         }
-
-        //remove potential ghost particles (so far this is only relevant if there is at least 1 reflecting boundary)
-        for (auto it = particles->begin(); it != particles->end(); ++it) {
-            Particle& p = *it;
-            if (p.type == -1) {
-                particles->eraseParticle(p);
-            }
-        }
     }
 
     /**
      * @brief Calculates the positions of every particle for the next time step.
-     * Calculates the forces of every particle for the next time step, specified by delta_t, for the provided
-     * container.
      */
     void calculateX() {
-        for (auto it = particles->begin(); it != particles->end(); ++it) {
+        for (auto it = particles.begin(); it != particles.end(); ++it) {
             const auto new_position =
                 (*it).getX() + (delta_t * (*it).getV()) + ((0.5 * delta_t * delta_t / (*it).getM()) * (*it).getF());
-            /**
-             * TODO: do applyBoundary() and cleanBoundary() in updateParticlePosition
-             */
-            particles->updateParticlePosition(it, new_position, domain);
+            particles.updateParticlePosition(it, new_position);
         }
     }
 
     /**
      * @brief Calculates the velocities of every particle for the next time step.
-     * Calculates the forces of every particle for the next time step, specified by delta_t.
      */
     void calculateV() {
-        for (auto& p : *particles) {
+        for (auto& p : particles) {
             p.getV() = p.getV() + ((0.5 * delta_t / p.getM()) * (p.getOldF() + p.getF()));
         }
     }
-    
+
     /**
      * @brief Performs a full simulation run.
-     * Performs a full simulation run, using the specified delta_t and end_time.
      */
     void run() {
         double current_time = start_time;
@@ -178,11 +188,19 @@ class Simulation {
 
         // for this loop, we assume: current x, current f and current v are known
         while (current_time < end_time) {
-            // calculate new x
+            // 1. Calculate new positions
             calculateX();
-            // calculate new f
+
+            // 2. Apply reflecting boundaries (create ghost particles)
+            applyReflectingBoundaries();
+
+            // 3. Calculate forces (including ghost interactions)
             calculateF();
-            // calculate new v
+
+            // 4. Remove ghost particles
+            removeGhostParticles();
+
+            // 5. Calculate new velocities
             calculateV();
 
             iteration++;
@@ -197,7 +215,7 @@ class Simulation {
                     out_name += "_xyz";
                     XYZWriter writer;
 #endif
-                    writer.plotParticles(*particles, out_name, iteration);
+                    writer.plotParticles(particles, out_name, iteration);
                 } catch (...) {
                     SPDLOG_ERROR("Something went wrong with plotting the Particles.");
                 }

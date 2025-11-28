@@ -50,8 +50,8 @@ void ContainerRef::eraseParticle(const Particle& p) {
     std::visit([&p](auto& c) { return c->eraseParticle(p); }, instance);
 }
 
-void ContainerRef::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x, Domain& domain) {
-    std::visit([&p, &new_x, &domain](auto& c) { return c->updateParticlePosition(p, new_x, domain); }, instance);
+void ContainerRef::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x) {
+    std::visit([&p, &new_x](auto& c) { return c->updateParticlePosition(p, new_x); }, instance);
 }
 
 CONTAINER_REF ContainerRef::getInstance() { return instance; }

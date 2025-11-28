@@ -1,118 +1,88 @@
 #ifndef DOMAIN_H
 #define DOMAIN_H
 
-#include "particles/boundaries/BoundaryCondition.h"
+#include <array>
+#include <memory>
+#include <vector>
+
+#include "particles/boundaries/Boundary.h"
 #include "particles/boundaries/Outflow.h"
 #include "particles/boundaries/Reflecting.h"
 #include "utils/Vector.h"
 
 namespace mol_sim {
+
 /**
  * @brief Provides a wrapper for domain configuration
- *
  */
 class Domain {
-    /**
-     * @brief Dimensions/size of the domain
-     *
-     */
     R3 dimension = {1., 1., 1.};
-    Outflow _left_default = Outflow(BoundaryLocation::LEFT);
-    Outflow _right_default = Outflow(BoundaryLocation::RIGHT);
-    Outflow _front_default = Outflow(BoundaryLocation::FRONT);
-    Outflow _back_default = Outflow(BoundaryLocation::BACK);
-    Outflow _upper_default = Outflow(BoundaryLocation::UPPER);
-    Outflow _lower_default = Outflow(BoundaryLocation::LOWER);
+
     /**
-     * @brief Boundary Type of the left (x) boundary
-     *
+     * @brief Array of owned boundary conditions in order: LEFT, RIGHT, FRONT, BACK, UPPER, LOWER
      */
-    BoundaryCondition* left_boundary = &_left_default;
+    std::array<std::unique_ptr<Boundary>, 6> boundaries;
+
     /**
-     * @brief Boundary Type of the back (z) boundary
-     *
+     * @brief Maps BoundaryLocation enum to array index
      */
-    BoundaryCondition* right_boundary = &_right_default;
+    static size_t locationToIndex(BoundaryLocation location);
+
+   public:
+    Domain();
+    Domain(const Domain& other) = delete;
+    Domain(Domain&& other) noexcept;
+
     /**
-     * @brief Boundary Type of the front (z) boundary
+     * @brief Constructs a Domain with the given dimension and boundary conditions.
      *
+     * @param dimension The dimensions of the domain (x, y, z).
+     * @param boundaries Array of 6 boundary conditions in order: LEFT, RIGHT, FRONT, BACK, UPPER, LOWER.
      */
-    BoundaryCondition* front_boundary = &_front_default;
+    Domain(R3 dimension, std::array<std::unique_ptr<Boundary>, 6> boundaries);
+
     /**
-     * @brief Boundary Type of the back (z) boundary
+     * @brief Get a pointer to a specific Boundary object.
      *
+     * @param location The location of the boundary.
+     * @return Boundary* The pointer to the specified boundary.
      */
-    BoundaryCondition* back_boundary = &_back_default;
+    Boundary* getBoundary(BoundaryLocation location);
+
     /**
-     * @brief Boundary Type of the upper (y) boundary
+     * @brief Get a const pointer to a specific Boundary object.
      *
+     * @param location The location of the boundary.
+     * @return const Boundary* The pointer to the specified boundary.
      */
-    BoundaryCondition* upper_boundary = &_upper_default;
-    /**
-     * @brief Boundary Type of the lower (y) boundary
-     *
-     */
-    BoundaryCondition* lower_boundary = &_lower_default;
-   
-    public:
-    // constructors
-    Domain() = default;
-    Domain(Domain& domain) noexcept;
-    Domain(Domain&& domain) noexcept;
-    Domain(R3 dimension, std::vector<std::optional<BoundaryCondition*>> boundaries);
-    Domain(R3 dimension, std::vector<std::optional<BoundaryCondition&>> boundaries);
-    
-    /**
-     * @brief Get a non-const pointer to a specific BoundaryCondition object.
-     *
-     * @param location The location of the boundary (LEFT, RIGHT, TOP, BOTTOM, FRONT, BACK) to be obtained.
-     * @return BoundaryCondition* The pointer to the specified boundary.
-     */
-    BoundaryCondition*& getBoundary(BoundaryLocation location);
-    /**
-     * @brief Get a const pointer to a specific BoundaryCondition object.
-     *
-     * @param location The location of the boundary (LEFT, RIGHT, TOP, BOTTOM, FRONT, BACK) to be obtained.
-     * @return BoundaryCondition* The pointer to the specified boundary.
-     */
-    const BoundaryCondition* getBoundary(BoundaryLocation location) const;
+    [[nodiscard]] const Boundary* getBoundary(BoundaryLocation location) const;
+
     /**
      * @brief Get the domain's dimension vector.
-     * 
-     * @return R3 The vector specifiying the dimension of the domain. 
+     *
+     * @return R3 The dimensions of the domain.
      */
-    R3 getDimension(); 
+    [[nodiscard]] R3 getDimension() const;
+
     /**
-     * @brief Applies the applicable boundary conditions to the given particle, i.e. exactly those, where the
-     * particle is close enough. 
-     * 
-     * @param p The particle that the boundary condition should influence (if applicable). 
-     * @param locations The locations where a boundary condition applies to the particle. 
+     * @brief Applies boundary conditions to a particle.
+     *
+     * @param p The particle to apply boundaries to.
      */
     void applyBoundary(Particle& p);
-    
-    Domain& operator=(const Domain& domain) noexcept {
-        this->dimension = domain.dimension;
-        left_boundary = domain.left_boundary;
-        right_boundary = domain.right_boundary;
-        upper_boundary = domain.upper_boundary;
-        lower_boundary = domain.lower_boundary;
-        front_boundary = domain.front_boundary;
-        back_boundary = domain.back_boundary;
-        return *this;
-    }
 
-    Domain& operator=(Domain&& domain) noexcept {
-        this->dimension = domain.dimension;
-        left_boundary = domain.left_boundary;
-        right_boundary = domain.right_boundary;
-        upper_boundary = domain.upper_boundary;
-        lower_boundary = domain.lower_boundary;
-        front_boundary = domain.front_boundary;
-        back_boundary = domain.back_boundary;
-        return *this;
-    }
+    /**
+     * @brief Computes all ghost particles needed for a given particle.
+     *
+     * @param p The particle to compute ghost particles for.
+     * @return Vector of ghost particles.
+     */
+    [[nodiscard]] std::vector<Particle> computeGhostParticles(const Particle& p) const;
+
+    Domain& operator=(const Domain& other);
+    Domain& operator=(Domain&& other) noexcept;
 };
+
 }  // namespace mol_sim
 
 #endif

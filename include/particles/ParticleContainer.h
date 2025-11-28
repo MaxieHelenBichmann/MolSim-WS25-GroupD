@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "particles/Particle.h"
-#include "particles/container/domain/Domain.h"
 
 namespace mol_sim {
 
@@ -49,9 +48,9 @@ concept ParticleContainer = requires(C c) {
     { c.addParticle(Particle(0)) };
     { c.addParticle(R3(), R3(), 0., 0., 0.) };
     { c.addParticle(R3(), R3(), 0., 0., 0., 0) };
-    { c.eraseParticle(Particle(0)) }; //changed
+    { c.eraseParticle(Particle(0)) };
 
-    { c.updateParticlePosition(std::vector<Particle>::iterator(), R3(), Domain()) }; //changed
+    { c.updateParticlePosition(std::vector<Particle>::iterator(), R3()) };
 
     // iterators all particles
     { c.begin() } -> std::forward_iterator;

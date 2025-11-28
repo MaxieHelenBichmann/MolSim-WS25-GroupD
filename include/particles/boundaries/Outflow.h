@@ -1,16 +1,23 @@
 #ifndef OUTFLOW_H
 #define OUTFLOW_H
 
-#include "particles/boundaries/BoundaryCondition.h"
+#include "particles/boundaries/Boundary.h"
 
 namespace mol_sim {
 
-class Outflow : public BoundaryCondition {
-    public:
-    Outflow(BoundaryLocation location);
+class Outflow : public Boundary {
+   public:
+    explicit Outflow(BoundaryLocation location) : Boundary(location, BoundaryType::OUTFLOW) {}
     ~Outflow() override = default;
-    void boundaryStrategy(Particle& p) override;
+
+    void applyBoundary(Particle& p) override { (void)p; }
+
+    [[nodiscard]] std::optional<Particle> computeGhostParticle(const Particle& p) const override {
+        (void)p;
+        return std::nullopt;
+    }
 };
+
 }  // namespace mol_sim
 
 #endif

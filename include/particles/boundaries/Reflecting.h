@@ -1,29 +1,51 @@
 #ifndef REFLECTING_H
 #define REFLECTING_H
 
-#include "particles/boundaries/BoundaryCondition.h"
+#include <cmath>
+#include <optional>
+
+#include "particles/boundaries/Boundary.h"
 #include "utils/Vector.h"
-#include "particles/container/ContainerRef.h"
 
 namespace mol_sim {
 
-class Reflecting : public BoundaryCondition {
-    R3 zero = {.0, .0, .0};
-    R3 max;
-    std::optional<double> counter_epsilon = std::nullopt;
-    std::optional<double> counter_sigma = std::nullopt;
-    SimpleContainer _dummy_container;
-    ContainerRef particles = ContainerRef(_dummy_container);
+class Reflecting : public Boundary {
+    // position of this boundary along its axis
+    double boundary_position;
+    std::optional<double> boundary_epsilon;
+    std::optional<double> boundary_sigma;
 
-    void addCounterParticle(int sign, size_t coordinate, Particle& p);
-    bool fitsDomain(R3 v);
+    /**
+     * @brief Gets the axis index for the boundary location.
+     * @return 0 for x-axis (LEFT/RIGHT), 1 for y-axis (UPPER/LOWER), 2 for z-axis (FRONT/BACK).
+     */
+    [[nodiscard]] size_t getAxis() const;
+
+    /**
+     * @brief Gets the sign/direction for the boundary.
+     * @return -1 for boundaries at min (LEFT, LOWER, FRONT), +1 for boundaries at max (RIGHT, UPPER, BACK).
+     */
+    [[nodiscard]] int getSign() const;
 
    public:
-    Reflecting(BoundaryLocation location, R3 dimension, std::optional<double> counter_sigma, std::optional<double> counter_epsilon);
-    Reflecting(BoundaryLocation location, R3 dimension, ContainerRef particles, std::optional<double> counter_sigma, std::optional<double> counter_epsilon);
-    ~Reflecting() override;
-    void boundaryStrategy(Particle& p) override;
-    void setParticles(ContainerRef particles);
+    /**
+     * @brief Constructs a Reflecting boundary.
+     *
+     * @param location The boundary location (LEFT, RIGHT, etc.).
+     * @param boundary_position The coordinate of this boundary along its axis.
+     * @param sigma Optional sigma for ghost particle interactions.
+     * @param epsilon Optional epsilon for ghost particle interactions.
+     */
+    Reflecting(BoundaryLocation location, double boundary_position, std::optional<double> sigma = std::nullopt,
+               std::optional<double> epsilon = std::nullopt);
+    ~Reflecting() override = default;
+
+    void applyBoundary(Particle& p) override;
+    [[nodiscard]] std::optional<Particle> computeGhostParticle(const Particle& p) const override;
+
+    [[nodiscard]] std::optional<double> getBoundarySigma() const { return boundary_sigma; }
+    [[nodiscard]] std::optional<double> getBoundaryEpsilon() const { return boundary_epsilon; }
+    [[nodiscard]] double getBoundaryPosition() const { return boundary_position; }
 };
 
 }  // namespace mol_sim

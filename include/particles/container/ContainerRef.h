@@ -138,7 +138,7 @@ class ContainerRef {
      * @param p Iterator to the Particle to update.
      * @param new_x New position to set.
      */
-    void updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x, Domain& domain);
+    void updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x);
 
     /**
      * @brief Get the Instance object.
