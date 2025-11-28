@@ -1,6 +1,7 @@
 #ifndef CONTAINER_REF_H
 #define CONTAINER_REF_H
 
+#include <set>
 #include <type_traits>
 #include <utility>
 #include <variant>
@@ -127,8 +128,8 @@ class ContainerRef {
 
     /**
      * @brief Removes a given particle from the container.
-     * 
-     * @param p Particle to be removed. 
+     *
+     * @param p Particle to be removed.
      */
     void eraseParticle(const Particle& p);
 
@@ -142,7 +143,7 @@ class ContainerRef {
 
     /**
      * @brief Get the Instance object.
-     * 
+     *
      */
     CONTAINER_REF getInstance();
 
@@ -342,6 +343,104 @@ class ContainerRef {
      * @return Const iterator after the last particle within the given radius of the center.
      */
     [[nodiscard]] const_proximity_iterator proximityEnd(R3 center, double radius) const;
+
+    // boundary and halo iterators
+
+    /**
+     * @brief Iterator over particles in halo cells.
+     *
+     * @param locations Boundary types to specify which halo cells to iterate over. Defaults to all sides.
+     *
+     * @return Iterator to the first particle within the given halo cells.
+     */
+    [[nodiscard]] proximity_iterator haloBegin(const std::set<BoundaryLocation>& locations = {
+                                                   BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                   BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                   BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+
+    /**
+     * @brief Const Iterator over particles in halo cells.
+     *
+     * @param locations Boundary types to specify which halo cells to iterate over. Defaults to all sides.
+     *
+     * @return Const iterator to the first particle within the given halo cells.
+     */
+    [[nodiscard]] const_proximity_iterator haloBegin(const std::set<BoundaryLocation>& locations = {
+                                                         BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                         BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                         BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
+
+    /**
+     * @brief Iterator over particles in halo cells.
+     *
+     * @param locations Boundary types to specify which halo cells to iterate over. Defaults to all sides.
+     *
+     * @return Iterator after the last particle within the given halo cells.
+     */
+    [[nodiscard]] proximity_iterator haloEnd(const std::set<BoundaryLocation>& locations = {
+                                                 BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                 BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                 BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+
+    /**
+     * @brief Const Iterator over particles in halo cells.
+     *
+     * @param locations Boundary types to specify which halo cells to iterate over. Defaults to all sides.
+     *
+     * @return Const iterator after the last particle within the given halo cells.
+     */
+    [[nodiscard]] const_proximity_iterator haloEnd(const std::set<BoundaryLocation>& locations = {
+                                                       BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                       BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                       BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
+
+    /**
+     * @brief Iterator over particles in boundary cells.
+     *
+     * @param locations Boundary types to specify which boundary cells to iterate over. Defaults to all sides.
+     *
+     * @return Iterator to the first particle within the given boundary cells.
+     */
+    [[nodiscard]] proximity_iterator boundaryBegin(const std::set<BoundaryLocation>& locations = {
+                                                       BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                       BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                       BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+
+    /**
+     * @brief Const Iterator over particles in boundary cells.
+     *
+     * @param locations Boundary types to specify which boundary cells to iterate over. Defaults to all sides.
+     *
+     * @return Const iterator to the first particle within the given boundary cells.
+     */
+    [[nodiscard]] const_proximity_iterator boundaryBegin(const std::set<BoundaryLocation>& locations = {
+                                                             BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                             BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                             BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
+
+    /**
+     * @brief Iterator over particles in boundary cells.
+     *
+     * @param locations Boundary types to specify which boundary cells to iterate over. Defaults to all sides.
+     *
+     * @return Iterator after the last particle within the given boundary cells.
+     */
+    [[nodiscard]] proximity_iterator boundaryEnd(const std::set<BoundaryLocation>& locations = {
+                                                     BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                     BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                     BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+
+    /**
+     * @brief Const Iterator over particles in boundary cells.
+     *
+     * @param locations Boundary types to specify which boundary cells to iterate over. Defaults to all sides.
+     *
+     * @return Const iterator after the last particle within the given boundary cells.
+     */
+    [[nodiscard]] const_proximity_iterator boundaryEnd(const std::set<BoundaryLocation>& locations = {
+                                                           BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                           BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                           BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
 };
 
 }  // namespace mol_sim

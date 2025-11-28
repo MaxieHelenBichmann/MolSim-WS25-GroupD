@@ -9,7 +9,7 @@ void CellUnorderedSet::updateCache() {
         sorted_cache.clear();
         sorted_cache.reserve(indices.size());
         sorted_cache.insert(sorted_cache.end(), indices.begin(), indices.end());
-        std::sort(sorted_cache.begin(), sorted_cache.end());
+        std::sort(sorted_cache.begin(), sorted_cache.end()); // NOLINT
         cache_dirty = false;
     }
 }

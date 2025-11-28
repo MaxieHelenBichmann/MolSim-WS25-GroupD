@@ -103,4 +103,38 @@ ContainerRef::const_proximity_iterator ContainerRef::proximityEnd(R3 center, dou
         instance);
 }
 
+// boundary and halo iterators
+ContainerRef::proximity_iterator ContainerRef::haloBegin(const std::set<BoundaryLocation>& locations) {
+    return std::visit([locations](auto& c) { return proximity_iterator{c->haloBegin(locations)}; }, instance);
+};
+ContainerRef::proximity_iterator ContainerRef::haloEnd(const std::set<BoundaryLocation>& locations) {
+    return std::visit([locations](auto& c) { return proximity_iterator{c->haloEnd(locations)}; }, instance);
+};
+ContainerRef::const_proximity_iterator ContainerRef::haloBegin(const std::set<BoundaryLocation>& locations) const {
+    return std::visit(
+        [locations](const auto& c) { return const_proximity_iterator{std::as_const(*c).haloBegin(locations)}; },
+        instance);
+};
+ContainerRef::const_proximity_iterator ContainerRef::haloEnd(const std::set<BoundaryLocation>& locations) const {
+    return std::visit(
+        [locations](const auto& c) { return const_proximity_iterator{std::as_const(*c).haloEnd(locations)}; },
+        instance);
+};
+ContainerRef::proximity_iterator ContainerRef::boundaryBegin(const std::set<BoundaryLocation>& locations) {
+    return std::visit([locations](auto& c) { return proximity_iterator{c->boundaryBegin(locations)}; }, instance);
+};
+ContainerRef::proximity_iterator ContainerRef::boundaryEnd(const std::set<BoundaryLocation>& locations) {
+    return std::visit([locations](auto& c) { return proximity_iterator{c->boundaryEnd(locations)}; }, instance);
+};
+ContainerRef::const_proximity_iterator ContainerRef::boundaryBegin(const std::set<BoundaryLocation>& locations) const {
+    return std::visit(
+        [locations](const auto& c) { return const_proximity_iterator{std::as_const(*c).boundaryBegin(locations)}; },
+        instance);
+};
+ContainerRef::const_proximity_iterator ContainerRef::boundaryEnd(const std::set<BoundaryLocation>& locations) const {
+    return std::visit(
+        [locations](const auto& c) { return const_proximity_iterator{std::as_const(*c).boundaryEnd(locations)}; },
+        instance);
+};
+
 static_assert(ParticleContainer<ContainerRef>);

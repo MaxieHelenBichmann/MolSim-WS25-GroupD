@@ -1,9 +1,11 @@
 #ifndef SIMPLE_CONTAINER_H
 #define SIMPLE_CONTAINER_H
 
+#include <set>
 #include <vector>
 
 #include "particles/ParticleContainer.h"
+#include "particles/boundaries/Boundary.h"
 
 namespace mol_sim {
 
@@ -17,6 +19,9 @@ namespace mol_sim {
  *
  */
 class SimpleContainer : public std::vector<Particle> {
+    R3 domain_size;
+    double cutoff_radius = 0.0;
+
    public:
     // constructors
     using std::vector<Particle>::vector;
@@ -69,8 +74,8 @@ class SimpleContainer : public std::vector<Particle> {
 
     /**
      * @brief Removes a given particle from the container.
-     * 
-     * @param p Particle to be removed. 
+     *
+     * @param p Particle to be removed.
      */
     void eraseParticle(const Particle& p);
 
@@ -89,14 +94,129 @@ class SimpleContainer : public std::vector<Particle> {
         const Particle* cur;
         const Particle* end;
         double radius;
-        R3 center;
+        R3 center_or_domain;
+        bool prox;
+        std::set<BoundaryLocation> locations;
+
+        bool fitBoundary() {  // NOLINT
+            if (cur->getX()[0] > center_or_domain[0] || cur->getX()[1] > center_or_domain[1] ||
+                cur->getX()[2] > center_or_domain[2] || cur->getX()[0] < 0.0 || cur->getX()[1] < 0.0 ||
+                cur->getX()[2] < 0.0) {
+                return false;
+            }
+            for (auto location : locations) {
+                switch (location) {
+                    case BoundaryLocation::UPPER: {
+                        if (cur->getX()[2] >= center_or_domain[2] + radius && cur->getX()[2] <= center_or_domain[2]) {
+                            return true;
+                        }
+                        break;
+                    }
+                    case BoundaryLocation::LOWER: {
+                        if (cur->getX()[2] >= 0.0 && cur->getX()[2] <= -radius) {
+                            return true;
+                        }
+                        break;
+                    }
+                    case BoundaryLocation::FRONT: {
+                        if (cur->getX()[1] >= 0.0 && cur->getX()[1] <= -radius) {
+                            return true;
+                        }
+                        break;
+                    }
+                    case BoundaryLocation::BACK: {
+                        if (cur->getX()[1] >= center_or_domain[1] + radius && cur->getX()[1] <= center_or_domain[1]) {
+                            return true;
+                        }
+                        break;
+                    }
+                    case BoundaryLocation::LEFT: {
+                        if (cur->getX()[0] >= 0.0 && cur->getX()[0] <= -radius) {
+                            return true;
+                        }
+                        break;
+                    }
+                    case BoundaryLocation::RIGHT: {
+                        if (cur->getX()[0] >= center_or_domain[0] + radius && cur->getX()[0] <= center_or_domain[0]) {
+                            return true;
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+            return false;
+        }
+        bool fitHalo() {  // NOLINT
+            if (cur->getX()[0] > center_or_domain[0] + radius || cur->getX()[1] > center_or_domain[1] + radius ||
+                cur->getX()[2] > center_or_domain[2] + radius || cur->getX()[0] < -radius || cur->getX()[1] < -radius ||
+                cur->getX()[2] < -radius) {
+                return false;
+            }
+            for (auto location : locations) {
+                switch (location) {
+                    case BoundaryLocation::UPPER: {
+                        if (cur->getX()[2] >= center_or_domain[2] && cur->getX()[2] <= center_or_domain[2] + radius) {
+                            return true;
+                        }
+                        break;
+                    }
+                    case BoundaryLocation::LOWER: {
+                        if (cur->getX()[2] >= -radius && cur->getX()[2] <= 0.0) {
+                            return true;
+                        }
+                        break;
+                    }
+                    case BoundaryLocation::FRONT: {
+                        if (cur->getX()[1] >= -radius && cur->getX()[1] <= 0.0) {
+                            return true;
+                        }
+                        break;
+                    }
+                    case BoundaryLocation::BACK: {
+                        if (cur->getX()[1] >= center_or_domain[1] && cur->getX()[1] <= center_or_domain[1] + radius) {
+                            return true;
+                        }
+                        break;
+                    }
+                    case BoundaryLocation::LEFT: {
+                        if (cur->getX()[0] >= -radius && cur->getX()[0] <= 0.0) {
+                            return true;
+                        }
+                        break;
+                    }
+                    case BoundaryLocation::RIGHT: {
+                        if (cur->getX()[0] >= center_or_domain[0] && cur->getX()[0] <= center_or_domain[0] + radius) {
+                            return true;
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+            return false;
+        }
 
         void satisfy() {
-            if (std::isinf(radius)) {
-                return;
-            }
-            while (cur != end && !((center - cur->getX()).euclidNorm() <= radius)) {
-                ++cur;  // NOLINT
+            if (prox) {  // proximity check
+                if (std::isinf(radius)) {
+                    return;
+                }
+                while (cur != end && !((center_or_domain - cur->getX()).euclidNorm() <= radius)) {
+                    ++cur;
+                }
+            } else {
+                if (radius < 0.0) {  // boundary check
+                    while (cur != end && !(fitBoundary())) {
+                        ++cur;
+                    }
+                } else {  // halo check
+                    while (cur != end && !(fitHalo())) {
+                        ++cur;
+                    }
+                }
             }
         }
 
@@ -107,9 +227,15 @@ class SimpleContainer : public std::vector<Particle> {
         using pointer = const Particle*;
         using reference = const Particle&;
 
-        const_proximity_iterator() noexcept : cur(nullptr), end(nullptr), radius(0.0) {}
-        const_proximity_iterator(R3 center, double radius, const Particle* cur, const Particle* end, size_t offset)
-            : cur(cur + offset), end(end), radius(radius), center(center) {  // NOLINT
+        const_proximity_iterator() noexcept : cur(nullptr), end(nullptr), radius(0.0), prox(true) {}
+        const_proximity_iterator(R3 center_or_domain, double radius, const Particle* cur, const Particle* end,
+                                 size_t offset, bool prox = true, std::set<BoundaryLocation> locations = {})
+            : cur(cur + offset),
+              end(end),
+              radius(radius),
+              center_or_domain(center_or_domain),
+              prox(prox),
+              locations(std::move(locations)) {  // NOLINT
             satisfy();
         }
 
@@ -152,14 +278,128 @@ class SimpleContainer : public std::vector<Particle> {
         Particle* cur;
         Particle* end;
         double radius;
-        R3 center;
+        R3 center_or_domain;
+        bool prox;
+        std::set<BoundaryLocation> locations;
 
-        void satisfy() {
-            if (std::isinf(radius)) {
-                return;
+        bool fitBoundary() {  // NOLINT
+            if (cur->getX()[0] > center_or_domain[0] || cur->getX()[1] > center_or_domain[1] ||
+                cur->getX()[2] > center_or_domain[2] || cur->getX()[0] < 0.0 || cur->getX()[1] < 0.0 ||
+                cur->getX()[2] < 0.0) {
+                return false;
             }
-            while (cur != end && !((center - cur->getX()).euclidNorm() <= radius)) {
-                ++cur;  // NOLINT
+            for (auto location : locations) {
+                switch (location) {
+                    case BoundaryLocation::UPPER: {
+                        if (cur->getX()[2] >= center_or_domain[2] + radius && cur->getX()[2] <= center_or_domain[2]) {
+                            return true;
+                        }
+                        break;
+                    }
+                    case BoundaryLocation::LOWER: {
+                        if (cur->getX()[2] >= 0.0 && cur->getX()[2] <= -radius) {
+                            return true;
+                        }
+                        break;
+                    }
+                    case BoundaryLocation::FRONT: {
+                        if (cur->getX()[1] >= 0.0 && cur->getX()[1] <= -radius) {
+                            return true;
+                        }
+                        break;
+                    }
+                    case BoundaryLocation::BACK: {
+                        if (cur->getX()[1] >= center_or_domain[1] + radius && cur->getX()[1] <= center_or_domain[1]) {
+                            return true;
+                        }
+                        break;
+                    }
+                    case BoundaryLocation::LEFT: {
+                        if (cur->getX()[0] >= 0.0 && cur->getX()[0] <= -radius) {
+                            return true;
+                        }
+                        break;
+                    }
+                    case BoundaryLocation::RIGHT: {
+                        if (cur->getX()[0] >= center_or_domain[0] + radius && cur->getX()[0] <= center_or_domain[0]) {
+                            return true;
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+            return false;
+        }
+        bool fitHalo() {  // NOLINT
+            if (cur->getX()[0] > center_or_domain[0] + radius || cur->getX()[1] > center_or_domain[1] + radius ||
+                cur->getX()[2] > center_or_domain[2] + radius || cur->getX()[0] < -radius || cur->getX()[1] < -radius ||
+                cur->getX()[2] < -radius) {
+                return false;
+            }
+            for (auto location : locations) {
+                switch (location) {
+                    case BoundaryLocation::UPPER: {
+                        if (cur->getX()[2] >= center_or_domain[2] && cur->getX()[2] <= center_or_domain[2] + radius) {
+                            return true;
+                        }
+                        break;
+                    }
+                    case BoundaryLocation::LOWER: {
+                        if (cur->getX()[2] >= -radius && cur->getX()[2] <= 0.0) {
+                            return true;
+                        }
+                        break;
+                    }
+                    case BoundaryLocation::FRONT: {
+                        if (cur->getX()[1] >= -radius && cur->getX()[1] <= 0.0) {
+                            return true;
+                        }
+                        break;
+                    }
+                    case BoundaryLocation::BACK: {
+                        if (cur->getX()[1] >= center_or_domain[1] && cur->getX()[1] <= center_or_domain[1] + radius) {
+                            return true;
+                        }
+                        break;
+                    }
+                    case BoundaryLocation::LEFT: {
+                        if (cur->getX()[0] >= -radius && cur->getX()[0] <= 0.0) {
+                            return true;
+                        }
+                        break;
+                    }
+                    case BoundaryLocation::RIGHT: {
+                        if (cur->getX()[0] >= center_or_domain[0] && cur->getX()[0] <= center_or_domain[0] + radius) {
+                            return true;
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+            return false;
+        }
+        void satisfy() {
+            if (prox) {  // proximity check
+                if (std::isinf(radius)) {
+                    return;
+                }
+                while (cur != end && !((center_or_domain - cur->getX()).euclidNorm() <= radius)) {
+                    ++cur;
+                }
+            } else {
+                if (radius < 0.0) {  // boundary check
+                    while (cur != end && !(fitBoundary())) {
+                        ++cur;
+                    }
+                } else {  // halo check
+                    while (cur != end && !(fitHalo())) {
+                        ++cur;
+                    }
+                }
             }
         }
 
@@ -170,9 +410,15 @@ class SimpleContainer : public std::vector<Particle> {
         using pointer = Particle*;
         using reference = Particle&;
 
-        proximity_iterator() noexcept : cur(nullptr), end(nullptr), radius(0.0) {}
-        proximity_iterator(R3 center, double radius, Particle* cur, Particle* end, size_t offset)
-            : cur(cur + offset), end(end), radius(radius), center(center) {  // NOLINT
+        proximity_iterator() noexcept : cur(nullptr), end(nullptr), radius(0.0), prox(true) {}
+        proximity_iterator(R3 center_or_domain, double radius, Particle* cur, Particle* end, size_t offset,
+                           bool prox = true, std::set<BoundaryLocation> locations = {})
+            : cur(cur + offset),
+              end(end),
+              radius(radius),
+              center_or_domain(center_or_domain),
+              prox(prox),
+              locations(std::move(locations)) {
             satisfy();
         }
 
@@ -237,6 +483,104 @@ class SimpleContainer : public std::vector<Particle> {
      * @return Const iterator after the last particle within the given radius of the center.
      */
     [[nodiscard]] const_proximity_iterator proximityEnd(R3 center, double radius) const;
+
+    // boundary and halo iterators
+
+    /**
+     * @brief Iterator over particles in halo cells.
+     *
+     * @param locations Boundary types to specify which halo cells to iterate over. Defaults to all sides.
+     *
+     * @return Iterator to the first particle within the given halo cells.
+     */
+    [[nodiscard]] proximity_iterator haloBegin(const std::set<BoundaryLocation>& locations = {
+                                                   BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                   BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                   BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+
+    /**
+     * @brief Const Iterator over particles in halo cells.
+     *
+     * @param locations Boundary types to specify which halo cells to iterate over. Defaults to all sides.
+     *
+     * @return Const iterator to the first particle within the given halo cells.
+     */
+    [[nodiscard]] const_proximity_iterator haloBegin(const std::set<BoundaryLocation>& locations = {
+                                                         BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                         BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                         BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
+
+    /**
+     * @brief Iterator over particles in halo cells.
+     *
+     * @param locations Boundary types to specify which halo cells to iterate over. Defaults to all sides.
+     *
+     * @return Iterator after the last particle within the given halo cells.
+     */
+    [[nodiscard]] proximity_iterator haloEnd(const std::set<BoundaryLocation>& locations = {
+                                                 BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                 BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                 BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+
+    /**
+     * @brief Const Iterator over particles in halo cells.
+     *
+     * @param locations Boundary types to specify which halo cells to iterate over. Defaults to all sides.
+     *
+     * @return Const iterator after the last particle within the given halo cells.
+     */
+    [[nodiscard]] const_proximity_iterator haloEnd(const std::set<BoundaryLocation>& locations = {
+                                                       BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                       BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                       BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
+
+    /**
+     * @brief Iterator over particles in boundary cells.
+     *
+     * @param locations Boundary types to specify which boundary cells to iterate over. Defaults to all sides.
+     *
+     * @return Iterator to the first particle within the given boundary cells.
+     */
+    [[nodiscard]] proximity_iterator boundaryBegin(const std::set<BoundaryLocation>& locations = {
+                                                       BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                       BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                       BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+
+    /**
+     * @brief Const Iterator over particles in boundary cells.
+     *
+     * @param locations Boundary types to specify which boundary cells to iterate over. Defaults to all sides.
+     *
+     * @return Const iterator to the first particle within the given boundary cells.
+     */
+    [[nodiscard]] const_proximity_iterator boundaryBegin(const std::set<BoundaryLocation>& locations = {
+                                                             BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                             BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                             BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
+
+    /**
+     * @brief Iterator over particles in boundary cells.
+     *
+     * @param locations Boundary types to specify which boundary cells to iterate over. Defaults to all sides.
+     *
+     * @return Iterator after the last particle within the given boundary cells.
+     */
+    [[nodiscard]] proximity_iterator boundaryEnd(const std::set<BoundaryLocation>& locations = {
+                                                     BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                     BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                     BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+
+    /**
+     * @brief Const Iterator over particles in boundary cells.
+     *
+     * @param locations Boundary types to specify which boundary cells to iterate over. Defaults to all sides.
+     *
+     * @return Const iterator after the last particle within the given boundary cells.
+     */
+    [[nodiscard]] const_proximity_iterator boundaryEnd(const std::set<BoundaryLocation>& locations = {
+                                                           BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                           BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                           BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
 };
 
 }  // namespace mol_sim

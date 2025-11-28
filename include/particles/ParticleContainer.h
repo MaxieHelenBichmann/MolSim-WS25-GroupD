@@ -2,9 +2,11 @@
 #define PARTICLE_CONTAINER_H
 
 #include <concepts>
+#include <set>
 #include <vector>
 
 #include "particles/Particle.h"
+#include "particles/boundaries/Boundary.h"
 
 namespace mol_sim {
 
@@ -65,6 +67,17 @@ concept ParticleContainer = requires(C c) {
     { (*static_cast<const C*>(&c)).proximityBegin(R3(), double(), size_t()) } -> std::forward_iterator;
     { c.proximityEnd(R3(), double()) } -> std::forward_iterator;
     { (*static_cast<const C*>(&c)).proximityEnd(R3(), double()) } -> std::forward_iterator;
+
+    // halo and boundary iterators
+    { c.haloBegin(std::set<BoundaryLocation>{}) } -> std::forward_iterator;
+    { (*static_cast<const C*>(&c)).haloBegin(std::set<BoundaryLocation>{}) } -> std::forward_iterator;
+    { c.haloEnd(std::set<BoundaryLocation>{}) } -> std::forward_iterator;
+    { (*static_cast<const C*>(&c)).haloEnd(std::set<BoundaryLocation>{}) } -> std::forward_iterator;
+
+    { c.boundaryBegin(std::set<BoundaryLocation>{}) } -> std::forward_iterator;
+    { (*static_cast<const C*>(&c)).boundaryBegin(std::set<BoundaryLocation>{}) } -> std::forward_iterator;
+    { c.boundaryEnd(std::set<BoundaryLocation>{}) } -> std::forward_iterator;
+    { (*static_cast<const C*>(&c)).boundaryEnd(std::set<BoundaryLocation>{}) } -> std::forward_iterator;
 };
 
 }  // namespace mol_sim
