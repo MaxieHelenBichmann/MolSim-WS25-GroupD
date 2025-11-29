@@ -4,6 +4,7 @@
 #include <spdlog/spdlog.h>
 
 #include <cstddef>
+#include <execution>
 #include <limits>
 #include <memory>
 #include <vector>
@@ -106,9 +107,11 @@ class Simulation {
     void applyReflectingBoundaries() {
         std::vector<Particle> ghosts;
         // TODO: OPtimze using boundary iterator
-        for (const auto& p : particles) {
-            if (p.getType() != -1) {  // Don't create ghosts for ghost particles
-                auto new_ghosts = domain.computeGhostParticles(p);
+        auto it = particles.boundaryBegin();
+        const auto end = particles.boundaryEnd();
+        for (; it != end; ++it) {
+            if (it->getType() != -1) {  // Don't create ghosts for ghost particles
+                auto new_ghosts = domain.computeGhostParticles(*it);
                 for (auto& ghost : new_ghosts) {
                     ghosts.push_back(std::move(ghost));
                 }
@@ -120,18 +123,13 @@ class Simulation {
     }
 
     /**
-     * @brief Removes all ghost particles (type == -1) from the container.
+     * @brief Removes all particles in the Halo from the container.
      */
-    void removeGhostParticles() {
-        // Collect particles to remove (can't modify while iterating)
-        std::vector<Particle> to_remove;
-        // TODO: Optimize using halo
-        for (const auto& p : particles) {
-            if (p.getType() == -1) {
-                to_remove.push_back(p);
-            }
-        }
-        for (auto it = to_remove.begin(); it != to_remove.end(); ++it) {
+    // TODO: Fix this: iterator types more efficient removing (badge remove?) so cell reorder not as expensive
+    void removeParticles() {
+        auto it = particles.haloBegin();
+        auto end = particles.haloEnd();
+        for (; it != end;) {
             it = particles.eraseParticle(it);
         }
     }
@@ -197,8 +195,8 @@ class Simulation {
             // 3. Calculate forces (including ghost interactions)
             calculateF();
 
-            // 4. Remove ghost particles
-            removeGhostParticles();
+            // 4. Remove Halo particles
+            removeParticles();
 
             // 5. Calculate new velocities
             calculateV();
