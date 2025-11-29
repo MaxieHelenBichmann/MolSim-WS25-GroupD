@@ -26,6 +26,8 @@ class SimpleContainer : public std::vector<Particle> {
     // constructors
     using std::vector<Particle>::vector;
 
+    SimpleContainer(R3 domain_size_arg, double cutoff_radius_arg);
+
     /**
      * @brief Adding an already existing Particle to the container by copying it.
      *

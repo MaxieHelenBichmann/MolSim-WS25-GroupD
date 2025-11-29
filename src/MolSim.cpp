@@ -39,7 +39,7 @@ int main(int argc, char* argsv[]) {
         exit(-1);
     }
     if (settings.container_type.value() == "SIMPLE") {
-        SimpleContainer particle_container;
+        SimpleContainer particle_container(settings.domain.value().getDimension(), settings.cutoff.value());
         try {
             file_reader->readParticles(particle_container, file_name);
         } catch (std::runtime_error& e) {
