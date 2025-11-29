@@ -129,9 +129,11 @@ class ContainerRef {
     /**
      * @brief Removes a given particle from the container.
      *
-     * @param p Particle to be removed.
+     * @param p Iterator to the Particle to be removed.
+     *
+     * @return Iterator to the next Particle after the removed one.
      */
-    void eraseParticle(const Particle& p);
+    std::vector<Particle>::iterator eraseParticle(std::vector<Particle>::iterator p);
 
     /**
      * @brief Update the position of a given Particle in the Container.

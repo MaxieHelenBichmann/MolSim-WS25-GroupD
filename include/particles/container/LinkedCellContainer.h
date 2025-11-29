@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "particles/ParticleContainer.h"
-#include "particles/container/cells/Cell.h"
 #include "particles/boundaries/Boundary.h"
+#include "particles/container/cells/Cell.h"
 
 namespace mol_sim {
 
@@ -97,7 +97,7 @@ class LinkedCellContainer {
     /**
      * Vector storing the global bounds of the domain of this container.
      * The Linked-Cell container assumes a cuboidal domain from (0,0,0) to domain_size.
-     * 
+     *
      * NOTE: All components specified here must be positive!
      */
     R3 domain_size;
@@ -212,9 +212,11 @@ class LinkedCellContainer {
     /**
      * @brief Remove a Particle if it lies in a halo cell.
      *
-     * @param p Pointer to the Particle to remove.
+     * @param p Iterator to to the Particle to remove.
+     *
+     * @return Iterator to the next Particle after the removed one.
      */
-    void eraseParticle(const Particle& p);
+    std::vector<Particle>::iterator eraseParticle(std::vector<Particle>::iterator p);
 
     /**
      * @brief Update the position of a given Particle in the Container.
@@ -479,8 +481,9 @@ class LinkedCellContainer {
      * @return Iterator to the first particle within the given halo cells.
      */
     [[nodiscard]] proximity_iterator haloBegin(const std::set<BoundaryLocation>& boundary_types = {
-                                                   BoundaryLocation::UPPER, BoundaryLocation::LOWER, BoundaryLocation::FRONT,
-                                                   BoundaryLocation::BACK, BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+                                                   BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                   BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                   BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
 
     /**
      * @brief Const Iterator over particles in halo cells.
@@ -490,9 +493,9 @@ class LinkedCellContainer {
      * @return Const iterator to the first particle within the given halo cells.
      */
     [[nodiscard]] const_proximity_iterator haloBegin(const std::set<BoundaryLocation>& boundary_types = {
-                                                         BoundaryLocation::UPPER, BoundaryLocation::LOWER, BoundaryLocation::FRONT,
-                                                         BoundaryLocation::BACK, BoundaryLocation::LEFT,
-                                                         BoundaryLocation::RIGHT}) const;
+                                                         BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                         BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                         BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
 
     /**
      * @brief Iterator over particles in halo cells.
@@ -502,8 +505,9 @@ class LinkedCellContainer {
      * @return Iterator after the last particle within the given halo cells.
      */
     [[nodiscard]] proximity_iterator haloEnd(const std::set<BoundaryLocation>& boundary_types = {
-                                                 BoundaryLocation::UPPER, BoundaryLocation::LOWER, BoundaryLocation::FRONT,
-                                                 BoundaryLocation::BACK, BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+                                                 BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                 BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                 BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
 
     /**
      * @brief Const Iterator over particles in halo cells.
@@ -513,9 +517,9 @@ class LinkedCellContainer {
      * @return Const iterator after the last particle within the given halo cells.
      */
     [[nodiscard]] const_proximity_iterator haloEnd(const std::set<BoundaryLocation>& boundary_types = {
-                                                       BoundaryLocation::UPPER, BoundaryLocation::LOWER, BoundaryLocation::FRONT,
-                                                       BoundaryLocation::BACK, BoundaryLocation::LEFT,
-                                                       BoundaryLocation::RIGHT}) const;
+                                                       BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                       BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                       BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
 
     /**
      * @brief Iterator over particles in boundary cells.
@@ -525,8 +529,9 @@ class LinkedCellContainer {
      * @return Iterator to the first particle within the given boundary cells.
      */
     [[nodiscard]] proximity_iterator boundaryBegin(const std::set<BoundaryLocation>& boundary_types = {
-                                                       BoundaryLocation::UPPER, BoundaryLocation::LOWER, BoundaryLocation::FRONT,
-                                                       BoundaryLocation::BACK, BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+                                                       BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                       BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                       BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
 
     /**
      * @brief Const Iterator over particles in boundary cells.
@@ -548,8 +553,9 @@ class LinkedCellContainer {
      * @return Iterator after the last particle within the given boundary cells.
      */
     [[nodiscard]] proximity_iterator boundaryEnd(const std::set<BoundaryLocation>& boundary_types = {
-                                                     BoundaryLocation::UPPER, BoundaryLocation::LOWER, BoundaryLocation::FRONT,
-                                                     BoundaryLocation::BACK, BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+                                                     BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                     BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                     BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
 
     /**
      * @brief Const Iterator over particles in boundary cells.
@@ -560,8 +566,8 @@ class LinkedCellContainer {
      */
     [[nodiscard]] const_proximity_iterator boundaryEnd(const std::set<BoundaryLocation>& boundary_types = {
                                                            BoundaryLocation::UPPER, BoundaryLocation::LOWER,
-                                                           BoundaryLocation::FRONT, BoundaryLocation::BACK, BoundaryLocation::LEFT,
-                                                           BoundaryLocation::RIGHT}) const;
+                                                           BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                           BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
 };
 
 }  // namespace mol_sim

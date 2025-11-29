@@ -46,8 +46,8 @@ void ContainerRef::addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_
                 type](auto& c) { return c->addParticle(x_arg, v_arg, m_arg, epsilon_arg, sigma_arg, type); },
                instance);
 }
-void ContainerRef::eraseParticle(const Particle& p) {
-    std::visit([&p](auto& c) { return c->eraseParticle(p); }, instance);
+std::vector<Particle>::iterator ContainerRef::eraseParticle(std::vector<Particle>::iterator p) {
+    return std::visit([&p](auto& c) { return c->eraseParticle(p); }, instance);
 }
 
 void ContainerRef::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x) {

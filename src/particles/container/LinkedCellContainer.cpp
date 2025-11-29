@@ -344,19 +344,19 @@ void LinkedCellContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double e
     cells[findCellIndex(x_arg)].addParticle(data.size() - 1);
 }
 
-void LinkedCellContainer::eraseParticle(const Particle& p) {
+std::vector<Particle>::iterator LinkedCellContainer::eraseParticle(std::vector<Particle>::iterator p) {
     // TODO: change to use cells[cell_idx].particles().find() and take an iterator/index as an argument!
-    size_t cell_idx = findCellIndex(p.getX());
+    size_t cell_idx = findCellIndex(p->getX());
 
     if (cell_idx < cells.size()) {
         for (auto it = cells[cell_idx].particles().begin(); it != cells[cell_idx].particles().end(); ++it) {  // NOLINT
             SPDLOG_DEBUG("Index {}", *it);
-            if (&(data[*it]) == &p) {
+            if (&(data[*it]) == &(*p)) {
                 size_t idx = *it;
                 cells[cell_idx].removeParticle(idx);
                 data.erase(data.begin() + idx);  // NOLINT
                 decreaseCellIndices(idx);
-                return;
+                return data.begin() + idx;
             }
         }
     }
@@ -365,11 +365,11 @@ void LinkedCellContainer::eraseParticle(const Particle& p) {
 void LinkedCellContainer::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x) {
     size_t old_cell_idx = findCellIndex(p->getX());
     size_t new_cell_idx = findCellIndex(new_x);
-    
+
     if (new_cell_idx != old_cell_idx) {
         if (new_cell_idx >= cells.size()) {
             // Particle moved completely outside container
-            eraseParticle(*p);
+            eraseParticle(p);
             return;
         }
         switchCell(static_cast<size_t>(p - data.begin()), old_cell_idx, new_cell_idx);
@@ -449,7 +449,8 @@ LinkedCellContainer::const_proximity_iterator LinkedCellContainer::proximityEnd(
 }
 
 // boundary and halo iterators
-LinkedCellContainer::proximity_iterator LinkedCellContainer::haloBegin(const std::set<BoundaryLocation>& boundary_types) {
+LinkedCellContainer::proximity_iterator LinkedCellContainer::haloBegin(
+    const std::set<BoundaryLocation>& boundary_types) {
     std::vector<Cell*> relevant_cells;
 
     for (const auto type : boundary_types) {
@@ -577,7 +578,8 @@ LinkedCellContainer::const_proximity_iterator LinkedCellContainer::boundaryBegin
                                     unique_and_nonempty_cells.front()->particles().begin(), unique_and_nonempty_cells,
                                     &data};
 }
-LinkedCellContainer::proximity_iterator LinkedCellContainer::boundaryEnd(const std::set<BoundaryLocation>& boundary_types) {
+LinkedCellContainer::proximity_iterator LinkedCellContainer::boundaryEnd(
+    const std::set<BoundaryLocation>& boundary_types) {
     std::vector<Cell*> relevant_cells;
 
     for (const auto type : boundary_types) {

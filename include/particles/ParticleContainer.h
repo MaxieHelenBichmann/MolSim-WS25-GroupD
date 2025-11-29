@@ -50,7 +50,7 @@ concept ParticleContainer = requires(C c) {
     { c.addParticle(Particle(0)) };
     { c.addParticle(R3(), R3(), 0., 0., 0.) };
     { c.addParticle(R3(), R3(), 0., 0., 0., 0) };
-    { c.eraseParticle(Particle(0)) };
+    { c.eraseParticle(c.begin()) } -> std::forward_iterator;
 
     { c.updateParticlePosition(std::vector<Particle>::iterator(), R3()) };
 

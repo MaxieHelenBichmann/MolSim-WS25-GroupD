@@ -145,17 +145,11 @@ TEST_F(LinkedCellContainerTest, testAddParticleEmplace) {
 }
 
 /**
- * @brief Tests correct behaviour of the method eraseParticle(Particle* p).
+ * @brief Tests correct behaviour of the method eraseParticle(std::vector<Particle>::iterator p).
  */
 TEST_F(LinkedCellContainerTest, testEraseParticle) {
     EXPECT_EQ(particles_full.size(), static_cast<size_t>(4));
-    Particle* p_ptr = &particles_full[2];
-    particles_full.eraseParticle(p_ptr);
-    EXPECT_EQ(particles_full.size(), static_cast<size_t>(3));
-
-    Particle p(42);
-    Particle* p_ptr_invalid = &p;
-    particles_full.eraseParticle(p_ptr_invalid);
+    particles_full.eraseParticle(particles_full.begin() + 2);
     EXPECT_EQ(particles_full.size(), static_cast<size_t>(3));
 }
 
