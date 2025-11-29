@@ -131,8 +131,8 @@ class Simulation {
                 to_remove.push_back(p);
             }
         }
-        for (const auto& p : to_remove) {
-            particles.eraseParticle(p);
+        for (auto it = to_remove.begin(); it != to_remove.end(); ++it) {
+            it = particles.eraseParticle(it);
         }
     }
 

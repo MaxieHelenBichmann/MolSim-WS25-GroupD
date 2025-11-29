@@ -354,12 +354,13 @@ std::vector<Particle>::iterator LinkedCellContainer::eraseParticle(std::vector<P
             if (&(data[*it]) == &(*p)) {
                 size_t idx = *it;
                 cells[cell_idx].removeParticle(idx);
-                data.erase(data.begin() + idx);  // NOLINT
+                std::vector<Particle>::iterator it = data.erase(data.begin() + idx);  // NOLINT
                 decreaseCellIndices(idx);
-                return data.begin() + idx;
+                return it;
             }
         }
     }
+    return data.end();
 }
 
 void LinkedCellContainer::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x) {

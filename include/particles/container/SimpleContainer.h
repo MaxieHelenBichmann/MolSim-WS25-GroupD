@@ -1,6 +1,7 @@
 #ifndef SIMPLE_CONTAINER_H
 #define SIMPLE_CONTAINER_H
 
+#include <limits>
 #include <set>
 #include <vector>
 
@@ -19,8 +20,9 @@ namespace mol_sim {
  *
  */
 class SimpleContainer : public std::vector<Particle> {
-    R3 domain_size;
-    double cutoff_radius = 0.0;
+    R3 domain_size = R3{std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(),
+                        std::numeric_limits<double>::infinity()};
+    double cutoff_radius = std::numeric_limits<double>::infinity();
 
    public:
     // constructors
