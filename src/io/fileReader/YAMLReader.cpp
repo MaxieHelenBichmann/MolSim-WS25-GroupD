@@ -285,6 +285,7 @@ void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
                                                             : std::nullopt;
 
                         boundary = std::make_unique<Reflecting>(location, dimension, sigma, epsilon);
+                        break;
                     }
                     case BoundaryType::OUTFLOW:
                     default:
