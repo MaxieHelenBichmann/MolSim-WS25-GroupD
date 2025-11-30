@@ -3,8 +3,10 @@
 
 #include <spdlog/spdlog.h>
 
+#include <algorithm>
 #include <cstddef>
 #include <execution>
+#include <functional>
 #include <limits>
 #include <memory>
 #include <vector>
@@ -99,7 +101,8 @@ class Simulation {
           start_time(settings.start_time.value()),
           end_time(settings.end_time.value()),
           frequency(settings.frequency.value()),
-          base_name(settings.base_name.value()) {}
+          base_name(settings.base_name.value()),
+          cutoff_radius(settings.cutoff.value()) {}
 
     /**
      * @brief Applies boundary conditions by creating ghost particles for reflecting boundaries.
@@ -125,12 +128,20 @@ class Simulation {
     /**
      * @brief Removes all particles in the Halo from the container.
      */
-    // TODO: Fix this: iterator types more efficient removing (badge remove?) so cell reorder not as expensive
     void removeParticles() {
-        auto it = particles.haloBegin();
-        auto end = particles.haloEnd();
-        for (; it != end;) {
-            it = particles.eraseParticle(it);
+        // Collect indices of particles to remove using halo iterator
+        std::vector<size_t> to_remove;
+        for (auto it = particles.haloBegin(); it != particles.haloEnd(); ++it) {
+            size_t idx = &(*it) - &particles[0];
+            to_remove.push_back(idx);
+        }
+
+        // Sort in descending order to remove from end first (avoids index shifting issues)
+        std::sort(to_remove.begin(), to_remove.end(), std::greater<size_t>());
+
+        // Remove particles using the standard vector iterator version
+        for (size_t idx : to_remove) {
+            particles.eraseParticle(particles.begin() + static_cast<std::ptrdiff_t>(idx));
         }
     }
 

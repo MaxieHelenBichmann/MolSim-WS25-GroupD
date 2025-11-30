@@ -60,13 +60,7 @@ void LinkedCellContainer::switchCell(size_t p, size_t old_cell_idx, size_t new_c
 }
 
 size_t LinkedCellContainer::findCellIndex(R3 vec) const {
-    if (!fitsContainer(vec)) {
-        SPDLOG_INFO("Position not not in container!");
-        return cells.size();
-    }
-    if (!fitsDomain(vec)) {
-        SPDLOG_INFO("Position of ghost particle!");
-    }
+
     const auto index_for_dim = [this](double coord, size_t dim) {
         const double normalized = (coord + cell_length[dim]) / cell_length[dim];
 
@@ -362,7 +356,8 @@ std::vector<Particle>::iterator LinkedCellContainer::eraseParticle(std::vector<P
     return data.end();
 }
 
-LinkedCellContainer::proximity_iterator LinkedCellContainer::eraseParticle(LinkedCellContainer::proximity_iterator p) {
+LinkedCellContainer::proximity_iterator LinkedCellContainer::eraseParticle(
+    const LinkedCellContainer::proximity_iterator& p) {
     Cell* relevant_cell = p.getCells().front();
 
     R3 center = p.getCenter();
@@ -371,37 +366,68 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::eraseParticle(Linke
 
     size_t idx = &(*p) - data.data();
 
-    if (relevant_cell->particles().size() == 1U) {
+    // Get the next element in the set BEFORE erasing (erase invalidates the iterator)
+    auto set_it = relevant_cell->particles().find(idx);
+    auto next_set_it = std::next(set_it);
+    bool at_cell_end = (next_set_it == relevant_cell->particles().end());
+
+    // Remove particle index from its cell
+    relevant_cell->particles().erase(set_it);
+
+    if (relevant_cell->particles().empty()) {
         if (relevant_cells.size() == 1U) {
             // last particle in last relevant cell
             data.erase(data.begin() + idx);  // NOLINT
             decreaseCellIndices(idx);
-            auto it = relevant_cell->particles().end();
-            return proximity_iterator{center, radius, it, relevant_cells, &data};
+            return proximity_iterator{};
         }
         relevant_cells.erase(relevant_cells.begin());
         data.erase(data.begin() + idx);  // NOLINT
         decreaseCellIndices(idx);
+        if (relevant_cells.empty()) {
+            return proximity_iterator{};
+        }
         return proximity_iterator{center, radius, relevant_cells.front()->particles().begin(), relevant_cells, &data};
     }
-    size_t next_idx = (++p).getIdx();
-    next_idx = next_idx < idx ? next_idx : next_idx - 1;
+
+    // Calculate the next index before erasing from data
+    size_t next_idx = at_cell_end ? 0 : *next_set_it;
+    if (!at_cell_end && next_idx > idx) {
+        next_idx = next_idx - 1;  // Adjust for the shift after erase
+    }
+
     data.erase(data.begin() + idx);  // NOLINT
     decreaseCellIndices(idx);
-    auto it = std::find(relevant_cell->particles().begin(), relevant_cell->particles().end(), next_idx);
+
+    if (at_cell_end) {
+        // Move to next cell
+        relevant_cells.erase(relevant_cells.begin());
+        if (relevant_cells.empty()) {
+            return proximity_iterator{};
+        }
+        return proximity_iterator{center, radius, relevant_cells.front()->particles().begin(), relevant_cells, &data};
+    }
+
+    auto it = relevant_cell->particles().find(next_idx);
+    if (it == relevant_cell->particles().end()) {
+        // Fallback: start from beginning of current cell
+        it = relevant_cell->particles().begin();
+    }
     return proximity_iterator{center, radius, it, relevant_cells, &data};
 }
 
 void LinkedCellContainer::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x) {
     size_t old_cell_idx = findCellIndex(p->getX());
+
+    if (!fitsContainer(new_x)) {
+        // Particle moved completely outside container
+        eraseParticle(p);
+        return;
+    }
+
     size_t new_cell_idx = findCellIndex(new_x);
 
     if (new_cell_idx != old_cell_idx) {
-        if (new_cell_idx >= cells.size()) {
-            // Particle moved completely outside container
-            eraseParticle(p);
-            return;
-        }
         switchCell(static_cast<size_t>(p - data.begin()), old_cell_idx, new_cell_idx);
     }
 
