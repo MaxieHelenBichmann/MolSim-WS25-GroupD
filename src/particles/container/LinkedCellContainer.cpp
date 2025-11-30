@@ -378,13 +378,11 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::eraseParticle(Linke
             decreaseCellIndices(idx);
             auto it = relevant_cell->particles().end();
             return proximity_iterator{center, radius, it, relevant_cells, &data};
-        } else {
-            relevant_cells.erase(relevant_cells.begin());
-            data.erase(data.begin() + idx);  // NOLINT
-            decreaseCellIndices(idx);
-            return proximity_iterator{center, radius, relevant_cells.front()->particles().begin(), relevant_cells,
-                                      &data};
         }
+        relevant_cells.erase(relevant_cells.begin());
+        data.erase(data.begin() + idx);  // NOLINT
+        decreaseCellIndices(idx);
+        return proximity_iterator{center, radius, relevant_cells.front()->particles().begin(), relevant_cells, &data};
     }
     size_t next_idx = *(++p);
     next_idx = next_idx < idx ? next_idx : next_idx - 1;

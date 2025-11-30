@@ -344,9 +344,9 @@ class LinkedCellContainer {
         friend bool operator==(const proximity_iterator& a, const proximity_iterator& b) { return a.cur == b.cur; }
         friend bool operator!=(const proximity_iterator& a, const proximity_iterator& b) { return !(a == b); }
 
-        std::vector<Cell*> getCells() const { return cells; }
-        double getRadius() const { return radius; }
-        R3 getCenter() const { return center; }
+        [[nodiscard]] std::vector<Cell*> getCells() const { return cells; }
+        [[nodiscard]] double getRadius() const { return radius; }
+        [[nodiscard]] R3 getCenter() const { return center; }
     };
     static_assert(std::forward_iterator<proximity_iterator>);
 
@@ -431,9 +431,9 @@ class LinkedCellContainer {
             return !(a == b);
         }
 
-        std::vector<const Cell*> getCells() const { return cells; }
-        double getRadius() const { return radius; }
-        R3 getCenter() const { return center; }
+        [[nodiscard]] std::vector<const Cell*> getCells() const { return cells; }
+        [[nodiscard]] double getRadius() const { return radius; }
+        [[nodiscard]] R3 getCenter() const { return center; }
     };
     static_assert(std::forward_iterator<const_proximity_iterator>);
 

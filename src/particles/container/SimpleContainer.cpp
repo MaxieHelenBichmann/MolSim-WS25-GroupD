@@ -18,7 +18,7 @@ void SimpleContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsil
 };
 std::vector<Particle>::iterator SimpleContainer::eraseParticle(std::vector<Particle>::iterator p) { return erase(p); };
 
-SimpleContainer::proximity_iterator SimpleContainer::eraseParticle(SimpleContainer::proximity_iterator p) {
+SimpleContainer::proximity_iterator SimpleContainer::eraseParticle(const SimpleContainer::proximity_iterator& p) {
     Particle particle = *p;
     R3 center = p.getCenter();
     double radius = p.getRadius();
