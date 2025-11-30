@@ -345,7 +345,6 @@ void LinkedCellContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double e
 }
 
 std::vector<Particle>::iterator LinkedCellContainer::eraseParticle(std::vector<Particle>::iterator p) {
-    // TODO: change to use cells[cell_idx].particles().find() and take an iterator/index as an argument!
     size_t cell_idx = findCellIndex(p->getX());
 
     if (cell_idx < cells.size()) {
@@ -361,6 +360,38 @@ std::vector<Particle>::iterator LinkedCellContainer::eraseParticle(std::vector<P
         }
     }
     return data.end();
+}
+
+LinkedCellContainer::proximity_iterator LinkedCellContainer::eraseParticle(LinkedCellContainer::proximity_iterator p) {
+    Cell* relevant_cell = p.getCells().front();
+
+    R3 center = p.getCenter();
+    std::vector<Cell*> relevant_cells = p.getCells();
+    double radius = p.getRadius();
+
+    size_t idx = *p;
+
+    if (relevant_cell->particles().size() == 1U) {
+        if (relevant_cells.size() == 1U) {
+            // last particle in last relevant cell
+            data.erase(data.begin() + idx);  // NOLINT
+            decreaseCellIndices(idx);
+            auto it = relevant_cell->particles().end();
+            return proximity_iterator{center, radius, it, relevant_cells, &data};
+        } else {
+            relevant_cells.erase(relevant_cells.begin());
+            data.erase(data.begin() + idx);  // NOLINT
+            decreaseCellIndices(idx);
+            return proximity_iterator{center, radius, relevant_cells.front()->particles().begin(), relevant_cells,
+                                      &data};
+        }
+    }
+    size_t next_idx = *(++p);
+    next_idx = next_idx < idx ? next_idx : next_idx - 1;
+    data.erase(data.begin() + idx);  // NOLINT
+    decreaseCellIndices(idx);
+    auto it = std::find(relevant_cell->particles().begin(), relevant_cell->particles().end(), next_idx);
+    return proximity_iterator{center, radius, it, relevant_cells, &data};
 }
 
 void LinkedCellContainer::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x) {

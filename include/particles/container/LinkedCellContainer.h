@@ -343,6 +343,10 @@ class LinkedCellContainer {
 
         friend bool operator==(const proximity_iterator& a, const proximity_iterator& b) { return a.cur == b.cur; }
         friend bool operator!=(const proximity_iterator& a, const proximity_iterator& b) { return !(a == b); }
+
+        std::vector<Cell*> getCells() const { return cells; }
+        double getRadius() const { return radius; }
+        R3 getCenter() const { return center; }
     };
     static_assert(std::forward_iterator<proximity_iterator>);
 
@@ -426,8 +430,21 @@ class LinkedCellContainer {
         friend bool operator!=(const const_proximity_iterator& a, const const_proximity_iterator& b) {
             return !(a == b);
         }
+
+        std::vector<const Cell*> getCells() const { return cells; }
+        double getRadius() const { return radius; }
+        R3 getCenter() const { return center; }
     };
     static_assert(std::forward_iterator<const_proximity_iterator>);
+
+    /**
+     * @brief Remove a Particle if it lies in a halo cell.
+     *
+     * @param p Iterator to to the Particle to remove.
+     *
+     * @return Iterator to the next Particle after the removed one.
+     */
+    proximity_iterator eraseParticle(proximity_iterator p);
 
     /**
      * @brief Mutable Iterator over particles in proximity.
