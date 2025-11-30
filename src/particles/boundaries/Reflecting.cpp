@@ -12,22 +12,6 @@ Reflecting::Reflecting(BoundaryLocation location, R3 domain_size, bool ghost_on_
       boundary_epsilon(epsilon),
       boundary_sigma(sigma) {}
 
-size_t Reflecting::getAxis() const {
-    switch (location) {
-        case BoundaryLocation::LEFT:
-        case BoundaryLocation::RIGHT:
-            return 0;
-        case BoundaryLocation::UPPER:
-        case BoundaryLocation::LOWER:
-            return 1;
-        case BoundaryLocation::FRONT:
-        case BoundaryLocation::BACK:
-            return 2;
-        default:
-            return 0;
-    }
-}
-
 int Reflecting::getSign() const {
     switch (location) {
         case BoundaryLocation::LEFT:

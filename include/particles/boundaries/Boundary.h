@@ -50,6 +50,23 @@ class Boundary {
     [[nodiscard]] BoundaryLocation& getLocation() { return location; }
     [[nodiscard]] const BoundaryType& getType() const { return type; }
     [[nodiscard]] const BoundaryLocation& getLocation() const { return location; }
+
+   protected:
+    [[nodiscard]] size_t getAxis() const {
+        switch (location) {
+            case BoundaryLocation::LEFT:
+            case BoundaryLocation::RIGHT:
+                return 0;
+            case BoundaryLocation::UPPER:
+            case BoundaryLocation::LOWER:
+                return 1;
+            case BoundaryLocation::FRONT:
+            case BoundaryLocation::BACK:
+                return 2;
+            default:
+                return 0;
+        }
+    }
 };
 
 /**
