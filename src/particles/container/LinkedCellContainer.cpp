@@ -60,13 +60,6 @@ void LinkedCellContainer::switchCell(size_t p, size_t old_cell_idx, size_t new_c
 }
 
 size_t LinkedCellContainer::findCellIndex(R3 vec) const {
-    if (!fitsContainer(vec)) {
-        SPDLOG_INFO("Position not not in container!");
-        return cells.size();
-    }
-    if (!fitsDomain(vec)) {
-        SPDLOG_INFO("Position of ghost particle!");
-    }
     const auto index_for_dim = [this](double coord, size_t dim) {
         const double normalized = (coord + cell_length[dim]) / cell_length[dim];
 
@@ -348,62 +341,40 @@ std::vector<Particle>::iterator LinkedCellContainer::eraseParticle(std::vector<P
     size_t cell_idx = findCellIndex(p->getX());
 
     if (cell_idx < cells.size()) {
-        for (auto it = cells[cell_idx].particles().begin(); it != cells[cell_idx].particles().end(); ++it) {  // NOLINT
-            SPDLOG_DEBUG("Index {}", *it);
-            if (&(data[*it]) == &(*p)) {
-                size_t idx = *it;
-                cells[cell_idx].removeParticle(idx);
-                std::vector<Particle>::iterator it = data.erase(data.begin() + idx);  // NOLINT
-                decreaseCellIndices(idx);
-                return it;
-            }
+        size_t idx = &(*p) - data.data();
+        cells[cell_idx].removeParticle(idx);
+        std::vector<Particle>::iterator it = data.erase(p);  // NOLINT
+        if (it != data.end()) {
+            decreaseCellIndices(idx);
         }
+        return it;
     }
     return data.end();
 }
 
 LinkedCellContainer::proximity_iterator LinkedCellContainer::eraseParticle(LinkedCellContainer::proximity_iterator p) {
-    Cell* relevant_cell = p.getCells().front();
+    size_t idx = &(*p) - data.data();
 
-    R3 center = p.getCenter();
-    std::vector<Cell*> relevant_cells = p.getCells();
-    double radius = p.getRadius();
+    proximity_iterator next_it = ++p;
 
-    size_t idx = *p;
-
-    if (relevant_cell->particles().size() == 1U) {
-        if (relevant_cells.size() == 1U) {
-            // last particle in last relevant cell
-            data.erase(data.begin() + idx);  // NOLINT
-            decreaseCellIndices(idx);
-            auto it = relevant_cell->particles().end();
-            return proximity_iterator{center, radius, it, relevant_cells, &data};
-        } else {
-            relevant_cells.erase(relevant_cells.begin());
-            data.erase(data.begin() + idx);  // NOLINT
-            decreaseCellIndices(idx);
-            return proximity_iterator{center, radius, relevant_cells.front()->particles().begin(), relevant_cells,
-                                      &data};
-        }
-    }
-    size_t next_idx = *(++p);
-    next_idx = next_idx < idx ? next_idx : next_idx - 1;
     data.erase(data.begin() + idx);  // NOLINT
     decreaseCellIndices(idx);
-    auto it = std::find(relevant_cell->particles().begin(), relevant_cell->particles().end(), next_idx);
-    return proximity_iterator{center, radius, it, relevant_cells, &data};
+
+    return next_it;
 }
 
 void LinkedCellContainer::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x) {
     size_t old_cell_idx = findCellIndex(p->getX());
+
+    if (!fitsContainer(new_x)) {
+        // Particle moved completely outside container
+        eraseParticle(p);
+        return;
+    }
+
     size_t new_cell_idx = findCellIndex(new_x);
 
     if (new_cell_idx != old_cell_idx) {
-        if (new_cell_idx >= cells.size()) {
-            // Particle moved completely outside container
-            eraseParticle(p);
-            return;
-        }
         switchCell(static_cast<size_t>(p - data.begin()), old_cell_idx, new_cell_idx);
     }
 
@@ -431,6 +402,9 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::proximityBegin(R3 c
         }
     }
 
+    if (nonempty_adjacent_cells.empty()) {
+        return proximity_iterator{};
+    }
     return proximity_iterator{center, radius, nonempty_adjacent_cells.front()->particles().begin(),
                               nonempty_adjacent_cells, &data};
 }
@@ -446,6 +420,9 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::proximityEnd(R3 cen
         }
     }
 
+    if (nonempty_adjacent_cells.empty()) {
+        return proximity_iterator{};
+    }
     return proximity_iterator{center, radius, nonempty_adjacent_cells.back()->particles().end(),
                               nonempty_adjacent_cells, &data};
 }
@@ -462,6 +439,9 @@ LinkedCellContainer::const_proximity_iterator LinkedCellContainer::proximityBegi
         }
     }
 
+    if (nonempty_adjacent_cells.empty()) {
+        return const_proximity_iterator{};
+    }
     return const_proximity_iterator{center, radius, nonempty_adjacent_cells.front()->particles().begin(),
                                     nonempty_adjacent_cells, &data};
 }
@@ -476,6 +456,9 @@ LinkedCellContainer::const_proximity_iterator LinkedCellContainer::proximityEnd(
         }
     }
 
+    if (nonempty_adjacent_cells.empty()) {
+        return const_proximity_iterator{};
+    }
     return const_proximity_iterator{center, radius, nonempty_adjacent_cells.back()->particles().end(),
                                     nonempty_adjacent_cells, &data};
 }
@@ -499,6 +482,9 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::haloBegin(
         }
     }
 
+    if (unique_and_nonempty_cells.empty()) {
+        return proximity_iterator{};
+    }
     return proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
                               unique_and_nonempty_cells.front()->particles().begin(), unique_and_nonempty_cells, &data};
 }
@@ -520,6 +506,9 @@ LinkedCellContainer::const_proximity_iterator LinkedCellContainer::haloBegin(
         }
     }
 
+    if (unique_and_nonempty_cells.empty()) {
+        return const_proximity_iterator{};
+    }
     return const_proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
                                     unique_and_nonempty_cells.front()->particles().begin(), unique_and_nonempty_cells,
                                     &data};
@@ -541,6 +530,9 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::haloEnd(const std::
         }
     }
 
+    if (unique_and_nonempty_cells.empty()) {
+        return proximity_iterator{};
+    }
     return proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
                               unique_and_nonempty_cells.back()->particles().end(), unique_and_nonempty_cells, &data};
 }
@@ -562,6 +554,9 @@ LinkedCellContainer::const_proximity_iterator LinkedCellContainer::haloEnd(
         }
     }
 
+    if (unique_and_nonempty_cells.empty()) {
+        return const_proximity_iterator{};
+    }
     return const_proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
                                     unique_and_nonempty_cells.back()->particles().end(), unique_and_nonempty_cells,
                                     &data};
@@ -585,6 +580,9 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::boundaryBegin(
         }
     }
 
+    if (unique_and_nonempty_cells.empty()) {
+        return proximity_iterator{};
+    }
     return proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
                               unique_and_nonempty_cells.front()->particles().begin(), unique_and_nonempty_cells, &data};
 }
@@ -606,6 +604,9 @@ LinkedCellContainer::const_proximity_iterator LinkedCellContainer::boundaryBegin
         }
     }
 
+    if (unique_and_nonempty_cells.empty()) {
+        return const_proximity_iterator{};
+    }
     return const_proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
                                     unique_and_nonempty_cells.front()->particles().begin(), unique_and_nonempty_cells,
                                     &data};
@@ -628,6 +629,9 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::boundaryEnd(
         }
     }
 
+    if (unique_and_nonempty_cells.empty()) {
+        return proximity_iterator{};
+    }
     return proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
                               unique_and_nonempty_cells.back()->particles().end(), unique_and_nonempty_cells, &data};
 }
@@ -649,6 +653,9 @@ LinkedCellContainer::const_proximity_iterator LinkedCellContainer::boundaryEnd(
         }
     }
 
+    if (unique_and_nonempty_cells.empty()) {
+        return const_proximity_iterator{};
+    }
     return const_proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
                                     unique_and_nonempty_cells.back()->particles().end(), unique_and_nonempty_cells,
                                     &data};

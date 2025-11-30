@@ -33,7 +33,7 @@ Each object in the `discs` list defines a single disc and has the following keys
 ## Example
 
 ```yaml
-my_cuboid:
+my_disc:
     format: Disc
     discs:
       - coordinates:
