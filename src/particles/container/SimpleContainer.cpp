@@ -1,6 +1,7 @@
 #include "particles/container/SimpleContainer.h"
 
 #include <algorithm>
+#include <cstddef>
 
 using namespace mol_sim;
 
@@ -23,7 +24,7 @@ SimpleContainer::proximity_iterator SimpleContainer::eraseParticle(const SimpleC
     double radius = p.getRadius();
     bool prox = p.isProximity();
     std::set<BoundaryLocation> locations = p.getLocations();
-    size_t idx = eraseParticle(std::vector<Particle>::iterator{&(*p)}) - begin();
+    size_t idx = erase(begin() + (&(*p) - data())) - begin();
     return proximity_iterator{center, radius, data(), data() + idx, 0, prox, locations};
 };
 

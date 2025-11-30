@@ -369,7 +369,7 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::eraseParticle(Linke
     std::vector<Cell*> relevant_cells = p.getCells();
     double radius = p.getRadius();
 
-    size_t idx = *p;
+    size_t idx = &(*p) - data.data();
 
     if (relevant_cell->particles().size() == 1U) {
         if (relevant_cells.size() == 1U) {

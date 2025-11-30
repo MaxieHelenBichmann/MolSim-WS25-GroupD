@@ -247,6 +247,14 @@ class ContainerRef {
         friend bool operator!=(const const_proximity_iterator& a, const const_proximity_iterator& b) {
             return !(a == b);
         }
+
+        operator LinkedCellContainer::const_proximity_iterator() const {
+            return std::get<LinkedCellContainer::const_proximity_iterator>(cur);
+        }
+
+        operator SimpleContainer::const_proximity_iterator() const {
+            return std::get<SimpleContainer::const_proximity_iterator>(cur);
+        }
     };
     static_assert(std::forward_iterator<const_proximity_iterator>);
 
@@ -301,6 +309,12 @@ class ContainerRef {
                 a.cur, b.cur);
         }
         friend bool operator!=(const proximity_iterator& a, const proximity_iterator& b) { return !(a == b); }
+
+        operator LinkedCellContainer::proximity_iterator() {
+            return std::get<LinkedCellContainer::proximity_iterator>(cur);
+        }
+
+        operator SimpleContainer::proximity_iterator() { return std::get<SimpleContainer::proximity_iterator>(cur); }
     };
     static_assert(std::forward_iterator<proximity_iterator>);
 
