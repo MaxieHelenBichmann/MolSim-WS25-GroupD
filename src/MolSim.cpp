@@ -48,8 +48,8 @@ int main(int argc, char* argsv[]) {
         }
         SPDLOG_INFO("Simulation configured with {} particles, delta_t={} end_time={}", particle_container.size(),
                     settings.delta_t.value(), settings.end_time.value());
-        GravitationalForce f;
-        Simulation<SimpleContainer, GravitationalForce> simulation(particle_container, f, settings);
+        LennardJonesForce f;
+        Simulation<SimpleContainer, LennardJonesForce> simulation(particle_container, f, settings);
         simulation.run();
     } else if (settings.container_type.value() == "LINKED") {
         LinkedCellContainer particle_container{settings.domain.value().getDimension(), settings.cutoff.value()};
@@ -61,8 +61,8 @@ int main(int argc, char* argsv[]) {
         }
         SPDLOG_INFO("Simulation configured with {} particles, delta_t={} end_time={}", particle_container.size(),
                     settings.delta_t.value(), settings.end_time.value());
-        GravitationalForce f;
-        Simulation<LinkedCellContainer, GravitationalForce> simulation(particle_container, f, settings);
+        LennardJonesForce f;
+        Simulation<LinkedCellContainer, LennardJonesForce> simulation(particle_container, f, settings);
         simulation.run();
     }
 }

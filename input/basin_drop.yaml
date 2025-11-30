@@ -6,16 +6,18 @@ settings:
   force: "Lennard Jones"
   frequency: 10
   cutoff: 3.0
-  container_type: LINKED
+  container: LINKED
   domain:
     x: 120
     y: 50
     z: 1
     boundaries:
-      left: Reflecting
-      right:Reflecting
-      lower:Reflecting
-
+      left:
+        type: Reflecting
+      right:
+        type: Reflecting
+      lower:
+        type: Reflecting
 
 disc:
   format: Disc
