@@ -266,6 +266,11 @@ class SimpleContainer : public std::vector<Particle> {
         friend bool operator!=(const const_proximity_iterator& a, const const_proximity_iterator& b) {
             return !(a == b);
         }
+
+        R3 getCenter() const { return center_or_domain; }
+        double getRadius() const { return radius; }
+        bool isProximity() const { return prox; }
+        std::set<BoundaryLocation> getLocations() const { return locations; }
     };
     static_assert(std::forward_iterator<const_proximity_iterator>);
 
@@ -445,8 +450,22 @@ class SimpleContainer : public std::vector<Particle> {
 
         friend bool operator==(const proximity_iterator& a, const proximity_iterator& b) { return a.cur == b.cur; }
         friend bool operator!=(const proximity_iterator& a, const proximity_iterator& b) { return !(a == b); }
+
+        R3 getCenter() const { return center_or_domain; }
+        double getRadius() const { return radius; }
+        bool isProximity() const { return prox; }
+        std::set<BoundaryLocation> getLocations() const { return locations; }
     };
     static_assert(std::forward_iterator<proximity_iterator>);
+
+    /**
+     * @brief Removes a given particle from the container.
+     *
+     * @param p Iterator to the Particle to be removed.
+     *
+     * @return Iterator to the next Particle after the removed one.
+     */
+    proximity_iterator eraseParticle(proximity_iterator p);
 
     /**
      * @brief Mutable Iterator over particles in proximity.

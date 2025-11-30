@@ -305,6 +305,15 @@ class ContainerRef {
     static_assert(std::forward_iterator<proximity_iterator>);
 
     /**
+     * @brief Remove a Particle if it lies in a halo cell.
+     *
+     * @param p Iterator to to the Particle to remove.
+     *
+     * @return Iterator to the next Particle after the removed one.
+     */
+    proximity_iterator eraseParticle(proximity_iterator p);
+
+    /**
      * @brief Mutable Iterator over particles in proximity.
      *
      * @param center Center point to check proximity from (position of the particle).
