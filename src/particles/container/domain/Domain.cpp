@@ -33,6 +33,8 @@ Domain::Domain() {
     boundaries[5] = std::make_unique<Outflow>(BoundaryLocation::LOWER);
 }
 
+Domain::Domain(R3 dimension) : Domain() { this->dimension = dimension; }
+
 Domain::Domain(Domain&& other) noexcept : dimension(other.dimension), boundaries(std::move(other.boundaries)) {}
 
 Domain::Domain(R3 dimension, std::array<std::unique_ptr<Boundary>, 6> boundaries)

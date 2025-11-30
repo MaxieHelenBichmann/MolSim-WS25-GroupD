@@ -189,16 +189,19 @@ class Simulation {
             // 1. Calculate new positions
             calculateX();
 
-            // 2. Apply reflecting boundaries (create ghost particles)
-            applyReflectingBoundaries();
-
-            // 3. Calculate forces (including ghost interactions)
-            calculateF();
-
-            // 4. Remove Halo particles
+            // 2. Remove OOB particles
             removeParticles();
 
-            // 5. Calculate new velocities
+            // 3. Apply reflecting boundaries (create ghost particles)
+            applyReflectingBoundaries();   
+
+            // 4. Calculate forces (including ghost interactions)
+            calculateF();
+
+            // 5. Remove Halo particles
+            removeParticles();
+
+            // 6. Calculate new velocities
             calculateV();
 
             iteration++;

@@ -30,6 +30,7 @@ class Domain {
 
    public:
     Domain();
+    Domain(R3 dimension);
     Domain(const Domain& other) = delete;
     Domain(Domain&& other) noexcept;
 
