@@ -19,13 +19,12 @@ void SimpleContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsil
 std::vector<Particle>::iterator SimpleContainer::eraseParticle(std::vector<Particle>::iterator p) { return erase(p); };
 
 SimpleContainer::proximity_iterator SimpleContainer::eraseParticle(const SimpleContainer::proximity_iterator& p) {
-    Particle particle = *p;
     R3 center = p.getCenter();
     double radius = p.getRadius();
     bool prox = p.isProximity();
     std::set<BoundaryLocation> locations = p.getLocations();
-    auto it = eraseParticle(std::vector<Particle>::iterator{&particle});
-    return proximity_iterator{center, radius, data(), data() + it, 0, prox, locations};
+    size_t idx = eraseParticle(std::vector<Particle>::iterator{&(*p)}) - begin();
+    return proximity_iterator{center, radius, data(), data() + idx, 0, prox, locations};
 };
 
 void SimpleContainer::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x) { p->getX() = new_x; }
