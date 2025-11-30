@@ -87,8 +87,9 @@ settings:
     force: "Lennard Jones"
     frequency: 10
     cutoff: 3.0
+    container_type: LINKED
     domain:
-      domain_type: LINKED
+
       x: 180.0
       y: 90.0
       z: 1.0
