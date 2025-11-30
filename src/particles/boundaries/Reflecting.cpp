@@ -58,13 +58,13 @@ std::optional<Particle> Reflecting::computeGhostParticle(const Particle& p) cons
     int sign = getSign();
     double boundary_position = getBoundaryPosition();
 
-    double threshold = std::pow(2.0, 1.0 / 6.0) * sigma;
+    double threshold = std::pow(2.0, -5.0 / 6.0) * sigma;
     double particle_pos = p.getX()[axis];
     double distance_to_boundary = (sign < 0) ? (particle_pos - boundary_position) : (boundary_position - particle_pos);
 
     if (distance_to_boundary < threshold && distance_to_boundary >= 0) {
         R3 ghost_pos = p.getX();
-        ghost_pos[axis] = boundary_position + (sign * (-distance_to_boundary));
+        ghost_pos[axis] = boundary_position + (sign * distance_to_boundary);
 
         return Particle(ghost_pos, {0.0, 0.0, 0.0}, 0.0, epsilon, sigma, -1);
     }

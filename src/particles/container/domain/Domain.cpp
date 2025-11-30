@@ -40,7 +40,9 @@ Domain::Domain(R3 dimension, std::array<std::unique_ptr<Boundary>, 6> boundaries
 
 R3 Domain::getDimension() const { return dimension; }
 
-Boundary* Domain::getBoundary(BoundaryLocation location) { return boundaries[locationToIndex(location)].get(); }
+Boundary* Domain::getBoundary(BoundaryLocation location) { 
+    return boundaries[locationToIndex(location)].get(); 
+}
 
 const Boundary* Domain::getBoundary(BoundaryLocation location) const {
     return boundaries[locationToIndex(location)].get();
