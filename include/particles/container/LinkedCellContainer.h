@@ -347,6 +347,7 @@ class LinkedCellContainer {
         [[nodiscard]] std::vector<Cell*> getCells() const { return cells; }
         [[nodiscard]] double getRadius() const { return radius; }
         [[nodiscard]] R3 getCenter() const { return center; }
+        [[nodiscard]] size_t getIdx() const { return *cur; }
     };
     static_assert(std::forward_iterator<proximity_iterator>);
 
@@ -434,6 +435,7 @@ class LinkedCellContainer {
         [[nodiscard]] std::vector<const Cell*> getCells() const { return cells; }
         [[nodiscard]] double getRadius() const { return radius; }
         [[nodiscard]] R3 getCenter() const { return center; }
+        [[nodiscard]] size_t getIdx() const { return *cur; }
     };
     static_assert(std::forward_iterator<const_proximity_iterator>);
 

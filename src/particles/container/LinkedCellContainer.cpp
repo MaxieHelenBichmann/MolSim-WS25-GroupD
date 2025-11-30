@@ -384,7 +384,7 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::eraseParticle(Linke
         decreaseCellIndices(idx);
         return proximity_iterator{center, radius, relevant_cells.front()->particles().begin(), relevant_cells, &data};
     }
-    size_t next_idx = *(++p);
+    size_t next_idx = (++p).getIdx();
     next_idx = next_idx < idx ? next_idx : next_idx - 1;
     data.erase(data.begin() + idx);  // NOLINT
     decreaseCellIndices(idx);
