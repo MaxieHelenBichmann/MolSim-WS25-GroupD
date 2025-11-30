@@ -446,7 +446,7 @@ class LinkedCellContainer {
      *
      * @return Iterator to the next Particle after the removed one.
      */
-    proximity_iterator eraseParticle(const proximity_iterator& p);
+    proximity_iterator eraseParticle(proximity_iterator p);
 
     /**
      * @brief Mutable Iterator over particles in proximity.

@@ -2,28 +2,18 @@
 
 #include <spdlog/spdlog.h>
 
-#include <algorithm>
-
 using namespace mol_sim;
 
 Cell::Cell(CellType cell_type, std::array<double, 6> bounds) : type(cell_type), bounds(bounds) {}
 
 void Cell::addParticle(size_t idx) { indices.insert(idx); }
-void Cell::removeParticle(size_t idx) {
-    for (auto it = indices.begin(); it != indices.end(); ++it) {  // NOLINT
-        if (*it == idx) {
-            indices.erase(it);  // NOLINT
-            return;
-        }
-    }
-}
+void Cell::removeParticle(size_t idx) { indices.erase(idx); }
 void Cell::updateParticleIndex(size_t old_idx, size_t new_idx) {
-    for (auto it = indices.begin(); it != indices.end(); ++it) {  // NOLINT
-        if (*it == old_idx) {
-            indices.erase(it);
-            indices.insert(new_idx);
-            return;
-        }
+    auto it = indices.find(old_idx);
+    if (it != indices.end()) {
+        indices.erase(it);
+        indices.insert(new_idx);
+        return;
     }
 }
 void Cell::clear() { indices.clear(); }
