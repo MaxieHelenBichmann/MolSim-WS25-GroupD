@@ -65,19 +65,13 @@ class Domain {
     [[nodiscard]] R3 getDimension() const;
 
     /**
-     * @brief Applies boundary conditions to a particle.
+     * @brief Applies boundary conditions to a particle. Also (if needed) computes ghost particles 
+     * needed for a given particle.
      *
-     * @param p The particle to apply boundaries to.
-     */
-    void applyBoundary(Particle& p);
-
-    /**
-     * @brief Computes all ghost particles needed for a given particle.
-     *
-     * @param p The particle to compute ghost particles for.
+     * @param p The particle to apply boundaries to / compute ghost particles for.
      * @return Vector of ghost particles.
      */
-    [[nodiscard]] std::vector<Particle> computeGhostParticles(const Particle& p) const;
+    [[nodiscard]] std::vector<Particle> applyBoundary(Particle& p) const;
 
     Domain& operator=(const Domain& other) = delete;
     Domain& operator=(Domain&& other) noexcept;

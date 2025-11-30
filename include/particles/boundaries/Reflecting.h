@@ -11,6 +11,7 @@ namespace mol_sim {
 
 class Reflecting : public Boundary {
     R3 domain_size;
+    bool ghost_on_boundary = false;
     std::optional<double> boundary_epsilon;
     std::optional<double> boundary_sigma;
 
@@ -38,16 +39,16 @@ class Reflecting : public Boundary {
      *
      * @param location The boundary location (LEFT, RIGHT, etc.).
      * @param domain_size The dimensions of the entire domain (x, y, z).
+     * @param ghost_on_boundary States that the ghost particles should be spawned right on the boundary if true 
+     * instead of having them mirror.
      * @param sigma Optional sigma for ghost particle interactions.
      * @param epsilon Optional epsilon for ghost particle interactions.
      */
-    Reflecting(BoundaryLocation location, R3 domain_size, std::optional<double> sigma = std::nullopt,
+    Reflecting(BoundaryLocation location, R3 domain_size, bool ghost_on_boundary, std::optional<double> sigma = std::nullopt,
                std::optional<double> epsilon = std::nullopt);
     ~Reflecting() override = default;
 
-    void applyBoundary(Particle& p) override;
-    [[nodiscard]] std::optional<Particle> computeGhostParticle(const Particle& p) const override;
-
+    [[nodiscard]] std::optional<Particle> applyBoundary(Particle& p) override;
     [[nodiscard]] std::optional<double> getBoundarySigma() const { return boundary_sigma; }
     [[nodiscard]] std::optional<double> getBoundaryEpsilon() const { return boundary_epsilon; }
     [[nodiscard]] R3 getDomainSize() const { return domain_size; }

@@ -28,7 +28,7 @@ enum class BoundaryLocation : std::uint8_t { UPPER, LOWER, FRONT, BACK, LEFT, RI
  * OUTFLOW: Outflow boundary condition: delete particles in halo cells
  * REFLECTING: Reflecting boundary condition: add ghost particles if particle gets too close to boundary
  */
-enum class BoundaryType : std::uint8_t { OUTFLOW, REFLECTING };
+enum class BoundaryType : std::uint8_t { OUTFLOW, REFLECTING, VELOCITYREFLECT };
 
 class Boundary {
    protected:
@@ -41,16 +41,11 @@ class Boundary {
 
     /**
      * @brief Applies the boundary condition to a particle (e.g., velocity reflection).
-     * @param p The particle to apply the boundary to.
-     */
-    virtual void applyBoundary(Particle& p) = 0;
-
-    /**
-     * @brief Computes a ghost particle if this boundary requires one for the given particle.
+     * Computes a ghost particle if this boundary requires one for the given particle.
      * @param p The particle to check.
      * @return The ghost particle if needed, nullopt otherwise.
      */
-    [[nodiscard]] virtual std::optional<Particle> computeGhostParticle(const Particle& p) const = 0;
+    [[nodiscard]] virtual std::optional<Particle> applyBoundary(Particle& p) = 0;
     [[nodiscard]] BoundaryType& getType() { return type; }
     [[nodiscard]] BoundaryLocation& getLocation() { return location; }
     [[nodiscard]] const BoundaryType& getType() const { return type; }

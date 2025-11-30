@@ -48,19 +48,11 @@ const Boundary* Domain::getBoundary(BoundaryLocation location) const {
     return boundaries[locationToIndex(location)].get();
 }
 
-void Domain::applyBoundary(Particle& p) {
-    for (auto& boundary : boundaries) {
-        if (boundary) {
-            boundary->applyBoundary(p);
-        }
-    }
-}
-
-std::vector<Particle> Domain::computeGhostParticles(const Particle& p) const {
+std::vector<Particle> Domain::applyBoundary(Particle& p) const {
     std::vector<Particle> ghosts;
     for (const auto& boundary : boundaries) {
         if (boundary) {
-            if (auto ghost = boundary->computeGhostParticle(p)) {
+            if (auto ghost = boundary->applyBoundary(p)) {
                 ghosts.push_back(std::move(ghost.value()));
             }
         }

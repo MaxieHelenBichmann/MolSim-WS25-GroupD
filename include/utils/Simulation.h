@@ -106,12 +106,12 @@ class Simulation {
      */
     void applyReflectingBoundaries() {
         std::vector<Particle> ghosts;
-        // TODO: OPtimze using boundary iterator
+        // TODO: Optimze using boundary iterator
         auto it = particles.boundaryBegin();
         const auto end = particles.boundaryEnd();
         for (; it != end; ++it) {
             if (it->getType() != -1) {  // Don't create ghosts for ghost particles
-                auto new_ghosts = domain.computeGhostParticles(*it);
+                auto new_ghosts = domain.applyBoundary(*it);
                 for (auto& ghost : new_ghosts) {
                     ghosts.push_back(std::move(ghost));
                 }

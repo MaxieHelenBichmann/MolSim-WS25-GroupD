@@ -10,9 +10,7 @@ class Outflow : public Boundary {
     explicit Outflow(BoundaryLocation location) : Boundary(location, BoundaryType::OUTFLOW) {}
     ~Outflow() override = default;
 
-    void applyBoundary(Particle& p) override { (void)p; }
-
-    [[nodiscard]] std::optional<Particle> computeGhostParticle(const Particle& p) const override {
+    [[nodiscard]] std::optional<Particle> applyBoundary(Particle& p) override {
         (void)p;
         return std::nullopt;
     }
