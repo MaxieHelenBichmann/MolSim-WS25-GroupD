@@ -88,6 +88,41 @@ class Simulation {
      */
     double cutoff_radius;
 
+    /**
+     * @brief Returns whether a given particle should be ignored in the force calculation.
+     * 
+     * @param p The particle to be examined.
+     * @return true If the particle should be ignored, i.e. it is OOB and NOT a ghost.
+     * @return false If the particle should NOT be ignored.
+     */
+    bool ignoreParticle(Particle& p) {
+        R3 v = p.getX();
+        R3 max = domain.getDimension();
+        bool particle_is_OOB = 
+            v[0] >= max[0] || v[1] >= max[1] || v[2] >= max[2] ||
+            v[0] <= 0 || v[1] <= 0 || v[2] <= 0;
+        bool particle_not_ghost = p.getType() != -1;
+        return particle_is_OOB && particle_not_ghost;
+    }
+
+    /**
+     * @brief Applies boundary conditions and computes ghost particles for each particle
+     * the iterator 'ít' iterates over.   
+     * 
+     * @param it The iterator that iterates over a collection of particles. 
+     * @param ghosts The vector where potentially computed ghost particles will be stored.
+     */
+    void applyBoundary(auto it, const auto end, std::vector<Particle>& ghosts) {
+        for (; it != end; ++it) {
+            if (it->getType() != -1) {  // Don't create ghosts for ghost particles
+                auto new_ghosts = domain.applyBoundary(*it);
+                for (auto& ghost : new_ghosts) {
+                    ghosts.push_back(std::move(ghost));
+                }
+            }
+        }
+    }
+
    public:
     /**
      * @brief Construct a new Simulation object and prepare for run() call.
@@ -115,16 +150,8 @@ class Simulation {
     void applyReflectingBoundaries() {
         std::vector<Particle> ghosts;
         // TODO: Optimze using boundary iterator
-        auto it = particles.boundaryBegin();
-        const auto end = particles.boundaryEnd();
-        for (; it != end; ++it) {
-            if (it->getType() != -1) {  // Don't create ghosts for ghost particles
-                auto new_ghosts = domain.applyBoundary(*it);
-                for (auto& ghost : new_ghosts) {
-                    ghosts.push_back(std::move(ghost));
-                }
-            }
-        }
+        applyBoundary(particles.boundaryBegin(), particles.boundaryEnd(), ghosts);
+        applyBoundary(particles.haloBegin(), particles.haloEnd(), ghosts);
         for (auto& ghost : ghosts) {
             particles.addParticle(std::move(ghost));
         }
@@ -162,9 +189,15 @@ class Simulation {
         size_t idx = 1;
         for (auto it = particles.begin(); it != particles.end(); ++it, idx++) {
             Particle& p1 = *it;
+            if (ignoreParticle(p1)) {
+                continue;
+            } 
             for (auto it_prox = particles.proximityBegin(p1.getX(), cutoff_radius, idx);
                  it_prox != particles.proximityEnd(p1.getX(), cutoff_radius); ++it_prox) {
                 Particle& p2 = *it_prox;
+                if (ignoreParticle(p)) {
+                    continue;
+                }
                 Vector<double, 3> force = force_source->applyForce(p1, p2);
                 // Apply force directly (Newton's 3rd law: equal and opposite)
                 p1.getF() = p1.getF() + force;
@@ -203,9 +236,6 @@ class Simulation {
         while (current_time < end_time) {
             // 1. Calculate new positions
             calculateX();
-
-            // 2. Remove OOB particles
-            removeParticles();
 
             // 3. Apply reflecting boundaries (create ghost particles)
             applyReflectingBoundaries();
