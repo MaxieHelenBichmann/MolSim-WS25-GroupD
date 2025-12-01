@@ -285,9 +285,7 @@ void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
                         break;
                     }
                     case BoundaryType::VELOCITYREFLECT: {
-                        bool angular_reflect =
-                            curr_node["angular_reflect"] ? curr_node["angular_reflect"].as<bool>() : false;
-                        boundary = std::make_unique<VelocityReflect>(location, dimension, angular_reflect);
+                        boundary = std::make_unique<VelocityReflect>(location, dimension);
                         break;
                     }
                     case BoundaryType::OUTFLOW:

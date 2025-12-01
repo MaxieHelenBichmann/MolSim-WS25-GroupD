@@ -98,11 +98,11 @@ class Simulation {
     bool ignoreParticle(Particle& p) {
         R3 v = p.getX();
         R3 max = domain.getDimension();
-        bool particle_is_OOB = 
+        bool particle_is_oob = 
             v[0] >= max[0] || v[1] >= max[1] || v[2] >= max[2] ||
             v[0] <= 0 || v[1] <= 0 || v[2] <= 0;
         bool particle_not_ghost = p.getType() != -1;
-        return particle_is_OOB && particle_not_ghost;
+        return particle_is_oob && particle_not_ghost;
     }
 
     /**
@@ -195,7 +195,7 @@ class Simulation {
             for (auto it_prox = particles.proximityBegin(p1.getX(), cutoff_radius, idx);
                  it_prox != particles.proximityEnd(p1.getX(), cutoff_radius); ++it_prox) {
                 Particle& p2 = *it_prox;
-                if (ignoreParticle(p)) {
+                if (ignoreParticle(p2)) {
                     continue;
                 }
                 Vector<double, 3> force = force_source->applyForce(p1, p2);
