@@ -25,7 +25,12 @@ void bmSimulationSingleLC(benchmark::State& state) {
     settings.epsilon = 5.0;
     settings.sigma = 1.0;
     settings.cutoff = 3.0;
-    settings.domain = {.dimension = {180.0, 90., 1.}};
+    // TODO: so correct?
+    std::array<std::unique_ptr<Boundary>, 6> boundaries{
+        std::make_unique<Outflow>(BoundaryLocation::LEFT),  std::make_unique<Outflow>(BoundaryLocation::RIGHT),
+        std::make_unique<Outflow>(BoundaryLocation::FRONT), std::make_unique<Outflow>(BoundaryLocation::BACK),
+        std::make_unique<Outflow>(BoundaryLocation::UPPER), std::make_unique<Outflow>(BoundaryLocation::LOWER)};
+    settings.domain = Domain({180.0, 90., 1.}, std::move(boundaries));
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
     generator.generateParticles(particles);
@@ -48,7 +53,12 @@ void bmSimulationSingleDirSum(benchmark::State& state) {
     settings.end_time = 0.0005;
     settings.epsilon = 5.0;
     settings.sigma = 1.0;
-    settings.domain = {.dimension = {180.0, 90., 1.}};
+    // TODO: so correct?
+    std::array<std::unique_ptr<Boundary>, 6> boundaries{
+        std::make_unique<Outflow>(BoundaryLocation::LEFT),  std::make_unique<Outflow>(BoundaryLocation::RIGHT),
+        std::make_unique<Outflow>(BoundaryLocation::FRONT), std::make_unique<Outflow>(BoundaryLocation::BACK),
+        std::make_unique<Outflow>(BoundaryLocation::UPPER), std::make_unique<Outflow>(BoundaryLocation::LOWER)};
+    settings.domain = Domain({180.0, 90., 1.}, std::move(boundaries));
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
     generator.generateParticles(particles);

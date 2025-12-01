@@ -90,7 +90,7 @@ class Simulation {
 
     /**
      * @brief Returns whether a given particle should be ignored in the force calculation.
-     * 
+     *
      * @param p The particle to be examined.
      * @return true If the particle should be ignored, i.e. it is OOB and NOT a ghost.
      * @return false If the particle should NOT be ignored.
@@ -98,21 +98,20 @@ class Simulation {
     bool ignoreParticle(Particle& p) {
         R3 v = p.getX();
         R3 max = domain.getDimension();
-        bool particle_is_oob = 
-            v[0] >= max[0] || v[1] >= max[1] || v[2] >= max[2] ||
-            v[0] <= 0 || v[1] <= 0 || v[2] <= 0;
+        bool particle_is_oob =
+            v[0] >= max[0] || v[1] >= max[1] || v[2] >= max[2] || v[0] <= 0 || v[1] <= 0 || v[2] <= 0;
         bool particle_not_ghost = p.getType() != -1;
         return particle_is_oob && particle_not_ghost;
     }
 
     /**
      * @brief Applies boundary conditions and computes ghost particles for each particle
-     * the iterator 'ít' iterates over.   
-     * 
-     * @param it The iterator that iterates over a collection of particles. 
+     * the iterator 'ít' iterates over.
+     *
+     * @param it The iterator that iterates over a collection of particles.
      * @param ghosts The vector where potentially computed ghost particles will be stored.
      */
-    void applyBoundary(auto it, const auto end, std::vector<Particle>& ghosts) {
+    void applyBoundary(auto it, const auto end, std::vector<Particle>& ghosts) {  // NOLINT
         for (; it != end; ++it) {
             if (it->getType() != -1) {  // Don't create ghosts for ghost particles
                 auto new_ghosts = domain.applyBoundary(*it);
@@ -191,7 +190,7 @@ class Simulation {
             Particle& p1 = *it;
             if (ignoreParticle(p1)) {
                 continue;
-            } 
+            }
             for (auto it_prox = particles.proximityBegin(p1.getX(), cutoff_radius, idx);
                  it_prox != particles.proximityEnd(p1.getX(), cutoff_radius); ++it_prox) {
                 Particle& p2 = *it_prox;
