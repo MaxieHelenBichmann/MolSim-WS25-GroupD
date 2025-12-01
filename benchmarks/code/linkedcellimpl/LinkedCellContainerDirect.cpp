@@ -6,6 +6,9 @@
 #include <cmath>
 #include <limits>
 #include <unordered_set>
+#include <vector>
+
+#include "particles/Particle.h"
 
 using namespace mol_sim;
 
@@ -385,32 +388,76 @@ void LinkedCellContainerDirect::addParticle(R3 x_arg, R3 v_arg, double m_arg, do
     cells[findCellIndex(x_arg)].addParticle(Particle(x_arg, v_arg, m_arg, epsilon_arg, sigma_arg, type));
 }
 
-void LinkedCellContainerDirect::eraseParticle(Particle* p) {
+LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::eraseParticle(
+    LinkedCellContainerDirect::proximity_iterator p) {
     size_t cell_idx = findCellIndex(p->getX());
 
     if (cell_idx < cells.size()) {
         auto it = std::find_if(cells[cell_idx].particles().begin(), cells[cell_idx].particles().end(),
-                               [p](const Particle& particle) { return &particle == p; });  // NOLINT
+                               [p](const Particle& particle) { return &particle == (&(*p)); });  // NOLINT
+
         if (it != cells[cell_idx].particles().end()) {
-            cells[cell_idx].removeParticle(it - cells[cell_idx].particles().begin());
+            std::vector<CellDirect*> rel_cells = p.getCells();
+            R3 center = p.getCenter();
+            double radius = p.getRadius();
+
+            auto new_it = cells[cell_idx].particles().erase(it);
+
+            if (new_it == cells[cell_idx].particles().end() && rel_cells.size() > 1) {
+                rel_cells.erase(rel_cells.begin());
+                new_it = rel_cells.front()->particles().begin();
+            }
+            return proximity_iterator{center, radius, new_it, rel_cells};
         }
     }
+    return ++p;
 }
 
-void LinkedCellContainerDirect::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x) {
+LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::updateParticlePosition(
+    LinkedCellContainerDirect::proximity_iterator p, R3 new_x) {
     size_t old_cell_idx = findCellIndex(p->getX());
     if (!cells[old_cell_idx].fits(new_x)) {
         size_t new_cell_idx = findCellIndex(new_x);
         size_t old_idx = std::find(cells[old_cell_idx].particles().begin(), cells[old_cell_idx].particles().end(), *p) -
                          cells[old_cell_idx].particles().begin();
         if (new_cell_idx == cells.size()) {
-            cells[old_cell_idx].removeParticle(old_idx);
-            return;
+            std::vector<CellDirect*> rel_cells = p.getCells();
+            R3 center = p.getCenter();
+            double radius = p.getRadius();
+            std::vector<Particle> skipped = p.getSkipped();
+
+            auto new_it =
+                cells[old_cell_idx].particles().erase(cells[old_cell_idx].particles().begin() + old_idx);  // NOLINT
+
+            if (new_it == cells[old_cell_idx].particles().end() && rel_cells.size() > 1) {
+                rel_cells.erase(rel_cells.begin());
+                new_it = rel_cells.front()->particles().begin();
+            }
+            return proximity_iterator{center, radius, new_it, rel_cells, skipped};
         }
-        cells[new_cell_idx].addParticle(cells[old_cell_idx].removeParticle(old_idx));
+        Particle particle_to_move = cells[old_cell_idx].particles()[old_idx];
+        cells[new_cell_idx].addParticle(particle_to_move);
+
+        std::vector<CellDirect*> rel_cells = p.getCells();
+        R3 center = p.getCenter();
+        double radius = p.getRadius();
+        std::vector<Particle> skipped = p.getSkipped();
+
+        auto new_it =
+            cells[old_cell_idx].particles().erase(cells[old_cell_idx].particles().begin() + old_idx);  // NOLINT
+
+        if (new_it == cells[old_cell_idx].particles().end() && rel_cells.size() > 1) {
+            rel_cells.erase(rel_cells.begin());
+            new_it = rel_cells.front()->particles().begin();
+        }
+        proximity_iterator new_p = proximity_iterator{center, radius, new_it, rel_cells, skipped};
+        new_p.skipParticle(particle_to_move);
+
+        return new_p;
     }
 
     p->getX() = new_x;
+    return ++p;
 }
 
 // normal iterators

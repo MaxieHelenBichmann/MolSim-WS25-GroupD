@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "particles/Particle.h"
+#include "particles/ParticleContainer.h"
 #include "particles/container/LinkedCellContainer.h"
 #include "particles/container/cells/Cell.h"
 
@@ -95,8 +96,8 @@ class LinkedCellContainerExplicit {
     void addParticle(const Particle& value);
     void addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg);
     void addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type);
-    void eraseParticle(Particle* p);
-    void updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x);
+    std::vector<Particle>::iterator eraseParticle(std::vector<Particle>::iterator p);
+    std::vector<Particle>::iterator updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x);
 
     // iterators
 
@@ -268,39 +269,43 @@ class LinkedCellContainerExplicit {
     // boundary and halo iterators
 
     [[nodiscard]] proximity_iterator haloBegin(const std::set<BoundaryLocation>& boundary_types = {
-                                                   BoundaryLocation::UPPER, BoundaryLocation::LOWER, BoundaryLocation::FRONT,
-                                                   BoundaryLocation::BACK, BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+                                                   BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                   BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                   BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
     [[nodiscard]] const_proximity_iterator haloBegin(const std::set<BoundaryLocation>& boundary_types = {
-                                                         BoundaryLocation::UPPER, BoundaryLocation::LOWER, BoundaryLocation::FRONT,
-                                                         BoundaryLocation::BACK, BoundaryLocation::LEFT,
-                                                         BoundaryLocation::RIGHT}) const;
+                                                         BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                         BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                         BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
     [[nodiscard]] proximity_iterator haloEnd(const std::set<BoundaryLocation>& boundary_types = {
-                                                 BoundaryLocation::UPPER, BoundaryLocation::LOWER, BoundaryLocation::FRONT,
-                                                 BoundaryLocation::BACK, BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+                                                 BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                 BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                 BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
     [[nodiscard]] const_proximity_iterator haloEnd(const std::set<BoundaryLocation>& boundary_types = {
-                                                       BoundaryLocation::UPPER, BoundaryLocation::LOWER, BoundaryLocation::FRONT,
-                                                       BoundaryLocation::BACK, BoundaryLocation::LEFT,
-                                                       BoundaryLocation::RIGHT}) const;
+                                                       BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                       BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                       BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
 
     [[nodiscard]] proximity_iterator boundaryBegin(const std::set<BoundaryLocation>& boundary_types = {
-                                                       BoundaryLocation::UPPER, BoundaryLocation::LOWER, BoundaryLocation::FRONT,
-                                                       BoundaryLocation::BACK, BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+                                                       BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                       BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                       BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
     [[nodiscard]] const_proximity_iterator boundaryBegin(const std::set<BoundaryLocation>& boundary_types = {
                                                              BoundaryLocation::UPPER, BoundaryLocation::LOWER,
                                                              BoundaryLocation::FRONT, BoundaryLocation::BACK,
                                                              BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
     [[nodiscard]] proximity_iterator boundaryEnd(const std::set<BoundaryLocation>& boundary_types = {
-                                                     BoundaryLocation::UPPER, BoundaryLocation::LOWER, BoundaryLocation::FRONT,
-                                                     BoundaryLocation::BACK, BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+                                                     BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                     BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                     BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
     [[nodiscard]] const_proximity_iterator boundaryEnd(const std::set<BoundaryLocation>& boundary_types = {
                                                            BoundaryLocation::UPPER, BoundaryLocation::LOWER,
-                                                           BoundaryLocation::FRONT, BoundaryLocation::BACK, BoundaryLocation::LEFT,
-                                                           BoundaryLocation::RIGHT}) const;
+                                                           BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                           BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
 
     [[nodiscard]] bool isOnBoundary(Particle& p);
     [[nodiscard]] R3 getDomainSize();
 };
-// static_assert(ParticleContainer<LinkedCellContainerExplicit>); // TODO: Update to new concept
+static_assert(ParticleContainer<LinkedCellContainerExplicit>);
 
 }  // namespace mol_sim
 

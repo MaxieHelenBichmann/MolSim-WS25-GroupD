@@ -1,12 +1,13 @@
+#include "particles/boundaries/Outflow.h"
+
 #include <gtest/gtest.h>
 
+#include <limits>
 #include <memory>
 #include <numbers>
-#include <limits>
 
 #include "io/outputWriter/XYZWriter.h"
 #include "particles/Particle.h"
-#include "particles/boundaries/Outflow.h"
 #include "particles/container/domain/Domain.h"
 #include "physics/LennardJonesForce.h"
 #include "testingUtils.h"
@@ -44,7 +45,6 @@ class OutflowTest : public testing::Test {
         settings.delta_t = delta_t;
         settings.end_time = end_time;
         settings.cutoff = std::numeric_limits<double>::infinity();
-        settings.setDefaults();
     }
 };
 
@@ -54,7 +54,7 @@ class OutflowTest : public testing::Test {
 TEST_F(OutflowTest, X_outflow_linked) {
     p.getV() = {20.0, 0.0, 0.0};
     settings.container_type = "LINKED";
-    LinkedCellContainer particles(dimension, settings.cutoff.value());
+    LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
     Simulation<LinkedCellContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
                                                std::make_unique<XYZWriter>());
@@ -80,7 +80,7 @@ TEST_F(OutflowTest, X_outflow_simple) {
 TEST_F(OutflowTest, Y_outflow_linked) {
     p.getV() = {0.0, 20.0, 0.0};
     settings.container_type = "LINKED";
-    LinkedCellContainer particles(dimension, settings.cutoff.value());
+    LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
     Simulation<LinkedCellContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
                                                std::make_unique<XYZWriter>());
@@ -106,7 +106,7 @@ TEST_F(OutflowTest, Y_outflow_simple) {
 TEST_F(OutflowTest, Z_outflow_linked) {
     p.getV() = {0.0, 0.0, 20.0};
     settings.container_type = "LINKED";
-    LinkedCellContainer particles(dimension, settings.cutoff.value());
+    LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
     Simulation<LinkedCellContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
                                                std::make_unique<XYZWriter>());
@@ -133,7 +133,7 @@ TEST_F(OutflowTest, Z_outflow_simple) {
 TEST_F(OutflowTest, outflow_linked_no_erase) {
     p.getV() = {9.0, 0.0, 0.0};
     settings.container_type = "LINKED";
-    LinkedCellContainer particles(dimension, settings.cutoff.value());
+    LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
     Simulation<LinkedCellContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
                                                std::make_unique<XYZWriter>());

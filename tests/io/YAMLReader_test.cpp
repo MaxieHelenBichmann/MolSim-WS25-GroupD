@@ -216,26 +216,26 @@ TEST_F(YAMLReaderTest, ReadFullConfigFile) {
     std::string output = log_stream->str();
     EXPECT_EQ(particles.size(), 1);
 
-    ASSERT_TRUE(settings.delta_t.has_value());
-    EXPECT_EQ(settings.delta_t.value(), 0.005);
+    
+    EXPECT_EQ(settings.delta_t, 0.005);
 
-    ASSERT_TRUE(settings.end_time.has_value());
-    EXPECT_DOUBLE_EQ(settings.end_time.value(), 500.0);
+    
+    EXPECT_DOUBLE_EQ(settings.end_time, 500.0);
 
-    ASSERT_TRUE(settings.start_time.has_value());
-    EXPECT_DOUBLE_EQ(settings.start_time.value(), 0.0);
+    
+    EXPECT_DOUBLE_EQ(settings.start_time, 0.0);
 
-    ASSERT_TRUE(settings.base_name.has_value());
-    EXPECT_EQ(settings.base_name.value(), "MD");
+    
+    EXPECT_EQ(settings.base_name, "MD");
 
-    ASSERT_TRUE(settings.force.has_value());
-    EXPECT_EQ(settings.force.value(), LENNARDJONES);
+    
+    EXPECT_EQ(settings.force, LENNARDJONES);
 
-    ASSERT_TRUE(settings.frequency.has_value());
-    EXPECT_EQ(settings.frequency.value(), 10);
+    
+    EXPECT_EQ(settings.frequency, 10);
 
-    ASSERT_TRUE(settings.cutoff.has_value());
-    EXPECT_DOUBLE_EQ(settings.cutoff.value(), 1.);
+    
+    EXPECT_DOUBLE_EQ(settings.cutoff, 1.);
 
     EXPECT_EQ(output.find("Error"), std::string::npos);
 }
@@ -248,10 +248,10 @@ TEST_F(YAMLReaderTest, ReadSettingsOnly) {
     reader.readSettings(settings, test_data_dir + "/full_config.yaml");
 
     // Settings should be populated
-    ASSERT_TRUE(settings.delta_t.has_value());
-    EXPECT_DOUBLE_EQ(settings.delta_t.value(), 0.005);
-    ASSERT_TRUE(settings.end_time.has_value());
-    EXPECT_DOUBLE_EQ(settings.end_time.value(), 500.0);
+    
+    EXPECT_DOUBLE_EQ(settings.delta_t, 0.005);
+    
+    EXPECT_DOUBLE_EQ(settings.end_time, 500.0);
 
     // Particles should remain empty (we only called readSettings)
     EXPECT_EQ(particles.size(), 0);
@@ -267,9 +267,9 @@ TEST_F(YAMLReaderTest, ReadParticlesOnly) {
     // Particles should be populated
     EXPECT_EQ(particles.size(), 1);
 
-    // Settings should remain unset (we only called readParticles)
-    EXPECT_FALSE(settings.delta_t.has_value());
-    EXPECT_FALSE(settings.end_time.has_value());
+    // Settings should remain at defaults (we only called readParticles)
+    EXPECT_DOUBLE_EQ(settings.delta_t, SettingsParam::DELTA_T_DEFAULT);
+    EXPECT_DOUBLE_EQ(settings.end_time, SettingsParam::END_TIME_DEFAULT);
 }
 
 /**
@@ -280,7 +280,7 @@ TEST_F(YAMLReaderTest, TwoStepReading) {
 
     // Step 1: Read settings
     reader.readSettings(settings, test_data_dir + "/full_config.yaml");
-    ASSERT_TRUE(settings.delta_t.has_value());
+    
     EXPECT_EQ(particles.size(), 0);
 
     // Step 2: Read particles
@@ -288,7 +288,7 @@ TEST_F(YAMLReaderTest, TwoStepReading) {
     EXPECT_EQ(particles.size(), 1);
 
     // Both should now be populated
-    EXPECT_DOUBLE_EQ(settings.delta_t.value(), 0.005);
+    EXPECT_DOUBLE_EQ(settings.delta_t, 0.005);
     EXPECT_EQ(particles.size(), 1);
 }
 
@@ -299,10 +299,10 @@ TEST_F(YAMLReaderTest, ReadSettingsFromOnlySettingsFile) {
     YAMLReader reader;
     reader.readSettings(settings, test_data_dir + "/only_settings.yaml");
 
-    ASSERT_TRUE(settings.delta_t.has_value());
-    EXPECT_DOUBLE_EQ(settings.delta_t.value(), 0.005);
-    ASSERT_TRUE(settings.end_time.has_value());
-    EXPECT_DOUBLE_EQ(settings.end_time.value(), 500.0);
+    
+    EXPECT_DOUBLE_EQ(settings.delta_t, 0.005);
+    
+    EXPECT_DOUBLE_EQ(settings.end_time, 500.0);
 }
 
 /**
@@ -345,12 +345,12 @@ TEST_F(YAMLReaderTest, ReadDomainAndBoundaries) {
     std::string output = log_stream->str();
 
     // Verify domain was read
-    ASSERT_TRUE(settings.domain.has_value());
+    
     R3 expected_domain = {180.0, 90.0, 50.0};
-    EXPECT_R3_EQ(settings.domain->getDimension(), expected_domain);
+    EXPECT_R3_EQ(settings.domain.getDimension(), expected_domain);
 
     // Verify LEFT boundary (REFLECTING with sigma=1.2, epsilon=5.0)
-    const Boundary* left = settings.domain->getBoundary(BoundaryLocation::LEFT);
+    const Boundary* left = settings.domain.getBoundary(BoundaryLocation::LEFT);
     ASSERT_NE(left, nullptr);
     EXPECT_EQ(left->getType(), BoundaryType::REFLECTING);
     const auto* left_reflecting = dynamic_cast<const Reflecting*>(left);
@@ -361,22 +361,22 @@ TEST_F(YAMLReaderTest, ReadDomainAndBoundaries) {
     EXPECT_DOUBLE_EQ(left_reflecting->getBoundaryEpsilon().value(), 5.0);
 
     // Verify RIGHT boundary (REFLECTING without custom sigma/epsilon)
-    const Boundary* right = settings.domain->getBoundary(BoundaryLocation::RIGHT);
+    const Boundary* right = settings.domain.getBoundary(BoundaryLocation::RIGHT);
     ASSERT_NE(right, nullptr);
     EXPECT_EQ(right->getType(), BoundaryType::REFLECTING);
 
     // Verify FRONT boundary (OUTFLOW)
-    const Boundary* front = settings.domain->getBoundary(BoundaryLocation::FRONT);
+    const Boundary* front = settings.domain.getBoundary(BoundaryLocation::FRONT);
     ASSERT_NE(front, nullptr);
     EXPECT_EQ(front->getType(), BoundaryType::OUTFLOW);
 
     // Verify BACK boundary (OUTFLOW)
-    const Boundary* back = settings.domain->getBoundary(BoundaryLocation::BACK);
+    const Boundary* back = settings.domain.getBoundary(BoundaryLocation::BACK);
     ASSERT_NE(back, nullptr);
     EXPECT_EQ(back->getType(), BoundaryType::OUTFLOW);
 
     // Verify UPPER boundary (REFLECTING with sigma=2.0, epsilon=10.0)
-    const Boundary* upper = settings.domain->getBoundary(BoundaryLocation::UPPER);
+    const Boundary* upper = settings.domain.getBoundary(BoundaryLocation::UPPER);
     ASSERT_NE(upper, nullptr);
     EXPECT_EQ(upper->getType(), BoundaryType::REFLECTING);
     const auto* upper_reflecting = dynamic_cast<const Reflecting*>(upper);
@@ -387,7 +387,7 @@ TEST_F(YAMLReaderTest, ReadDomainAndBoundaries) {
     EXPECT_DOUBLE_EQ(upper_reflecting->getBoundaryEpsilon().value(), 10.0);
 
     // Verify LOWER boundary (OUTFLOW)
-    const Boundary* lower = settings.domain->getBoundary(BoundaryLocation::LOWER);
+    const Boundary* lower = settings.domain.getBoundary(BoundaryLocation::LOWER);
     ASSERT_NE(lower, nullptr);
     EXPECT_EQ(lower->getType(), BoundaryType::OUTFLOW);
 

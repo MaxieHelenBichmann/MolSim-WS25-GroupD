@@ -362,34 +362,39 @@ void LinkedCellContainerExplicit::addParticle(R3 x_arg, R3 v_arg, double m_arg, 
     cells[findCellIndex(x_arg)].addParticle(data.size() - 1);
 }
 
-void LinkedCellContainerExplicit::eraseParticle(Particle* p) {
+std::vector<Particle>::iterator LinkedCellContainerExplicit::eraseParticle(std::vector<Particle>::iterator p) {
     size_t cell_idx = findCellIndex(p->getX());
 
     if (cell_idx < cells.size()) {
-        for (auto it = cells[cell_idx].particles().begin(); it != cells[cell_idx].particles().end(); ++it) {  // NOLINT
-            if (&(data[*it]) == p) {
-                size_t idx = *it;
-                cells[cell_idx].removeParticle(idx);
-                data.erase(data.begin() + idx);  // NOLINT
-                decreaseCellIndices(idx);
-            }
+        size_t idx = &(*p) - data.data();
+        cells[cell_idx].removeParticle(idx);
+        std::vector<Particle>::iterator it = data.erase(p);  // NOLINT
+        if (it != data.end()) {
+            decreaseCellIndices(idx);
         }
+        return it;
     }
+    return data.end();
 }
 
-void LinkedCellContainerExplicit::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x) {
+std::vector<Particle>::iterator LinkedCellContainerExplicit::updateParticlePosition(std::vector<Particle>::iterator p,
+                                                                                    R3 new_x) {
     size_t old_cell_idx = findCellIndex(p->getX());
-    if (!cells[old_cell_idx].fits(new_x)) {
-        size_t new_cell_idx = findCellIndex(new_x);
-        if (new_cell_idx == cells.size()) {
-            eraseParticle(&(*p));
-            return;
-        }
+
+    if (!fitsContainer(new_x)) {
+        // Particle moved completely outside container
+        return eraseParticle(p);
+    }
+
+    size_t new_cell_idx = findCellIndex(new_x);
+
+    if (new_cell_idx != old_cell_idx) {
         cells[old_cell_idx].removeParticle(static_cast<size_t>(p - data.begin()));
         cells[new_cell_idx].addParticle(static_cast<size_t>(p - data.begin()));
     }
 
     p->getX() = new_x;
+    return ++p;
 }
 
 // normal iterators

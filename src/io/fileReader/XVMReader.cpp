@@ -15,6 +15,7 @@
 #include <sstream>
 
 #include "exceptions/XVMReaderException.h"
+#include "particles/container/domain/Domain.h"
 #include "utils/Settings.h"
 
 using namespace mol_sim;
@@ -23,10 +24,7 @@ XVMReader::XVMReader() = default;
 
 XVMReader::~XVMReader() = default;
 
-void XVMReader::readSettings(SettingsParam& settings, [[maybe_unused]] const std::string& filename) {
-    // XVM files have no settings, just use defaults
-    settings.setDefaults();
-}
+void XVMReader::readSettings([[maybe_unused]] SettingsParam& settings, [[maybe_unused]] const std::string& filename) {}
 
 void XVMReader::readParticles(ContainerRef particles, const std::string& filename) {
     std::array<double, 3> x;

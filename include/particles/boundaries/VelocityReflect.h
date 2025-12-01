@@ -8,10 +8,9 @@
 namespace mol_sim {
 class VelocityReflect : public Boundary {
     R3 domain_size;
-    bool angular_reflect = false;
-
+    
     public:
-    VelocityReflect(BoundaryLocation location, R3 domain_size, bool angular_reflect);
+    VelocityReflect(BoundaryLocation location, R3 domain_size);
     ~VelocityReflect() override = default;
 
     [[nodiscard]] std::optional<Particle> applyBoundary(Particle& p) override; 

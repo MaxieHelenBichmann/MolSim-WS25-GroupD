@@ -48,7 +48,6 @@ class SimulationTest : public testing::Test {
    public:
     void SetUp() override {
         settings.cutoff = std::numeric_limits<double>::infinity();
-        settings.setDefaults();
         particles.clear();
     }
 };
