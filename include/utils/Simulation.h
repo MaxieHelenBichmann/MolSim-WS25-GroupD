@@ -98,16 +98,16 @@ class Simulation {
      */
     Simulation(containerType& particles, std::unique_ptr<ForceSource> force_source, SettingsParam& settings,
                std::unique_ptr<OutputWriter> writer)
-        : domain(std::move(settings.domain.value())),
+        : domain(std::move(settings.domain)),
           particles(particles),
           force_source(std::move(force_source)),
           writer(std::move(writer)),
-          delta_t(settings.delta_t.value()),
-          start_time(settings.start_time.value()),
-          end_time(settings.end_time.value()),
-          frequency(settings.frequency.value()),
-          base_name(settings.base_name.value()),
-          cutoff_radius(settings.cutoff.value()) {}
+          delta_t(settings.delta_t),
+          start_time(settings.start_time),
+          end_time(settings.end_time),
+          frequency(settings.frequency),
+          base_name(settings.base_name),
+          cutoff_radius(settings.cutoff) {}
 
     /**
      * @brief Applies boundary conditions by creating ghost particles for reflecting boundaries.

@@ -16,7 +16,7 @@ namespace mol_sim {
  * @brief Provides a wrapper for domain configuration
  */
 class Domain {
-    R3 dimension = {1., 1., 1.};
+    R3 dimension = {100., 100., 100.};
 
     /**
      * @brief Array of owned boundary conditions in order: LEFT, RIGHT, FRONT, BACK, UPPER, LOWER

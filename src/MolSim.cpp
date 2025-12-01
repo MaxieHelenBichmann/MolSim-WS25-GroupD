@@ -28,7 +28,7 @@ int main(int argc, char* argsv[]) {
     std::unique_ptr<FileReader> file_reader;
     std::string file_name;
     try {
-        file_name = cliParse(argc, argsv, settings);
+        file_name = cliParse(argc, argsv);
         std::filesystem::path path = file_name;
         if (path.extension() == ".txt") {
             file_reader = std::make_unique<XVMReader>();
@@ -39,7 +39,6 @@ int main(int argc, char* argsv[]) {
             exit(-1);
         }
         file_reader->readSettings(settings, file_name);
-        settings.setDefaults();
     } catch (const CLIException& e) {
         SPDLOG_ERROR("Settings parser failed with: {}", e.what());
         exit(-1);
@@ -53,7 +52,7 @@ int main(int argc, char* argsv[]) {
 #endif
 
     std::unique_ptr<ForceSource> force;
-    switch (settings.force.value()) {
+    switch (settings.force) {
         case GRAVITATIONAL: {
             force = std::make_unique<GravitationalForce>();
             break;
@@ -63,8 +62,8 @@ int main(int argc, char* argsv[]) {
             break;
         }
     }
-    if (settings.container_type.value() == "SIMPLE") {
-        SimpleContainer particle_container(settings.domain.value().getDimension(), settings.cutoff.value());
+    if (settings.container_type == "SIMPLE") {
+        SimpleContainer particle_container(settings.domain.getDimension(), settings.cutoff);
         try {
             file_reader->readParticles(particle_container, file_name);
         } catch (std::runtime_error& e) {
@@ -72,7 +71,7 @@ int main(int argc, char* argsv[]) {
             exit(-1);
         }
         SPDLOG_INFO("Simulation configured with {} particles, delta_t={} end_time={}", particle_container.size(),
-                    settings.delta_t.value(), settings.end_time.value());
+                    settings.delta_t, settings.end_time);
 
         try {
             Simulation<SimpleContainer> simulation(particle_container, std::move(force), settings, std::move(writer));
@@ -80,8 +79,8 @@ int main(int argc, char* argsv[]) {
         } catch (SimulationException& e) {
             exit(-1);
         };
-    } else if (settings.container_type.value() == "LINKED") {
-        LinkedCellContainer particle_container{settings.domain.value().getDimension(), settings.cutoff.value()};
+    } else if (settings.container_type == "LINKED") {
+        LinkedCellContainer particle_container{settings.domain.getDimension(), settings.cutoff};
         try {
             file_reader->readParticles(particle_container, file_name);
         } catch (std::runtime_error& e) {
@@ -89,7 +88,7 @@ int main(int argc, char* argsv[]) {
             exit(-1);
         }
         SPDLOG_INFO("Simulation configured with {} particles, delta_t={} end_time={}", particle_container.size(),
-                    settings.delta_t.value(), settings.end_time.value());
+                    settings.delta_t, settings.end_time);
         try {
             Simulation<LinkedCellContainer> simulation(particle_container, std::move(force), settings,
                                                        std::move(writer));

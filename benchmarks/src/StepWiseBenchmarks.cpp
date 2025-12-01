@@ -26,7 +26,6 @@ void bmSimulationSingleLC(benchmark::State& state) {
     settings.sigma = 1.0;
     settings.cutoff = 3.0;
     settings.domain = {.dimension = {180.0, 90., 1.}};
-    settings.setDefaults();
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
     generator.generateParticles(particles);
@@ -50,7 +49,6 @@ void bmSimulationSingleDirSum(benchmark::State& state) {
     settings.epsilon = 5.0;
     settings.sigma = 1.0;
     settings.domain = {.dimension = {180.0, 90., 1.}};
-    settings.setDefaults();
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
     generator.generateParticles(particles);

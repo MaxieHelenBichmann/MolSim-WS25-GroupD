@@ -43,19 +43,19 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
             throw YAMLReaderException("First block must be 'Settings' format");
         }
 
-        if (node["delta_t"] && !settings.delta_t.has_value()) {
+        if (node["delta_t"]) {
             settings.delta_t = node["delta_t"].as<double>();
         }
-        if (node["end_time"] && !settings.end_time.has_value()) {
+        if (node["end_time"]) {
             settings.end_time = node["end_time"].as<double>();
         }
-        if (node["start_time"] && !settings.start_time.has_value()) {
+        if (node["start_time"]) {
             settings.start_time = node["start_time"].as<double>();
         }
-        if (node["base_name"] && !settings.base_name.has_value()) {
+        if (node["base_name"]) {
             settings.base_name = node["base_name"].as<std::string>();
         }
-        if (node["force"] && !settings.force.has_value()) {
+        if (node["force"]) {
             auto force_str = node["force"].as<std::string>();
             if (force_str == "Lennard Jones") {
                 settings.force = LENNARDJONES;
@@ -65,13 +65,13 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
                 SPDLOG_WARN("Unknown Force Type, defaulting to Lennard Jones!");
             }
         }
-        if (node["container"] && !settings.container_type.has_value()) {
+        if (node["container"]) {
             settings.container_type = node["container"].as<std::string>();
         }
-        if (node["frequency"] && !settings.frequency.has_value()) {
+        if (node["frequency"]) {
             settings.frequency = node["frequency"].as<size_t>();
         }
-        if (node["cutoff"] && !settings.cutoff.has_value()) {
+        if (node["cutoff"]) {
             settings.cutoff = node["cutoff"].as<double>();
         }
         if (node["domain"]) {
@@ -299,7 +299,7 @@ void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
                 boundaries[i] = std::make_unique<Outflow>(location);
             }
         }
-        settings.domain.emplace(dimension, std::move(boundaries));
+        settings.domain = Domain(dimension, std::move(boundaries));
     } catch (YAML::Exception& e) {
         SPDLOG_ERROR("Error parsing domain: {}", e.what());
         throw YAMLReaderException(e.what());

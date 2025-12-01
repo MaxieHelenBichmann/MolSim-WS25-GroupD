@@ -30,7 +30,7 @@ namespace mol_sim {
  * @param settings SettingsParam where options for the simulation are stored.
  * @throws CLIException if CLI parsing or file reading fails
  */
-std::string cliParse(int argc, char** argv, SettingsParam& settings) {
+std::string cliParse(int argc, char** argv) {
     SPDLOG_INFO("Hello from MolSim for PSE!");
     CLI::App app{"MolSim - Molecular Dynamics Simulator"};
     argv = app.ensure_utf8(argv);
@@ -41,8 +41,6 @@ std::string cliParse(int argc, char** argv, SettingsParam& settings) {
     app.get_formatter()->label("TEXT", "");
     std::unique_ptr<FileReader> file_reader;
     std::filesystem::path filepath;
-    std::string force;
-
     std::string log_level = "Default";  // NOLINT
 
     // Define custom validator for file extensions
@@ -59,14 +57,6 @@ std::string cliParse(int argc, char** argv, SettingsParam& settings) {
         ->required()
         ->check(CLI::ExistingFile.description(""))
         ->check(CLI::Validator(file_ext_validator, ""));
-
-    app.add_option("-d,--delta_t", settings.delta_t, "Time step")->check(CLI::PositiveNumber.description(""));
-
-    app.add_option("-t,--end_time", settings.end_time, "Simulation end time")
-        ->check(CLI::PositiveNumber.description(""));
-
-    app.add_option("--force", force, "Force type: GRAV (gravitational) or LJ (Lennard-Jones)")
-        ->check(CLI::IsMember({"GRAV", "LJ"}).description("{GRAV, LJ}"));
 
 #if SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_TRACE
     app.add_option("-l,--log_level", log_level, "Logging verbosity level")
@@ -98,14 +88,6 @@ std::string cliParse(int argc, char** argv, SettingsParam& settings) {
         SPDLOG_ERROR("Command line parsing failed: {}", e.what());
         std::cout << app.help() << '\n';
         throw CLIException("CLI parsing error: " + std::string(e.what()));
-    }
-
-    if (!force.empty()) {
-        if (force == "GRAV") {
-            settings.force = GRAVITATIONAL;
-        } else if (force == "LJ") {
-            settings.force = LENNARDJONES;
-        }
     }
 
 #if SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_TRACE
