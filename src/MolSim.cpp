@@ -44,12 +44,6 @@ int main(int argc, char* argsv[]) {
         SPDLOG_ERROR("Settings parser failed with: {}", e.what());
         exit(-1);
     }
-    settings.setDefaults();
-    SPDLOG_INFO("Simulation configured with {} particles, delta_t={} end_time={}", particles.size(),
-                settings.delta_t.value(), settings.end_time.value());
-
-    SPDLOG_INFO("Simulation configured with {} particles, delta_t={} end_time={}", particles.size(),
-                settings.delta_t.value(), settings.end_time.value());
 
     std::unique_ptr<OutputWriter> writer;
 #ifdef ENABLE_VTK_OUTPUT

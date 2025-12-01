@@ -54,8 +54,8 @@ ContainerRef::proximity_iterator ContainerRef::eraseParticle(ContainerRef::proxi
     return std::visit([&p](auto& c) { return proximity_iterator{c->eraseParticle(p)}; }, instance);
 }
 
-void ContainerRef::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x) {
-    std::visit([&p, &new_x](auto& c) { return c->updateParticlePosition(p, new_x); }, instance);
+std::vector<Particle>::iterator ContainerRef::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x) {
+    return std::visit([&p, &new_x](auto& c) { return c->updateParticlePosition(p, new_x); }, instance);
 }
 
 CONTAINER_REF ContainerRef::getInstance() { return instance; }
