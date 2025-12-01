@@ -328,7 +328,7 @@ void bmHaloIteratorDirect(benchmark::State& state) {
     LinkedCellContainerDirect container(domain_size, cutoff);
 
     for (size_t i = 0; i < 6; i++) {
-        bounds[i] += 2.0 * static_cast<double>(i % 2) - 1.0;
+        bounds[i] += (2.0 * static_cast<double>(i % 2)) - 1.0;
         for (size_t j = 0; j < n / 6; j++) {
             R3 pos = randomR3(bounds);
             R3 vel = randomR3();
@@ -356,7 +356,7 @@ void bmHaloIteratorExplicit(benchmark::State& state) {
 
     LinkedCellContainerExplicit container(domain_size, cutoff);
     for (size_t i = 0; i < 6; i++) {
-        bounds[i] += 2.0 * static_cast<double>(i % 2) - 1.0;
+        bounds[i] += (2.0 * static_cast<double>(i % 2)) - 1.0;
         for (size_t j = 0; j < n / 6; j++) {
             R3 pos = randomR3(bounds);
             R3 vel = randomR3();
