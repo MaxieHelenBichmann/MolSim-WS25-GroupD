@@ -98,10 +98,10 @@ class Simulation {
      */
     Simulation(containerType& particles, std::unique_ptr<ForceSource> force_source, SettingsParam& settings,
                std::unique_ptr<OutputWriter> writer)
-        : particles(particles),
+        : domain(std::move(settings.domain.value())),
+          particles(particles),
           force_source(std::move(force_source)),
           writer(std::move(writer)),
-          domain(std::move(settings.domain.value())),
           delta_t(settings.delta_t.value()),
           start_time(settings.start_time.value()),
           end_time(settings.end_time.value()),

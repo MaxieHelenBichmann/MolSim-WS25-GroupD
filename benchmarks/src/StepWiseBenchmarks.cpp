@@ -18,7 +18,12 @@ void bmSimulationSingleLC(benchmark::State& state) {
     ContainerRef particles(part_container);
 
     CuboidGenerator generator({60.0, 60.0, 0.0}, {0.0, -10.0, 0.0}, {n, n, n}, 1.0, 1.1225, 0.1, 5.0, 1.0);
-    SettingsParam settings(0.0005, 0, 0.0005, 5.0, 1.0);
+    SettingsParam settings;
+    settings.delta_t = 0.0005;
+    settings.start_time = 0;
+    settings.end_time = 0.0005;
+    settings.epsilon = 5.0;
+    settings.sigma = 1.0;
     settings.cutoff = 3.0;
     settings.domain = {.dimension = {180.0, 90., 1.}};
     settings.setDefaults();
@@ -38,7 +43,12 @@ void bmSimulationSingleDirSum(benchmark::State& state) {
     SimpleContainer part_container;
     ContainerRef particles(part_container);
     CuboidGenerator generator({60.0, 60.0, 0.0}, {0., 0., 0.}, {n, n, n}, 1.0, 1.1225, 0.1, 5.0, 1.0);
-    SettingsParam settings(0.0005, 0, 0.0005, 5.0, 1.0);
+    SettingsParam settings;
+    settings.delta_t = 0.0005;
+    settings.start_time = 0;
+    settings.end_time = 0.0005;
+    settings.epsilon = 5.0;
+    settings.sigma = 1.0;
     settings.domain = {.dimension = {180.0, 90., 1.}};
     settings.setDefaults();
     auto force_source = std::make_unique<LennardJonesForce>();

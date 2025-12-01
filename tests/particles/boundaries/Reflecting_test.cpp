@@ -1,16 +1,19 @@
 #include <gtest/gtest.h>
 
-#include <numbers>
-#include <memory>
 #include <array>
+#include <memory>
+#include <numbers>
 
+#include "io/outputWriter/XYZWriter.h"
 #include "particles/Particle.h"
-#include "utils/Settings.h"
 #include "particles/boundaries/Boundary.h"
 #include "particles/boundaries/Outflow.h"
+#include "particles/boundaries/Reflecting.h"
 #include "particles/container/domain/Domain.h"
-#include "utils/Simulation.h"
+#include "physics/LennardJonesForce.h"
 #include "testingUtils.h"
+#include "utils/Settings.h"
+#include "utils/Simulation.h"
 
 namespace mol_sim {
 /**
@@ -62,8 +65,8 @@ TEST_F(ReflectingTest, X_reflecting_linked) {
     settings.container_type = "LINKED";
     LinkedCellContainer particles(dimension, settings.cutoff.value());
     particles.addParticle(p);
-    LennardJonesForce lj_force;
-    Simulation<LinkedCellContainer, LennardJonesForce> simulation(particles, lj_force, settings);
+    
+    Simulation<LinkedCellContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings, std::make_unique<XYZWriter>());
     simulation.run();
     R3 expected = {6.2, 5.0, 5.0};
     EXPECT_TRUE(particles[0] == p);
@@ -78,8 +81,8 @@ TEST_F(ReflectingTest, X_reflecting_simple) {
     settings.container_type = "SIMPLE";
     SimpleContainer particles;
     particles.addParticle(p);
-    LennardJonesForce lj_force;
-    Simulation<SimpleContainer, LennardJonesForce> simulation(particles, lj_force, settings);
+    
+    Simulation<SimpleContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings, std::make_unique<XYZWriter>());
     simulation.run();
     R3 expected = {3.8, 5.0, 5.0};
     EXPECT_TRUE(particles[0] == p);
@@ -94,8 +97,8 @@ TEST_F(ReflectingTest, Y_reflecting_linked) {
     settings.container_type = "LINKED";
     LinkedCellContainer particles(dimension, settings.cutoff.value());
     particles.addParticle(p);
-    LennardJonesForce lj_force;
-    Simulation<LinkedCellContainer, LennardJonesForce> simulation(particles, lj_force, settings);
+    
+    Simulation<LinkedCellContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings, std::make_unique<XYZWriter>());
     simulation.run();
     R3 expected = {5.0, 6.2, 5.0};
     EXPECT_TRUE(particles[0] == p);
@@ -110,8 +113,8 @@ TEST_F(ReflectingTest, Y_reflecting_simple) {
     settings.container_type = "SIMPLE";
     SimpleContainer particles;
     particles.addParticle(p);
-    LennardJonesForce lj_force;
-    Simulation<SimpleContainer, LennardJonesForce> simulation(particles, lj_force, settings);
+    
+    Simulation<SimpleContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings, std::make_unique<XYZWriter>());
     simulation.run();
     R3 expected = {5.0, 3.8, 5.0};
     EXPECT_TRUE(particles[0] == p);
@@ -126,8 +129,8 @@ TEST_F(ReflectingTest, Z_reflecting_linked) {
     settings.container_type = "LINKED";
     LinkedCellContainer particles(dimension, settings.cutoff.value());
     particles.addParticle(p);
-    LennardJonesForce lj_force;
-    Simulation<LinkedCellContainer, LennardJonesForce> simulation(particles, lj_force, settings);
+    
+    Simulation<LinkedCellContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings, std::make_unique<XYZWriter>());
     simulation.run();
     R3 expected = {5.0, 5.0, 6.2};
     EXPECT_TRUE(particles[0] == p);
@@ -142,8 +145,8 @@ TEST_F(ReflectingTest, Z_reflecting_simple) {
     settings.container_type = "SIMPLE";
     SimpleContainer particles;
     particles.addParticle(p);
-    LennardJonesForce lj_force;
-    Simulation<SimpleContainer, LennardJonesForce> simulation(particles, lj_force, settings);
+    
+    Simulation<SimpleContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings, std::make_unique<XYZWriter>());
     simulation.run();
     R3 expected = {5.0, 5.0, 3.8};
     EXPECT_TRUE(particles[0] == p);
@@ -158,8 +161,8 @@ TEST_F(ReflectingTest, Reflecting_two_sided_corner_linked) {
     settings.container_type = "LINKED";
     LinkedCellContainer particles(dimension, settings.cutoff.value());
     particles.addParticle(p);
-    LennardJonesForce lj_force;
-    Simulation<LinkedCellContainer, LennardJonesForce> simulation(particles, lj_force, settings);
+    
+    Simulation<LinkedCellContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings, std::make_unique<XYZWriter>());
     simulation.run();
     R3 expected = {3.8, 5.0, 3.8};
     EXPECT_TRUE(particles[0] == p);
@@ -174,8 +177,8 @@ TEST_F(ReflectingTest, Reflecting_three_sided_corner_linked) {
     settings.container_type = "LINKED";
     LinkedCellContainer particles(dimension, settings.cutoff.value());
     particles.addParticle(p);
-    LennardJonesForce lj_force;
-    Simulation<LinkedCellContainer, LennardJonesForce> simulation(particles, lj_force, settings);
+    
+    Simulation<LinkedCellContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings, std::make_unique<XYZWriter>());
     simulation.run();
     R3 expected = {3.8, 3.8, 3.8};
     EXPECT_TRUE(particles[0] == p);
@@ -191,8 +194,8 @@ TEST_F(ReflectingTest, Reflecting_Angular_trajectory_linked) {
     settings.container_type = "LINKED";
     LinkedCellContainer particles(dimension, settings.cutoff.value());
     particles.addParticle(p);
-    LennardJonesForce lj_force;
-    Simulation<LinkedCellContainer, LennardJonesForce> simulation(particles, lj_force, settings);
+    
+    Simulation<LinkedCellContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings, std::make_unique<XYZWriter>());
     simulation.run();
     R3 expected = {3.8, 5.0, 5.0};
     EXPECT_TRUE(particles[0] == p);
@@ -205,8 +208,8 @@ TEST_F(ReflectingTest, Reflecting_Angular_trajectory_linked) {
 TEST_F(ReflectingTest, Reflecting_particle_sigma_epsilon_linked) {
     p.getX() = {5.0, 5.0, 2.0};
     p.getV() = {0.0, 0.0, -15.0};
-    p.setSigma(1.0);
-    p.setEpsilon(20.0);
+    p.getSigma() = 1.0;
+    p.getEpsilon() = 20.0;
     std::array<std::unique_ptr<Boundary>, 6> boundaries;
     boundaries[0] = std::make_unique<Reflecting>(BoundaryLocation::LEFT, dimension, false, std::nullopt, std::nullopt); 
     boundaries[1] = std::make_unique<Reflecting>(BoundaryLocation::RIGHT, dimension, false, std::nullopt, std::nullopt); 
@@ -218,8 +221,8 @@ TEST_F(ReflectingTest, Reflecting_particle_sigma_epsilon_linked) {
     settings.container_type = "LINKED";
     LinkedCellContainer particles(dimension, settings.cutoff.value());
     particles.addParticle(p);
-    LennardJonesForce lj_force;
-    Simulation<LinkedCellContainer, LennardJonesForce> simulation(particles, lj_force, settings);
+    
+    Simulation<LinkedCellContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings, std::make_unique<XYZWriter>());
     simulation.run();
     R3 expected = {5.0, 5.0, 3.8};
     EXPECT_TRUE(particles[0] == p);
@@ -243,8 +246,8 @@ TEST_F(ReflectingTest, Reflecting_with_ghost_on_boundary_linked) {
     settings.container_type = "LINKED";
     LinkedCellContainer particles(dimension, settings.cutoff.value());
     particles.addParticle(p);
-    LennardJonesForce lj_force;
-    Simulation<LinkedCellContainer, LennardJonesForce> simulation(particles, lj_force, settings);
+    
+    Simulation<LinkedCellContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings, std::make_unique<XYZWriter>());
     simulation.run();
     R3 expected = {5.0, 5.0, 4.3};
     EXPECT_TRUE(particles[0] == p);
@@ -259,8 +262,8 @@ TEST_F(ReflectingTest, Reflecting_two_sided_corner_simple) {
     settings.container_type = "SIMPLE";
     SimpleContainer particles;
     particles.addParticle(p);
-    LennardJonesForce lj_force;
-    Simulation<SimpleContainer, LennardJonesForce> simulation(particles, lj_force, settings);
+    
+    Simulation<SimpleContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings, std::make_unique<XYZWriter>());
     simulation.run();
     R3 expected = {3.8, 5.0, 3.8};
     EXPECT_TRUE(particles[0] == p);
@@ -275,8 +278,8 @@ TEST_F(ReflectingTest, Reflecting_three_sided_corner_simple) {
     settings.container_type = "SIMPLE";
     SimpleContainer particles;
     particles.addParticle(p);
-    LennardJonesForce lj_force;
-    Simulation<SimpleContainer, LennardJonesForce> simulation(particles, lj_force, settings);
+    
+    Simulation<SimpleContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings, std::make_unique<XYZWriter>());
     simulation.run();
     R3 expected = {3.8, 3.8, 3.8};
     EXPECT_TRUE(particles[0] == p);
@@ -292,8 +295,8 @@ TEST_F(ReflectingTest, Reflecting_Angular_trajectory_simple) {
     settings.container_type = "SIMPLE";
     SimpleContainer particles;
     particles.addParticle(p);
-    LennardJonesForce lj_force;
-    Simulation<SimpleContainer, LennardJonesForce> simulation(particles, lj_force, settings);
+    
+    Simulation<SimpleContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings, std::make_unique<XYZWriter>());
     simulation.run();
     R3 expected = {3.8, 5.0, 5.0};
     EXPECT_TRUE(particles[0] == p);
@@ -306,8 +309,8 @@ TEST_F(ReflectingTest, Reflecting_Angular_trajectory_simple) {
 TEST_F(ReflectingTest, Reflecting_particle_sigma_epsilon_simple) {
     p.getX() = {5.0, 5.0, 2.0};
     p.getV() = {0.0, 0.0, -15.0};
-    p.setSigma(1.0);
-    p.setEpsilon(20.0);
+    p.getSigma() = 1.0;
+    p.getEpsilon() = 20.0;
     std::array<std::unique_ptr<Boundary>, 6> boundaries;
     boundaries[0] = std::make_unique<Reflecting>(BoundaryLocation::LEFT, dimension, false, std::nullopt, std::nullopt); 
     boundaries[1] = std::make_unique<Reflecting>(BoundaryLocation::RIGHT, dimension, false, std::nullopt, std::nullopt); 
@@ -319,8 +322,8 @@ TEST_F(ReflectingTest, Reflecting_particle_sigma_epsilon_simple) {
     settings.container_type = "SIMPLE";
     SimpleContainer particles;
     particles.addParticle(p);
-    LennardJonesForce lj_force;
-    Simulation<SimpleContainer, LennardJonesForce> simulation(particles, lj_force, settings);
+    
+    Simulation<SimpleContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings, std::make_unique<XYZWriter>());
     simulation.run();
     R3 expected = {5.0, 5.0, 3.8};
     EXPECT_TRUE(particles[0] == p);
@@ -344,8 +347,8 @@ TEST_F(ReflectingTest, Reflecting_with_ghost_on_boundary_simple) {
     settings.container_type = "SIMPLE";
     SimpleContainer particles;
     particles.addParticle(p);
-    LennardJonesForce lj_force;
-    Simulation<SimpleContainer, LennardJonesForce> simulation(particles, lj_force, settings);
+    
+    Simulation<SimpleContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings, std::make_unique<XYZWriter>());
     simulation.run();
     R3 expected = {5.0, 5.0, 4.3};
     EXPECT_TRUE(particles[0] == p);

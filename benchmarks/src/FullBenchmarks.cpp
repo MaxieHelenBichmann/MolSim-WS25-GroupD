@@ -40,7 +40,12 @@ void generateCuboid(Container& particles, R3 position, R3 velocity, Vector<size_
  */
 static void bmSimulationGiven(benchmark::State& state) {
     SimpleContainer part_container;
-    SettingsParam settings(0.0005, 0, 20, 5.0, 1.0);
+    SettingsParam settings;
+    settings.delta_t = 0.0005;
+    settings.start_time = 0;
+    settings.end_time = 20;
+    settings.epsilon = 5.0;
+    settings.sigma = 1.0;
     settings.domain = {.dimension = {180.0, 90., 1.}};
     settings.setDefaults();
     auto force_source = std::make_unique<LennardJonesForce>();
@@ -58,7 +63,12 @@ static void bmSimulationGiven(benchmark::State& state) {
 
 void bmSimulationGivenCutOff(benchmark::State& state) {
     SimpleContainer part_container;
-    SettingsParam settings(0.0005, 0, 20, 5.0, 1.0);
+    SettingsParam settings;
+    settings.delta_t = 0.0005;
+    settings.start_time = 0;
+    settings.end_time = 20;
+    settings.epsilon = 5.0;
+    settings.sigma = 1.0;
     settings.cutoff = 3.0;
     settings.domain = {.dimension = {180.0, 90., 1.}};
     settings.setDefaults();
@@ -77,7 +87,12 @@ void bmSimulationGivenCutOff(benchmark::State& state) {
 
 void bmSimulationGivenLCDirect(benchmark::State& state) {
     LinkedCellContainerDirect part_container({180., 90., 1.}, 3.0);
-    SettingsParam settings(0.0005, 0, 20, 5.0, 1.0);
+    SettingsParam settings;
+    settings.delta_t = 0.0005;
+    settings.start_time = 0;
+    settings.end_time = 20;
+    settings.epsilon = 5.0;
+    settings.sigma = 1.0;
     settings.cutoff = 3.0;
     settings.domain = {.dimension = {180.0, 90., 1.}};
     settings.setDefaults();
@@ -97,7 +112,12 @@ void bmSimulationGivenLCDirect(benchmark::State& state) {
 
 void bmSimulationGivenLCExplicit(benchmark::State& state) {
     LinkedCellContainerExplicit part_container({180., 90., 1.}, 3.0);
-    SettingsParam settings(0.0005, 0, 20, 5.0, 1.0);
+    SettingsParam settings;
+    settings.delta_t = 0.0005;
+    settings.start_time = 0;
+    settings.end_time = 20;
+    settings.epsilon = 5.0;
+    settings.sigma = 1.0;
     settings.cutoff = 3.0;
     settings.domain = {.dimension = {180.0, 90., 1.}};
     settings.setDefaults();
