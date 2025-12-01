@@ -5,6 +5,8 @@
 #include <physics/GravitationalForce.h>
 #include <physics/LennardJonesForce.h>
 
+#include <limits>
+
 #include "particles/Particle.h"
 #include "particles/container/SimpleContainer.h"
 #include "utils/Vector.h"
@@ -38,6 +40,7 @@ class SimulationTest : public testing::Test {
 
    public:
     void SetUp() override {
+        settings.cutoff = std::numeric_limits<double>::infinity();
         settings.setDefaults();
         particles.clear();
     }
