@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <numbers>
+#include <limits>
 
 #include "particles/Particle.h"
 #include "utils/Settings.h"
@@ -39,6 +40,7 @@ class OutflowTest : public testing::Test {
         settings.domain = Domain(dimension);
         settings.delta_t = delta_t;
         settings.end_time = end_time;
+        settings.cutoff = std::numeric_limits<double>::infinity();
         settings.setDefaults();
     }
 };
@@ -133,7 +135,8 @@ TEST_F(OutflowTest, outflow_linked_no_erase) {
     LennardJonesForce lj_force;
     Simulation<LinkedCellContainer, LennardJonesForce> simulation(particles, lj_force, settings);
     simulation.run();
-    EXPECT_TRUE(particles[0] == p);
+    Particle expected({9.5, 5.0, 5.0}, p.getV(), p.getM(), p.getEpsilon(), p.getSigma(), p.getType());
+    EXPECT_TRUE(particles[0] == expected);
 }
 /**
  * @brief Tests that particles that are not OOB yet (but close to boundary) are NOT erased in a 
@@ -147,6 +150,7 @@ TEST_F(OutflowTest, outflow_simple_no_erase) {
     LennardJonesForce lj_force;
     Simulation<SimpleContainer, LennardJonesForce> simulation(particles, lj_force, settings);
     simulation.run();
-    EXPECT_TRUE(particles[0] == p);
+    Particle expected({9.5, 5.0, 5.0}, p.getV(), p.getM(), p.getEpsilon(), p.getSigma(), p.getType());
+    EXPECT_TRUE(particles[0] == expected);
 }
 }  // namespace mol_sim

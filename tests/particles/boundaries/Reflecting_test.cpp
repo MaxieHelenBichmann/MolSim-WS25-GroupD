@@ -3,6 +3,7 @@
 #include <numbers>
 #include <memory>
 #include <array>
+#include <limits>
 
 #include "particles/Particle.h"
 #include "utils/Settings.h"
@@ -37,7 +38,7 @@ class ReflectingTest : public testing::Test {
     double delta_t = 0.1;
     double end_time = 2 * delta_t;
 
-    ReflectingTest() : p{p_x, p_v, 1.0, 10., 6.} {}
+    ReflectingTest() : p{p_x, p_v, 1.0, 20.0, 1.0} {}
 
     void SetUp() override {
         std::array<std::unique_ptr<Boundary>, 6> boundaries;
@@ -50,9 +51,16 @@ class ReflectingTest : public testing::Test {
         settings.domain = Domain(dimension, std::move(boundaries));
         settings.delta_t = delta_t;
         settings.end_time = end_time;
+        settings.cutoff = std::numeric_limits<double>::infinity();
         settings.setDefaults();
     }
 };
+//NOLINTNEXTLINE(readability-identifier-naming)
+void EXPECT_DOUBLE_VEC_EQ(R3 val1, R3 val2) {
+    EXPECT_DOUBLE_EQ(val1[0], val2[0]);
+    EXPECT_DOUBLE_EQ(val1[1], val2[1]);
+    EXPECT_DOUBLE_EQ(val1[2], val2[2]);
+} 
 /**
  * @brief Tests that particles are correctly reflected on a x-boundary in a LinkedCellContainer. 
  * */
@@ -66,8 +74,7 @@ TEST_F(ReflectingTest, X_reflecting_linked) {
     Simulation<LinkedCellContainer, LennardJonesForce> simulation(particles, lj_force, settings);
     simulation.run();
     R3 expected = {6.2, 5.0, 5.0};
-    EXPECT_TRUE(particles[0] == p);
-    EXPECT_EQ(particles[0].getX(), expected);
+    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that particles are correctly reflected on a x-boundary in a SimpleContainer. 
@@ -82,8 +89,7 @@ TEST_F(ReflectingTest, X_reflecting_simple) {
     Simulation<SimpleContainer, LennardJonesForce> simulation(particles, lj_force, settings);
     simulation.run();
     R3 expected = {3.8, 5.0, 5.0};
-    EXPECT_TRUE(particles[0] == p);
-    EXPECT_EQ(particles[0].getX(), expected);
+    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that particles are correctly reflected on a y-boundary in a LinkedCellContainer. 
@@ -98,8 +104,7 @@ TEST_F(ReflectingTest, Y_reflecting_linked) {
     Simulation<LinkedCellContainer, LennardJonesForce> simulation(particles, lj_force, settings);
     simulation.run();
     R3 expected = {5.0, 6.2, 5.0};
-    EXPECT_TRUE(particles[0] == p);
-    EXPECT_EQ(particles[0].getX(), expected);
+    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that particles are correctly reflected on a y-boundary in a SimpleContainer. 
@@ -114,8 +119,7 @@ TEST_F(ReflectingTest, Y_reflecting_simple) {
     Simulation<SimpleContainer, LennardJonesForce> simulation(particles, lj_force, settings);
     simulation.run();
     R3 expected = {5.0, 3.8, 5.0};
-    EXPECT_TRUE(particles[0] == p);
-    EXPECT_EQ(particles[0].getX(), expected);
+    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that particles are correctly reflected on a z-boundary in a LinkedCellContainer. 
@@ -130,8 +134,7 @@ TEST_F(ReflectingTest, Z_reflecting_linked) {
     Simulation<LinkedCellContainer, LennardJonesForce> simulation(particles, lj_force, settings);
     simulation.run();
     R3 expected = {5.0, 5.0, 6.2};
-    EXPECT_TRUE(particles[0] == p);
-    EXPECT_EQ(particles[0].getX(), expected);
+    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that particles are correctly reflected on a z-boundary in a SimpleContainer. 
@@ -146,15 +149,14 @@ TEST_F(ReflectingTest, Z_reflecting_simple) {
     Simulation<SimpleContainer, LennardJonesForce> simulation(particles, lj_force, settings);
     simulation.run();
     R3 expected = {5.0, 5.0, 3.8};
-    EXPECT_TRUE(particles[0] == p);
-    EXPECT_EQ(particles[0].getX(), expected);
+    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that reflecting particles at a corner of two boundaries works in a LinkedCellContainer.
  */
 TEST_F(ReflectingTest, Reflecting_two_sided_corner_linked) {
     p.getX() = {2.0, 5.0, 2.0};
-    p.getV() = {0.0, -15.0, -15.0};
+    p.getV() = {-15.0, 0.0, -15.0};
     settings.container_type = "LINKED";
     LinkedCellContainer particles(dimension, settings.cutoff.value());
     particles.addParticle(p);
@@ -162,8 +164,7 @@ TEST_F(ReflectingTest, Reflecting_two_sided_corner_linked) {
     Simulation<LinkedCellContainer, LennardJonesForce> simulation(particles, lj_force, settings);
     simulation.run();
     R3 expected = {3.8, 5.0, 3.8};
-    EXPECT_TRUE(particles[0] == p);
-    EXPECT_EQ(particles[0].getX(), expected);
+    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that reflecting particles at a corner of three boundaries works in a LinkedCellContainer.
@@ -178,8 +179,7 @@ TEST_F(ReflectingTest, Reflecting_three_sided_corner_linked) {
     Simulation<LinkedCellContainer, LennardJonesForce> simulation(particles, lj_force, settings);
     simulation.run();
     R3 expected = {3.8, 3.8, 3.8};
-    EXPECT_TRUE(particles[0] == p);
-    EXPECT_EQ(particles[0].getX(), expected);
+    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that reflecting a particle that approaches a boundary at an angular trajectory 
@@ -195,8 +195,7 @@ TEST_F(ReflectingTest, Reflecting_Angular_trajectory_linked) {
     Simulation<LinkedCellContainer, LennardJonesForce> simulation(particles, lj_force, settings);
     simulation.run();
     R3 expected = {3.8, 5.0, 5.0};
-    EXPECT_TRUE(particles[0] == p);
-    EXPECT_EQ(particles[0].getX(), expected);
+    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that reflecting a particle with a boundary taking in either the sigma or 
@@ -222,8 +221,7 @@ TEST_F(ReflectingTest, Reflecting_particle_sigma_epsilon_linked) {
     Simulation<LinkedCellContainer, LennardJonesForce> simulation(particles, lj_force, settings);
     simulation.run();
     R3 expected = {5.0, 5.0, 3.8};
-    EXPECT_TRUE(particles[0] == p);
-    EXPECT_EQ(particles[0].getX(), expected);
+    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that reflecting a particle while spawning ghost particles directly on the boundary 
@@ -247,15 +245,14 @@ TEST_F(ReflectingTest, Reflecting_with_ghost_on_boundary_linked) {
     Simulation<LinkedCellContainer, LennardJonesForce> simulation(particles, lj_force, settings);
     simulation.run();
     R3 expected = {5.0, 5.0, 4.3};
-    EXPECT_TRUE(particles[0] == p);
-    EXPECT_EQ(particles[0].getX(), expected);
+    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that reflecting particles at a corner of two boundaries works in a SimpleContainer.
  */
 TEST_F(ReflectingTest, Reflecting_two_sided_corner_simple) {
     p.getX() = {2.0, 5.0, 2.0};
-    p.getV() = {0.0, -15.0, -15.0};
+    p.getV() = {-15.0, 0.0, -15.0};
     settings.container_type = "SIMPLE";
     SimpleContainer particles;
     particles.addParticle(p);
@@ -263,8 +260,7 @@ TEST_F(ReflectingTest, Reflecting_two_sided_corner_simple) {
     Simulation<SimpleContainer, LennardJonesForce> simulation(particles, lj_force, settings);
     simulation.run();
     R3 expected = {3.8, 5.0, 3.8};
-    EXPECT_TRUE(particles[0] == p);
-    EXPECT_EQ(particles[0].getX(), expected);
+    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that reflecting particles at a corner of three boundaries works in a SimpleContainer.
@@ -279,8 +275,7 @@ TEST_F(ReflectingTest, Reflecting_three_sided_corner_simple) {
     Simulation<SimpleContainer, LennardJonesForce> simulation(particles, lj_force, settings);
     simulation.run();
     R3 expected = {3.8, 3.8, 3.8};
-    EXPECT_TRUE(particles[0] == p);
-    EXPECT_EQ(particles[0].getX(), expected);
+    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that reflecting a particle that approaches a boundary at an angular trajectory 
@@ -296,8 +291,7 @@ TEST_F(ReflectingTest, Reflecting_Angular_trajectory_simple) {
     Simulation<SimpleContainer, LennardJonesForce> simulation(particles, lj_force, settings);
     simulation.run();
     R3 expected = {3.8, 5.0, 5.0};
-    EXPECT_TRUE(particles[0] == p);
-    EXPECT_EQ(particles[0].getX(), expected);
+    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that reflecting a particle with a boundary taking in either the sigma or 
@@ -323,8 +317,7 @@ TEST_F(ReflectingTest, Reflecting_particle_sigma_epsilon_simple) {
     Simulation<SimpleContainer, LennardJonesForce> simulation(particles, lj_force, settings);
     simulation.run();
     R3 expected = {5.0, 5.0, 3.8};
-    EXPECT_TRUE(particles[0] == p);
-    EXPECT_EQ(particles[0].getX(), expected);
+    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that reflecting a particle while spawning ghost particles directly on the boundary 
@@ -348,8 +341,7 @@ TEST_F(ReflectingTest, Reflecting_with_ghost_on_boundary_simple) {
     Simulation<SimpleContainer, LennardJonesForce> simulation(particles, lj_force, settings);
     simulation.run();
     R3 expected = {5.0, 5.0, 4.3};
-    EXPECT_TRUE(particles[0] == p);
-    EXPECT_EQ(particles[0].getX(), expected);
+    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
 }
 
 }  // namespace mol_sim
