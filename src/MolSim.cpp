@@ -1,11 +1,17 @@
 #include <spdlog/spdlog.h>
 
+#include <memory>
+#include <optional>
 #include <stdexcept>
 
+#include "exceptions/CLIException.h"
+#include "exceptions/SimulationException.h"
+#include "exceptions/YAMLReaderException.h"
 #include "io/CLIParse.h"
 #include "io/FileReader.h"
 #include "io/fileReader/YAMLReader.h"
-#include "io/fileReader/YAMLReaderException.h"
+#include "io/outputWriter/VTKWriter.h"
+#include "io/outputWriter/XYZWriter.h"
 #include "particles/container/ContainerRef.h"
 #include "particles/container/LinkedCellContainer.h"
 #include "particles/container/SimpleContainer.h"
@@ -34,9 +40,28 @@ int main(int argc, char* argsv[]) {
         }
         file_reader->readSettings(settings, file_name);
         settings.setDefaults();
-    } catch (std::runtime_error& e) {
+    } catch (const CLIException& e) {
         SPDLOG_ERROR("Settings parser failed with: {}", e.what());
         exit(-1);
+    }
+
+    std::unique_ptr<OutputWriter> writer;
+#ifdef ENABLE_VTK_OUTPUT
+    writer = std::make_unique<VTKWriter>();
+#else
+    writer = std::make_unique<XYZWriter>();
+#endif
+
+    std::unique_ptr<ForceSource> force;
+    switch (settings.force.value()) {
+        case GRAVITATIONAL: {
+            force = std::make_unique<GravitationalForce>();
+            break;
+        }
+        case LENNARDJONES: {
+            force = std::make_unique<LennardJonesForce>();
+            break;
+        }
     }
     if (settings.container_type.value() == "SIMPLE") {
         SimpleContainer particle_container(settings.domain.value().getDimension(), settings.cutoff.value());
@@ -48,9 +73,13 @@ int main(int argc, char* argsv[]) {
         }
         SPDLOG_INFO("Simulation configured with {} particles, delta_t={} end_time={}", particle_container.size(),
                     settings.delta_t.value(), settings.end_time.value());
-        LennardJonesForce f;
-        Simulation<SimpleContainer, LennardJonesForce> simulation(particle_container, f, settings);
-        simulation.run();
+
+        try {
+            Simulation<SimpleContainer> simulation(particle_container, std::move(force), settings, std::move(writer));
+            simulation.run();
+        } catch (SimulationException& e) {
+            exit(-1);
+        };
     } else if (settings.container_type.value() == "LINKED") {
         LinkedCellContainer particle_container{settings.domain.value().getDimension(), settings.cutoff.value()};
         try {
@@ -61,8 +90,12 @@ int main(int argc, char* argsv[]) {
         }
         SPDLOG_INFO("Simulation configured with {} particles, delta_t={} end_time={}", particle_container.size(),
                     settings.delta_t.value(), settings.end_time.value());
-        LennardJonesForce f;
-        Simulation<LinkedCellContainer, LennardJonesForce> simulation(particle_container, f, settings);
-        simulation.run();
+        try {
+            Simulation<LinkedCellContainer> simulation(particle_container, std::move(force), settings,
+                                                       std::move(writer));
+            simulation.run();
+        } catch (SimulationException& e) {
+            exit(-1);
+        }
     }
 }

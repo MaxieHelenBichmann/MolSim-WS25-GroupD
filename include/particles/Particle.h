@@ -153,6 +153,13 @@ class Particle {
     [[nodiscard]] double getSigma() const;
 
     /**
+     * @brief Access to the sigma of this Particle
+     *
+     * @return Reference to the double of the sigma of the Particle
+     */
+    double& getSigma();
+
+    /**
      * @brief Access to the epsilon of this Particle
      *
      * @return double of the epsilon of the Particle
@@ -160,18 +167,11 @@ class Particle {
     [[nodiscard]] double getEpsilon() const;
 
     /**
-     * @brief Set the Sigma of this Particle.
+     * @brief Access to the epsilon of this Particle
      *
-     * @param sigma_arg new sigma value.
+     * @return Reference to the double of the epsilon of the Particle
      */
-    void setSigma(double sigma_arg);
-
-    /**
-     * @brief Set the Epsilon of this Particle.
-     *
-     * @param epsilon_arg new epsilon value.
-     */
-    void setEpsilon(double epsilon_arg);
+    double& getEpsilon();
 
     bool operator==(const Particle& other) const;
 

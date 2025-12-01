@@ -14,6 +14,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "exceptions/XVMReaderException.h"
 #include "utils/Settings.h"
 
 using namespace mol_sim;
@@ -65,7 +66,7 @@ void XVMReader::readParticles(ContainerRef particles, const std::string& filenam
             }
             if (datastream.eof()) {
                 SPDLOG_ERROR("Error reading file: eof reached unexpectedly reading from line {}", i);
-                exit(-1);
+                throw XVMReaderException("Error reading file: eof reached unexpectedly at line " + std::to_string(i));
             }
             datastream >> m;
             particles.addParticle(x, v, m, SettingsParam::EPSILON_DEFAULT, SettingsParam::SIGMA_DEFAULT);
@@ -75,6 +76,6 @@ void XVMReader::readParticles(ContainerRef particles, const std::string& filenam
         }
     } else {
         SPDLOG_ERROR("Error: could not open file {}", filename);
-        exit(-1);
+        throw XVMReaderException("Could not open file");
     }
 }

@@ -326,6 +326,13 @@ constexpr const T&& get(const Vector<T, N>&& v) noexcept {
     return std::move(v[I]);
 }
 
+/**
+ * @brief Alias for a mathematical 3-dimensional real-valued (double-precision) vector.
+ *
+ * @see Vector
+ */
+using R3 = Vector<double, 3>;
+
 }  // namespace mol_sim
 
 // --------------------  STRUCTURED BINDINGS  --------------------

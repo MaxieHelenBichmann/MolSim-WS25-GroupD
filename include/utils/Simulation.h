@@ -9,10 +9,12 @@
 #include <functional>
 #include <limits>
 #include <memory>
+#include <optional>
+#include <stdexcept>
 #include <vector>
 
-#include "io/outputWriter/VTKWriter.h"
-#include "io/outputWriter/XYZWriter.h"
+#include "exceptions/SimulationException.h"
+#include "io/OutputWriter.h"
 #include "particles/Particle.h"
 #include "particles/ParticleContainer.h"
 #include "particles/boundaries/Boundary.h"
@@ -37,7 +39,7 @@ namespace mol_sim {
  * @tparam containerType Type of container used for this simulation. Templated to work with Concept.
  * @tparam forceType Type of force source used for this simulation.
  */
-template <ParticleContainer containerType, ForceSource forceType>
+template <ParticleContainer containerType>
 class Simulation {
    private:
     /**
@@ -53,8 +55,9 @@ class Simulation {
     /**
      * @brief Force source for calculating particle interactions.
      */
-    forceType& force_source;
+    std::unique_ptr<ForceSource> force_source;
 
+    std::unique_ptr<OutputWriter> writer;
     /**
      * @brief Time step of simulation.
      */
@@ -83,7 +86,7 @@ class Simulation {
     /**
      * @brief Cutoff radius for particles in proximity.
      */
-    double cutoff_radius = std::numeric_limits<double>::infinity();
+    double cutoff_radius;
 
    public:
     /**
@@ -93,10 +96,12 @@ class Simulation {
      * @param force_source Force source to be used in the simulation.
      * @param settings Simulation parameters.
      */
-    Simulation(containerType& particles, forceType& force_source, SettingsParam& settings)
+    Simulation(containerType& particles, std::unique_ptr<ForceSource> force_source, SettingsParam& settings,
+               std::unique_ptr<OutputWriter> writer)
         : domain(std::move(settings.domain.value())),
           particles(particles),
-          force_source(force_source),
+          force_source(std::move(force_source)),
+          writer(std::move(writer)),
           delta_t(settings.delta_t.value()),
           start_time(settings.start_time.value()),
           end_time(settings.end_time.value()),
@@ -160,7 +165,7 @@ class Simulation {
             for (auto it_prox = particles.proximityBegin(p1.getX(), cutoff_radius, idx);
                  it_prox != particles.proximityEnd(p1.getX(), cutoff_radius); ++it_prox) {
                 Particle& p2 = *it_prox;
-                Vector<double, 3> force = force_source.applyForce(p1, p2);
+                Vector<double, 3> force = force_source->applyForce(p1, p2);
                 // Apply force directly (Newton's 3rd law: equal and opposite)
                 p1.getF() = p1.getF() + force;
                 p2.getF() = p2.getF() - force;
@@ -187,7 +192,6 @@ class Simulation {
             p.getV() = p.getV() + ((0.5 * delta_t / p.getM()) * (p.getOldF() + p.getF()));
         }
     }
-
     /**
      * @brief Performs a full simulation run.
      */
@@ -220,16 +224,10 @@ class Simulation {
             if (iteration % frequency == 0) {
                 try {
                     std::string out_name = base_name;
-#ifdef ENABLE_VTK_OUTPUT
-                    out_name += "_vtk";
-                    VTKWriter writer;
-#else
-                    out_name += "_xyz";
-                    XYZWriter writer;
-#endif
-                    writer.plotParticles(particles, out_name, iteration);
-                } catch (...) {
-                    SPDLOG_ERROR("Something went wrong with plotting the Particles.");
+                    writer->plotParticles(particles, out_name, iteration);
+                } catch (std::runtime_error& e) {
+                    SPDLOG_ERROR("Something went wrong with plotting the Particles: ", e.what());
+                    throw SimulationException("Error while plotting Particles.");
                 }
             }
 #endif

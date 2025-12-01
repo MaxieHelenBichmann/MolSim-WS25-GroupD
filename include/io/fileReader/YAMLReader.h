@@ -81,11 +81,29 @@ class YAMLReader : public FileReader {
      * @param filename Path to input file.
      */
     void readParticles(ContainerRef particles, const std::string& filename) override;
-
+    /**
+     * @brief      Helper function to parse Cuboid Format
+     *
+     * @param[in]  node YAML::Node of the start of the cuboid block
+     *
+     * @return     Vector of read in Cuboids
+     */
     std::vector<CuboidData> parseCuboids(const YAML::Node& node);
+    /**
+     * @brief      Helper function to parse Disc Format
+     *
+     * @param[in]  node YAML::Node of the start of the disc block
+     *
+     * @return     Vector of read in Discs
+     */
     std::vector<DiscData> parseDiscs(const YAML::Node& node);
 
    private:
+    /**
+     * @brief      Helper function to parse Domains
+     *
+     * @param[in]  node YAML::Node of the start of the domain block
+     */
     void parseDomain(SettingsParam& settings, const YAML::Node& node);
     void readXVM(ContainerRef particles, const YAML::Node& node);
     void readCube(ContainerRef particles, const YAML::Node& node);

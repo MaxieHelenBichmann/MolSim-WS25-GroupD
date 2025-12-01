@@ -8,6 +8,7 @@ void DiscGenerator::generateParticles(ContainerRef particles) {
     if (radius == 0) {
         return;
     }
+    // TODO Smarter reserve of particles (this is a bad upper bound)
     particles.reserve(radius * radius * 4);
     long loop_radius = static_cast<long>(radius);
 

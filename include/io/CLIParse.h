@@ -3,16 +3,18 @@
 
 #include <spdlog/spdlog.h>
 
-#include <algorithm>
+#include <CLI/CLI.hpp>
 #include <cstring>
 #include <filesystem>
 #include <iostream>
 #include <memory>
 #include <string>
 
+#include "exceptions/CLIException.h"
 #include "io/FileReader.h"
 #include "io/fileReader/XVMReader.h"
 #include "io/fileReader/YAMLReader.h"
+#include "physics/ForceSource.h"
 #include "utils/Logging.h"
 #include "utils/Settings.h"
 
@@ -21,117 +23,97 @@ namespace mol_sim {
 /**
  * @brief Parses command line input.
  *
- * Parses command line input.
+ * Parses command line input and validates parameters.
  * @param argc Number of arguments including the program name
  * @param argsv Array of arguments
  * @param particles Container to place the generated particles in.
  * @param settings SettingsParam where options for the simulation are stored.
+ * @throws CLIException if CLI parsing or file reading fails
  */
-
-const std::string HELP_MSG =
-    "Usage: ./MolSim path/to/input/file <ARGS>\n"
-    "| -d <DOUBLE>              : sets DELTA_T (default = 0.014)\n"
-    "| -t <DOUBLE>              : sets END_TIME (default = 1000)\n"
-    "| -f {GRAV, LJ}            : sets the force-type (default = LJ)\n"
-    "| -e <DOUBLE>              : sets epsilon for Lennard-Jones force (default = 5)\n"
-    "| -o <DOUBLE>              : sets sigma for Lennard-Jones force (default = 1)\n"
-#if SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_TRACE
-    "| -l {Info, Debug, Trace}  : sets Log Level (default = Info)\n"
-#endif
-    "| -h                       : displays this message";
-const std::string& d = "-d";
-const std::string& t = "-t";
-const std::string& f = "-f";
-const std::string& e = "-e";
-const std::string& o = "-o";
-#if SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_TRACE
-const std::string& l = "-l";
-#endif
-const std::string& h = "-h";
-const char* GRAV = "GRAV";
-const char* LJ = "LJ";
-
-std::string cliParse(int argc, char** argsv, SettingsParam& settings) {
+std::string cliParse(int argc, char** argv, SettingsParam& settings) {
     SPDLOG_INFO("Hello from MolSim for PSE!");
-    char** help = std::find(argsv, argsv + argc, h);
-    if (help != &argsv[argc]) {
-        std::cout << HELP_MSG << '\n';
-        exit(-1);
-    }
-    if (argc == 0) {
-        SPDLOG_ERROR("Erroneous programme call!: No arguments provided!");
-        std::cout << HELP_MSG << '\n';
-        exit(-2);
-    }
+    CLI::App app{"MolSim - Molecular Dynamics Simulator"};
+    argv = app.ensure_utf8(argv);
 
-    int parsed_args = 2;  // program name + assume file name is OK (bad files handled in fileReader.readfile)
-    char** delta_t_opt = std::find(argsv, &argsv[argc], d);
-    char** end_time_opt = std::find(argsv, &argsv[argc], t);
-    char** force_opt = std::find(argsv, &argsv[argc], f);
-    char** epsilon_opt = std::find(argsv, &argsv[argc], e);
-    char** sigma_opt = std::find(argsv, &argsv[argc], o);
+    // Customize help formatting
+    app.get_formatter()->column_width(40);
+    app.get_formatter()->label("REQUIRED", "");
+    app.get_formatter()->label("TEXT", "");
+    std::unique_ptr<FileReader> file_reader;
+    std::filesystem::path filepath;
+    std::string force;
+
+    std::string log_level = "Default";  // NOLINT
+
+    // Define custom validator for file extensions
+    auto file_ext_validator = [](const std::string& filename) -> std::string {
+        std::filesystem::path p(filename);
+        auto ext = p.extension();
+        if (ext != ".txt" && ext != ".yaml") {
+            return "File must have .txt or .yaml extension";
+        }
+        return "";
+    };
+
+    app.add_option("filepath,-f,--file", filepath, "Input file path (.txt or .yaml)")
+        ->required()
+        ->check(CLI::ExistingFile.description(""))
+        ->check(CLI::Validator(file_ext_validator, ""));
+
+    app.add_option("-d,--delta_t", settings.delta_t, "Time step")->check(CLI::PositiveNumber.description(""));
+
+    app.add_option("-t,--end_time", settings.end_time, "Simulation end time")
+        ->check(CLI::PositiveNumber.description(""));
+
+    app.add_option("--force", force, "Force type: GRAV (gravitational) or LJ (Lennard-Jones)")
+        ->check(CLI::IsMember({"GRAV", "LJ"}).description("{GRAV, LJ}"));
+
 #if SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_TRACE
-    char** log_opt = std::find(argsv, &argsv[argc], l);
+    app.add_option("-l,--log_level", log_level, "Logging verbosity level")
+        ->check(CLI::IsMember({"Info", "Trace", "Debug"}).description("{Info,Debug,Trace}"));
 #endif
+
+    // Parse with error handling
     try {
-        if (delta_t_opt != &argsv[argc]) {
-            settings.delta_t = std::stod(*(++delta_t_opt));
-            parsed_args += 2;
-        }
-        if (end_time_opt != &argsv[argc]) {
-            settings.end_time = std::stod(*(++end_time_opt));
-            parsed_args += 2;
-        }
-        if (force_opt != &argsv[argc]) {
-            char* force_string = *(++force_opt);
-            bool grav = !static_cast<bool>(std::strcmp(force_string, GRAV));
-            bool lj = !static_cast<bool>(std::strcmp(force_string, LJ));
+        app.parse(argc, argv);
+    } catch (const CLI::Success& e) {
+        // User requested help or version - exit cleanly
+        exit(0);
+    } catch (const CLI::RequiredError& e) {
+        SPDLOG_ERROR("Missing required argument: {}", e.what());
+        std::cout << app.help() << '\n';
+        throw CLIException("Required argument missing: " + std::string(e.what()));
+    } catch (const CLI::ValidationError& e) {
+        SPDLOG_ERROR("Validation failed: {}", e.what());
+        std::cout << app.help() << '\n';
+        throw CLIException("Validation error: " + std::string(e.what()));
+    } catch (const CLI::FileError& e) {
+        SPDLOG_ERROR("File error: {}", e.what());
+        throw CLIException("File error: " + std::string(e.what()));
+    } catch (const CLI::ConversionError& e) {
+        SPDLOG_ERROR("Invalid value provided: {}", e.what());
+        std::cout << app.help() << '\n';
+        throw CLIException("Invalid value: " + std::string(e.what()));
+    } catch (const CLI::ParseError& e) {
+        SPDLOG_ERROR("Command line parsing failed: {}", e.what());
+        std::cout << app.help() << '\n';
+        throw CLIException("CLI parsing error: " + std::string(e.what()));
+    }
 
-            if (grav) {
-                parsed_args += 2;
-                settings.force = GRAVITATIONAL;
-            } else if (lj) {
-                parsed_args += 2;
-                if (epsilon_opt != &argsv[argc]) {
-                    settings.epsilon = std::stod(*(++epsilon_opt));
-                    parsed_args += 2;
-                }
-                if (sigma_opt != &argsv[argc]) {
-                    settings.sigma = std::stod(*(++sigma_opt));
-                    parsed_args += 2;
-                }
-            }
+    if (!force.empty()) {
+        if (force == "GRAV") {
+            settings.force = GRAVITATIONAL;
+        } else if (force == "LJ") {
+            settings.force = LENNARDJONES;
         }
+    }
+
 #if SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_TRACE
-        if (log_opt != &argsv[argc]) {
-            logInit(*(++log_opt));
-            parsed_args += 2;
-        } else {
-            logInit("Default");
-        }
+    logInit(log_level);
 #endif
-    } catch (std::invalid_argument& e) {
-        SPDLOG_ERROR("Erroneous programme call!: Given options must be valid floating point numbers or strings!");
-        std::cout << HELP_MSG << '\n';
-        exit(-1);
-    } catch (std::out_of_range& e) {
-        SPDLOG_ERROR(
-            "Erroneous programme call!: At least one floating point out of double precision floating point range!");
-        std::cout << HELP_MSG << '\n';
-        exit(-1);
-    } catch (std::logic_error& e) {
-        SPDLOG_ERROR("Erroneous programme call!: Flag set but no value provided!");
-        std::cout << HELP_MSG << '\n';
-        exit(-1);
-    }
 
-    if (parsed_args - argc != 0) {
-        SPDLOG_WARN("Erroneous programme call!: Unrecognized arguments in programme call!");
-    }
-
-    return argsv[1];
+    return filepath;
 }
-
 }  // namespace mol_sim
 
 #endif

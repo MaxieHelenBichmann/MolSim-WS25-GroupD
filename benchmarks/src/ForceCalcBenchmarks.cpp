@@ -1,10 +1,15 @@
 #include <benchmark/benchmark.h>
 
-#include "../code/ForceCalcMethods.h"
+#include <memory>
+
+#include "../code/simulationimpl/ForceCalcMethods.h"
 #include "BenchmarkingUtils.h"
+#include "io/outputWriter/XYZWriter.h"
 #include "particles/container/SimpleContainer.h"
 #include "physics/ForceSource.h"
 #include "physics/LennardJonesForce.h"
+#include "utils/Settings.h"
+#include "utils/Simulation.h"
 
 namespace mol_sim {
 /**
@@ -12,7 +17,7 @@ namespace mol_sim {
  * Performs one calulateF() call on a container of 100-1000 particles
  *
  */
-template <ForceSource forceType>
+template <ForceConcept forceType>
 void bmForceUnOptimized(benchmark::State& state) {
     SimpleContainer particles;
     size_t n = state.range(0);
@@ -26,17 +31,13 @@ void bmForceUnOptimized(benchmark::State& state) {
         benchmark::DoNotOptimize(particles);
     }
 }
-BENCHMARK(bmForceUnOptimized<LennardJonesForce>)
-    ->RangeMultiplier(10)
-    ->Range(100, 1000)
-    ->Repetitions(10)
-    ->Unit(benchmark::kMicrosecond);
+
 /**
  * @brief Benchmarks the optimized Force Calculation
  * Performs one calulateF() call on a container of 100-1000 particles
  *
  */
-template <ForceSource forceType>
+template <ForceConcept forceType>
 void bmForceOptimized(benchmark::State& state) {
     SimpleContainer particles;
     size_t n = state.range(0);
@@ -51,18 +52,13 @@ void bmForceOptimized(benchmark::State& state) {
         benchmark::DoNotOptimize(particles);
     }
 }
-BENCHMARK(bmForceOptimized<LennardJonesForce>)
-    ->RangeMultiplier(10)
-    ->Range(100, 1000)
-    ->Repetitions(10)
-    ->Unit(benchmark::kMicrosecond);
 
 /**
  * @brief Benchmarks the alternative optimized Force Calculation
  * Performs one calulateF() call on a container of 100-1000 particles
  *
  */
-template <ForceSource forceType>
+template <ForceConcept forceType>
 void bmForceOptimizedAlt(benchmark::State& state) {
     SimpleContainer particles;
     size_t n = state.range(0);
@@ -77,9 +73,26 @@ void bmForceOptimizedAlt(benchmark::State& state) {
         benchmark::DoNotOptimize(particles);
     }
 }
+
+BENCHMARK(bmForceUnOptimized<LennardJonesForce>)
+    ->RangeMultiplier(10)
+    ->Range(100, 10000)
+    ->Complexity()
+    ->Repetitions(10)
+    ->Unit(benchmark::kMicrosecond)
+    ->DisplayAggregatesOnly(true);
+BENCHMARK(bmForceOptimized<LennardJonesForce>)
+    ->RangeMultiplier(10)
+    ->Range(100, 10000)
+    ->Complexity()
+    ->Repetitions(10)
+    ->Unit(benchmark::kMicrosecond)
+    ->DisplayAggregatesOnly(true);
 BENCHMARK(bmForceOptimizedAlt<LennardJonesForce>)
     ->RangeMultiplier(10)
-    ->Range(100, 1000)
+    ->Range(100, 10000)
+    ->Complexity()
     ->Repetitions(10)
-    ->Unit(benchmark::kMicrosecond);
+    ->Unit(benchmark::kMicrosecond)
+    ->DisplayAggregatesOnly(true);
 }  // namespace mol_sim

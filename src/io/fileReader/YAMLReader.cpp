@@ -11,7 +11,7 @@
 #include <string>
 #include <utility>
 
-#include "io/fileReader/YAMLReaderException.h"
+#include "exceptions/YAMLReaderException.h"
 #include "particles/boundaries/Boundary.h"
 #include "particles/boundaries/Outflow.h"
 #include "particles/boundaries/Reflecting.h"
@@ -165,35 +165,33 @@ void YAMLReader::readXVM(ContainerRef particles, const YAML::Node& node) {
 std::vector<YAMLReader::CuboidData> YAMLReader::parseCuboids(const YAML::Node& node) {
     std::vector<CuboidData> cuboids;
     try {
-        if (node["cuboids"] && node["cuboids"].IsSequence()) {
-            for (const auto& curr : node["cuboids"]) {
-                CuboidData data;
+        CuboidData data;
 
-                const YAML::Node& coordinates = curr["coordinates"];
-                data.position[0] = coordinates["x"].as<double>();
-                data.position[1] = coordinates["y"].as<double>();
-                data.position[2] = coordinates["z"].as<double>();
+        const YAML::Node& coordinates = node["coordinates"];
+        data.position[0] = coordinates["x"].as<double>();
+        data.position[1] = coordinates["y"].as<double>();
+        data.position[2] = coordinates["z"].as<double>();
 
-                const YAML::Node& velocity_node = curr["velocity"];
-                data.velocity[0] = velocity_node["vx"].as<double>();
-                data.velocity[1] = velocity_node["vy"].as<double>();
-                data.velocity[2] = velocity_node["vz"].as<double>();
+        const YAML::Node& velocity_node = node["velocity"];
+        data.velocity[0] = velocity_node["vx"].as<double>();
+        data.velocity[1] = velocity_node["vy"].as<double>();
+        data.velocity[2] = velocity_node["vz"].as<double>();
 
-                const YAML::Node& count_node = curr["particleNum"];
-                data.num_particles[0] = count_node["nx"].as<size_t>();
-                data.num_particles[1] = count_node["ny"].as<size_t>();
-                data.num_particles[2] = count_node["nz"].as<size_t>();
+        const YAML::Node& count_node = node["particleNum"];
+        data.num_particles[0] = count_node["nx"].as<size_t>();
+        data.num_particles[1] = count_node["ny"].as<size_t>();
+        data.num_particles[2] = count_node["nz"].as<size_t>();
 
-                data.mass = curr["mass"].as<double>();
-                data.distance = curr["distance"].as<double>();
-                data.avg_velo = curr["mean_velo"].as<double>();
-                data.epsilon = curr["epsilon"].as<double>();
-                data.sigma = curr["sigma"].as<double>();
+        data.mass = node["mass"].as<double>();
+        data.distance = node["distance"].as<double>();
+        data.avg_velo = node["mean_velo"].as<double>();
+        data.epsilon = node["epsilon"].as<double>();
+        data.sigma = node["sigma"].as<double>();
 
-                cuboids.push_back(data);
-            }
-        }
-    } catch (const YAML::Exception& e) {
+        cuboids.push_back(data);
+    }
+
+    catch (const YAML::Exception& e) {
         SPDLOG_ERROR("Error parsing cuboids: {}", e.what());
         throw YAMLReaderException(e.what());
     }
@@ -203,30 +201,27 @@ std::vector<YAMLReader::CuboidData> YAMLReader::parseCuboids(const YAML::Node& n
 std::vector<YAMLReader::DiscData> YAMLReader::parseDiscs(const YAML::Node& node) {
     std::vector<DiscData> discs;
     try {
-        if (node["discs"] && node["discs"].IsSequence()) {
-            for (const auto& curr : node["discs"]) {
-                DiscData data;
+        DiscData data;
 
-                const YAML::Node& coordinates = curr["coordinates"];
-                data.position[0] = coordinates["x"].as<double>();
-                data.position[1] = coordinates["y"].as<double>();
-                data.position[2] = coordinates["z"].as<double>();
+        const YAML::Node& coordinates = node["coordinates"];
+        data.position[0] = coordinates["x"].as<double>();
+        data.position[1] = coordinates["y"].as<double>();
+        data.position[2] = coordinates["z"].as<double>();
 
-                const YAML::Node& velocity_node = curr["velocity"];
-                data.velocity[0] = velocity_node["vx"].as<double>();
-                data.velocity[1] = velocity_node["vy"].as<double>();
-                data.velocity[2] = velocity_node["vz"].as<double>();
+        const YAML::Node& velocity_node = node["velocity"];
+        data.velocity[0] = velocity_node["vx"].as<double>();
+        data.velocity[1] = velocity_node["vy"].as<double>();
+        data.velocity[2] = velocity_node["vz"].as<double>();
 
-                data.radius = curr["radius"].as<size_t>();
-                data.mass = curr["mass"].as<double>();
-                data.distance = curr["distance"].as<double>();
-                data.avg_velo = curr["mean_velo"].as<double>();
-                data.epsilon = curr["epsilon"].as<double>();
-                data.sigma = curr["sigma"].as<double>();
+        data.radius = node["radius"].as<size_t>();
+        data.mass = node["mass"].as<double>();
+        data.distance = node["distance"].as<double>();
+        data.avg_velo = node["mean_velo"].as<double>();
+        data.epsilon = node["epsilon"].as<double>();
+        data.sigma = node["sigma"].as<double>();
 
-                discs.push_back(data);
-            }
-        }
+        discs.push_back(data);
+
     } catch (const YAML::Exception& e) {
         SPDLOG_ERROR("Error parsing discs: {}", e.what());
         throw YAMLReaderException(e.what());
@@ -284,18 +279,16 @@ void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
                         std::optional<double> epsilon = curr_node["epsilon"]
                                                             ? std::optional<double>(curr_node["epsilon"].as<double>())
                                                             : std::nullopt;
-                        bool ghost_on_boundary = curr_node["ghost_on_boundary"]
-                                                    ? curr_node["ghost_on_boundary"].as<bool>()
-                                                    : false;
+                        bool ghost_on_boundary =
+                            curr_node["ghost_on_boundary"] ? curr_node["ghost_on_boundary"].as<bool>() : false;
                         boundary = std::make_unique<Reflecting>(location, dimension, ghost_on_boundary, sigma, epsilon);
                         break;
                     }
                     case BoundaryType::VELOCITYREFLECT: {
-                        bool angular_reflect = curr_node["angular_reflect"]
-                                                    ? curr_node["angular_reflect"].as<bool>()
-                                                    : false;
-                        boundary = std::make_unique<VelocityReflect>(location, dimension, angular_reflect);     
-                        break;             
+                        bool angular_reflect =
+                            curr_node["angular_reflect"] ? curr_node["angular_reflect"].as<bool>() : false;
+                        boundary = std::make_unique<VelocityReflect>(location, dimension, angular_reflect);
+                        break;
                     }
                     case BoundaryType::OUTFLOW:
                     default:
