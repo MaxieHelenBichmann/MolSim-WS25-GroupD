@@ -28,7 +28,10 @@ SimpleContainer::proximity_iterator SimpleContainer::eraseParticle(const SimpleC
     return proximity_iterator{center, radius, data(), data() + idx, 0, prox, locations};
 };
 
-void SimpleContainer::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x) { p->getX() = new_x; }
+std::vector<Particle>::iterator SimpleContainer::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x) {
+    p->getX() = new_x;
+    return ++p;
+}
 
 // proximity iterators
 SimpleContainer::proximity_iterator SimpleContainer::proximityBegin(R3 center, double radius, size_t offset) {

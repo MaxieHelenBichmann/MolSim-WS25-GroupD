@@ -172,10 +172,10 @@ class Simulation {
      * @brief Calculates the positions of every particle for the next time step.
      */
     void calculateX() {
-        for (auto it = particles.begin(); it != particles.end(); ++it) {
+        for (auto it = particles.begin(); it != particles.end();) {
             const auto new_position =
                 (*it).getX() + (delta_t * (*it).getV()) + ((0.5 * delta_t * delta_t / (*it).getM()) * (*it).getF());
-            particles.updateParticlePosition(it, new_position);
+            it = particles.updateParticlePosition(it, new_position);
         }
     }
 
@@ -204,7 +204,7 @@ class Simulation {
             removeParticles();
 
             // 3. Apply reflecting boundaries (create ghost particles)
-            applyReflectingBoundaries();   
+            applyReflectingBoundaries();
 
             // 4. Calculate forces (including ghost interactions)
             calculateF();

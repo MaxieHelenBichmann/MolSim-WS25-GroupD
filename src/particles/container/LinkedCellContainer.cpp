@@ -363,13 +363,13 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::eraseParticle(Linke
     return next_it;
 }
 
-void LinkedCellContainer::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x) {
+std::vector<Particle>::iterator LinkedCellContainer::updateParticlePosition(std::vector<Particle>::iterator p,
+                                                                            R3 new_x) {
     size_t old_cell_idx = findCellIndex(p->getX());
 
     if (!fitsContainer(new_x)) {
         // Particle moved completely outside container
-        eraseParticle(p);
-        return;
+        return eraseParticle(p);
     }
 
     size_t new_cell_idx = findCellIndex(new_x);
@@ -379,6 +379,7 @@ void LinkedCellContainer::updateParticlePosition(std::vector<Particle>::iterator
     }
 
     p->getX() = new_x;
+    return ++p;
 }
 
 // normal iterators

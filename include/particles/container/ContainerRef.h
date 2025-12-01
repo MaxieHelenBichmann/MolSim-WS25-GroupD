@@ -5,7 +5,9 @@
 #include <type_traits>
 #include <utility>
 #include <variant>
+#include <vector>
 
+#include "particles/Particle.h"
 #include "particles/container/LinkedCellContainer.h"
 #include "particles/container/SimpleContainer.h"
 
@@ -140,8 +142,10 @@ class ContainerRef {
      *
      * @param p Iterator to the Particle to update.
      * @param new_x New position to set.
+     *
+     * @return Iterator to the next Particle.
      */
-    void updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x);
+    std::vector<Particle>::iterator updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x);
 
     /**
      * @brief Get the Instance object.
