@@ -36,6 +36,8 @@
 .vscode/
 .cache/
 *.DS_Store
+*sublime*
+.github/*copilot*
 
 # Build folders.
 # This rule ignores any folder in the project root that contains "build"

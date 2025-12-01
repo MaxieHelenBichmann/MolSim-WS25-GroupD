@@ -8,7 +8,7 @@
 #include <string>
 #include <variant>
 
-#include "io/fileReader/YAMLReaderException.h"
+#include "exceptions/YAMLReaderException.h"
 #include "particles/Particle.h"
 #include "particles/boundaries/Boundary.h"
 #include "particles/boundaries/Reflecting.h"

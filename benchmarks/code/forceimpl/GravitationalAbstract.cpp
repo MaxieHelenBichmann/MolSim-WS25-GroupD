@@ -1,4 +1,4 @@
-#include "GravtiationalAbstract.h"
+#include "GravitationalAbstract.h"
 namespace mol_sim {
 
 Vector<double, 3> GravitationalAbstract::applyForce(const Particle& p1, const Particle& p2) const {

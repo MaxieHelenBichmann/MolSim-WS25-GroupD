@@ -1,6 +1,8 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
+#include <cmath>
+#include <cstddef>
 #include <optional>
 #include <string>
 #include <utility>
@@ -67,7 +69,7 @@ class SettingsParam {
      * @brief Default cutoff radius for the linked cells.
      *
      */
-    constexpr static double CUTOFF_DEFAULT = 0.5;
+    constexpr static double CUTOFF_DEFAULT = std::numeric_limits<double>::infinity();
     /**
      * @brief Default container type. SIMPLE = SimpleContainer
      *

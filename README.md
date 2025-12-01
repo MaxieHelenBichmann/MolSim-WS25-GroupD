@@ -1,124 +1,334 @@
-MolSim Group D
-===
+# MolSim Group D
 
-Contributors:
+[![CI MolSim](https://github.com/MaxieHelenBichmann/MolSim-WS25-GroupD/actions/workflows/ci.yml/badge.svg)](https://github.com/MaxieHelenBichmann/MolSim-WS25-GroupD/actions/workflows/ci.yml)
 
+**Contributors:**
 - Maxie Helen Bichmann
 - Georg Sebastian Eisner
 - Henry Jacob Meyran
 
-[![CI MolSim](https://github.com/MaxieHelenBichmann/MolSim-WS25-GroupD/actions/workflows/ci.yml/badge.svg)](https://github.com/MaxieHelenBichmann/MolSim-WS25-GroupD/actions/workflows/ci.yml)
+**Documentation:** [https://maxiehelenbichmann.github.io/MolSim-WS25-GroupD/](https://maxiehelenbichmann.github.io/MolSim-WS25-GroupD/)
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Project Structure](#project-structure)
+- [Dependencies](#dependencies)
+- [Building the Project](#building-the-project)
+- [Running the Project](#running-the-project)
+- [Documentation](#documentation)
+- [Testing the Project](#testing-the-project)
+- [Benchmarking the Project](#benchmarking-the-project)
+- [Optional Tools](#optional-tools)
+- [Profiling](#profiling)
+
+---
+
+## Overview
+
+MolSim is a molecular dynamics simulation framework developed as part of the PSE Molekulardynamik course. The application simulates the physical behavior of particle systems using numerical integration methods and various force models.
+
+**Key Features:**
+- Multiple force implementations (Gravitational, Lennard-Jones)
+- Efficient particle containers (Direct Sum, Linked Cell)
+- Boundary condition support (Reflecting, Periodic, Outflow)
+- Particle generators utilities (Cuboid, Disc) with Brownian Motion
+- Output formats (VTK, XYZ)
+- Configurable via YAML input files
+
+**Supported Simulations:**
+- Gravitational N-body problems (planetary systems, stellar dynamics)
+- Molecular dynamics with Lennard-Jones potentials (fluids, collisions)
+- Large-scale particle systems using spatial optimization (Linked Cells)
+
+---
+
+## Project Structure
+
+```
+MolSim-WS25-GroupD/
+├── src/                        # Source code
+│   └── MolSim.cpp              # Main application entry point
+├── include/                    # Public headers
+├── tests/                      # Unit and integration tests
+├── benchmarks/                 # Performance benchmarks
+├── input/                      # Example simulation configurations 
+│   └── formats/                # Explanation of all available input formats
+├── build/                      # Build artifacts (generated)
+└── doxys_documentation/        # Generated documentation (generated)
+```
+
+---
 
 ## Dependencies
 
-- **Essential:**
-    - CMake Version 3.10+
-    - Make 4.3+
-    - C++ compiler with C++20 support (tested with g++ 14.2.0)
-- **VTK Output:**
-    - VTK Version 8.9+
-- **Optional Tools:**
-    - clang-format
-    - clang-tidy
-- **Doxygen Support:**
-    - Doxygen
-    - Graphviz 
+### Essential
+- CMake Version 3.10+
+- Make 4.3+
+- C++ compiler with C++20 support (tested with clang 18.1.3)
 
-## Building the project
+### VTK Output
+- VTK Version 8.9+
 
-**How do you build the project?**
+### Optional Tools
+- clang-format
+- clang-tidy
 
-0. Make sure to be in the project root.
+### Doxygen Support
+- Doxygen
+- Graphviz
 
-1. Configure the project with CMake by running these commands:
+### Profiling
+- Perf
+- Valgrind
 
-    ```
-    mkdir build && cd build
-    ccmake ..
-    ```
+---
 
-2. Now you can interactively change the options.
-    <details><summary>Configure Options</summary>
-    - <b>ENABLE_TESTING</b> enables all tests.<br />
-    - <b>ENABLE_BENCHMARK</b> enables benchmarking. (<b>BENCHMARK_DOWNLOAD_DEPENDENCIES</b> should also be enabled)<br />
-    - <b>ENABLE_DOXYGEN</b> enables doxygen.<br />
-    - <b>COVERAGE</b> enables code coverage reports.<br />
-    - <b>ENABLE_VTK_OUTPUT</b> enables output in the vtk format.<br />
-    - <b>CMAKE_BUILD_TYPE</b> specifies the build type (Debug, Release,...).<br />
-   </details>  
+## Building the Project
 
-3. Build the executable with the Makefile by running the command:
+**1. Navigate to project root**
 
-    ```
-    make -j $(nproc)
-    ```
+**2. Configure with CMake**
+```bash
+mkdir build && cd build
+ccmake ..
+```
 
-## Running the project
+**3. Configure build options interactively**
 
-**How do I run the project?**
+<details>
+<summary><b>CMake Configuration Options</b></summary>
 
-0. Make sure to be in the project root after you built the project.
+| Option | Description |
+|--------|-------------|
+| `ENABLE_TESTING` | Enable all tests |
+| `ENABLE_BENCHMARK` | Enable benchmarking (requires `BENCHMARK_DOWNLOAD_DEPENDENCIES`) |
+| `ENABLE_DOXYGEN` | Enable Doxygen documentation generation |
+| `ENABLE_PROFILING` | Enable profiling tools (perf and valgrind) |
+| `COVERAGE` | Enable code coverage reports |
+| `ENABLE_VTK_OUTPUT` | Enable output in VTK format |
+| `CMAKE_BUILD_TYPE` | Build type: `Debug`, `Release`, `RelWithDebInfo`, `MinSizeRel` |
 
-1. Run the executable with the given input file and optional desired delta_T (-d), end_T (-t) and force (-f):
+</details>
 
-    ```
-    ./build/project/MolSim ./input/planets.yaml -d 0.014 -t 1000 -f GRAV
-    ```
-    ```
-    ./build/project/MolSim ./input/particles.yaml -d 0.0002 -t 5
-    ```
+**4. Build the executable**
+```bash
+make -j $(nproc)
+```
 
-## Testing the project
+---
 
-**How do I test the project?**
+## Running the Project
 
-0. Make sure to be in the project root and to have built the project with the according CMake configuration.
+From the project root:
 
-1. Run the test executable or use ctest:
-    ```
-    ./build/tests/tests
-    ```
-    ```
-    ctest -V --test-dir ./build/tests 
-    ```
+**Planets simulation:**
+```bash
+./build/project/MolSim ./input/planets.yaml -d 0.014 -t 1000 -f GRAV
+```
 
-## Benchmarking the project
+**Particles simulation:**
+```bash
+./build/project/MolSim ./input/particles.yaml -d 0.0002 -t 5
+```
 
-**How do I benchmark the project?**
+**Parameters:**
+- `-d` : Delta T (time step)
+- `-t` : End T (simulation end time)
+- `-f` : Force type
 
-0. Make sure to be in the project root and to have built the project with the according CMake configuration.
+---
 
-1. Run the benchmark executable:
-    ```
-    ./build/benchmarks/MolSimBench
-    ```
+## Documentation
+
+**Online API Documentation:**
+
+Complete API and input format documentation is available at:
+- **[https://maxiehelenbichmann.github.io/MolSim-WS25-GroupD/](https://maxiehelenbichmann.github.io/MolSim-WS25-GroupD/)**
+
+**Local Documentation:**
+
+You can also generate the documentation locally using Doxygen (see [Optional Tools](#optional-tools) section).
+
+**Input File Format Reference:**
+
+Additional format documentation files are available in `input/formats/`:
+- `SettingsFormat.md` - Simulation settings configuration
+- `CuboidFormat.md` - Cuboid particle generation
+- `DiscFormat.md` - Disc particle generation
+- `XVMFormat.md` - Individual particle specification
+
+---
+
+## Testing the Project
+
+> **Note:** Ensure `ENABLE_TESTING` is enabled in CMake configuration.
+
+**Run tests directly:**
+```bash
+./build/tests/tests
+```
+
+**Run with CTest (verbose output):**
+```bash
+ctest -V --test-dir ./build/tests
+```
+
+## Benchmarking the Project
+
+> **Note:** Ensure `ENABLE_BENCHMARK` is enabled in CMake configuration.
+
+```bash
+./build/benchmarks/MolSimBench
+```
+
+---
 
 ## Optional Tools
 
-**Doxygen**  
-If Doxygen support was enabled:
+### Doxygen Documentation
 
-```
+Generate documentation (requires `ENABLE_DOXYGEN`):
+```bash
 make doc_doxygen
 ```
+Output location: `doxys_documentation/`
 
-Creates the doxygen documentation in the doxys_documentation directory.
+---
 
-**Clang-tidy**  
-If Clang-tidy support was enabled, clang-tidy will automatically run the checks specified in the .clang-tidy file.  
-There is also:
+### Clang-Tidy
 
-```
+When enabled, clang-tidy automatically runs checks from `.clang-tidy` during build.
+
+**Apply automatic fixes:**
+```bash
 make fix
 ```
 
-Which automatically applies fixes where clang-tidy finds them.
+---
 
-**Test Coverage**  
-If coverage was enabled:
+### Test Coverage
 
-```
+Generate coverage reports (requires `COVERAGE` enabled):
+```bash
 make coverage_report
 ```
+Output location: `build/coverage/`
 
-Creates a coverage report on the coverage directory inside the build directory.
+---
+
+## Profiling
+
+### Prerequisites
+| Tool | Purpose |
+|------|---------|
+| `perf` | CPU profiling (requires Linux kernel support) |
+| `valgrind` | Memory debugging and profiling suite |
+| `ms_print` | View massif output (included with valgrind) |
+
+
+### Build Configuration for Profiling
+
+| Profiling Type | Recommended Build Type | Notes |
+|----------------|------------------------|-------|
+| **Performance (perf)** | `RelWithDebInfo` | Optimized code with debug symbols for accurate profiling<br> Debug builds dont show accurate performance |
+| **Memory (valgrind)** | `Debug` or `RelWithDebInfo` | Debug symbols (-g) required for detailed stack traces<br> Release builds may not show accurate line numbers |
+
+### Customizing Profiling Inputs
+
+<details>
+<summary><b>Customize input files and arguments for profiling runs</b></summary>
+
+
+| Option | Description |
+|--------|-------------|
+| `PERF_INPUT_FILE` | Input file used by all perf calls |
+| `PERF_ARGS` | Extra arguments passed to perf calls |
+| `VALGRIND_INPUT_FILE` | Input file used by all valgrind calls |
+| `VALGRIND_ARGS` | Extra arguments passed to valgrind calls |
+</details>  
+
+> **Note:** Valgrind runs much slower, so use shorter simulations for memory checks.
+
+### Perf Profiling
+
+<details>
+<summary><b>Available Targets</b></summary>
+
+| Target | Command | Description |
+|--------|---------|-------------|
+| **perf-record** | `make perf-record` | Record performance data with call graph information<br>Creates `perf.data` in build directory |
+| **perf-report** | `make perf-report` | Interactive analysis of recorded data<br>Opens TUI to explore hotspots and call chains |
+| **perf-report-text** | `make perf-report-text` | Generate text-based performance report<br>Saves to `build/perf-report.txt` |
+| **perf-stat** | `make perf-stat` | Display hardware counter statistics<br>CPU cycles, instructions, cache misses |
+| **perf-cache** | `make perf-cache` | Analyze cache performance in detail<br>Cache references, misses, L1 behavior |
+
+</details>
+
+**Recommended Workflow:**
+```bash
+# 1. Build with profiling enabled
+cd build && ccmake ..  # Set ENABLE_PROFILING=ON, CMAKE_BUILD_TYPE=RelWithDebInfo
+make -j $(nproc)
+
+# 2. Record performance data
+make perf-record
+
+# 3. Analyze results interactively
+make perf-report
+
+# 4. Check hardware counters
+make perf-stat
+
+# 5. Investigate cache issues if needed
+make perf-cache
+```
+
+---
+
+### Valgrind Memory Analysis
+
+<details>
+<summary><b>Available Targets</b></summary>
+
+#### Memory Check
+```bash
+make valgrind-memcheck
+```
+
+
+Results: `build/valgrind/memcheck.log`
+
+#### Heap Profiling
+```bash
+make valgrind-massif
+```
+Tracks heap memory usage over time.
+
+**Analyze results:**
+```bash
+ms_print build/valgrind/massif.out
+```
+
+</details>
+
+**Recommended Workflow:**
+```bash
+# 1. Build with profiling and debug symbols
+cd build && ccmake ..  # Set ENABLE_PROFILING=ON, CMAKE_BUILD_TYPE=Debug
+make -j $(nproc)
+
+# 2. Check for memory leaks
+make valgrind-memcheck
+cat build/valgrind/memcheck.log  # Review findings
+
+# 3. Profile heap usage
+make valgrind-massif
+ms_print build/valgrind/massif.out | less
+```
+
+---
+
+
