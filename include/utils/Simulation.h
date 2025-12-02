@@ -99,7 +99,7 @@ class Simulation {
         R3 v = p.getX();
         R3 max = domain.getDimension();
         bool particle_is_oob =
-            v[0] >= max[0] || v[1] >= max[1] || v[2] >= max[2] || v[0] <= 0 || v[1] <= 0 || v[2] <= 0;
+            v[0] > max[0] || v[1] > max[1] || v[2] > max[2] || v[0] < 0 || v[1] < 0 || v[2] < 0;
         bool particle_not_ghost = p.getType() != -1;
         return particle_is_oob && particle_not_ghost;
     }
