@@ -306,7 +306,7 @@ class LinkedCellContainer {
         void satisfy() {
             while (cur != end &&
                    (cur == cell_end || !((center - (*container_data)[*cur].getX()).euclidNorm() <= radius) ||
-                    (cells.size() == 1 && *cur <= center_idx))) {
+                    (cells.size() == 1 && *cur <= center_idx && center_idx != container_data->size()))) {
                 inc();
             }
         }
@@ -395,7 +395,7 @@ class LinkedCellContainer {
             }
             while (cur != end &&
                    (cur == cell_end || !((center - (*container_data)[*cur].getX()).euclidNorm() <= radius) ||
-                    (cells.size() == 1 && *cur <= center_idx))) {
+                    (cells.size() == 1 && *cur <= center_idx && center_idx != container_data->size()))) {
                 inc();
             }
         }

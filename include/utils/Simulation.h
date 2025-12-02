@@ -197,7 +197,7 @@ class Simulation {
             it = particles.updateParticlePosition(it, new_x);
         }
 
-        size_t idx = 1;
+        size_t idx = 0;
         for (auto it = particles.begin(); it != particles.end(); ++it, idx++) {
             Particle& p1 = *it;
             if (ignoreParticle(p1)) {

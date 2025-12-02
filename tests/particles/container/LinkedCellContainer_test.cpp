@@ -197,7 +197,7 @@ TEST_F(LinkedCellContainerTest, testProximityIteratorInfiniteRadius) {
         ++it;
         ++count;
     }
-    // only two particles are within the radius AND considered in the Newton's third law optimization
+    // only 2 particle are within the radius AND considered in the Newton's third law optimization
     EXPECT_EQ(count, 2);
 }
 

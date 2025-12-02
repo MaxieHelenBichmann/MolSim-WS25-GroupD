@@ -414,7 +414,7 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::proximityBegin(R3 c
         return proximity_iterator{};
     }
     return proximity_iterator{
-        center, radius, nonempty_adjacent_cells.front()->particles().begin(), nonempty_adjacent_cells, &data, --offset};
+        center, radius, nonempty_adjacent_cells.front()->particles().begin(), nonempty_adjacent_cells, &data, offset};
 }
 
 LinkedCellContainer::proximity_iterator LinkedCellContainer::proximityEnd(R3 center, double radius) {
@@ -456,7 +456,7 @@ LinkedCellContainer::const_proximity_iterator LinkedCellContainer::proximityBegi
         return const_proximity_iterator{};
     }
     return const_proximity_iterator{
-        center, radius, nonempty_adjacent_cells.front()->particles().begin(), nonempty_adjacent_cells, &data, --offset};
+        center, radius, nonempty_adjacent_cells.front()->particles().begin(), nonempty_adjacent_cells, &data, offset};
 }
 LinkedCellContainer::const_proximity_iterator LinkedCellContainer::proximityEnd(R3 center, double radius) const {
     std::vector<const Cell*> adjacent_cells = findAdjacentCellsN3L(findCellIndex(center));

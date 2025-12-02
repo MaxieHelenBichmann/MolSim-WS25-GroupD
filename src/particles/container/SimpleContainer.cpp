@@ -34,12 +34,13 @@ std::vector<Particle>::iterator SimpleContainer::updateParticlePosition(std::vec
 
 // proximity iterators
 SimpleContainer::proximity_iterator SimpleContainer::proximityBegin(R3 center, double radius, size_t offset) {
-    return proximity_iterator{center, radius, data(), data() + size(), offset};  // NOLINT
+    return proximity_iterator{center, radius, data(), data() + size(), offset == size() ? 0 : ++offset};  // NOLINT
 };
 
 SimpleContainer::const_proximity_iterator SimpleContainer::proximityBegin(R3 center, double radius,
                                                                           size_t offset) const {
-    return const_proximity_iterator{center, radius, data(), data() + size(), offset};  // NOLINT
+    return const_proximity_iterator{center, radius, data(), data() + size(),
+                                    offset == size() ? 0 : ++offset};  // NOLINT
 };
 
 SimpleContainer::proximity_iterator SimpleContainer::proximityEnd(R3 center, double radius) {
