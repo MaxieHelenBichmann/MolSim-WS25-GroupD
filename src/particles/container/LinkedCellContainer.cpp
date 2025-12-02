@@ -393,6 +393,11 @@ std::vector<Particle>::const_iterator LinkedCellContainer::cend() const { return
 // proximity iterators
 LinkedCellContainer::proximity_iterator LinkedCellContainer::proximityBegin(R3 center, double radius,
                                                                             [[maybe_unused]] size_t offset) {
+    if (radius > this->cell_length[0] || radius > this->cell_length[1] || radius > this->cell_length[2]) {
+        SPDLOG_INFO(
+            "Radius is larger than cell length in at least one dimension. Will not iterate over all affected "
+            "Particles!");
+    }
     std::vector<Cell*> adjacent_cells = findAdjacentCellsN3L(findCellIndex(center));
     std::vector<Cell*> nonempty_adjacent_cells;
 
@@ -430,6 +435,11 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::proximityEnd(R3 cen
 
 LinkedCellContainer::const_proximity_iterator LinkedCellContainer::proximityBegin(
     R3 center, double radius, [[maybe_unused]] size_t offset) const {
+    if (radius > this->cell_length[0] || radius > this->cell_length[1] || radius > this->cell_length[2]) {
+        SPDLOG_INFO(
+            "Radius is larger than cell length in at least one dimension. Will not iterate over all affected "
+            "Particles!");
+    }
     std::vector<const Cell*> adjacent_cells = findAdjacentCellsN3L(findCellIndex(center));
     std::vector<const Cell*> nonempty_adjacent_cells;
 
