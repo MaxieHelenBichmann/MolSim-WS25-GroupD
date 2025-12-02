@@ -17,7 +17,7 @@ void bmSimulationSingleLC(benchmark::State& state) {
     LinkedCellContainer part_container({180., 90., 1.}, 3.0);
     ContainerRef particles(part_container);
 
-    CuboidGenerator generator({60.0, 60.0, 0.0}, {0.0, -10.0, 0.0}, {n, n, n}, 1.0, 1.1225, 0.1, 5.0, 1.0);
+    CuboidGenerator generator({60.0, 60.0, 0.0}, {0.0, 0.0, 0.0}, {n, n, n}, 1.0, 1.1225, 0.1, 5.0, 1.0);
     SettingsParam settings;
     settings.delta_t = 0.0005;
     settings.start_time = 0;
