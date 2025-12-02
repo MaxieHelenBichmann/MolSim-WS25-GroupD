@@ -4,6 +4,7 @@
 #include <spdlog/spdlog.h>
 
 #include <array>
+#include <cstddef>
 #include <set>
 #include <vector>
 
@@ -288,6 +289,7 @@ class LinkedCellContainer {
         std::vector<Particle>* container_data;
         double radius;
         R3 center;
+        size_t center_idx;
 
         void inc() {
             SPDLOG_DEBUG("Incrementing proximity iterator");
@@ -303,7 +305,8 @@ class LinkedCellContainer {
 
         void satisfy() {
             while (cur != end &&
-                   (cur == cell_end || !((center - (*container_data)[*cur].getX()).euclidNorm() <= radius))) {
+                   (cur == cell_end || !((center - (*container_data)[*cur].getX()).euclidNorm() <= radius) ||
+                    (cells.size() == 1 && *cur <= center_idx))) {
                 inc();
             }
         }
@@ -317,14 +320,15 @@ class LinkedCellContainer {
 
         proximity_iterator() noexcept : container_data(nullptr), radius(0.0) {}
         proximity_iterator(R3 center, double radius, std::set<size_t>::iterator cur, std::vector<Cell*> cells,
-                           std::vector<Particle>* data)
+                           std::vector<Particle>* data, size_t center_idx)
             : cur(cur),
               end(cells.back()->particles().end()),
               cell_end(cells.front()->particles().end()),
               cells(cells),
               container_data(data),
               radius(radius),
-              center(center) {
+              center(center),
+              center_idx(center_idx) {
             satisfy();
         }
 
@@ -349,6 +353,7 @@ class LinkedCellContainer {
         [[nodiscard]] std::vector<Cell*> getCells() const { return cells; }
         [[nodiscard]] double getRadius() const { return radius; }
         [[nodiscard]] R3 getCenter() const { return center; }
+        [[nodiscard]] size_t getCenterIdx() const { return center_idx; }
         [[nodiscard]] size_t getIdx() const { return *cur; }
     };
     static_assert(std::forward_iterator<proximity_iterator>);
@@ -370,6 +375,7 @@ class LinkedCellContainer {
         const std::vector<Particle>* container_data;
         double radius;
         R3 center;
+        size_t center_idx;
 
         void inc() {
             SPDLOG_DEBUG("Incrementing const proximity iterator");
@@ -388,7 +394,8 @@ class LinkedCellContainer {
                 return;
             }
             while (cur != end &&
-                   (cur == cell_end || !((center - (*container_data)[*cur].getX()).euclidNorm() <= radius))) {
+                   (cur == cell_end || !((center - (*container_data)[*cur].getX()).euclidNorm() <= radius) ||
+                    (cells.size() == 1 && *cur <= center_idx))) {
                 inc();
             }
         }
@@ -400,16 +407,18 @@ class LinkedCellContainer {
         using pointer = const Particle*;
         using reference = const Particle&;
 
-        const_proximity_iterator() noexcept : container_data(nullptr), radius(0.0) {}
+        const_proximity_iterator() noexcept : container_data(nullptr), radius(0.0), center_idx(0) {}
         const_proximity_iterator(R3 center, double radius, std::set<size_t>::const_iterator cur,
-                                 std::vector<const Cell*> cells, const std::vector<Particle>* container_data)
+                                 std::vector<const Cell*> cells, const std::vector<Particle>* container_data,
+                                 size_t center_idx)
             : cur(cur),
               end(cells.back()->particles().end()),
               cell_end(cells.front()->particles().end()),
               cells(cells),
               container_data(container_data),
               radius(radius),
-              center(center) {
+              center(center),
+              center_idx(center_idx) {
             satisfy();
         }
 
@@ -438,6 +447,7 @@ class LinkedCellContainer {
         [[nodiscard]] std::vector<const Cell*> getCells() const { return cells; }
         [[nodiscard]] double getRadius() const { return radius; }
         [[nodiscard]] R3 getCenter() const { return center; }
+        [[nodiscard]] size_t getCenterIdx() const { return center_idx; }
         [[nodiscard]] size_t getIdx() const { return *cur; }
     };
     static_assert(std::forward_iterator<const_proximity_iterator>);
@@ -460,7 +470,7 @@ class LinkedCellContainer {
      *
      * @return Mutable iterator to the first particle within the given radius of the center.
      */
-    [[nodiscard]] proximity_iterator proximityBegin(R3 center, double radius, size_t offset = 0);
+    [[nodiscard]] proximity_iterator proximityBegin(R3 center, double radius, size_t offset);
 
     /**
      * @brief Mutable Iterator over particles in proximity.
@@ -481,7 +491,7 @@ class LinkedCellContainer {
      *
      * @return Const iterator to the first particle within the given radius of the center.
      */
-    [[nodiscard]] const_proximity_iterator proximityBegin(R3 center, double radius, size_t offset = 0) const;
+    [[nodiscard]] const_proximity_iterator proximityBegin(R3 center, double radius, size_t offset) const;
 
     /**
      * @brief Const Iterator over particles in proximity.

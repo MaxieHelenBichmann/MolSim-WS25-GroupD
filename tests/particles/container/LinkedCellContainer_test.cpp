@@ -189,7 +189,7 @@ TEST_F(LinkedCellContainerTest, testProximityIteratorInfiniteRadius) {
     R3 center{3.0, 3.0, 3.0};
     double radius = std::numeric_limits<double>::infinity();
 
-    auto it = particles_empty.proximityBegin(center, radius);
+    auto it = particles_empty.proximityBegin(center, radius, particles_empty.size());
     auto end = particles_empty.proximityEnd(center, radius);
 
     size_t count = 0;
@@ -214,7 +214,7 @@ TEST_F(LinkedCellContainerTest, testProximityIterator) {
     R3 center{3.0, 3.0, 3.0};
     double radius = 1.0;
 
-    auto it = particles_empty.proximityBegin(center, radius);
+    auto it = particles_empty.proximityBegin(center, radius, particles_empty.size());
     auto end = particles_empty.proximityEnd(center, radius);
 
     size_t count = 0;

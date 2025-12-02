@@ -341,7 +341,7 @@ class ContainerRef {
      *
      * @return Mutable iterator to the first particle within the given radius of the center.
      */
-    [[nodiscard]] proximity_iterator proximityBegin(R3 center, double radius, size_t offset = 0);
+    [[nodiscard]] proximity_iterator proximityBegin(R3 center, double radius, size_t offset);
 
     /**
      * @brief Mutable Iterator over particles in proximity.
@@ -362,7 +362,7 @@ class ContainerRef {
      *
      * @return Const iterator to the first particle within the given radius of the center.
      */
-    [[nodiscard]] const_proximity_iterator proximityBegin(R3 center, double radius, size_t offset = 0) const;
+    [[nodiscard]] const_proximity_iterator proximityBegin(R3 center, double radius, size_t offset) const;
 
     /**
      * @brief Const Iterator over particles in proximity.
