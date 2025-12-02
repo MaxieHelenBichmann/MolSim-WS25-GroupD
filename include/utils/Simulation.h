@@ -150,7 +150,18 @@ class Simulation {
         std::vector<Particle> ghosts;
         // TODO: Optimze using boundary iterator
         applyBoundary(particles.boundaryBegin(), particles.boundaryEnd(), ghosts);
-        applyBoundary(particles.haloBegin(), particles.haloEnd(), ghosts);
+        // Collect indices of particles to applyBoundary using halo iterator
+        std::vector<size_t> to_remove;
+        for (auto it = particles.haloBegin(); it != particles.haloEnd(); ++it) {
+            size_t idx = &(*it) - &particles[0];
+            to_remove.push_back(idx);
+        }
+        for (auto& it : to_remove) {
+            auto new_ghosts = domain.applyBoundary(particles[it]);
+            for (auto& ghost : new_ghosts) {
+                ghosts.push_back(ghost);
+            }
+        }
         for (auto& ghost : ghosts) {
             particles.addParticle(std::move(ghost));
         }
@@ -164,6 +175,10 @@ class Simulation {
         std::vector<size_t> to_remove;
         for (auto it = particles.haloBegin(); it != particles.haloEnd(); ++it) {
             size_t idx = &(*it) - &particles[0];
+            // Don't remove non-ghost particles that are EXACTLY on the boundary
+            if (!ignoreParticle(*it)) {
+                continue;
+            }
             to_remove.push_back(idx);
         }
 
@@ -180,9 +195,13 @@ class Simulation {
      * @brief Calculates the forces of every particle for the next time step.
      */
     void calculateF() {
-        for (auto& p : particles) {
-            p.getOldF() = p.getF();
-            p.getF() = Vector<double, 3>();
+        for (auto it = particles.begin(); it != particles.end();) {
+            R3 temp = (*it).getX();
+            (*it).getX() = (*it).getNewX();
+            (*it).getNewX() = temp;
+            (*it).getOldF() = (*it).getF();
+            (*it).getF() = Vector<double, 3>();
+            it = particles.updateParticlePosition(it, (*it).getNewX());
         }
 
         size_t idx = 1;
@@ -209,10 +228,9 @@ class Simulation {
      * @brief Calculates the positions of every particle for the next time step.
      */
     void calculateX() {
-        for (auto it = particles.begin(); it != particles.end();) {
-            const auto new_position =
-                (*it).getX() + (delta_t * (*it).getV()) + ((0.5 * delta_t * delta_t / (*it).getM()) * (*it).getF());
-            it = particles.updateParticlePosition(it, new_position);
+        for (auto& p : particles) {
+            p.getNewX() = p.getX();
+            p.getX() = p.getX() + (delta_t * p.getV()) + ((0.5 * delta_t * delta_t / p.getM()) * p.getF());  
         }
     }
 

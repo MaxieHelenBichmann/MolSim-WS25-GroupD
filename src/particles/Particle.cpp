@@ -78,6 +78,9 @@ Particle::~Particle() { SPDLOG_DEBUG("Particle destructed!"); }
 const R3& Particle::getX() const { return x; }
 R3& Particle::getX() { return x; }
 
+const R3& Particle::getNewX() const { return new_x; }
+R3& Particle::getNewX() { return new_x; }
+
 const R3& Particle::getV() const { return v; }
 R3& Particle::getV() { return v; }
 

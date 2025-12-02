@@ -24,6 +24,10 @@ class Particle {
      * Position of the particle
      */
     R3 x;
+    /**
+     * New position of the particle
+     */
+    R3 new_x;
 
     /**
      * Velocity of the particle
@@ -91,6 +95,18 @@ class Particle {
      * @return Reference to the coordinates of the Particle.
      */
     R3& getX();
+    /**
+     * @brief Access the previous coordinates of a Particle.
+     *
+     * @return Const reference to the previous coordinates of the Particle.
+     */
+    [[nodiscard]] const R3& getNewX() const;
+    /**
+     * @brief Access the previous coordinates of a Particle.
+     *
+     * @return Reference to the previous coordinates of the Particle.
+     */
+    R3& getNewX();
 
     /**
      * @brief Access the current velocity Vector of a Particle.

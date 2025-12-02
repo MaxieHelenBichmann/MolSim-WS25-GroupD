@@ -59,7 +59,7 @@ TEST_F(OutflowTest, X_outflow_linked) {
     Simulation<LinkedCellContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
                                                std::make_unique<XYZWriter>());
     simulation.run();
-    EXPECT_TRUE(particles.begin() == particles.end());
+    EXPECT_TRUE(particles.empty());
 }
 /**
  * @brief Tests that outflowing particles in negative x are correctly erased in a SimpleContainer.
@@ -72,7 +72,7 @@ TEST_F(OutflowTest, X_outflow_simple) {
     Simulation<SimpleContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
                                            std::make_unique<XYZWriter>());
     simulation.run();
-    EXPECT_TRUE(particles.begin() == particles.end());
+    EXPECT_TRUE(particles.empty());
 }
 /**
  * @brief Tests that outflowing particles in positive y are correctly erased in a LinkedCellContainer.
@@ -85,7 +85,7 @@ TEST_F(OutflowTest, Y_outflow_linked) {
     Simulation<LinkedCellContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
                                                std::make_unique<XYZWriter>());
     simulation.run();
-    EXPECT_TRUE(particles.begin() == particles.end());
+    EXPECT_TRUE(particles.empty());
 }
 /**
  * @brief Tests that outflowing particles in negative y are correctly erased in a SimpleContainer.
@@ -98,7 +98,7 @@ TEST_F(OutflowTest, Y_outflow_simple) {
     Simulation<SimpleContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
                                            std::make_unique<XYZWriter>());
     simulation.run();
-    EXPECT_TRUE(particles.begin() == particles.end());
+    EXPECT_TRUE(particles.empty());
 }
 /**
  * @brief Tests that outflowing particles in positive z are correctly erased in a LinkedCellContainer.
@@ -111,7 +111,7 @@ TEST_F(OutflowTest, Z_outflow_linked) {
     Simulation<LinkedCellContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
                                                std::make_unique<XYZWriter>());
     simulation.run();
-    EXPECT_TRUE(particles.begin() == particles.end());
+    EXPECT_TRUE(particles.empty());
 }
 /**
  * @brief Tests that outflowing particles in negative z are correctly erased in a SimpleContainer.
@@ -124,7 +124,7 @@ TEST_F(OutflowTest, Z_outflow_simple) {
     Simulation<SimpleContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
                                            std::make_unique<XYZWriter>());
     simulation.run();
-    EXPECT_TRUE(particles.begin() == particles.end());
+    EXPECT_TRUE(particles.empty());
 }
 /**
  * @brief Tests that particles that are not OOB yet (but close to boundary) are NOT erased in a
