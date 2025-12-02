@@ -196,12 +196,12 @@ class Simulation {
      */
     void calculateF() {
         for (auto it = particles.begin(); it != particles.end();) {
-            R3 temp = (*it).getX();
-            (*it).getX() = (*it).getNewX();
-            (*it).getNewX() = temp;
             (*it).getOldF() = (*it).getF();
             (*it).getF() = Vector<double, 3>();
-            it = particles.updateParticlePosition(it, (*it).getNewX());
+            // set particle.x = particle.old_x so updateParticlePosition works as intended
+            R3 new_x = (*it).getX();
+            (*it).getX() = (*it).getOldX();
+            it = particles.updateParticlePosition(it, new_x);
         }
 
         size_t idx = 1;
@@ -229,7 +229,7 @@ class Simulation {
      */
     void calculateX() {
         for (auto& p : particles) {
-            p.getNewX() = p.getX();
+            p.getOldX() = p.getX();
             p.getX() = p.getX() + (delta_t * p.getV()) + ((0.5 * delta_t * delta_t / p.getM()) * p.getF());  
         }
     }
