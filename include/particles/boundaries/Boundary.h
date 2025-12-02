@@ -13,10 +13,10 @@ namespace mol_sim {
 /**
  * @brief Enum for boundary locations in the Linked-Cell Container.
  *
- * UPPER: +y direction (x-z plane at max y)
- * LOWER: -y direction (x-z plane at min y)
- * FRONT: -z direction (x-y plane at min z)
- * BACK: +z direction (x-y plane at max z)
+ * UPPER: +z direction (x-y plane at max z)
+ * LOWER: -z direction (x-y plane at min z)
+ * FRONT: -y direction (x-z plane at min y)
+ * BACK: +y direction (x-z plane at max y)
  * LEFT: -x direction (y-z plane at min x)
  * RIGHT: +x direction (y-z plane at max x)
  */
@@ -59,10 +59,10 @@ class Boundary {
                 return 0;
             case BoundaryLocation::UPPER:
             case BoundaryLocation::LOWER:
-                return 1;
+                return 2;
             case BoundaryLocation::FRONT:
             case BoundaryLocation::BACK:
-                return 2;
+                return 1;
             default:
                 return 0;
         }
