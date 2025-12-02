@@ -1,15 +1,9 @@
 #include <benchmark/benchmark.h>
 
-#include <memory>
-
 #include "../code/simulationimpl/ForceCalcMethods.h"
 #include "BenchmarkingUtils.h"
-#include "io/outputWriter/XYZWriter.h"
 #include "particles/container/SimpleContainer.h"
-#include "physics/ForceSource.h"
 #include "physics/LennardJonesForce.h"
-#include "utils/Settings.h"
-#include "utils/Simulation.h"
 
 namespace mol_sim {
 /**

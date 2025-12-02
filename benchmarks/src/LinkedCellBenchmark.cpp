@@ -1,7 +1,5 @@
 #include <benchmark/benchmark.h>
 
-#include <cstdint>
-
 #include "../code/linkedcellimpl/LinkedCellContainerDirect.h"
 #include "../code/linkedcellimpl/LinkedCellContainerExplicit.h"
 #include "../src/BenchmarkingUtils.h"

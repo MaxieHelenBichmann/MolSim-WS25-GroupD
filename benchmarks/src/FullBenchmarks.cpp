@@ -2,7 +2,6 @@
 
 #include <array>
 #include <memory>
-#include <set>
 
 #include "../code/linkedcellimpl/LinkedCellContainerDirect.h"
 #include "../code/linkedcellimpl/LinkedCellContainerExplicit.h"
