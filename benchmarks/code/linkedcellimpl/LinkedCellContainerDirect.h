@@ -5,14 +5,12 @@
 
 #include <array>
 #include <cstddef>
-#include <cstdint>
 #include <iterator>
 #include <set>
 #include <vector>
 
 #include "particles/Particle.h"
 #include "particles/ParticleContainer.h"
-#include "particles/container/LinkedCellContainer.h"
 #include "particles/container/cells/Cell.h"
 #include "utils/Vector.h"
 
@@ -102,7 +100,8 @@ class LinkedCellContainerDirect {
     /**
      * @brief Iterator that iterates over all particles that apply a force on a given particle.
      *
-     * Does not require indirection over storage.
+     * Does not require indirection over storage, but is also used for iteration over all particles (without logic), so
+     * has to implement the random-access iterator concept.
      */
     class proximity_iterator {
         std::vector<Particle>::iterator cur;
@@ -263,7 +262,8 @@ class LinkedCellContainerDirect {
     /**
      * @brief Const Iterator that iterates over all particles that apply a force on a given particle.
      *
-     * Does not require indirection over storage.
+     * Does not require indirection over storage, but is also used for iteration over all particles (without logic), so
+     * has to implement the random-access iterator concept.
      */
     class const_proximity_iterator {
         std::vector<Particle>::const_iterator cur;

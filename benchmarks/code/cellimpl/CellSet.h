@@ -4,17 +4,15 @@
 #include <array>
 #include <set>
 
-#include "particles/Particle.h"
-#include "particles/container/cells/Cell.h"
 #include "utils/Vector.h"
 
 namespace mol_sim {
 
 /**
- * @brief Cell with specific boundaries and type in the Linked-Cell container.
+ * @brief Cell in the Linked-Cell container.
  *
  * Implemented with std::set (ordered) for storage of particle indices for benchmarking purposes.
- * Only implemented performance relevant methods compared to other Cell implementations.
+ * Only implemented performance relevant methods, to compare to other Cell implementations.
  *
  * Expect better performance for iterators (due to being ordered) and modifications and lookup, but worse performance
  * for iterators due to missing locality.

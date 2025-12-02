@@ -4,13 +4,11 @@
 #include <spdlog/spdlog.h>
 
 #include <array>
-#include <cstdint>
 #include <set>
 #include <vector>
 
 #include "particles/Particle.h"
 #include "particles/ParticleContainer.h"
-#include "particles/container/LinkedCellContainer.h"
 #include "particles/container/cells/Cell.h"
 
 namespace mol_sim {
@@ -46,7 +44,7 @@ class CellExplicit {
 /**
  * @brief Linked-Cell Container for Particles
  *
- * This container DOES NOT implement the concept ParticleContainer.
+ * This container implements the concept ParticleContainer.
  *
  * Implemented with an explicit storage for Particles and Cell management structure for benchmarking purposes.
  * Implements all methods of the LinkedCellContainer (so documentation is analogous), but only used for benchmarking.
@@ -175,7 +173,7 @@ class LinkedCellContainerExplicit {
     static_assert(std::forward_iterator<proximity_iterator>);
 
     /**
-     * @brief Cost Iterator that iterates over all particles that apply a force on a given particle.
+     * @brief Const Iterator that iterates over all particles that apply a force on a given particle.
      *
      * Requires indirection over storage.
      */
