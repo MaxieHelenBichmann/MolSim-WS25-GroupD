@@ -4,7 +4,6 @@
 #include <spdlog/spdlog.h>
 
 #include <array>
-#include <cstdint>
 #include <set>
 #include <vector>
 
@@ -210,7 +209,7 @@ class LinkedCellContainer {
     void addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type);
 
     /**
-     * @brief Remove a Particle if it lies in a halo cell.
+     * @brief Remove a Particle.
      *
      * @param p Iterator to to the Particle to remove.
      *
@@ -277,6 +276,7 @@ class LinkedCellContainer {
      *
      * Satisfies the forward iterator concept.
      * Only iterates over particles within the given radius of the center, or all if the radius is infinite.
+     * Or is used for the iteration over halo and boundary particles.
      *
      * Enables cutoff radius, and iterates only over the particles in the adjacent cells.
      */
@@ -358,6 +358,7 @@ class LinkedCellContainer {
      *
      * Satisfies the forward iterator concept.
      * Only iterates over particles within the given radius of the center, or all if the radius is infinite.
+     * Or is used for the iteration over halo and boundary particles.
      *
      * Enables cutoff radius, and iterates only over the particles in the adjacent cells.
      */
@@ -442,7 +443,7 @@ class LinkedCellContainer {
     static_assert(std::forward_iterator<const_proximity_iterator>);
 
     /**
-     * @brief Remove a Particle if it lies in a halo cell.
+     * @brief Remove a Particle.
      *
      * @param p Iterator to to the Particle to remove.
      *
@@ -590,6 +591,7 @@ class LinkedCellContainer {
                                                            BoundaryLocation::FRONT, BoundaryLocation::BACK,
                                                            BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
 };
+static_assert(ParticleContainer<LinkedCellContainer>);
 
 }  // namespace mol_sim
 

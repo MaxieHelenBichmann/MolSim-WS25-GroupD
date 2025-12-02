@@ -661,5 +661,3 @@ LinkedCellContainer::const_proximity_iterator LinkedCellContainer::boundaryEnd(
                                     unique_and_nonempty_cells.back()->particles().end(), unique_and_nonempty_cells,
                                     &data};
 }
-
-static_assert(ParticleContainer<LinkedCellContainer>);

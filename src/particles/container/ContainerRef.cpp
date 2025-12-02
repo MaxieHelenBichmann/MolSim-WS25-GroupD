@@ -140,5 +140,3 @@ ContainerRef::const_proximity_iterator ContainerRef::boundaryEnd(const std::set<
         [locations](const auto& c) { return const_proximity_iterator{std::as_const(*c).boundaryEnd(locations)}; },
         instance);
 };
-
-static_assert(ParticleContainer<ContainerRef>);

@@ -1,6 +1,5 @@
 #include "particles/container/SimpleContainer.h"
 
-#include <algorithm>
 #include <cstddef>
 
 using namespace mol_sim;
@@ -85,5 +84,3 @@ SimpleContainer::const_proximity_iterator SimpleContainer::boundaryEnd(
     return const_proximity_iterator{domain_size, -cutoff_radius, data() + size(), data() + size(),  // NOLINT
                                     0,           false,          locations};
 };
-
-static_assert(ParticleContainer<SimpleContainer>);

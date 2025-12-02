@@ -3,7 +3,6 @@
 
 #include <concepts>
 #include <set>
-#include <vector>
 
 #include "particles/Particle.h"
 #include "particles/boundaries/Boundary.h"

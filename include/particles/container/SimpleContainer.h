@@ -92,9 +92,11 @@ class SimpleContainer : public std::vector<Particle> {
      *
      * Satisfies the forward iterator concept.
      * Only iterates over particles within the given radius of the center, or all if the radius is infinite.
+     * Or is used for the iteration over halo and boundary particles.
      *
-     * Enables cutoff radius, BUT still iterates over all particles when checking proximity.
+     * Enables cutoff radius, BUT still iterates over ALL particles when checking proximity/boundary/halo.
      * To optimize that behavior and enable optimizations, use the LinkedCellContainer.
+     * Can be used for the N3L optimization via the offset.
      *
      * This class is mainly used to fulfill the interface with the calculateF() function in Simulation.
      */
@@ -281,9 +283,11 @@ class SimpleContainer : public std::vector<Particle> {
      *
      * Satisfies the forward iterator concept.
      * Only iterates over particles within the given radius of the center, or all if the radius is infinite.
+     * Or is used for the iteration over halo and boundary particles.
      *
-     * Enables cutoff radius, BUT still iterates over all particles when checking proximity.
+     * Enables cutoff radius, BUT still iterates over all particles when checking proximity/boundary/halo.
      * To optimize that behavior and enable optimizations, use the LinkedCellContainer.
+     * Can be used for the N3L optimization via the offset.
      *
      * This class is mainly used to fulfill the interface with the calculateF() function in Simulation.
      */
@@ -463,9 +467,9 @@ class SimpleContainer : public std::vector<Particle> {
     /**
      * @brief Removes a given particle from the container.
      *
-     * @param p Iterator to the Particle to be removed.
+     * @param p Proximity iterator to the Particle to be removed.
      *
-     * @return Iterator to the next Particle after the removed one.
+     * @return Proximity iterator to the next Particle after the removed one.
      */
     proximity_iterator eraseParticle(const proximity_iterator& p);
 
@@ -514,11 +518,12 @@ class SimpleContainer : public std::vector<Particle> {
     // boundary and halo iterators
 
     /**
-     * @brief Iterator over particles in halo cells.
+     * @brief Iterator over particles in halo, which is the same region around the domain as the halo cells in the
+     * LinkedCellContainer.
      *
-     * @param locations Boundary types to specify which halo cells to iterate over. Defaults to all sides.
+     * @param locations Boundary types to specify which halo boundary to iterate over. Defaults to all sides.
      *
-     * @return Iterator to the first particle within the given halo cells.
+     * @return Iterator to the first particle within the given halo.
      */
     [[nodiscard]] proximity_iterator haloBegin(const std::set<BoundaryLocation>& locations = {
                                                    BoundaryLocation::UPPER, BoundaryLocation::LOWER,
@@ -526,11 +531,12 @@ class SimpleContainer : public std::vector<Particle> {
                                                    BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
 
     /**
-     * @brief Const Iterator over particles in halo cells.
+     * @brief Const Iterator over particles in halo, which is the same region around the domain as the halo cells in the
+     * LinkedCellContainer.
      *
-     * @param locations Boundary types to specify which halo cells to iterate over. Defaults to all sides.
+     * @param locations Boundary types to specify which halo boundary to iterate over. Defaults to all sides.
      *
-     * @return Const iterator to the first particle within the given halo cells.
+     * @return Const iterator to the first particle within the given halo.
      */
     [[nodiscard]] const_proximity_iterator haloBegin(const std::set<BoundaryLocation>& locations = {
                                                          BoundaryLocation::UPPER, BoundaryLocation::LOWER,
@@ -538,11 +544,12 @@ class SimpleContainer : public std::vector<Particle> {
                                                          BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
 
     /**
-     * @brief Iterator over particles in halo cells.
+     * @brief Iterator over particles in halo, which is the same region around the domain as the halo cells in the
+     * LinkedCellContainer.
      *
-     * @param locations Boundary types to specify which halo cells to iterate over. Defaults to all sides.
+     * @param locations Boundary types to specify which halo boundary to iterate over. Defaults to all sides.
      *
-     * @return Iterator after the last particle within the given halo cells.
+     * @return Iterator after the last particle within the given halo.
      */
     [[nodiscard]] proximity_iterator haloEnd(const std::set<BoundaryLocation>& locations = {
                                                  BoundaryLocation::UPPER, BoundaryLocation::LOWER,
@@ -550,11 +557,12 @@ class SimpleContainer : public std::vector<Particle> {
                                                  BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
 
     /**
-     * @brief Const Iterator over particles in halo cells.
+     * @brief Const Iterator over particles in halo, which is the same region around the domain as the halo cells in
+     * the LinkedCellContainer.
      *
-     * @param locations Boundary types to specify which halo cells to iterate over. Defaults to all sides.
+     * @param locations Boundary types to specify which halo boundary to iterate over. Defaults to all sides.
      *
-     * @return Const iterator after the last particle within the given halo cells.
+     * @return Const iterator after the last particle within the given halo.
      */
     [[nodiscard]] const_proximity_iterator haloEnd(const std::set<BoundaryLocation>& locations = {
                                                        BoundaryLocation::UPPER, BoundaryLocation::LOWER,
@@ -562,11 +570,12 @@ class SimpleContainer : public std::vector<Particle> {
                                                        BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
 
     /**
-     * @brief Iterator over particles in boundary cells.
+     * @brief Iterator over particles in boundary, which is the same region around the domain as the boundary cells in
+     * the LinkedCellContainer.
      *
-     * @param locations Boundary types to specify which boundary cells to iterate over. Defaults to all sides.
+     * @param locations Boundary types to specify which boundary to iterate over. Defaults to all sides.
      *
-     * @return Iterator to the first particle within the given boundary cells.
+     * @return Iterator to the first particle within the given boundary.
      */
     [[nodiscard]] proximity_iterator boundaryBegin(const std::set<BoundaryLocation>& locations = {
                                                        BoundaryLocation::UPPER, BoundaryLocation::LOWER,
@@ -574,11 +583,12 @@ class SimpleContainer : public std::vector<Particle> {
                                                        BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
 
     /**
-     * @brief Const Iterator over particles in boundary cells.
+     * @brief Const Iterator over particles in boundary, which is the same region around the domain as the boundary
+     * cells in the LinkedCellContainer.
      *
-     * @param locations Boundary types to specify which boundary cells to iterate over. Defaults to all sides.
+     * @param locations Boundary types to specify which boundary to iterate over. Defaults to all sides.
      *
-     * @return Const iterator to the first particle within the given boundary cells.
+     * @return Const iterator to the first particle within the given boundary.
      */
     [[nodiscard]] const_proximity_iterator boundaryBegin(const std::set<BoundaryLocation>& locations = {
                                                              BoundaryLocation::UPPER, BoundaryLocation::LOWER,
@@ -586,11 +596,12 @@ class SimpleContainer : public std::vector<Particle> {
                                                              BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
 
     /**
-     * @brief Iterator over particles in boundary cells.
+     * @brief Iterator over particles in boundary, which is the same region around the domain as the boundary
+     * cells in the LinkedCellContainer.
      *
-     * @param locations Boundary types to specify which boundary cells to iterate over. Defaults to all sides.
+     * @param locations Boundary types to specify which boundary to iterate over. Defaults to all sides.
      *
-     * @return Iterator after the last particle within the given boundary cells.
+     * @return Iterator after the last particle within the given boundary.
      */
     [[nodiscard]] proximity_iterator boundaryEnd(const std::set<BoundaryLocation>& locations = {
                                                      BoundaryLocation::UPPER, BoundaryLocation::LOWER,
@@ -598,17 +609,19 @@ class SimpleContainer : public std::vector<Particle> {
                                                      BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
 
     /**
-     * @brief Const Iterator over particles in boundary cells.
+     * @brief Const Iterator over particles in boundary, which is the same region around the domain as the boundary
+     * cells in the LinkedCellContainer.
      *
-     * @param locations Boundary types to specify which boundary cells to iterate over. Defaults to all sides.
+     * @param locations Boundary types to specify which boundary to iterate over. Defaults to all sides.
      *
-     * @return Const iterator after the last particle within the given boundary cells.
+     * @return Const iterator after the last particle within the given boundary.
      */
     [[nodiscard]] const_proximity_iterator boundaryEnd(const std::set<BoundaryLocation>& locations = {
                                                            BoundaryLocation::UPPER, BoundaryLocation::LOWER,
                                                            BoundaryLocation::FRONT, BoundaryLocation::BACK,
                                                            BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
 };
+static_assert(ParticleContainer<SimpleContainer>);
 
 }  // namespace mol_sim
 
