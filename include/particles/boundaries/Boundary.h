@@ -6,7 +6,6 @@
 #include <string>
 
 #include "particles/Particle.h"
-#include "utils/Vector.h"
 
 namespace mol_sim {
 

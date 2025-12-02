@@ -6,7 +6,6 @@
 
 #include <mutex>
 #include <string>
-#include <variant>
 
 #include "exceptions/YAMLReaderException.h"
 #include "particles/Particle.h"
@@ -216,25 +215,18 @@ TEST_F(YAMLReaderTest, ReadFullConfigFile) {
     std::string output = log_stream->str();
     EXPECT_EQ(particles.size(), 1);
 
-    
     EXPECT_EQ(settings.delta_t, 0.005);
 
-    
     EXPECT_DOUBLE_EQ(settings.end_time, 500.0);
 
-    
     EXPECT_DOUBLE_EQ(settings.start_time, 0.0);
 
-    
     EXPECT_EQ(settings.base_name, "MD");
 
-    
     EXPECT_EQ(settings.force, LENNARDJONES);
 
-    
     EXPECT_EQ(settings.frequency, 10);
 
-    
     EXPECT_DOUBLE_EQ(settings.cutoff, 1.);
 
     EXPECT_EQ(output.find("Error"), std::string::npos);
@@ -248,9 +240,9 @@ TEST_F(YAMLReaderTest, ReadSettingsOnly) {
     reader.readSettings(settings, test_data_dir + "/full_config.yaml");
 
     // Settings should be populated
-    
+
     EXPECT_DOUBLE_EQ(settings.delta_t, 0.005);
-    
+
     EXPECT_DOUBLE_EQ(settings.end_time, 500.0);
 
     // Particles should remain empty (we only called readSettings)
@@ -280,7 +272,7 @@ TEST_F(YAMLReaderTest, TwoStepReading) {
 
     // Step 1: Read settings
     reader.readSettings(settings, test_data_dir + "/full_config.yaml");
-    
+
     EXPECT_EQ(particles.size(), 0);
 
     // Step 2: Read particles
@@ -299,9 +291,8 @@ TEST_F(YAMLReaderTest, ReadSettingsFromOnlySettingsFile) {
     YAMLReader reader;
     reader.readSettings(settings, test_data_dir + "/only_settings.yaml");
 
-    
     EXPECT_DOUBLE_EQ(settings.delta_t, 0.005);
-    
+
     EXPECT_DOUBLE_EQ(settings.end_time, 500.0);
 }
 
@@ -345,7 +336,7 @@ TEST_F(YAMLReaderTest, ReadDomainAndBoundaries) {
     std::string output = log_stream->str();
 
     // Verify domain was read
-    
+
     R3 expected_domain = {180.0, 90.0, 50.0};
     EXPECT_R3_EQ(settings.domain.getDimension(), expected_domain);
 

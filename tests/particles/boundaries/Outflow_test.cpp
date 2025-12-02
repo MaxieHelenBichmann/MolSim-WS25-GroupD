@@ -4,13 +4,11 @@
 
 #include <limits>
 #include <memory>
-#include <numbers>
 
 #include "io/outputWriter/XYZWriter.h"
 #include "particles/Particle.h"
 #include "particles/container/domain/Domain.h"
 #include "physics/LennardJonesForce.h"
-#include "testingUtils.h"
 #include "utils/Settings.h"
 #include "utils/Simulation.h"
 

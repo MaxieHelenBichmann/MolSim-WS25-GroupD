@@ -1,17 +1,15 @@
-#include "particles/boundaries/Outflow.h"
+#include "particles/boundaries/VelocityReflect.h"
 
 #include <gtest/gtest.h>
 
 #include <limits>
 #include <memory>
-#include <numbers>
 
 #include "io/outputWriter/XYZWriter.h"
 #include "particles/Particle.h"
+#include "particles/boundaries/Outflow.h"
 #include "particles/container/domain/Domain.h"
-#include "particles/boundaries/VelocityReflect.h"
 #include "physics/LennardJonesForce.h"
-#include "testingUtils.h"
 #include "utils/Settings.h"
 #include "utils/Simulation.h"
 
@@ -168,7 +166,7 @@ TEST_F(VelocityReflectTest, VelocityReflect_two_corner_linked) {
     LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
     Simulation<LinkedCellContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
-                                           std::make_unique<XYZWriter>());
+                                               std::make_unique<XYZWriter>());
     simulation.run();
     R3 expected_x = {1.0, 3.0, 1.0};
     R3 expected_v = {4.0, 4.0, 4.0};
@@ -202,7 +200,7 @@ TEST_F(VelocityReflectTest, VelocityReflect_three_corner_linked) {
     LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
     Simulation<LinkedCellContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
-                                           std::make_unique<XYZWriter>());
+                                               std::make_unique<XYZWriter>());
     simulation.run();
     R3 expected_x = {1.0, 9.0, 1.0};
     R3 expected_v = {4.0, -4.0, 4.0};
@@ -236,7 +234,7 @@ TEST_F(VelocityReflectTest, VelocityReflect_diagonal_shot_linked) {
     LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
     Simulation<LinkedCellContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
-                                           std::make_unique<XYZWriter>());
+                                               std::make_unique<XYZWriter>());
     simulation.run();
     R3 expected_x = {7.0, 9.0, 7.0};
     R3 expected_v = {4.0, -4.0, 4.0};

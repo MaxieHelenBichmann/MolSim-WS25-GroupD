@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <limits>
 #include <set>
-#include <unordered_set>
 #include <vector>
 
 #include "particles/ParticleContainer.h"

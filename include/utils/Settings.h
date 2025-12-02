@@ -1,12 +1,10 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-#include <cmath>
 #include <cstddef>
 #include <limits>
 #include <string>
 
-#include "particles/boundaries/Boundary.h"
 #include "particles/container/domain/Domain.h"
 #include "physics/ForceSource.h"
 

@@ -6,8 +6,6 @@
 #include <vector>
 
 #include "particles/boundaries/Boundary.h"
-#include "particles/boundaries/Outflow.h"
-#include "particles/boundaries/Reflecting.h"
 #include "utils/Vector.h"
 
 namespace mol_sim {
@@ -66,7 +64,7 @@ class Domain {
     [[nodiscard]] R3 getDimension() const;
 
     /**
-     * @brief Applies boundary conditions to a particle. Also (if needed) computes ghost particles 
+     * @brief Applies boundary conditions to a particle. Also (if needed) computes ghost particles
      * needed for a given particle.
      *
      * @param p The particle to apply boundaries to / compute ghost particles for.

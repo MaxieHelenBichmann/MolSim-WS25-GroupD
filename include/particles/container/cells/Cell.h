@@ -4,9 +4,7 @@
 #include <array>
 #include <cstdint>
 #include <set>
-#include <vector>
 
-#include "particles/Particle.h"
 #include "utils/Vector.h"
 
 namespace mol_sim {

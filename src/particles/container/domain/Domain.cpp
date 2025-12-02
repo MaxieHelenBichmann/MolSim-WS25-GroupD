@@ -2,6 +2,8 @@
 
 #include <spdlog/spdlog.h>
 
+#include "particles/boundaries/Outflow.h"
+
 namespace mol_sim {
 
 size_t Domain::locationToIndex(BoundaryLocation location) {
@@ -42,9 +44,7 @@ Domain::Domain(R3 dimension, std::array<std::unique_ptr<Boundary>, 6> boundaries
 
 R3 Domain::getDimension() const { return dimension; }
 
-Boundary* Domain::getBoundary(BoundaryLocation location) { 
-    return boundaries[locationToIndex(location)].get(); 
-}
+Boundary* Domain::getBoundary(BoundaryLocation location) { return boundaries[locationToIndex(location)].get(); }
 
 const Boundary* Domain::getBoundary(BoundaryLocation location) const {
     return boundaries[locationToIndex(location)].get();

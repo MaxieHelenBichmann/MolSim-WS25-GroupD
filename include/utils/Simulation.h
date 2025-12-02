@@ -5,11 +5,8 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <execution>
 #include <functional>
-#include <limits>
 #include <memory>
-#include <optional>
 #include <stdexcept>
 #include <vector>
 
@@ -17,9 +14,6 @@
 #include "io/OutputWriter.h"
 #include "particles/Particle.h"
 #include "particles/ParticleContainer.h"
-#include "particles/boundaries/Boundary.h"
-#include "particles/container/LinkedCellContainer.h"
-#include "particles/container/SimpleContainer.h"
 #include "particles/container/domain/Domain.h"
 #include "physics/ForceSource.h"
 #include "utils/Settings.h"
@@ -98,8 +92,7 @@ class Simulation {
     bool ignoreParticle(Particle& p) {
         R3 v = p.getX();
         R3 max = domain.getDimension();
-        bool particle_is_oob =
-            v[0] > max[0] || v[1] > max[1] || v[2] > max[2] || v[0] < 0 || v[1] < 0 || v[2] < 0;
+        bool particle_is_oob = v[0] > max[0] || v[1] > max[1] || v[2] > max[2] || v[0] < 0 || v[1] < 0 || v[2] < 0;
         bool particle_not_ghost = p.getType() != -1;
         return particle_is_oob && particle_not_ghost;
     }
@@ -230,7 +223,7 @@ class Simulation {
     void calculateX() {
         for (auto& p : particles) {
             p.getOldX() = p.getX();
-            p.getX() = p.getX() + (delta_t * p.getV()) + ((0.5 * delta_t * delta_t / p.getM()) * p.getF());  
+            p.getX() = p.getX() + (delta_t * p.getV()) + ((0.5 * delta_t * delta_t / p.getM()) * p.getF());
         }
     }
 

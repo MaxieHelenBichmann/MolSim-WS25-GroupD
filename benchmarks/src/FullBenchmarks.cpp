@@ -7,6 +7,7 @@
 #include "../code/linkedcellimpl/LinkedCellContainerExplicit.h"
 #include "io/outputWriter/XYZWriter.h"
 #include "particles/boundaries/Boundary.h"
+#include "particles/boundaries/Outflow.h"
 #include "particles/container/SimpleContainer.h"
 #include "physics/LennardJonesForce.h"
 #include "utils/MaxwellBoltzmannDistribution.h"

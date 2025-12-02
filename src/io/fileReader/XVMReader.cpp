@@ -15,7 +15,6 @@
 #include <sstream>
 
 #include "exceptions/XVMReaderException.h"
-#include "particles/container/domain/Domain.h"
 #include "utils/Settings.h"
 
 using namespace mol_sim;

@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "io/outputWriter/XYZWriter.h"
+#include "particles/boundaries/Outflow.h"
 #include "particles/container/LinkedCellContainer.h"
 #include "particles/container/SimpleContainer.h"
 #include "particles/generators/CuboidGenerator.h"
