@@ -177,7 +177,7 @@ void LinkedCellContainerExplicit::findBoundaryCells(const BoundaryLocation type,
                                                     std::vector<const CellExplicit*>& boundary_cells,
                                                     size_t offset) const {
     switch (type) {
-        case BoundaryLocation::UPPER: {
+        case BoundaryLocation::BACK: {
             for (size_t y = offset; y < num_cells[1] - offset; ++y) {
                 for (size_t x = offset; x < num_cells[0] - offset; ++x) {
                     size_t idx =
@@ -187,7 +187,7 @@ void LinkedCellContainerExplicit::findBoundaryCells(const BoundaryLocation type,
             }
             return;
         }
-        case BoundaryLocation::LOWER: {
+        case BoundaryLocation::FRONT: {
             for (size_t y = offset; y < num_cells[1] - offset; ++y) {
                 for (size_t x = offset; x < num_cells[0] - offset; ++x) {
                     size_t idx = (offset * num_cells[1] * num_cells[0]) + (y * num_cells[0]) + x;
@@ -215,7 +215,7 @@ void LinkedCellContainerExplicit::findBoundaryCells(const BoundaryLocation type,
             }
             return;
         }
-        case BoundaryLocation::FRONT: {
+        case BoundaryLocation::LOWER: {
             for (size_t z = offset; z < num_cells[2] - offset; ++z) {
                 for (size_t x = offset; x < num_cells[0] - offset; ++x) {
                     size_t idx = (z * num_cells[1] * num_cells[0]) + (offset * num_cells[0]) + x;
@@ -224,7 +224,7 @@ void LinkedCellContainerExplicit::findBoundaryCells(const BoundaryLocation type,
             }
             return;
         }
-        case BoundaryLocation::BACK: {
+        case BoundaryLocation::UPPER: {
             for (size_t z = offset; z < num_cells[2] - offset; ++z) {
                 for (size_t x = offset; x < num_cells[0] - offset; ++x) {
                     size_t idx =
@@ -239,7 +239,7 @@ void LinkedCellContainerExplicit::findBoundaryCells(const BoundaryLocation type,
 void LinkedCellContainerExplicit::findBoundaryCells(const BoundaryLocation type,  // NOLINT
                                                     std::vector<CellExplicit*>& boundary_cells, size_t offset) {
     switch (type) {
-        case BoundaryLocation::UPPER: {
+        case BoundaryLocation::BACK: {
             for (size_t y = offset; y < num_cells[1] - offset; ++y) {
                 for (size_t x = offset; x < num_cells[0] - offset; ++x) {
                     size_t idx =
@@ -249,7 +249,7 @@ void LinkedCellContainerExplicit::findBoundaryCells(const BoundaryLocation type,
             }
             return;
         }
-        case BoundaryLocation::LOWER: {
+        case BoundaryLocation::FRONT: {
             for (size_t y = offset; y < num_cells[1] - offset; ++y) {
                 for (size_t x = offset; x < num_cells[0] - offset; ++x) {
                     size_t idx = (offset * num_cells[1] * num_cells[0]) + (y * num_cells[0]) + x;
@@ -277,7 +277,7 @@ void LinkedCellContainerExplicit::findBoundaryCells(const BoundaryLocation type,
             }
             return;
         }
-        case BoundaryLocation::FRONT: {
+        case BoundaryLocation::LOWER: {
             for (size_t z = offset; z < num_cells[2] - offset; ++z) {
                 for (size_t x = offset; x < num_cells[0] - offset; ++x) {
                     size_t idx = (z * num_cells[1] * num_cells[0]) + (offset * num_cells[0]) + x;
@@ -286,7 +286,7 @@ void LinkedCellContainerExplicit::findBoundaryCells(const BoundaryLocation type,
             }
             return;
         }
-        case BoundaryLocation::BACK: {
+        case BoundaryLocation::UPPER: {
             for (size_t z = offset; z < num_cells[2] - offset; ++z) {
                 for (size_t x = offset; x < num_cells[0] - offset; ++x) {
                     size_t idx =
