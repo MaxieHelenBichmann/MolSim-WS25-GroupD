@@ -26,13 +26,12 @@ The settings block has the following keys, with every key except format being op
 - `force`: A string specifying the force type (either "Lennard Jones" or "Gravitational") of the simulation.
 - `frequency`: A whole number specifying the frequency of the output files of the simulation.
 - `cutoff`: A floating-point number specifying the cutoff radius of the Linked Cells of the simulation.
+- `container`: Container type, either `"SIMPLE"` or `"LINKED"` (default: `"LINKED"`).
 - `domain`: A map defining the domain of the simulation (see Domain Configuration below).
 
 ## Domain Configuration
 
 The `domain` key contains the following sub-keys:
-
-- `domain_type`: Container type, either `"SIMPLE"` or `"LINKED"` (default: `"LINKED"`).
 - `x`: The x-dimension of the domain (default: 1.0).
 - `y`: The y-dimension of the domain (default: 1.0).
 - `z`: The z-dimension of the domain (default: 1.0).

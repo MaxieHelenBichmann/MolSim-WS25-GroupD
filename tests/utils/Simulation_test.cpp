@@ -2,6 +2,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <particles/container/domain/Domain.h>
 #include <physics/GravitationalForce.h>
 #include <physics/LennardJonesForce.h>
 
@@ -161,8 +162,8 @@ TEST_F(SimulationTest, calculateV_complex) {
  */
 TEST_F(SimulationTest, calculateF_simple2_pairwise) {
     // initial positions and velocities irrelevant since we're mocking
-    const Particle p1({.0, .0, .0}, {.0, .0, .0}, {0., 0., 0.}, 1.0, 5., 1.);
-    const Particle p2({.0, .0, .0}, {.0, .0, .0}, {0., 0., 0.}, 1.0, 5., 1.);
+    const Particle p1({1.0, 1.0, 1.0}, {.0, .0, .0}, {0., 0., 0.}, 1.0, 5., 1.);
+    const Particle p2({1.0, 1.0, 1.0}, {.0, .0, .0}, {0., 0., 0.}, 1.0, 5., 1.);
     R3 f12 = {10.0, 0.0, 0.0};
     particles.addParticle(p1);
     particles.addParticle(p2);
@@ -183,8 +184,8 @@ TEST_F(SimulationTest, calculateF_simple2_pairwise) {
  */
 TEST_F(SimulationTest, calculateF_complex2_pairwise) {
     // initial positions and velocities irrelevant since we're mocking
-    const Particle p1({.0, .0, .0}, {.0, .0, .0}, {0., 0., 0.}, 1.0, 5., 1.);
-    const Particle p2({.0, .0, .0}, {.0, .0, .0}, {0., 0., 0.}, 1.0, 5., 1.);
+    const Particle p1({1.0, 1.0, 1.0}, {.0, .0, .0}, {0., 0., 0.}, 1.0, 5., 1.);
+    const Particle p2({1.0, 1.0, 1.0}, {.0, .0, .0}, {0., 0., 0.}, 1.0, 5., 1.);
     R3 f12 = {102.52, -51.3, 135.711};
     particles.addParticle(p1);
     particles.addParticle(p2);
@@ -204,12 +205,12 @@ TEST_F(SimulationTest, calculateF_complex2_pairwise) {
  */
 TEST_F(SimulationTest, calculateF_simple3_pairwise) {
     // initial positions and velocities irrelevant since we're mocking
-    Particle p1({1.0, .0, .0}, {.0, .0, .0}, {0., 0., 0.}, 1.0, 5., 1.);
-    Particle p2({2.0, .0, .0}, {.0, .0, .0}, {0., 0., 0.}, 1.0, 5., 1.);
-    Particle p3({3.0, .0, .0}, {.0, .0, .0}, {0., 0., 0.}, 1.0, 5., 1.);
-    Particle p12({1.0, .0, .0}, {.0, .0, .0}, {10.0, 0.0, 0.0}, 1.0, 5., 1.);
-    Particle p22({2.0, .0, .0}, {.0, .0, .0}, {-10.0, 0.0, 0.0}, 1.0, 5., 1.);
-    Particle p32({3.0, .0, .0}, {.0, .0, .0}, {-20.0, 0.0, 0.0}, 1.0, 5., 1.);
+    Particle p1({1.0, 1.0, 1.0}, {.0, .0, .0}, {0., 0., 0.}, 1.0, 5., 1.);
+    Particle p2({2.0, 1.0, 1.0}, {.0, .0, .0}, {0., 0., 0.}, 1.0, 5., 1.);
+    Particle p3({3.0, 1.0, 1.0}, {.0, .0, .0}, {0., 0., 0.}, 1.0, 5., 1.);
+    Particle p12({1.0, 1.0, 1.0}, {.0, .0, .0}, {10.0, 0.0, 0.0}, 1.0, 5., 1.);
+    Particle p22({2.0, 1.0, 1.0}, {.0, .0, .0}, {-10.0, 0.0, 0.0}, 1.0, 5., 1.);
+    Particle p32({3.0, 1.0, 1.0}, {.0, .0, .0}, {-20.0, 0.0, 0.0}, 1.0, 5., 1.);
     R3 f12 = {10.0, 0.0, 0.0};
     R3 f13 = {20.0, 0.0, 0.0};
     R3 f23 = {-10.0, 0.0, 0.0};
@@ -238,12 +239,12 @@ TEST_F(SimulationTest, calculateF_simple3_pairwise) {
  */
 TEST_F(SimulationTest, calculateF_complex3_pairwise) {
     // initial positions and velocities irrelevant since we're mocking
-    const Particle p1({1.0, .0, .0}, {.0, .0, .0}, {.0, .0, .0}, 1.0, 5., 1.);
-    const Particle p2({2.0, .0, .0}, {.0, .0, .0}, {.0, .0, .0}, 1.0, 5., 1.);
-    const Particle p3({3.0, .0, .0}, {.0, .0, .0}, {.0, .0, .0}, 1.0, 5., 1.);
-    Particle p12({1.0, .0, .0}, {.0, .0, .0}, {10.0, 5.0, 6.0}, 1.0, 5., 1.);
-    Particle p22({2.0, .0, .0}, {.0, .0, .0}, {-10.0, -5.0, -6.0}, 1.0, 5., 1.);
-    Particle p32({3.0, .0, .0}, {.0, .0, .0}, {-20.0, -10.0, -7.0}, 1.0, 5., 1.);
+    const Particle p1({1.0, 1.0, 1.0}, {.0, .0, .0}, {.0, .0, .0}, 1.0, 5., 1.);
+    const Particle p2({2.0, 1.0, 1.0}, {.0, .0, .0}, {.0, .0, .0}, 1.0, 5., 1.);
+    const Particle p3({3.0, 1.0, 1.0}, {.0, .0, .0}, {.0, .0, .0}, 1.0, 5., 1.);
+    Particle p12({1.0, 1.0, 1.0}, {.0, .0, .0}, {10.0, 5.0, 6.0}, 1.0, 5., 1.);
+    Particle p22({2.0, 1.0, 1.0}, {.0, .0, .0}, {-10.0, -5.0, -6.0}, 1.0, 5., 1.);
+    Particle p32({3.0, 1.0, 1.0}, {.0, .0, .0}, {-20.0, -10.0, -7.0}, 1.0, 5., 1.);
     R3 f12 = {10.0, 5.0, 6.0};
     R3 f13 = {20.0, 10.0, 7.0};
     R3 f23 = {-10.0, -5.0, -4.0};
@@ -274,16 +275,17 @@ TEST_F(SimulationTest, calculateF_complex3_pairwise) {
 TEST_F(SimulationTest, run_gravitational_timestep) {
     settings.delta_t = 0.5;
     settings.end_time = 0.5;
-    Particle p1({.0, .0, .0}, {.0, .0, .0}, {.0, .0, .0}, 1.0, 5., 1.);
-    Particle p2({-1.0, .0, .0}, {10.0, .0, .0}, {.0, .0, .0}, 0.5, 5., 1.);
+    Particle p1({2.0, 1.0, 1.0}, {.0, .0, .0}, {.0, .0, .0}, 1.0, 5., 1.);
+    Particle p2({1.0, 1.0, 1.0}, {10.0, .0, .0}, {.0, .0, .0}, 0.5, 5., 1.);
     particles.addParticle(p1);
     particles.addParticle(p2);
     auto force_source = std::make_unique<GravitationalForce>();
     auto writer = std::make_unique<OutputWriterMock>();
     Simulation<SimpleContainer> simulation(particles, std::move(force_source), settings, std::move(writer));
     simulation.run();
-    Particle p1_expect({.0, .0, .0}, {0.0078125, .0, .0}, {0.03125, .0, .0}, 1.0, 5., 1.);
-    Particle p2_expect({4.0, .0, .0}, {9.984375, .0, .0}, {-0.03125, .0, .0}, 0.5, 5., 1.);
+    // After 1 timestep: positions update first (with old_f=0), then forces calculated, then velocities
+    Particle p1_expect({2.0, 1.0, 1.0}, {0.0078125, .0, .0}, {0.03125, .0, .0}, 1.0, 5., 1.);
+    Particle p2_expect({6.0, 1.0, 1.0}, {9.984375, .0, .0}, {-0.03125, .0, .0}, 0.5, 5., 1.);
     EXPECT_EQ(particles[0], p1_expect);
     EXPECT_EQ(particles[1], p2_expect);
 }
@@ -296,16 +298,23 @@ TEST_F(SimulationTest, run_gravitational_timestep) {
 TEST_F(SimulationTest, run_lennardjones_timestep) {
     settings.delta_t = 0.5;
     settings.end_time = 0.5;
-    Particle p1({.0, .0, .0}, {.0, .0, .0}, {.0, .0, .0}, 1.0, 5., 1.);
-    Particle p2({-4.0, .0, .0}, {10.0, .0, .0}, {.0, .0, .0}, 0.5, 5., 1.);
+    // Place particles at distance 1 apart for strong LJ interaction
+    Particle p1({5.0, 1.0, 1.0}, {.0, .0, .0}, {.0, .0, .0}, 1.0, 5., 1.);
+    Particle p2({4.0, 1.0, 1.0}, {.0, .0, .0}, {.0, .0, .0}, 1.0, 5., 1.);
     particles.addParticle(p1);
     particles.addParticle(p2);
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<OutputWriterMock>();
     Simulation<SimpleContainer> simulation(particles, std::move(force_source), settings, std::move(writer));
     simulation.run();
-    Particle p1_expect({.0, .0, .0}, {-30, .0, .0}, {-120, .0, .0}, 1.0, 5., 1.);
-    Particle p2_expect({1.0, .0, .0}, {70, .0, .0}, {120, .0, .0}, 0.5, 5., 1.);
+    // At distance=1 with sigma=1, epsilon=5: F = -24*5*(1-2)*direction = 120*direction
+    // p1-p2 = (1,0,0), so F on p1 = (120,0,0), F on p2 = (-120,0,0)
+    // x updates with old_f=0, so x stays same
+    // Then new forces calculated at same positions: F = (120,0,0) on p1
+    // v1 = 0 + 0.5*0.5/1*(0+120,0,0) = (30,0,0)
+    // v2 = 0 + 0.5*0.5/1*(0-120,0,0) = (-30,0,0)
+    Particle p1_expect({5.0, 1.0, 1.0}, {30.0, .0, .0}, {120.0, .0, .0}, 1.0, 5., 1.);
+    Particle p2_expect({4.0, 1.0, 1.0}, {-30.0, .0, .0}, {-120.0, .0, .0}, 1.0, 5., 1.);
     EXPECT_EQ(particles[0], p1_expect);
     EXPECT_EQ(particles[1], p2_expect);
 }
