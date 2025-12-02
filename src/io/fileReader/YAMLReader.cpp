@@ -15,7 +15,6 @@
 #include "particles/boundaries/Boundary.h"
 #include "particles/boundaries/Outflow.h"
 #include "particles/boundaries/Reflecting.h"
-#include "particles/boundaries/VelocityReflect.h"
 #include "particles/container/domain/Domain.h"
 #include "particles/generators/CuboidGenerator.h"
 #include "particles/generators/DiscGenerator.h"
@@ -282,10 +281,6 @@ void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
                         bool ghost_on_boundary =
                             curr_node["ghost_on_boundary"] ? curr_node["ghost_on_boundary"].as<bool>() : false;
                         boundary = std::make_unique<Reflecting>(location, dimension, ghost_on_boundary, sigma, epsilon);
-                        break;
-                    }
-                    case BoundaryType::VELOCITYREFLECT: {
-                        boundary = std::make_unique<VelocityReflect>(location, dimension);
                         break;
                     }
                     case BoundaryType::OUTFLOW:
