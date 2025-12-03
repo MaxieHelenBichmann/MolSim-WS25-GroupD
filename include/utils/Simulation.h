@@ -156,8 +156,8 @@ class Simulation {
         size_t idx = 0;
         for (auto it = particles.begin(); it != particles.end(); ++it, idx++) {
             Particle& p1 = *it;
-            for (auto it_prox = particles.proximityBegin(p1.getX(), cutoff_radius, idx);
-                 it_prox != particles.proximityEnd(p1.getX(), cutoff_radius); ++it_prox) {
+            for (auto it_prox = particles.proximityBegin(p1.getX(), idx); it_prox != particles.proximityEnd(p1.getX());
+                 ++it_prox) {
                 Particle& p2 = *it_prox;
                 Vector<double, 3> force = force_source->applyForce(p1, p2);
                 // Apply force directly (Newton's 3rd law: equal and opposite)
@@ -172,7 +172,7 @@ class Simulation {
      */
     void calculateX() {
         for (auto it = particles.begin(); it != particles.end();) {
-            const auto new_position = 
+            const auto new_position =
                 (*it).getX() + (delta_t * (*it).getV()) + ((0.5 * delta_t * delta_t / (*it).getM()) * (*it).getF());
             it = particles.updateParticlePosition(it, new_position);
         }
@@ -197,7 +197,7 @@ class Simulation {
         while (current_time < end_time) {
             // 1. Calculate new positions
             calculateX();
-            
+
             // 2. Remove OOB particles
             removeParticles();
 

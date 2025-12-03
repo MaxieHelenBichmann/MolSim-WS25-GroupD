@@ -203,20 +203,17 @@ TEST_F(SimpleContainerTest, testEndConstInterator) {
  * @brief Tests correct behaviour of proximity iterator with infinite radius.
  */
 TEST_F(SimpleContainerTest, testProximityIteratorInfiniteRadius) {
+    SimpleContainer particles_inf({10.0, 10.0, 10.0}, std::numeric_limits<double>::infinity());
     R3 v{0.0, 0.0, 0.0};
-    particles_empty.addParticle(R3{2.0, 2.0, 2.0}, v, 1.0, 1.0, 1.0);
-    particles_empty.addParticle(R3{4.0, 4.0, 4.0}, v, 1.0, 1.0, 1.0);
-    particles_empty.addParticle(R3{6.0, 6.0, 6.0}, v, 1.0, 1.0, 1.0);
-
+    particles_inf.addParticle(R3{2.0, 2.0, 2.0}, v, 1.0, 1.0, 1.0);
+    particles_inf.addParticle(R3{4.0, 4.0, 4.0}, v, 1.0, 1.0, 1.0);
+    particles_inf.addParticle(R3{6.0, 6.0, 6.0}, v, 1.0, 1.0, 1.0);
     R3 center{3.0, 3.0, 3.0};
-    double radius = std::numeric_limits<double>::infinity();
 
-    auto it = particles_empty.proximityBegin(center, radius, particles_empty.size());
-    auto end = particles_empty.proximityEnd(center, radius);
-
+    auto it = particles_inf.proximityBegin(center, particles_inf.size());
+    auto end = particles_inf.proximityEnd(center);
     size_t count = 0;
     while (it != end) {
-        EXPECT_LE((it->getX() - center).euclidNorm(), radius);
         ++it;
         ++count;
     }
@@ -227,20 +224,19 @@ TEST_F(SimpleContainerTest, testProximityIteratorInfiniteRadius) {
  * @brief Tests correct behaviour of proximity iterator with finite radius.
  */
 TEST_F(SimpleContainerTest, testProximityIterator) {
+    SimpleContainer particles_one({10.0, 10.0, 10.0}, 1.0);
     R3 v{0.0, 0.0, 0.0};
-    particles_empty.addParticle(R3{2.5, 3.0, 3.0}, v, 1.0, 1.0, 1.0);
-    particles_empty.addParticle(R3{5.0, 5.0, 5.0}, v, 1.0, 1.0, 1.0);
-    particles_empty.addParticle(R3{6.0, 6.0, 6.0}, v, 1.0, 1.0, 1.0);
-
+    particles_one.addParticle(R3{2.5, 3.0, 3.0}, v, 1.0, 1.0, 1.0);
+    particles_one.addParticle(R3{5.0, 5.0, 5.0}, v, 1.0, 1.0, 1.0);
+    particles_one.addParticle(R3{6.0, 6.0, 6.0}, v, 1.0, 1.0, 1.0);
     R3 center{3.0, 3.0, 3.0};
-    double radius = 1.0;
 
-    auto it = particles_empty.proximityBegin(center, radius, particles_empty.size());
-    auto end = particles_empty.proximityEnd(center, radius);
+    auto it = particles_one.proximityBegin(center, particles_one.size());
+    auto end = particles_one.proximityEnd(center);
 
     size_t count = 0;
     while (it != end) {
-        EXPECT_LE((it->getX() - center).euclidNorm(), radius);
+        EXPECT_LE((it->getX() - center).euclidNorm(), 1.0);
         ++it;
         ++count;
     }

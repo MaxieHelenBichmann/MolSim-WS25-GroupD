@@ -10,17 +10,24 @@
 
 using namespace mol_sim;
 
-LinkedCellContainer::LinkedCellContainer(R3 domain_size, double cutoff_radius) : domain_size(domain_size) {
-    for (size_t dim = 0; dim < 3; ++dim) {
-        size_t inner_cells = 0U;
-        if (cutoff_radius > 0.0) {
-            inner_cells = static_cast<size_t>(std::floor(domain_size[dim] / cutoff_radius));
+LinkedCellContainer::LinkedCellContainer(R3 domain_size, double cutoff_radius)  // NOLINT
+    : cutoff_radius(cutoff_radius), domain_size(domain_size) {
+    if (cutoff_radius == std::numeric_limits<double>::infinity()) {
+        SPDLOG_INFO("Cutoff radius is infinite, halo cells will only be as large as the domain size.");
+        num_cells = {3U, 3U, 3U};
+        cell_length = domain_size;
+    } else {
+        for (size_t dim = 0; dim < 3; ++dim) {
+            size_t inner_cells = 0U;
+            if (cutoff_radius > 0.0) {
+                inner_cells = static_cast<size_t>(std::floor(domain_size[dim] / cutoff_radius));
+            }
+            if (inner_cells == 0U) {
+                inner_cells = 1U;
+            }
+            cell_length[dim] = domain_size[dim] / static_cast<double>(inner_cells);
+            num_cells[dim] = inner_cells + 2U;
         }
-        if (inner_cells == 0U) {
-            inner_cells = 1U;
-        }
-        cell_length[dim] = domain_size[dim] / static_cast<double>(inner_cells);
-        num_cells[dim] = inner_cells + 2U;
     }
 
     SPDLOG_DEBUG("Initializing Linked-Cell Container with dimensions: {} x {} x {}", num_cells[0], num_cells[1],
@@ -394,12 +401,7 @@ std::vector<Particle>::const_iterator LinkedCellContainer::end() const { return 
 std::vector<Particle>::const_iterator LinkedCellContainer::cend() const { return data.cend(); }
 
 // proximity iterators
-LinkedCellContainer::proximity_iterator LinkedCellContainer::proximityBegin(R3 center, double radius, size_t offset) {
-    if (radius > this->cell_length[0] || radius > this->cell_length[1] || radius > this->cell_length[2]) {
-        SPDLOG_INFO(
-            "Radius is larger than cell length in at least one dimension. Will not iterate over all affected "
-            "Particles!");
-    }
+LinkedCellContainer::proximity_iterator LinkedCellContainer::proximityBegin(R3 center, size_t offset) {
     std::vector<Cell*> adjacent_cells = findAdjacentCellsN3L(findCellIndex(center));
     std::vector<Cell*> nonempty_adjacent_cells;
 
@@ -414,10 +416,11 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::proximityBegin(R3 c
         return proximity_iterator{};
     }
     return proximity_iterator{
-        center, radius, nonempty_adjacent_cells.front()->particles().begin(), nonempty_adjacent_cells, &data, offset};
+        center, cutoff_radius, nonempty_adjacent_cells.front()->particles().begin(), nonempty_adjacent_cells,
+        &data,  offset};
 }
 
-LinkedCellContainer::proximity_iterator LinkedCellContainer::proximityEnd(R3 center, double radius) {
+LinkedCellContainer::proximity_iterator LinkedCellContainer::proximityEnd(R3 center) {
     std::vector<Cell*> adjacent_cells = findAdjacentCellsN3L(findCellIndex(center));
     std::vector<Cell*> nonempty_adjacent_cells;
 
@@ -432,16 +435,11 @@ LinkedCellContainer::proximity_iterator LinkedCellContainer::proximityEnd(R3 cen
         return proximity_iterator{};
     }
     return proximity_iterator{
-        center, radius, nonempty_adjacent_cells.back()->particles().end(), nonempty_adjacent_cells, &data, data.size()};
+        center, cutoff_radius, nonempty_adjacent_cells.back()->particles().end(), nonempty_adjacent_cells,
+        &data,  data.size()};
 }
 
-LinkedCellContainer::const_proximity_iterator LinkedCellContainer::proximityBegin(R3 center, double radius,
-                                                                                  size_t offset) const {
-    if (radius > this->cell_length[0] || radius > this->cell_length[1] || radius > this->cell_length[2]) {
-        SPDLOG_INFO(
-            "Radius is larger than cell length in at least one dimension. Will not iterate over all affected "
-            "Particles!");
-    }
+LinkedCellContainer::const_proximity_iterator LinkedCellContainer::proximityBegin(R3 center, size_t offset) const {
     std::vector<const Cell*> adjacent_cells = findAdjacentCellsN3L(findCellIndex(center));
     std::vector<const Cell*> nonempty_adjacent_cells;
 
@@ -456,9 +454,10 @@ LinkedCellContainer::const_proximity_iterator LinkedCellContainer::proximityBegi
         return const_proximity_iterator{};
     }
     return const_proximity_iterator{
-        center, radius, nonempty_adjacent_cells.front()->particles().begin(), nonempty_adjacent_cells, &data, offset};
+        center, cutoff_radius, nonempty_adjacent_cells.front()->particles().begin(), nonempty_adjacent_cells,
+        &data,  offset};
 }
-LinkedCellContainer::const_proximity_iterator LinkedCellContainer::proximityEnd(R3 center, double radius) const {
+LinkedCellContainer::const_proximity_iterator LinkedCellContainer::proximityEnd(R3 center) const {
     std::vector<const Cell*> adjacent_cells = findAdjacentCellsN3L(findCellIndex(center));
     std::vector<const Cell*> nonempty_adjacent_cells;
 
@@ -473,7 +472,8 @@ LinkedCellContainer::const_proximity_iterator LinkedCellContainer::proximityEnd(
         return const_proximity_iterator{};
     }
     return const_proximity_iterator{
-        center, radius, nonempty_adjacent_cells.back()->particles().end(), nonempty_adjacent_cells, &data, data.size()};
+        center, cutoff_radius, nonempty_adjacent_cells.back()->particles().end(), nonempty_adjacent_cells,
+        &data,  data.size()};
 }
 
 // boundary and halo iterators

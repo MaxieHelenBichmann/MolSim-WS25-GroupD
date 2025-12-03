@@ -95,6 +95,12 @@ class LinkedCellContainer {
     std::vector<Cell> cells;
 
     /**
+     * Cutoff radius with which the Container is initialized.
+     * Used for proximity queries. Particles further apart than this radius are not considered.
+     */
+    double cutoff_radius;
+
+    /**
      * Vector storing the global bounds of the domain of this container.
      * The Linked-Cell container assumes a cuboidal domain from (0,0,0) to domain_size.
      *
@@ -465,43 +471,39 @@ class LinkedCellContainer {
      * @brief Mutable Iterator over particles in proximity.
      *
      * @param center Center point to check proximity from (position of the particle).
-     * @param radius Radius within which to consider particles in proximity.
      * @param offset Offset from the beginning of the container to start the iteration (used for N3L optimization).
      *
      * @return Mutable iterator to the first particle within the given radius of the center.
      */
-    [[nodiscard]] proximity_iterator proximityBegin(R3 center, double radius, size_t offset);
+    [[nodiscard]] proximity_iterator proximityBegin(R3 center, size_t offset);
 
     /**
      * @brief Mutable Iterator over particles in proximity.
      *
      * @param center Center point to check proximity from (position of the particle).
-     * @param radius Radius within which to consider particles in proximity.
      *
      * @return Mutable iterator after the last particle within the given radius of the center.
      */
-    [[nodiscard]] proximity_iterator proximityEnd(R3 center, double radius);
+    [[nodiscard]] proximity_iterator proximityEnd(R3 center);
 
     /**
      * @brief Const Iterator over particles in proximity.
      *
      * @param center Center point to check proximity from (position of the particle).
-     * @param radius Radius within which to consider particles in proximity.
      * @param offset Offset from the beginning of the container to start the iteration (used for N3L optimization).
      *
      * @return Const iterator to the first particle within the given radius of the center.
      */
-    [[nodiscard]] const_proximity_iterator proximityBegin(R3 center, double radius, size_t offset) const;
+    [[nodiscard]] const_proximity_iterator proximityBegin(R3 center, size_t offset) const;
 
     /**
      * @brief Const Iterator over particles in proximity.
      *
      * @param center Center point to check proximity from (position of the particle).
-     * @param radius Radius within which to consider particles in proximity.
      *
      * @return Const iterator after the last particle within the given radius of the center.
      */
-    [[nodiscard]] const_proximity_iterator proximityEnd(R3 center, double radius) const;
+    [[nodiscard]] const_proximity_iterator proximityEnd(R3 center) const;
 
     // boundary and halo iterators
 

@@ -33,22 +33,22 @@ std::vector<Particle>::iterator SimpleContainer::updateParticlePosition(std::vec
 }
 
 // proximity iterators
-SimpleContainer::proximity_iterator SimpleContainer::proximityBegin(R3 center, double radius, size_t offset) {
-    return proximity_iterator{center, radius, data(), data() + size(), offset == size() ? 0 : ++offset};  // NOLINT
+SimpleContainer::proximity_iterator SimpleContainer::proximityBegin(R3 center, size_t offset) {
+    return proximity_iterator{center, cutoff_radius, data(), data() + size(),
+                              offset == size() ? 0 : ++offset};  // NOLINT
 };
 
-SimpleContainer::const_proximity_iterator SimpleContainer::proximityBegin(R3 center, double radius,
-                                                                          size_t offset) const {
-    return const_proximity_iterator{center, radius, data(), data() + size(),
+SimpleContainer::const_proximity_iterator SimpleContainer::proximityBegin(R3 center, size_t offset) const {
+    return const_proximity_iterator{center, cutoff_radius, data(), data() + size(),
                                     offset == size() ? 0 : ++offset};  // NOLINT
 };
 
-SimpleContainer::proximity_iterator SimpleContainer::proximityEnd(R3 center, double radius) {
-    return proximity_iterator{center, radius, data() + size(), data() + size(), 0};  // NOLINT
+SimpleContainer::proximity_iterator SimpleContainer::proximityEnd(R3 center) {
+    return proximity_iterator{center, cutoff_radius, data() + size(), data() + size(), 0};  // NOLINT
 };
 
-SimpleContainer::const_proximity_iterator SimpleContainer::proximityEnd(R3 center, double radius) const {
-    return const_proximity_iterator{center, radius, data() + size(), data() + size(), 0};  // NOLINT
+SimpleContainer::const_proximity_iterator SimpleContainer::proximityEnd(R3 center) const {
+    return const_proximity_iterator{center, cutoff_radius, data() + size(), data() + size(), 0};  // NOLINT
 };
 
 // boundary and halo iterators
