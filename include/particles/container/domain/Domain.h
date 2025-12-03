@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "particles/boundaries/Boundary.h"
+#include "physics/ForceSource.h"
 #include "utils/Vector.h"
 
 namespace mol_sim {
@@ -23,6 +24,7 @@ class Domain {
 
     /**
      * @brief Maps BoundaryLocation enum to array index
+     * @throws BoundaryException if the given location is unknown.
      */
     static size_t locationToIndex(BoundaryLocation location);
 
@@ -41,36 +43,38 @@ class Domain {
     Domain(R3 dimension, std::array<std::unique_ptr<Boundary>, 6> boundaries);
 
     /**
-     * @brief Get a pointer to a specific Boundary object.
+     * @brief Get a reference to a specific Boundary object.
      *
      * @param location The location of the boundary.
-     * @return Boundary* The pointer to the specified boundary.
+     * @return Boundary& The reference to the specified boundary.
+     * @throws BoundaryException if the boundary at the given location is null.
      */
-    Boundary* getBoundary(BoundaryLocation location);
+    Boundary& getBoundary(BoundaryLocation location);
 
     /**
-     * @brief Get a const pointer to a specific Boundary object.
+     * @brief Get a const reference to a specific Boundary object.
      *
      * @param location The location of the boundary.
-     * @return const Boundary* The pointer to the specified boundary.
+     * @return const Boundary& The reference to the specified boundary.
+     * @throws BoundaryException if the boundary at the given location is null.
      */
-    [[nodiscard]] const Boundary* getBoundary(BoundaryLocation location) const;
+    [[nodiscard]] const Boundary& getBoundary(BoundaryLocation location) const;
 
     /**
      * @brief Get the domain's dimension vector.
      *
      * @return R3 The dimensions of the domain.
      */
-    [[nodiscard]] R3 getDimension() const;
+    [[nodiscard]] R3 getDimension() const noexcept;
 
     /**
      * @brief Applies boundary conditions to a particle. Also (if needed) computes ghost particles
      * needed for a given particle.
      *
      * @param p The particle to apply boundaries to / compute ghost particles for.
-     * @return Vector of ghost particles.
+     * @param force The force source for ghost particle interactions.
      */
-    [[nodiscard]] std::vector<Particle> applyBoundary(Particle& p) const;
+    void applyBoundary(Particle& p, const ForceSource& force) const noexcept;
 
     Domain& operator=(const Domain& other) = delete;
     Domain& operator=(Domain&& other) noexcept;

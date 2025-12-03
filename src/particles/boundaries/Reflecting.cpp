@@ -1,39 +1,19 @@
 #include "particles/boundaries/Reflecting.h"
 
+#include <spdlog/spdlog.h>
+
 #include <cmath>
 
 namespace mol_sim {
 
 Reflecting::Reflecting(BoundaryLocation location, R3 domain_size, bool ghost_on_boundary, std::optional<double> sigma,
-                       std::optional<double> epsilon)
-    : Boundary(location, BoundaryType::REFLECTING),
-      domain_size(domain_size),
+                       std::optional<double> epsilon) noexcept
+    : Boundary(location, BoundaryType::REFLECTING, domain_size),
       ghost_on_boundary(ghost_on_boundary),
       boundary_epsilon(epsilon),
       boundary_sigma(sigma) {}
 
-int Reflecting::getSign() const {
-    switch (location) {
-        case BoundaryLocation::LEFT:
-        case BoundaryLocation::LOWER:
-        case BoundaryLocation::FRONT:
-            return -1;
-        case BoundaryLocation::RIGHT:
-        case BoundaryLocation::UPPER:
-        case BoundaryLocation::BACK:
-            return 1;
-        default:
-            return 0;
-    }
-}
-
-double Reflecting::getBoundaryPosition() const {
-    size_t axis = getAxis();
-    int sign = getSign();
-    return (sign < 0) ? 0.0 : domain_size[axis];
-}
-
-std::optional<Particle> Reflecting::applyBoundary(Particle& p) {
+void Reflecting::applyBoundary(Particle& p, const ForceSource& force) const noexcept {
     double sigma = boundary_sigma.value_or(p.getSigma());
     double epsilon = boundary_epsilon.value_or(p.getEpsilon());
 
@@ -49,10 +29,10 @@ std::optional<Particle> Reflecting::applyBoundary(Particle& p) {
         R3 ghost_pos = p.getX();
         ghost_pos[axis] = boundary_position + (ghost_on_boundary ? 0 : sign * distance_to_boundary);
 
-        return Particle(ghost_pos, {0.0, 0.0, 0.0}, 0.0, epsilon, sigma, -1);
+        SPDLOG_TRACE("Creating ghost particle at ({}, {}, {}) for particle at ({}, {}, {})", ghost_pos[0], ghost_pos[1],
+                     ghost_pos[2], p.getX()[0], p.getX()[1], p.getX()[2]);
+        p.getF() = p.getF() + force.applyForce(p, Particle(ghost_pos, {0.0, 0.0, 0.0}, p.getM(), epsilon, sigma, -1));
     }
-
-    return std::nullopt;
 }
 
 }  // namespace mol_sim

@@ -25,7 +25,7 @@ class XYZWriter : public OutputWriter {
 
     ~XYZWriter() override;
 
-    void plotParticles(ContainerRef particles, const std::string& filename, int iteration) override;
+    void plotParticles(ContainerRef particles, const std::string& filename, int iteration) const override;
 };
 
 }  // namespace mol_sim

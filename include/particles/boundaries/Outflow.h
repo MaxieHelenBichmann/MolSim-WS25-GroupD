@@ -7,13 +7,12 @@ namespace mol_sim {
 
 class Outflow : public Boundary {
    public:
-    explicit Outflow(BoundaryLocation location) : Boundary(location, BoundaryType::OUTFLOW) {}
+    Outflow(BoundaryLocation location, R3 domain_size) noexcept
+        : Boundary(location, BoundaryType::OUTFLOW, domain_size) {}
     ~Outflow() override = default;
 
-    [[nodiscard]] std::optional<Particle> applyBoundary(Particle& p) override {
-        (void)p;
-        return std::nullopt;
-    }
+    void applyBoundary([[maybe_unused]] Particle& p,
+                       [[maybe_unused]] const ForceSource& force) const noexcept override {}
 };
 
 }  // namespace mol_sim

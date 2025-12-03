@@ -109,6 +109,7 @@ class SimpleContainer : public std::vector<Particle> {
         std::set<BoundaryLocation> locations;
 
         bool fitBoundary() {  // NOLINT
+            double effective_radius = -radius;
             if (cur->getX()[0] > center_or_domain[0] || cur->getX()[1] > center_or_domain[1] ||
                 cur->getX()[2] > center_or_domain[2] || cur->getX()[0] < 0.0 || cur->getX()[1] < 0.0 ||
                 cur->getX()[2] < 0.0) {
@@ -117,37 +118,40 @@ class SimpleContainer : public std::vector<Particle> {
             for (auto location : locations) {
                 switch (location) {
                     case BoundaryLocation::UPPER: {
-                        if (cur->getX()[2] >= center_or_domain[2] + radius && cur->getX()[2] <= center_or_domain[2]) {
+                        if (cur->getX()[2] >= center_or_domain[2] - effective_radius &&
+                            cur->getX()[2] <= center_or_domain[2]) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::LOWER: {
-                        if (cur->getX()[2] >= 0.0 && cur->getX()[2] <= -radius) {
+                        if (cur->getX()[2] >= 0.0 && cur->getX()[2] <= effective_radius) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::FRONT: {
-                        if (cur->getX()[1] >= 0.0 && cur->getX()[1] <= -radius) {
+                        if (cur->getX()[1] >= 0.0 && cur->getX()[1] <= effective_radius) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::BACK: {
-                        if (cur->getX()[1] >= center_or_domain[1] + radius && cur->getX()[1] <= center_or_domain[1]) {
+                        if (cur->getX()[1] >= center_or_domain[1] - effective_radius &&
+                            cur->getX()[1] <= center_or_domain[1]) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::LEFT: {
-                        if (cur->getX()[0] >= 0.0 && cur->getX()[0] <= -radius) {
+                        if (cur->getX()[0] >= 0.0 && cur->getX()[0] <= effective_radius) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::RIGHT: {
-                        if (cur->getX()[0] >= center_or_domain[0] + radius && cur->getX()[0] <= center_or_domain[0]) {
+                        if (cur->getX()[0] >= center_or_domain[0] - effective_radius &&
+                            cur->getX()[0] <= center_or_domain[0]) {
                             return true;
                         }
                         break;
@@ -167,37 +171,37 @@ class SimpleContainer : public std::vector<Particle> {
             for (auto location : locations) {
                 switch (location) {
                     case BoundaryLocation::UPPER: {
-                        if (cur->getX()[2] >= center_or_domain[2] && cur->getX()[2] <= center_or_domain[2] + radius) {
+                        if (cur->getX()[2] > center_or_domain[2] && cur->getX()[2] <= center_or_domain[2] + radius) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::LOWER: {
-                        if (cur->getX()[2] >= -radius && cur->getX()[2] <= 0.0) {
+                        if (cur->getX()[2] >= -radius && cur->getX()[2] < 0.0) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::FRONT: {
-                        if (cur->getX()[1] >= -radius && cur->getX()[1] <= 0.0) {
+                        if (cur->getX()[1] >= -radius && cur->getX()[1] < 0.0) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::BACK: {
-                        if (cur->getX()[1] >= center_or_domain[1] && cur->getX()[1] <= center_or_domain[1] + radius) {
+                        if (cur->getX()[1] > center_or_domain[1] && cur->getX()[1] <= center_or_domain[1] + radius) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::LEFT: {
-                        if (cur->getX()[0] >= -radius && cur->getX()[0] <= 0.0) {
+                        if (cur->getX()[0] >= -radius && cur->getX()[0] < 0.0) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::RIGHT: {
-                        if (cur->getX()[0] >= center_or_domain[0] && cur->getX()[0] <= center_or_domain[0] + radius) {
+                        if (cur->getX()[0] > center_or_domain[0] && cur->getX()[0] <= center_or_domain[0] + radius) {
                             return true;
                         }
                         break;
@@ -249,8 +253,8 @@ class SimpleContainer : public std::vector<Particle> {
             satisfy();
         }
 
-        reference operator*() const { return *cur; }
-        pointer operator->() const { return cur; }
+        reference operator*() const noexcept { return *cur; }
+        pointer operator->() const noexcept { return cur; }
 
         const_proximity_iterator& operator++() {
             ++cur;  // NOLINT
@@ -264,17 +268,17 @@ class SimpleContainer : public std::vector<Particle> {
             return tmp;
         }
 
-        friend bool operator==(const const_proximity_iterator& a, const const_proximity_iterator& b) {
+        friend bool operator==(const const_proximity_iterator& a, const const_proximity_iterator& b) noexcept {
             return a.cur == b.cur;
         }
-        friend bool operator!=(const const_proximity_iterator& a, const const_proximity_iterator& b) {
+        friend bool operator!=(const const_proximity_iterator& a, const const_proximity_iterator& b) noexcept {
             return !(a == b);
         }
 
-        [[nodiscard]] R3 getCenter() const { return center_or_domain; }
-        [[nodiscard]] double getRadius() const { return radius; }
-        [[nodiscard]] bool isProximity() const { return prox; }
-        [[nodiscard]] std::set<BoundaryLocation> getLocations() const { return locations; }
+        [[nodiscard]] R3 getCenter() const noexcept { return center_or_domain; }
+        [[nodiscard]] double getRadius() const noexcept { return radius; }
+        [[nodiscard]] bool isProximity() const noexcept { return prox; }
+        [[nodiscard]] std::set<BoundaryLocation> getLocations() const noexcept { return locations; }
     };
     static_assert(std::forward_iterator<const_proximity_iterator>);
 
@@ -300,6 +304,7 @@ class SimpleContainer : public std::vector<Particle> {
         std::set<BoundaryLocation> locations;
 
         bool fitBoundary() {  // NOLINT
+            double effective_radius = -radius;
             if (cur->getX()[0] > center_or_domain[0] || cur->getX()[1] > center_or_domain[1] ||
                 cur->getX()[2] > center_or_domain[2] || cur->getX()[0] < 0.0 || cur->getX()[1] < 0.0 ||
                 cur->getX()[2] < 0.0) {
@@ -308,37 +313,40 @@ class SimpleContainer : public std::vector<Particle> {
             for (auto location : locations) {
                 switch (location) {
                     case BoundaryLocation::UPPER: {
-                        if (cur->getX()[2] >= center_or_domain[2] + radius && cur->getX()[2] <= center_or_domain[2]) {
+                        if (cur->getX()[2] >= center_or_domain[2] - effective_radius &&
+                            cur->getX()[2] <= center_or_domain[2]) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::LOWER: {
-                        if (cur->getX()[2] >= 0.0 && cur->getX()[2] <= -radius) {
+                        if (cur->getX()[2] >= 0.0 && cur->getX()[2] <= effective_radius) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::FRONT: {
-                        if (cur->getX()[1] >= 0.0 && cur->getX()[1] <= -radius) {
+                        if (cur->getX()[1] >= 0.0 && cur->getX()[1] <= effective_radius) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::BACK: {
-                        if (cur->getX()[1] >= center_or_domain[1] + radius && cur->getX()[1] <= center_or_domain[1]) {
+                        if (cur->getX()[1] >= center_or_domain[1] - effective_radius &&
+                            cur->getX()[1] <= center_or_domain[1]) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::LEFT: {
-                        if (cur->getX()[0] >= 0.0 && cur->getX()[0] <= -radius) {
+                        if (cur->getX()[0] >= 0.0 && cur->getX()[0] <= effective_radius) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::RIGHT: {
-                        if (cur->getX()[0] >= center_or_domain[0] + radius && cur->getX()[0] <= center_or_domain[0]) {
+                        if (cur->getX()[0] >= center_or_domain[0] - effective_radius &&
+                            cur->getX()[0] <= center_or_domain[0]) {
                             return true;
                         }
                         break;
@@ -358,37 +366,37 @@ class SimpleContainer : public std::vector<Particle> {
             for (auto location : locations) {
                 switch (location) {
                     case BoundaryLocation::UPPER: {
-                        if (cur->getX()[2] >= center_or_domain[2] && cur->getX()[2] <= center_or_domain[2] + radius) {
+                        if (cur->getX()[2] > center_or_domain[2] && cur->getX()[2] <= center_or_domain[2] + radius) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::LOWER: {
-                        if (cur->getX()[2] >= -radius && cur->getX()[2] <= 0.0) {
+                        if (cur->getX()[2] >= -radius && cur->getX()[2] < 0.0) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::FRONT: {
-                        if (cur->getX()[1] >= -radius && cur->getX()[1] <= 0.0) {
+                        if (cur->getX()[1] >= -radius && cur->getX()[1] < 0.0) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::BACK: {
-                        if (cur->getX()[1] >= center_or_domain[1] && cur->getX()[1] <= center_or_domain[1] + radius) {
+                        if (cur->getX()[1] > center_or_domain[1] && cur->getX()[1] <= center_or_domain[1] + radius) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::LEFT: {
-                        if (cur->getX()[0] >= -radius && cur->getX()[0] <= 0.0) {
+                        if (cur->getX()[0] >= -radius && cur->getX()[0] < 0.0) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::RIGHT: {
-                        if (cur->getX()[0] >= center_or_domain[0] && cur->getX()[0] <= center_or_domain[0] + radius) {
+                        if (cur->getX()[0] > center_or_domain[0] && cur->getX()[0] <= center_or_domain[0] + radius) {
                             return true;
                         }
                         break;
@@ -439,8 +447,8 @@ class SimpleContainer : public std::vector<Particle> {
             satisfy();
         }
 
-        reference operator*() const { return *cur; }
-        pointer operator->() const { return cur; }
+        reference operator*() const noexcept { return *cur; }
+        pointer operator->() const noexcept { return cur; }
 
         proximity_iterator& operator++() {
             ++cur;  // NOLINT
@@ -454,18 +462,23 @@ class SimpleContainer : public std::vector<Particle> {
             return tmp;
         }
 
-        friend bool operator==(const proximity_iterator& a, const proximity_iterator& b) { return a.cur == b.cur; }
-        friend bool operator!=(const proximity_iterator& a, const proximity_iterator& b) { return !(a == b); }
+        friend bool operator==(const proximity_iterator& a, const proximity_iterator& b) noexcept {
+            return a.cur == b.cur;
+        }
+        friend bool operator!=(const proximity_iterator& a, const proximity_iterator& b) noexcept {
+            return !(a == b);
+        }
 
-        [[nodiscard]] R3 getCenter() const { return center_or_domain; }
-        [[nodiscard]] double getRadius() const { return radius; }
-        [[nodiscard]] bool isProximity() const { return prox; }
-        [[nodiscard]] std::set<BoundaryLocation> getLocations() const { return locations; }
+        [[nodiscard]] R3 getCenter() const noexcept { return center_or_domain; }
+        [[nodiscard]] double getRadius() const noexcept { return radius; }
+        [[nodiscard]] bool isProximity() const noexcept { return prox; }
+        [[nodiscard]] std::set<BoundaryLocation> getLocations() const noexcept { return locations; }
     };
     static_assert(std::forward_iterator<proximity_iterator>);
 
     /**
-     * @brief Removes a given particle from the container.
+     * @brief Removes a given particle from the container. Used when iterating with proximity_iterator, not used yet
+     * (thus not tested), but could be useful.
      *
      * @param p Proximity iterator to the Particle to be removed.
      *
@@ -477,43 +490,39 @@ class SimpleContainer : public std::vector<Particle> {
      * @brief Mutable Iterator over particles in proximity.
      *
      * @param center Center point to check proximity from (position of the particle).
-     * @param radius Radius within which to consider particles in proximity.
      * @param offset Offset from the beginning of the container to start the iteration (used for N3L optimization).
      *
      * @return Mutable iterator to the first particle within the given radius of the center.
      */
-    [[nodiscard]] proximity_iterator proximityBegin(R3 center, double radius, size_t offset = 0);
+    [[nodiscard]] proximity_iterator proximityBegin(R3 center, size_t offset = 0);
 
     /**
      * @brief Const Iterator over particles in proximity.
      *
      * @param center Center point to check proximity from (position of the particle).
-     * @param radius Radius within which to consider particles in proximity.
      * @param offset Offset from the beginning of the container to start the iteration (used for N3L optimization).
      *
      * @return Const iterator to the first particle within the given radius of the center.
      */
-    [[nodiscard]] const_proximity_iterator proximityBegin(R3 center, double radius, size_t offset = 0) const;
+    [[nodiscard]] const_proximity_iterator proximityBegin(R3 center, size_t offset = 0) const;
 
     /**
      * @brief Mutable Iterator over particles in proximity.
      *
      * @param center Center point to check proximity from (position of the particle).
-     * @param radius Radius within which to consider particles in proximity.
      *
      * @return Mutable iterator after the last particle within the given radius of the center.
      */
-    [[nodiscard]] proximity_iterator proximityEnd(R3 center, double radius);
+    [[nodiscard]] proximity_iterator proximityEnd(R3 center);
 
     /**
      * @brief Const Iterator over particles in proximity.
      *
      * @param center Center point to check proximity from (position of the particle).
-     * @param radius Radius within which to consider particles in proximity.
      *
      * @return Const iterator after the last particle within the given radius of the center.
      */
-    [[nodiscard]] const_proximity_iterator proximityEnd(R3 center, double radius) const;
+    [[nodiscard]] const_proximity_iterator proximityEnd(R3 center) const;
 
     // boundary and halo iterators
 

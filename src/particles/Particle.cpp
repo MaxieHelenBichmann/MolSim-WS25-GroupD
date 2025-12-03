@@ -75,32 +75,32 @@ Particle::Particle(R3 x_arg, R3 v_arg, R3 f_arg, double m_arg, double epsilon_ar
 
 Particle::~Particle() { SPDLOG_DEBUG("Particle destructed!"); }
 
-const R3& Particle::getX() const { return x; }
-R3& Particle::getX() { return x; }
+const R3& Particle::getX() const noexcept { return x; }
+R3& Particle::getX() noexcept { return x; }
 
-const R3& Particle::getOldX() const { return old_x; }
-R3& Particle::getOldX() { return old_x; }
+const R3& Particle::getOldX() const noexcept { return old_x; }
+R3& Particle::getOldX() noexcept { return old_x; }
 
-const R3& Particle::getV() const { return v; }
-R3& Particle::getV() { return v; }
+const R3& Particle::getV() const noexcept { return v; }
+R3& Particle::getV() noexcept { return v; }
 
-const R3& Particle::getF() const { return f; }
-R3& Particle::getF() { return f; }
+const R3& Particle::getF() const noexcept { return f; }
+R3& Particle::getF() noexcept { return f; }
 
-const R3& Particle::getOldF() const { return old_f; }
-R3& Particle::getOldF() { return old_f; }
+const R3& Particle::getOldF() const noexcept { return old_f; }
+R3& Particle::getOldF() noexcept { return old_f; }
 
-double Particle::getM() const { return m; }
+double Particle::getM() const noexcept { return m; }
 
-int Particle::getType() const { return type; }
+int Particle::getType() const noexcept { return type; }
 
-double Particle::getSigma() const { return sigma; }
+double Particle::getSigma() const noexcept { return sigma; }
 
-double& Particle::getSigma() { return sigma; }
+double& Particle::getSigma() noexcept { return sigma; }
 
-double Particle::getEpsilon() const { return epsilon; }
+double Particle::getEpsilon() const noexcept { return epsilon; }
 
-double& Particle::getEpsilon() { return epsilon; }
+double& Particle::getEpsilon() noexcept { return epsilon; }
 
 std::string Particle::toString() const {
     std::stringstream stream;
@@ -109,7 +109,7 @@ std::string Particle::toString() const {
     return stream.str();
 }
 
-bool Particle::operator==(const Particle& other) const {
+bool Particle::operator==(const Particle& other) const noexcept {
     return (x == other.x) and (v == other.v) and (f == other.f) and (type == other.type) and (m == other.m) and
            (old_f == other.old_f) and (epsilon == other.epsilon) and (sigma == other.sigma);
 }

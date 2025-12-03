@@ -71,6 +71,7 @@ class LinkedCellContainerExplicit {
     R3 domain_size;
     std::array<size_t, 3> num_cells;
     std::array<double, 3> cell_length{};
+    double cutoff_radius;
 
    public:
     // constructors
@@ -259,10 +260,10 @@ class LinkedCellContainerExplicit {
     [[nodiscard]] std::vector<Particle>::const_iterator end() const;
     [[nodiscard]] std::vector<Particle>::const_iterator cend() const;
 
-    [[nodiscard]] proximity_iterator proximityBegin(R3 center, double radius, size_t offset = 0);
-    [[nodiscard]] proximity_iterator proximityEnd(R3 center, double radius);
-    [[nodiscard]] const_proximity_iterator proximityBegin(R3 center, double radius, size_t offset = 0) const;
-    [[nodiscard]] const_proximity_iterator proximityEnd(R3 center, double radius) const;
+    [[nodiscard]] proximity_iterator proximityBegin(R3 center, size_t offset = 0);
+    [[nodiscard]] proximity_iterator proximityEnd(R3 center);
+    [[nodiscard]] const_proximity_iterator proximityBegin(R3 center, size_t offset = 0) const;
+    [[nodiscard]] const_proximity_iterator proximityEnd(R3 center) const;
 
     // boundary and halo iterators
 

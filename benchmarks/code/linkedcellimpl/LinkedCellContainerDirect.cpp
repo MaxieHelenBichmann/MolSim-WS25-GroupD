@@ -57,7 +57,8 @@ CellType CellDirect::getType() { return type; }
 
 // --------------------------------------------------------------------------------------------------------------
 
-LinkedCellContainerDirect::LinkedCellContainerDirect(R3 domain_size, double cutoff_radius) : domain_size(domain_size) {
+LinkedCellContainerDirect::LinkedCellContainerDirect(R3 domain_size, double cutoff_radius)
+    : domain_size(domain_size), cutoff_radius(cutoff_radius) {
     for (size_t dim = 0; dim < 3; ++dim) {
         size_t inner_cells = 0U;
         if (cutoff_radius > 0.0) {
@@ -518,7 +519,7 @@ LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::c
 
 // proximity iterators
 LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::proximityBegin(
-    R3 center, double radius, [[maybe_unused]] size_t offset) {
+    R3 center, [[maybe_unused]] size_t offset) {
     std::vector<CellDirect*> adjacent_cells = findAdjacentCells(findCellIndex(center));
     std::vector<CellDirect*> nonempty_adjacent_cells;
 
@@ -529,11 +530,11 @@ LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::proximi
         }
     }
 
-    return proximity_iterator{center, radius, nonempty_adjacent_cells.front()->particles().begin(),
+    return proximity_iterator{center, cutoff_radius, nonempty_adjacent_cells.front()->particles().begin(),
                               nonempty_adjacent_cells};
 }
 
-LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::proximityEnd(R3 center, double radius) {
+LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::proximityEnd(R3 center) {
     std::vector<CellDirect*> adjacent_cells = findAdjacentCells(findCellIndex(center));
     std::vector<CellDirect*> nonempty_adjacent_cells;
 
@@ -544,12 +545,12 @@ LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::proximi
         }
     }
 
-    return proximity_iterator{center, radius, nonempty_adjacent_cells.back()->particles().end(),
+    return proximity_iterator{center, cutoff_radius, nonempty_adjacent_cells.back()->particles().end(),
                               nonempty_adjacent_cells};
 }
 
 LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::proximityBegin(
-    R3 center, double radius, [[maybe_unused]] size_t offset) const {
+    R3 center, [[maybe_unused]] size_t offset) const {
     std::vector<const CellDirect*> adjacent_cells = findAdjacentCells(findCellIndex(center));
     std::vector<const CellDirect*> nonempty_adjacent_cells;
 
@@ -560,11 +561,10 @@ LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::p
         }
     }
 
-    return const_proximity_iterator{center, radius, nonempty_adjacent_cells.front()->particles().begin(),
+    return const_proximity_iterator{center, cutoff_radius, nonempty_adjacent_cells.front()->particles().begin(),
                                     nonempty_adjacent_cells};
 }
-LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::proximityEnd(R3 center,
-                                                                                            double radius) const {
+LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::proximityEnd(R3 center) const {
     std::vector<const CellDirect*> adjacent_cells = findAdjacentCells(findCellIndex(center));
     std::vector<const CellDirect*> nonempty_adjacent_cells;
 
@@ -575,7 +575,7 @@ LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::p
         }
     }
 
-    return const_proximity_iterator{center, radius, nonempty_adjacent_cells.back()->particles().end(),
+    return const_proximity_iterator{center, cutoff_radius, nonempty_adjacent_cells.back()->particles().end(),
                                     nonempty_adjacent_cells};
 }
 

@@ -62,10 +62,10 @@ concept ParticleContainer = requires(C c) {
     { c.cend() } -> std::random_access_iterator;
 
     // iterators particles in proximity
-    { c.proximityBegin(R3(), double(), size_t()) } -> std::forward_iterator;
-    { (*static_cast<const C*>(&c)).proximityBegin(R3(), double(), size_t()) } -> std::forward_iterator;
-    { c.proximityEnd(R3(), double()) } -> std::forward_iterator;
-    { (*static_cast<const C*>(&c)).proximityEnd(R3(), double()) } -> std::forward_iterator;
+    { c.proximityBegin(R3(), size_t()) } -> std::forward_iterator;
+    { (*static_cast<const C*>(&c)).proximityBegin(R3(), size_t()) } -> std::forward_iterator;
+    { c.proximityEnd(R3()) } -> std::forward_iterator;
+    { (*static_cast<const C*>(&c)).proximityEnd(R3()) } -> std::forward_iterator;
 
     // halo and boundary iterators
     { c.haloBegin(std::set<BoundaryLocation>{}) } -> std::forward_iterator;

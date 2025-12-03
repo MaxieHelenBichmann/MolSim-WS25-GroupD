@@ -50,7 +50,7 @@ CellType CellExplicit::getType() { return type; }
 // --------------------------------------------------------------------------------------------------------------
 
 LinkedCellContainerExplicit::LinkedCellContainerExplicit(R3 domain_size, double cutoff_radius)
-    : domain_size(domain_size) {
+    : domain_size(domain_size), cutoff_radius(cutoff_radius) {
     for (size_t dim = 0; dim < 3; ++dim) {
         size_t inner_cells = 0U;
         if (cutoff_radius > 0.0) {
@@ -407,7 +407,7 @@ std::vector<Particle>::const_iterator LinkedCellContainerExplicit::cend() const 
 
 // proximity iterators
 LinkedCellContainerExplicit::proximity_iterator LinkedCellContainerExplicit::proximityBegin(
-    R3 center, double radius, [[maybe_unused]] size_t offset) {
+    R3 center, [[maybe_unused]] size_t offset) {
     std::vector<CellExplicit*> adjacent_cells = findAdjacentCells(findCellIndex(center));
     std::vector<CellExplicit*> nonempty_adjacent_cells;
 
@@ -418,11 +418,11 @@ LinkedCellContainerExplicit::proximity_iterator LinkedCellContainerExplicit::pro
         }
     }
 
-    return proximity_iterator{center, radius, nonempty_adjacent_cells.front()->particles().begin(),
+    return proximity_iterator{center, cutoff_radius, nonempty_adjacent_cells.front()->particles().begin(),
                               nonempty_adjacent_cells, &data};
 }
 
-LinkedCellContainerExplicit::proximity_iterator LinkedCellContainerExplicit::proximityEnd(R3 center, double radius) {
+LinkedCellContainerExplicit::proximity_iterator LinkedCellContainerExplicit::proximityEnd(R3 center) {
     std::vector<CellExplicit*> adjacent_cells = findAdjacentCells(findCellIndex(center));
     std::vector<CellExplicit*> nonempty_adjacent_cells;
 
@@ -433,12 +433,12 @@ LinkedCellContainerExplicit::proximity_iterator LinkedCellContainerExplicit::pro
         }
     }
 
-    return proximity_iterator{center, radius, nonempty_adjacent_cells.back()->particles().end(),
+    return proximity_iterator{center, cutoff_radius, nonempty_adjacent_cells.back()->particles().end(),
                               nonempty_adjacent_cells, &data};
 }
 
 LinkedCellContainerExplicit::const_proximity_iterator LinkedCellContainerExplicit::proximityBegin(
-    R3 center, double radius, [[maybe_unused]] size_t offset) const {
+    R3 center, [[maybe_unused]] size_t offset) const {
     std::vector<const CellExplicit*> adjacent_cells = findAdjacentCells(findCellIndex(center));
     std::vector<const CellExplicit*> nonempty_adjacent_cells;
 
@@ -449,11 +449,10 @@ LinkedCellContainerExplicit::const_proximity_iterator LinkedCellContainerExplici
         }
     }
 
-    return const_proximity_iterator{center, radius, nonempty_adjacent_cells.front()->particles().begin(),
+    return const_proximity_iterator{center, cutoff_radius, nonempty_adjacent_cells.front()->particles().begin(),
                                     nonempty_adjacent_cells, &data};
 }
-LinkedCellContainerExplicit::const_proximity_iterator LinkedCellContainerExplicit::proximityEnd(R3 center,
-                                                                                                double radius) const {
+LinkedCellContainerExplicit::const_proximity_iterator LinkedCellContainerExplicit::proximityEnd(R3 center) const {
     std::vector<const CellExplicit*> adjacent_cells = findAdjacentCells(findCellIndex(center));
     std::vector<const CellExplicit*> nonempty_adjacent_cells;
 
@@ -464,7 +463,7 @@ LinkedCellContainerExplicit::const_proximity_iterator LinkedCellContainerExplici
         }
     }
 
-    return const_proximity_iterator{center, radius, nonempty_adjacent_cells.back()->particles().end(),
+    return const_proximity_iterator{center, cutoff_radius, nonempty_adjacent_cells.back()->particles().end(),
                                     nonempty_adjacent_cells, &data};
 }
 

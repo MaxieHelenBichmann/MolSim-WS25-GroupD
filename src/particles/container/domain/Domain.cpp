@@ -2,6 +2,9 @@
 
 #include <spdlog/spdlog.h>
 
+#include <stdexcept>
+
+#include "exceptions/BoundaryException.h"
 #include "particles/boundaries/Outflow.h"
 
 namespace mol_sim {
@@ -21,45 +24,60 @@ size_t Domain::locationToIndex(BoundaryLocation location) {
         case BoundaryLocation::LOWER:
             return 5;
         default:
-            SPDLOG_ERROR("Unknown boundary location!");
-            return 0;
+            SPDLOG_ERROR("Unknown boundary location: {}", static_cast<int>(location));
+            throw BoundaryException("Unknown boundary location");
     }
 }
 
 Domain::Domain() {
-    boundaries[0] = std::make_unique<Outflow>(BoundaryLocation::LEFT);
-    boundaries[1] = std::make_unique<Outflow>(BoundaryLocation::RIGHT);
-    boundaries[2] = std::make_unique<Outflow>(BoundaryLocation::FRONT);
-    boundaries[3] = std::make_unique<Outflow>(BoundaryLocation::BACK);
-    boundaries[4] = std::make_unique<Outflow>(BoundaryLocation::UPPER);
-    boundaries[5] = std::make_unique<Outflow>(BoundaryLocation::LOWER);
+    boundaries[0] = std::make_unique<Outflow>(BoundaryLocation::LEFT, dimension);
+    boundaries[1] = std::make_unique<Outflow>(BoundaryLocation::RIGHT, dimension);
+    boundaries[2] = std::make_unique<Outflow>(BoundaryLocation::FRONT, dimension);
+    boundaries[3] = std::make_unique<Outflow>(BoundaryLocation::BACK, dimension);
+    boundaries[4] = std::make_unique<Outflow>(BoundaryLocation::UPPER, dimension);
+    boundaries[5] = std::make_unique<Outflow>(BoundaryLocation::LOWER, dimension);
 }
 
-Domain::Domain(R3 dimension) : Domain() { this->dimension = dimension; }
+Domain::Domain(R3 dimension) : dimension(dimension) {
+    boundaries[0] = std::make_unique<Outflow>(BoundaryLocation::LEFT, dimension);
+    boundaries[1] = std::make_unique<Outflow>(BoundaryLocation::RIGHT, dimension);
+    boundaries[2] = std::make_unique<Outflow>(BoundaryLocation::FRONT, dimension);
+    boundaries[3] = std::make_unique<Outflow>(BoundaryLocation::BACK, dimension);
+    boundaries[4] = std::make_unique<Outflow>(BoundaryLocation::UPPER, dimension);
+    boundaries[5] = std::make_unique<Outflow>(BoundaryLocation::LOWER, dimension);
+}
 
 Domain::Domain(Domain&& other) noexcept : dimension(other.dimension), boundaries(std::move(other.boundaries)) {}
 
 Domain::Domain(R3 dimension, std::array<std::unique_ptr<Boundary>, 6> boundaries)
     : dimension(dimension), boundaries(std::move(boundaries)) {}
 
-R3 Domain::getDimension() const { return dimension; }
+R3 Domain::getDimension() const noexcept { return dimension; }
 
-Boundary* Domain::getBoundary(BoundaryLocation location) { return boundaries[locationToIndex(location)].get(); }
-
-const Boundary* Domain::getBoundary(BoundaryLocation location) const {
-    return boundaries[locationToIndex(location)].get();
+Boundary& Domain::getBoundary(BoundaryLocation location) {
+    auto& boundary = boundaries[locationToIndex(location)];
+    if (!boundary) {
+        SPDLOG_ERROR("Boundary at location {} is null", static_cast<int>(location));
+        throw BoundaryException("Boundary at given location is null");
+    }
+    return *boundary;
 }
 
-std::vector<Particle> Domain::applyBoundary(Particle& p) const {
-    std::vector<Particle> ghosts;
+const Boundary& Domain::getBoundary(BoundaryLocation location) const {
+    const auto& boundary = boundaries[locationToIndex(location)];
+    if (!boundary) {
+        SPDLOG_ERROR("Boundary at location {} is null", static_cast<int>(location));
+        throw BoundaryException("Boundary at given location is null");
+    }
+    return *boundary;
+}
+
+void Domain::applyBoundary(Particle& p, const ForceSource& force) const noexcept {
     for (const auto& boundary : boundaries) {
         if (boundary) {
-            if (auto ghost = boundary->applyBoundary(p)) {
-                ghosts.push_back(std::move(ghost.value()));
-            }
+            boundary->applyBoundary(p, force);
         }
     }
-    return ghosts;
 }
 
 Domain& Domain::operator=(Domain&& other) noexcept {

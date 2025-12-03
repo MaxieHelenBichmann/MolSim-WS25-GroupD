@@ -16,7 +16,7 @@ settings:
         type: Reflecting
       right:
         type: Reflecting
-      lower:
+      front:
         type: Reflecting
 
 disc:

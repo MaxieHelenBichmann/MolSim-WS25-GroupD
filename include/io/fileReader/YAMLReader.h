@@ -71,6 +71,8 @@ class YAMLReader : public FileReader {
      *
      * @param settings SettingsParam where Simulation parameters are stored.
      * @param filename Path to input file.
+     * @throws YAMLReaderException if the file cannot be parsed or is malformed.
+     * @throws ValidationException if settings values are invalid.
      */
     void readSettings(SettingsParam& settings, const std::string& filename) override;
 
@@ -79,6 +81,8 @@ class YAMLReader : public FileReader {
      *
      * @param particles Container to place particles in.
      * @param filename Path to input file.
+     * @throws YAMLReaderException if the file cannot be parsed or has no particle definitions.
+     * @throws ValidationException if particle parameters are invalid.
      */
     void readParticles(ContainerRef particles, const std::string& filename) override;
     /**
@@ -87,6 +91,8 @@ class YAMLReader : public FileReader {
      * @param[in]  node YAML::Node of the start of the cuboid block
      *
      * @return     Vector of read in Cuboids
+     * @throws YAMLReaderException if parsing fails.
+     * @throws ValidationException if cuboid parameters are invalid.
      */
     std::vector<CuboidData> parseCuboids(const YAML::Node& node);
     /**
@@ -95,6 +101,8 @@ class YAMLReader : public FileReader {
      * @param[in]  node YAML::Node of the start of the disc block
      *
      * @return     Vector of read in Discs
+     * @throws YAMLReaderException if parsing fails.
+     * @throws ValidationException if disc parameters are invalid.
      */
     std::vector<DiscData> parseDiscs(const YAML::Node& node);
 

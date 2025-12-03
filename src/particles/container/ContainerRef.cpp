@@ -81,30 +81,25 @@ std::vector<Particle>::const_iterator ContainerRef::cend() const {
 }
 
 // proximity iterators
-ContainerRef::proximity_iterator ContainerRef::proximityBegin(R3 center, double radius, size_t offset) {
-    return std::visit(
-        [center, radius, offset](auto& c) { return proximity_iterator{c->proximityBegin(center, radius, offset)}; },
-        instance);
-}
-
-ContainerRef::proximity_iterator ContainerRef::proximityEnd(R3 center, double radius) {
-    return std::visit([center, radius](auto& c) { return proximity_iterator{c->proximityEnd(center, radius)}; },
+ContainerRef::proximity_iterator ContainerRef::proximityBegin(R3 center, size_t offset) {
+    return std::visit([center, offset](auto& c) { return proximity_iterator{c->proximityBegin(center, offset)}; },
                       instance);
 }
 
-ContainerRef::const_proximity_iterator ContainerRef::proximityBegin(R3 center, double radius, size_t offset) const {
+ContainerRef::proximity_iterator ContainerRef::proximityEnd(R3 center) {
+    return std::visit([center](auto& c) { return proximity_iterator{c->proximityEnd(center)}; }, instance);
+}
+
+ContainerRef::const_proximity_iterator ContainerRef::proximityBegin(R3 center, size_t offset) const {
     return std::visit(
-        [center, radius, offset](const auto& c) {
-            return const_proximity_iterator{std::as_const(*c).proximityBegin(center, radius, offset)};
+        [center, offset](const auto& c) {
+            return const_proximity_iterator{std::as_const(*c).proximityBegin(center, offset)};
         },
         instance);
 }
-ContainerRef::const_proximity_iterator ContainerRef::proximityEnd(R3 center, double radius) const {
+ContainerRef::const_proximity_iterator ContainerRef::proximityEnd(R3 center) const {
     return std::visit(
-        [center, radius](const auto& c) {
-            return const_proximity_iterator{std::as_const(*c).proximityEnd(center, radius)};
-        },
-        instance);
+        [center](const auto& c) { return const_proximity_iterator{std::as_const(*c).proximityEnd(center)}; }, instance);
 }
 
 // boundary and halo iterators

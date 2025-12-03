@@ -142,6 +142,18 @@ TEST_F(ContainerRefTest, testAddParticleEmplace) {
 }
 
 /**
+ * @brief Tests correct behaviour of the method eraseParticle(std::vector<Particle>::iterator p).)
+ */
+TEST_F(ContainerRefTest, testEraseParticleIterator) {
+    EXPECT_EQ(particles_full.size(), static_cast<size_t>(4));
+    auto it = particles_full.begin();
+    ++it;  // points to p1
+    particles_full.eraseParticle(it);
+    EXPECT_EQ(particles_full.size(), static_cast<size_t>(3));
+    EXPECT_TRUE(particles_full[0] != p1 || particles_full[1] == p1 || particles_full[2] == p1);
+}
+
+/**
  * @brief Tests correct behaviour of the method updateParticlePosition.
  */
 TEST_F(ContainerRefTest, testUpdateParticlePosition) {
@@ -179,20 +191,21 @@ TEST_F(ContainerRefTest, testBeginConstInterator) {
  * @brief Tests correct behaviour of proximity iterator with infinite radius.
  */
 TEST_F(ContainerRefTest, testProximityIteratorInfiniteRadius) {
+    SimpleContainer s({10.0, 10.0, 10.0}, std::numeric_limits<double>::infinity());
+    ContainerRef particles_inf(s);
+
     R3 v{0.0, 0.0, 0.0};
-    particles_empty.addParticle(R3{2.0, 2.0, 2.0}, v, 1.0, 1.0, 1.0);
-    particles_empty.addParticle(R3{4.0, 4.0, 4.0}, v, 1.0, 1.0, 1.0);
-    particles_empty.addParticle(R3{6.0, 6.0, 6.0}, v, 1.0, 1.0, 1.0);
+    particles_inf.addParticle(R3{2.0, 2.0, 2.0}, v, 1.0, 1.0, 1.0);
+    particles_inf.addParticle(R3{4.0, 4.0, 4.0}, v, 1.0, 1.0, 1.0);
+    particles_inf.addParticle(R3{6.0, 6.0, 6.0}, v, 1.0, 1.0, 1.0);
 
     R3 center{3.0, 3.0, 3.0};
-    double radius = std::numeric_limits<double>::infinity();
 
-    auto it = particles_empty.proximityBegin(center, radius, particles_empty.size());
-    auto end = particles_empty.proximityEnd(center, radius);
+    auto it = particles_inf.proximityBegin(center, particles_inf.size());
+    auto end = particles_inf.proximityEnd(center);
 
     size_t count = 0;
     while (it != end) {
-        EXPECT_LE((it->getX() - center).euclidNorm(), radius);
         ++it;
         ++count;
     }
@@ -203,24 +216,73 @@ TEST_F(ContainerRefTest, testProximityIteratorInfiniteRadius) {
  * @brief Tests correct behaviour of proximity iterator with finite radius.
  */
 TEST_F(ContainerRefTest, testProximityIterator) {
+    SimpleContainer s({10.0, 10.0, 10.0}, 1.0);
+    ContainerRef particles_one(s);
+
     R3 v{0.0, 0.0, 0.0};
-    particles_empty.addParticle(R3{2.5, 3.0, 3.0}, v, 1.0, 1.0, 1.0);
-    particles_empty.addParticle(R3{5.0, 5.0, 5.0}, v, 1.0, 1.0, 1.0);
-    particles_empty.addParticle(R3{6.0, 6.0, 6.0}, v, 1.0, 1.0, 1.0);
+    particles_one.addParticle(R3{2.5, 3.0, 3.0}, v, 1.0, 1.0, 1.0);
+    particles_one.addParticle(R3{5.0, 5.0, 5.0}, v, 1.0, 1.0, 1.0);
+    particles_one.addParticle(R3{6.0, 6.0, 6.0}, v, 1.0, 1.0, 1.0);
 
     R3 center{3.0, 3.0, 3.0};
-    double radius = 1.0;
 
-    auto it = particles_empty.proximityBegin(center, radius, particles_empty.size());
-    auto end = particles_empty.proximityEnd(center, radius);
+    auto it = particles_one.proximityBegin(center, particles_one.size());
+    auto end = particles_one.proximityEnd(center);
 
     size_t count = 0;
     while (it != end) {
-        EXPECT_LE((it->getX() - center).euclidNorm(), radius);
+        EXPECT_LE((it->getX() - center).euclidNorm(), 1.0);
         ++it;
         ++count;
     }
     EXPECT_EQ(count, 1);  // Assuming only one particle is within the radius
+}
+
+/**
+ * @brief Tests correct behaviour of boundary iterator.
+ */
+TEST_F(ContainerRefTest, testBoundaryIterator) {
+    SimpleContainer s({10.0, 10.0, 10.0}, 1.0);
+    ContainerRef particles_boundary(s);
+    R3 v{0.0, 0.0, 0.0};
+    particles_boundary.addParticle(R3{2.5, 3.0, 3.0}, v, 1.0, 1.0, 1.0);
+    particles_boundary.addParticle(R3{5.0, 5.0, 5.0}, v, 1.0, 1.0, 1.0);
+    particles_boundary.addParticle(R3{0.2, 6.0, 6.0}, v, 1.0, 1.0, 1.0);  // boundary
+    particles_boundary.addParticle(R3{6.0, 9.2, 6.0}, v, 1.0, 1.0, 1.0);  // boundary
+    particles_boundary.addParticle(R3{9.2, 9.3, 9.8}, v, 1.0, 1.0, 1.0);  // boundary
+
+    auto it = particles_boundary.boundaryBegin();
+    auto end = particles_boundary.boundaryEnd();
+    size_t count = 0;
+    while (it != end) {
+        ++it;
+        ++count;
+    }
+    EXPECT_EQ(count, 3);  // Assuming only three particles are within the boundary
+}
+
+/**
+ * @brief Tests correct behaviour of halo iterator.
+ */
+TEST_F(ContainerRefTest, testHaloIterator) {
+    SimpleContainer s({10.0, 10.0, 10.0}, 1.0);
+    ContainerRef particles_halo(s);
+    R3 v{0.0, 0.0, 0.0};
+    particles_halo.addParticle(R3{-0.5, 3.0, 3.0}, v, 1.0, 1.0, 1.0);  // halo
+    particles_halo.addParticle(R3{5.0, 5.0, 5.0}, v, 1.0, 1.0, 1.0);
+    particles_halo.addParticle(R3{10.2, 6.0, 6.0}, v, 1.0, 1.0, 1.0);  // halo
+    particles_halo.addParticle(R3{6.0, 10.0, 6.0}, v, 1.0, 1.0, 1.0);
+    particles_halo.addParticle(R3{9.2, 9.3, 10.8}, v, 1.0, 1.0, 1.0);    // halo
+    particles_halo.addParticle(R3{11.0, 11.0, 11.0}, v, 1.0, 1.0, 1.0);  // halo
+
+    auto it = particles_halo.haloBegin();
+    auto end = particles_halo.haloEnd();
+    size_t count = 0;
+    while (it != end) {
+        ++it;
+        ++count;
+    }
+    EXPECT_EQ(count, 4);  // Assuming only four particles are within the boundary
 }
 
 // ParticleContainer: complex tests

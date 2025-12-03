@@ -24,7 +24,7 @@ class GravitationalForce : public ForceSource {
      *
      * Calculates the gravitational force a particle p2 exerts on a different particle p1.
      */
-    [[nodiscard]] Vector<double, 3> applyForce(const Particle& p1, const Particle& p2) const override;
+    [[nodiscard]] Vector<double, 3> applyForce(const Particle& p1, const Particle& p2) const noexcept override;
 };
 
 }  // namespace mol_sim

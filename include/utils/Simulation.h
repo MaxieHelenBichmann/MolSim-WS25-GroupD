@@ -55,9 +55,11 @@ class Simulation {
     /**
      * @brief Force source for calculating particle interactions.
      */
-    std::unique_ptr<ForceSource> force_source;
-
-    std::unique_ptr<OutputWriter> writer;
+    const ForceSource& force_source;
+    /**
+     * @brief Writer used for output.
+     */
+    const OutputWriter& writer;
     /**
      * @brief Time step of simulation.
      */
@@ -88,40 +90,6 @@ class Simulation {
      */
     double cutoff_radius;
 
-    /**
-     * @brief Returns whether a given particle should be ignored in the force calculation.
-     *
-     * @param p The particle to be examined.
-     * @return true If the particle should be ignored, i.e. it is OOB and NOT a ghost.
-     * @return false If the particle should NOT be ignored.
-     */
-    bool ignoreParticle(Particle& p) {
-        R3 v = p.getX();
-        R3 max = domain.getDimension();
-        bool particle_is_oob =
-            v[0] > max[0] || v[1] > max[1] || v[2] > max[2] || v[0] < 0 || v[1] < 0 || v[2] < 0;
-        bool particle_not_ghost = p.getType() != -1;
-        return particle_is_oob && particle_not_ghost;
-    }
-
-    /**
-     * @brief Applies boundary conditions and computes ghost particles for each particle
-     * the iterator 'ít' iterates over.
-     *
-     * @param it The iterator that iterates over a collection of particles.
-     * @param ghosts The vector where potentially computed ghost particles will be stored.
-     */
-    void applyBoundary(auto it, const auto end, std::vector<Particle>& ghosts) {  // NOLINT
-        for (; it != end; ++it) {
-            if (it->getType() != -1) {  // Don't create ghosts for ghost particles
-                auto new_ghosts = domain.applyBoundary(*it);
-                for (auto& ghost : new_ghosts) {
-                    ghosts.push_back(std::move(ghost));
-                }
-            }
-        }
-    }
-
    public:
     /**
      * @brief Construct a new Simulation object and prepare for run() call.
@@ -130,12 +98,12 @@ class Simulation {
      * @param force_source Force source to be used in the simulation.
      * @param settings Simulation parameters.
      */
-    Simulation(containerType& particles, std::unique_ptr<ForceSource> force_source, SettingsParam& settings,
-               std::unique_ptr<OutputWriter> writer)
+    Simulation(containerType& particles, const ForceSource& force_source, SettingsParam& settings,
+               const OutputWriter& writer)
         : domain(std::move(settings.domain)),
           particles(particles),
-          force_source(std::move(force_source)),
-          writer(std::move(writer)),
+          force_source(force_source),
+          writer(writer),
           delta_t(settings.delta_t),
           start_time(settings.start_time),
           end_time(settings.end_time),
@@ -144,43 +112,18 @@ class Simulation {
           cutoff_radius(settings.cutoff) {}
 
     /**
-     * @brief Applies boundary conditions by creating ghost particles for reflecting boundaries.
-     */
-    void applyReflectingBoundaries() {
-        std::vector<Particle> ghosts;
-        // TODO: Optimze using boundary iterator
-        applyBoundary(particles.boundaryBegin(), particles.boundaryEnd(), ghosts);
-        // Collect indices of particles to applyBoundary using halo iterator
-        std::vector<size_t> to_remove;
-        for (auto it = particles.haloBegin(); it != particles.haloEnd(); ++it) {
-            size_t idx = &(*it) - &particles[0];
-            to_remove.push_back(idx);
-        }
-        for (auto& it : to_remove) {
-            auto new_ghosts = domain.applyBoundary(particles[it]);
-            for (auto& ghost : new_ghosts) {
-                ghosts.push_back(ghost);
-            }
-        }
-        for (auto& ghost : ghosts) {
-            particles.addParticle(std::move(ghost));
-        }
-    }
-
-    /**
      * @brief Removes all particles in the Halo from the container.
      */
     void removeParticles() {
         // Collect indices of particles to remove using halo iterator
+        SPDLOG_DEBUG("Container has currently {} particles before erase", particles.size());
         std::vector<size_t> to_remove;
         for (auto it = particles.haloBegin(); it != particles.haloEnd(); ++it) {
             size_t idx = &(*it) - &particles[0];
-            // Don't remove non-ghost particles that are EXACTLY on the boundary
-            if (!ignoreParticle(*it)) {
-                continue;
-            }
             to_remove.push_back(idx);
         }
+
+        SPDLOG_DEBUG("Added {} (ghost) particles to remove", to_remove.size());
 
         // Sort in descending order to remove from end first (avoids index shifting issues)
         std::sort(to_remove.begin(), to_remove.end(), std::greater<size_t>());  // NOLINT
@@ -189,34 +132,28 @@ class Simulation {
         for (size_t idx : to_remove) {
             particles.eraseParticle(particles.begin() + static_cast<std::ptrdiff_t>(idx));
         }
+        SPDLOG_DEBUG("Container has currently {} particles after erase", particles.size());
     }
 
     /**
      * @brief Calculates the forces of every particle for the next time step.
+     * Including Boundary conditions
      */
     void calculateF() {
-        for (auto it = particles.begin(); it != particles.end();) {
-            (*it).getOldF() = (*it).getF();
-            (*it).getF() = Vector<double, 3>();
-            // set particle.x = particle.old_x so updateParticlePosition works as intended
-            R3 new_x = (*it).getX();
-            (*it).getX() = (*it).getOldX();
-            it = particles.updateParticlePosition(it, new_x);
+        for (auto& p : particles) {
+            p.getOldF() = p.getF();
+            p.getF() = Vector<double, 3>();
         }
 
         size_t idx = 1;
         for (auto it = particles.begin(); it != particles.end(); ++it, idx++) {
             Particle& p1 = *it;
-            if (ignoreParticle(p1)) {
-                continue;
-            }
-            for (auto it_prox = particles.proximityBegin(p1.getX(), cutoff_radius, idx);
-                 it_prox != particles.proximityEnd(p1.getX(), cutoff_radius); ++it_prox) {
+            // TODO Optimization to only call this for relevant particles
+            domain.applyBoundary(p1, force_source);
+            for (auto it_prox = particles.proximityBegin(p1.getX(), idx); it_prox != particles.proximityEnd(p1.getX());
+                 ++it_prox) {
                 Particle& p2 = *it_prox;
-                if (ignoreParticle(p2)) {
-                    continue;
-                }
-                Vector<double, 3> force = force_source->applyForce(p1, p2);
+                Vector<double, 3> force = force_source.applyForce(p1, p2);
                 // Apply force directly (Newton's 3rd law: equal and opposite)
                 p1.getF() = p1.getF() + force;
                 p2.getF() = p2.getF() - force;
@@ -228,9 +165,10 @@ class Simulation {
      * @brief Calculates the positions of every particle for the next time step.
      */
     void calculateX() {
-        for (auto& p : particles) {
-            p.getOldX() = p.getX();
-            p.getX() = p.getX() + (delta_t * p.getV()) + ((0.5 * delta_t * delta_t / p.getM()) * p.getF());  
+        for (auto it = particles.begin(); it != particles.end();) {
+            const auto new_position =
+                (*it).getX() + (delta_t * (*it).getV()) + ((0.5 * delta_t * delta_t / (*it).getM()) * (*it).getF());
+            it = particles.updateParticlePosition(it, new_position);
         }
     }
 
@@ -244,24 +182,27 @@ class Simulation {
     }
     /**
      * @brief Performs a full simulation run.
+     * @throws SimulationException if an error occurs during output writing.
      */
     void run() {
         double current_time = start_time;
         [[maybe_unused]] int iteration = 0;
 
+        SPDLOG_INFO("Starting simulation: {} particles, t=[{}, {}], dt={}", particles.size(), start_time, end_time,
+                    delta_t);
+
         // for this loop, we assume: current x, current f and current v are known
         while (current_time < end_time) {
+            SPDLOG_DEBUG("Iteration {}: Updating {} particle positions", iteration + 1, particles.size());
             // 1. Calculate new positions
             calculateX();
 
-            // 3. Apply reflecting boundaries (create ghost particles)
-            applyReflectingBoundaries();
+            // 2. Remove OOB particles
+            removeParticles();
 
             // 4. Calculate forces (including ghost interactions)
+            SPDLOG_DEBUG("Iteration {}: Calculating forces for {} particles", iteration + 1, particles.size());
             calculateF();
-
-            // 5. Remove Halo particles
-            removeParticles();
 
             // 6. Calculate new velocities
             calculateV();
@@ -271,17 +212,17 @@ class Simulation {
             if (iteration % frequency == 0) {
                 try {
                     std::string out_name = base_name;
-                    writer->plotParticles(particles, out_name, iteration);
-                } catch (std::runtime_error& e) {
-                    SPDLOG_ERROR("Something went wrong with plotting the Particles: ", e.what());
-                    throw SimulationException("Error while plotting Particles.");
+                    writer.plotParticles(particles, out_name, iteration);
+                } catch (const std::runtime_error& e) {
+                    SPDLOG_ERROR("Failed to plot particles at iteration {}: {}", iteration, e.what());
+                    throw SimulationException("Error while plotting Particles: " + std::string(e.what()));
                 }
             }
 #endif
-            SPDLOG_INFO("Iteration {} finished.", iteration);
+            SPDLOG_DEBUG("Iteration {} finished, {} particles remaining", iteration, particles.size());
             current_time += delta_t;
         }
-        SPDLOG_INFO("Output written. Terminating...");
+        SPDLOG_INFO("Simulation completed: {} iterations, {} particles remaining", iteration, particles.size());
     }
 };
 
