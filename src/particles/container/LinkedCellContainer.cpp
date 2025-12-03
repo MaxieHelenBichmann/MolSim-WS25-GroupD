@@ -285,7 +285,7 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryLocation type, std::ve
 void LinkedCellContainer::decreaseCellIndices(size_t starting_idx) {
     for (size_t i = starting_idx; i < data.size(); ++i) {
         size_t cell_idx = findCellIndex(data[i].getX());
-        cells[cell_idx].updateParticleIndex(i, i - 1);
+        cells[cell_idx].updateParticleIndex(i + 1, i);  // Fix: update from old index (i+1) to new index (i)
     }
 }
 
@@ -369,10 +369,12 @@ std::vector<Particle>::iterator LinkedCellContainer::eraseParticle(std::vector<P
 
 LinkedCellContainer::proximity_iterator LinkedCellContainer::eraseParticle(LinkedCellContainer::proximity_iterator p) {
     size_t idx = &(*p) - data.data();
+    size_t cell_idx = findCellIndex(data[idx].getX());
 
     proximity_iterator next_it = ++p;
 
-    data.erase(data.begin() + idx);  // NOLINT
+    cells[cell_idx].removeParticle(idx);
+    data.erase(data.begin() + static_cast<std::ptrdiff_t>(idx));  // NOLINT
     decreaseCellIndices(idx);
 
     return next_it;
