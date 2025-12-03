@@ -109,6 +109,7 @@ class SimpleContainer : public std::vector<Particle> {
         std::set<BoundaryLocation> locations;
 
         bool fitBoundary() {  // NOLINT
+            double effective_radius = -radius;
             if (cur->getX()[0] > center_or_domain[0] || cur->getX()[1] > center_or_domain[1] ||
                 cur->getX()[2] > center_or_domain[2] || cur->getX()[0] < 0.0 || cur->getX()[1] < 0.0 ||
                 cur->getX()[2] < 0.0) {
@@ -117,37 +118,40 @@ class SimpleContainer : public std::vector<Particle> {
             for (auto location : locations) {
                 switch (location) {
                     case BoundaryLocation::UPPER: {
-                        if (cur->getX()[2] >= center_or_domain[2] + radius && cur->getX()[2] <= center_or_domain[2]) {
+                        if (cur->getX()[2] >= center_or_domain[2] - effective_radius &&
+                            cur->getX()[2] <= center_or_domain[2]) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::LOWER: {
-                        if (cur->getX()[2] >= 0.0 && cur->getX()[2] <= -radius) {
+                        if (cur->getX()[2] >= 0.0 && cur->getX()[2] <= effective_radius) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::FRONT: {
-                        if (cur->getX()[1] >= 0.0 && cur->getX()[1] <= -radius) {
+                        if (cur->getX()[1] >= 0.0 && cur->getX()[1] <= effective_radius) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::BACK: {
-                        if (cur->getX()[1] >= center_or_domain[1] + radius && cur->getX()[1] <= center_or_domain[1]) {
+                        if (cur->getX()[1] >= center_or_domain[1] - effective_radius &&
+                            cur->getX()[1] <= center_or_domain[1]) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::LEFT: {
-                        if (cur->getX()[0] >= 0.0 && cur->getX()[0] <= -radius) {
+                        if (cur->getX()[0] >= 0.0 && cur->getX()[0] <= effective_radius) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::RIGHT: {
-                        if (cur->getX()[0] >= center_or_domain[0] + radius && cur->getX()[0] <= center_or_domain[0]) {
+                        if (cur->getX()[0] >= center_or_domain[0] - effective_radius &&
+                            cur->getX()[0] <= center_or_domain[0]) {
                             return true;
                         }
                         break;
@@ -167,37 +171,37 @@ class SimpleContainer : public std::vector<Particle> {
             for (auto location : locations) {
                 switch (location) {
                     case BoundaryLocation::UPPER: {
-                        if (cur->getX()[2] >= center_or_domain[2] && cur->getX()[2] <= center_or_domain[2] + radius) {
+                        if (cur->getX()[2] > center_or_domain[2] && cur->getX()[2] <= center_or_domain[2] + radius) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::LOWER: {
-                        if (cur->getX()[2] >= -radius && cur->getX()[2] <= 0.0) {
+                        if (cur->getX()[2] >= -radius && cur->getX()[2] < 0.0) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::FRONT: {
-                        if (cur->getX()[1] >= -radius && cur->getX()[1] <= 0.0) {
+                        if (cur->getX()[1] >= -radius && cur->getX()[1] < 0.0) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::BACK: {
-                        if (cur->getX()[1] >= center_or_domain[1] && cur->getX()[1] <= center_or_domain[1] + radius) {
+                        if (cur->getX()[1] > center_or_domain[1] && cur->getX()[1] <= center_or_domain[1] + radius) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::LEFT: {
-                        if (cur->getX()[0] >= -radius && cur->getX()[0] <= 0.0) {
+                        if (cur->getX()[0] >= -radius && cur->getX()[0] < 0.0) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::RIGHT: {
-                        if (cur->getX()[0] >= center_or_domain[0] && cur->getX()[0] <= center_or_domain[0] + radius) {
+                        if (cur->getX()[0] > center_or_domain[0] && cur->getX()[0] <= center_or_domain[0] + radius) {
                             return true;
                         }
                         break;
@@ -300,6 +304,7 @@ class SimpleContainer : public std::vector<Particle> {
         std::set<BoundaryLocation> locations;
 
         bool fitBoundary() {  // NOLINT
+            double effective_radius = -radius;
             if (cur->getX()[0] > center_or_domain[0] || cur->getX()[1] > center_or_domain[1] ||
                 cur->getX()[2] > center_or_domain[2] || cur->getX()[0] < 0.0 || cur->getX()[1] < 0.0 ||
                 cur->getX()[2] < 0.0) {
@@ -308,37 +313,40 @@ class SimpleContainer : public std::vector<Particle> {
             for (auto location : locations) {
                 switch (location) {
                     case BoundaryLocation::UPPER: {
-                        if (cur->getX()[2] >= center_or_domain[2] + radius && cur->getX()[2] <= center_or_domain[2]) {
+                        if (cur->getX()[2] >= center_or_domain[2] - effective_radius &&
+                            cur->getX()[2] <= center_or_domain[2]) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::LOWER: {
-                        if (cur->getX()[2] >= 0.0 && cur->getX()[2] <= -radius) {
+                        if (cur->getX()[2] >= 0.0 && cur->getX()[2] <= effective_radius) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::FRONT: {
-                        if (cur->getX()[1] >= 0.0 && cur->getX()[1] <= -radius) {
+                        if (cur->getX()[1] >= 0.0 && cur->getX()[1] <= effective_radius) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::BACK: {
-                        if (cur->getX()[1] >= center_or_domain[1] + radius && cur->getX()[1] <= center_or_domain[1]) {
+                        if (cur->getX()[1] >= center_or_domain[1] - effective_radius &&
+                            cur->getX()[1] <= center_or_domain[1]) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::LEFT: {
-                        if (cur->getX()[0] >= 0.0 && cur->getX()[0] <= -radius) {
+                        if (cur->getX()[0] >= 0.0 && cur->getX()[0] <= effective_radius) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::RIGHT: {
-                        if (cur->getX()[0] >= center_or_domain[0] + radius && cur->getX()[0] <= center_or_domain[0]) {
+                        if (cur->getX()[0] >= center_or_domain[0] - effective_radius &&
+                            cur->getX()[0] <= center_or_domain[0]) {
                             return true;
                         }
                         break;
@@ -358,37 +366,37 @@ class SimpleContainer : public std::vector<Particle> {
             for (auto location : locations) {
                 switch (location) {
                     case BoundaryLocation::UPPER: {
-                        if (cur->getX()[2] >= center_or_domain[2] && cur->getX()[2] <= center_or_domain[2] + radius) {
+                        if (cur->getX()[2] > center_or_domain[2] && cur->getX()[2] <= center_or_domain[2] + radius) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::LOWER: {
-                        if (cur->getX()[2] >= -radius && cur->getX()[2] <= 0.0) {
+                        if (cur->getX()[2] >= -radius && cur->getX()[2] < 0.0) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::FRONT: {
-                        if (cur->getX()[1] >= -radius && cur->getX()[1] <= 0.0) {
+                        if (cur->getX()[1] >= -radius && cur->getX()[1] < 0.0) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::BACK: {
-                        if (cur->getX()[1] >= center_or_domain[1] && cur->getX()[1] <= center_or_domain[1] + radius) {
+                        if (cur->getX()[1] > center_or_domain[1] && cur->getX()[1] <= center_or_domain[1] + radius) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::LEFT: {
-                        if (cur->getX()[0] >= -radius && cur->getX()[0] <= 0.0) {
+                        if (cur->getX()[0] >= -radius && cur->getX()[0] < 0.0) {
                             return true;
                         }
                         break;
                     }
                     case BoundaryLocation::RIGHT: {
-                        if (cur->getX()[0] >= center_or_domain[0] && cur->getX()[0] <= center_or_domain[0] + radius) {
+                        if (cur->getX()[0] > center_or_domain[0] && cur->getX()[0] <= center_or_domain[0] + radius) {
                             return true;
                         }
                         break;
