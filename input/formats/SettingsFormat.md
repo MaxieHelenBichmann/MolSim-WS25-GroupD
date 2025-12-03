@@ -23,7 +23,7 @@ The settings block has the following keys, with every key except format being op
 - `end_time`: A floating-point number specifying the end time of the simulation.
 - `start_time`: A floating-point number specifying the start time of the simulation.
 - `base_name`: A string specifying the base name of the output files of the simulation.
-- `force`: A string specifying the force type (either "Lennard Jones" or "Gravitational") of the simulation.
+- `force`: A string specifying the force type, either "Lennard Jones" or "Gravitational" (default:`"Lennard Jones"`),  of the simulation.
 - `frequency`: A whole number specifying the frequency of the output files of the simulation.
 - `cutoff`: A floating-point number specifying the cutoff radius of the Linked Cells of the simulation.
 - `container`: Container type, either `"SIMPLE"` or `"LINKED"` (default: `"LINKED"`).
@@ -53,6 +53,7 @@ Each boundary can have the following keys:
 - `type`: The boundary type, either `"OUTFLOW"` or `"REFLECTING"` (default: `"OUTFLOW"`).
 - `sigma`: (REFLECTING only) Optional sigma value for ghost particle interactions.
 - `epsilon`: (REFLECTING only) Optional epsilon value for ghost particle interactions.
+- `ghost_on_boundary`: (REFLECTING only) Optional boolean to place ghost particles on the boundary (default: `false`).
 
 If a boundary is not specified, it defaults to `OUTFLOW`.
 
@@ -86,7 +87,7 @@ settings:
     force: "Lennard Jones"
     frequency: 10
     cutoff: 3.0
-    container_type: LINKED
+    container: LINKED
     domain:
 
       x: 180.0
@@ -113,8 +114,8 @@ settings:
     format: Settings
     delta_t: 0.001
     end_time: 100.0
+    container: LINKED
     domain:
-      domain_type: LINKED
       x: 50.0
       y: 50.0
       z: 50.0

@@ -25,8 +25,8 @@ The cuboid block has the following keys:
 - `mass`: The mass of each particle in the cuboid.
 - `distance`: The spacing between adjacent particles in the cuboid.
 - `mean_velo`: The mean velocity used for the Maxwell-Boltzmann distribution of the particles' velocities.
-- `epsilon`: The Epsilon value of all particles in this cuboid
-- `sigma`: The Sigma value of all particles in this cuboid
+- `epsilon`: The Epsilon value of all particles in this cuboid.
+- `sigma`: The Sigma value of all particles in this cuboid.
 ## Example
 
 ```yaml

@@ -3,6 +3,7 @@ settings:
   delta_t: 0.0002
   end_time: 5.0
   start_time: 0.0
+  force: Lennard Jones
 
 lower_cube:
   format: Cuboid
