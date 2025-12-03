@@ -253,8 +253,8 @@ class SimpleContainer : public std::vector<Particle> {
             satisfy();
         }
 
-        reference operator*() const { return *cur; }
-        pointer operator->() const { return cur; }
+        reference operator*() const noexcept { return *cur; }
+        pointer operator->() const noexcept { return cur; }
 
         const_proximity_iterator& operator++() {
             ++cur;  // NOLINT
@@ -268,17 +268,17 @@ class SimpleContainer : public std::vector<Particle> {
             return tmp;
         }
 
-        friend bool operator==(const const_proximity_iterator& a, const const_proximity_iterator& b) {
+        friend bool operator==(const const_proximity_iterator& a, const const_proximity_iterator& b) noexcept {
             return a.cur == b.cur;
         }
-        friend bool operator!=(const const_proximity_iterator& a, const const_proximity_iterator& b) {
+        friend bool operator!=(const const_proximity_iterator& a, const const_proximity_iterator& b) noexcept {
             return !(a == b);
         }
 
-        [[nodiscard]] R3 getCenter() const { return center_or_domain; }
-        [[nodiscard]] double getRadius() const { return radius; }
-        [[nodiscard]] bool isProximity() const { return prox; }
-        [[nodiscard]] std::set<BoundaryLocation> getLocations() const { return locations; }
+        [[nodiscard]] R3 getCenter() const noexcept { return center_or_domain; }
+        [[nodiscard]] double getRadius() const noexcept { return radius; }
+        [[nodiscard]] bool isProximity() const noexcept { return prox; }
+        [[nodiscard]] std::set<BoundaryLocation> getLocations() const noexcept { return locations; }
     };
     static_assert(std::forward_iterator<const_proximity_iterator>);
 
@@ -447,8 +447,8 @@ class SimpleContainer : public std::vector<Particle> {
             satisfy();
         }
 
-        reference operator*() const { return *cur; }
-        pointer operator->() const { return cur; }
+        reference operator*() const noexcept { return *cur; }
+        pointer operator->() const noexcept { return cur; }
 
         proximity_iterator& operator++() {
             ++cur;  // NOLINT
@@ -462,13 +462,17 @@ class SimpleContainer : public std::vector<Particle> {
             return tmp;
         }
 
-        friend bool operator==(const proximity_iterator& a, const proximity_iterator& b) { return a.cur == b.cur; }
-        friend bool operator!=(const proximity_iterator& a, const proximity_iterator& b) { return !(a == b); }
+        friend bool operator==(const proximity_iterator& a, const proximity_iterator& b) noexcept {
+            return a.cur == b.cur;
+        }
+        friend bool operator!=(const proximity_iterator& a, const proximity_iterator& b) noexcept {
+            return !(a == b);
+        }
 
-        [[nodiscard]] R3 getCenter() const { return center_or_domain; }
-        [[nodiscard]] double getRadius() const { return radius; }
-        [[nodiscard]] bool isProximity() const { return prox; }
-        [[nodiscard]] std::set<BoundaryLocation> getLocations() const { return locations; }
+        [[nodiscard]] R3 getCenter() const noexcept { return center_or_domain; }
+        [[nodiscard]] double getRadius() const noexcept { return radius; }
+        [[nodiscard]] bool isProximity() const noexcept { return prox; }
+        [[nodiscard]] std::set<BoundaryLocation> getLocations() const noexcept { return locations; }
     };
     static_assert(std::forward_iterator<proximity_iterator>);
 

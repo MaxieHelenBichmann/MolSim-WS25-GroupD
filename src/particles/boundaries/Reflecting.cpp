@@ -7,13 +7,13 @@
 namespace mol_sim {
 
 Reflecting::Reflecting(BoundaryLocation location, R3 domain_size, bool ghost_on_boundary, std::optional<double> sigma,
-                       std::optional<double> epsilon)
+                       std::optional<double> epsilon) noexcept
     : Boundary(location, BoundaryType::REFLECTING, domain_size),
       ghost_on_boundary(ghost_on_boundary),
       boundary_epsilon(epsilon),
       boundary_sigma(sigma) {}
 
-void Reflecting::applyBoundary(Particle& p, const ForceSource& force) const {
+void Reflecting::applyBoundary(Particle& p, const ForceSource& force) const noexcept {
     double sigma = boundary_sigma.value_or(p.getSigma());
     double epsilon = boundary_epsilon.value_or(p.getEpsilon());
 
@@ -29,7 +29,8 @@ void Reflecting::applyBoundary(Particle& p, const ForceSource& force) const {
         R3 ghost_pos = p.getX();
         ghost_pos[axis] = boundary_position + (ghost_on_boundary ? 0 : sign * distance_to_boundary);
 
-        SPDLOG_DEBUG("New ghost particle on ( {} , {} , {} )", ghost_pos[0], ghost_pos[1], ghost_pos[2]);
+        SPDLOG_TRACE("Creating ghost particle at ({}, {}, {}) for particle at ({}, {}, {})", ghost_pos[0], ghost_pos[1],
+                     ghost_pos[2], p.getX()[0], p.getX()[1], p.getX()[2]);
         p.getF() = p.getF() + force.applyForce(p, Particle(ghost_pos, {0.0, 0.0, 0.0}, p.getM(), epsilon, sigma, -1));
     }
 }

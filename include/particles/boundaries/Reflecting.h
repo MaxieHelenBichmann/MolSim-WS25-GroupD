@@ -24,12 +24,12 @@ class Reflecting : public Boundary {
      * @param epsilon Optional epsilon for ghost particle interactions.
      */
     Reflecting(BoundaryLocation location, R3 domain_size, bool ghost_on_boundary,
-               std::optional<double> sigma = std::nullopt, std::optional<double> epsilon = std::nullopt);
+               std::optional<double> sigma = std::nullopt, std::optional<double> epsilon = std::nullopt) noexcept;
     ~Reflecting() override = default;
 
-    void applyBoundary(Particle& p, const ForceSource& force) const override;
-    [[nodiscard]] std::optional<double> getBoundarySigma() const { return boundary_sigma; }
-    [[nodiscard]] std::optional<double> getBoundaryEpsilon() const { return boundary_epsilon; }
+    void applyBoundary(Particle& p, const ForceSource& force) const noexcept override;
+    [[nodiscard]] std::optional<double> getBoundarySigma() const noexcept { return boundary_sigma; }
+    [[nodiscard]] std::optional<double> getBoundaryEpsilon() const noexcept { return boundary_epsilon; }
 };
 
 }  // namespace mol_sim

@@ -13,7 +13,7 @@ namespace mol_sim {
  */
 class CLIException : public InputException {
    public:
-    CLIException(const std::string& message) : InputException(message) {}
+    explicit CLIException(const std::string& message) : InputException(message) {}
 };
 }  // namespace mol_sim
 #endif

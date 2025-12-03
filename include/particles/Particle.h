@@ -88,108 +88,108 @@ class Particle {
      *
      * @return Const reference to the coordinates of the Particle.
      */
-    [[nodiscard]] const R3& getX() const;
+    [[nodiscard]] const R3& getX() const noexcept;
     /**
      * @brief Access the current coordinates of a Particle.
      *
      * @return Reference to the coordinates of the Particle.
      */
-    R3& getX();
+    R3& getX() noexcept;
     /**
      * @brief Access the previous coordinates of a Particle.
      *
      * @return Const reference to the previous coordinates of the Particle.
      */
-    [[nodiscard]] const R3& getOldX() const;
+    [[nodiscard]] const R3& getOldX() const noexcept;
     /**
      * @brief Access the previous coordinates of a Particle.
      *
      * @return Reference to the previous coordinates of the Particle.
      */
-    R3& getOldX();
+    R3& getOldX() noexcept;
 
     /**
      * @brief Access the current velocity Vector of a Particle.
      *
      * @return Const reference to the velocity of the Particle.
      */
-    [[nodiscard]] const R3& getV() const;
+    [[nodiscard]] const R3& getV() const noexcept;
     /**
      * @brief Access the current velocity Vector of a Particle.
      *
      * @return Reference to the velocity of the Particle.
      */
-    R3& getV();
+    R3& getV() noexcept;
 
     /**
      * @brief Access the current force acting on a Particle.
      *
      * @return Const reference to the force on the Particle.
      */
-    [[nodiscard]] const R3& getF() const;
+    [[nodiscard]] const R3& getF() const noexcept;
     /**
      * @brief Access the current force acting on a Particle.
      *
      * @return Reference to the force on the Particle.
      */
-    R3& getF();
+    R3& getF() noexcept;
 
     /**
      * @brief Access the previous force acting on a Particle.
      *
      * @return Const reference to the previous force on the Particle.
      */
-    [[nodiscard]] const R3& getOldF() const;
+    [[nodiscard]] const R3& getOldF() const noexcept;
     /**
      * @brief Access the previous force acting on a Particle.
      *
      * @return Reference to the previous force on the Particle.
      */
-    R3& getOldF();
+    R3& getOldF() noexcept;
 
     /**
      * @brief Access the mass of a Particle.
      *
      * @return Double of the mass of the Particle.
      */
-    [[nodiscard]] double getM() const;
+    [[nodiscard]] double getM() const noexcept;
 
     /**
      * @brief Access the type of a Particle.
      *
      * @return Int of the type of the Particle.
      */
-    [[nodiscard]] int getType() const;
+    [[nodiscard]] int getType() const noexcept;
 
     /**
      * @brief Access to the sigma of this Particle
      *
      * @return double of the sigma of the Particle
      */
-    [[nodiscard]] double getSigma() const;
+    [[nodiscard]] double getSigma() const noexcept;
 
     /**
      * @brief Access to the sigma of this Particle
      *
      * @return Reference to the double of the sigma of the Particle
      */
-    double& getSigma();
+    double& getSigma() noexcept;
 
     /**
      * @brief Access to the epsilon of this Particle
      *
      * @return double of the epsilon of the Particle
      */
-    [[nodiscard]] double getEpsilon() const;
+    [[nodiscard]] double getEpsilon() const noexcept;
 
     /**
      * @brief Access to the epsilon of this Particle
      *
      * @return Reference to the double of the epsilon of the Particle
      */
-    double& getEpsilon();
+    double& getEpsilon() noexcept;
 
-    bool operator==(const Particle& other) const;
+    bool operator==(const Particle& other) const noexcept;
 
     /**
      * @brief Conversion to a std::string.

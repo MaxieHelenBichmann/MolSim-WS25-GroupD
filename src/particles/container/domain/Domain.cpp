@@ -4,6 +4,7 @@
 
 #include <stdexcept>
 
+#include "exceptions/BoundaryException.h"
 #include "particles/boundaries/Outflow.h"
 
 namespace mol_sim {
@@ -23,8 +24,8 @@ size_t Domain::locationToIndex(BoundaryLocation location) {
         case BoundaryLocation::LOWER:
             return 5;
         default:
-            SPDLOG_ERROR("Unknown boundary location!");
-            return 0;
+            SPDLOG_ERROR("Unknown boundary location: {}", static_cast<int>(location));
+            throw BoundaryException("Unknown boundary location");
     }
 }
 
@@ -51,12 +52,13 @@ Domain::Domain(Domain&& other) noexcept : dimension(other.dimension), boundaries
 Domain::Domain(R3 dimension, std::array<std::unique_ptr<Boundary>, 6> boundaries)
     : dimension(dimension), boundaries(std::move(boundaries)) {}
 
-R3 Domain::getDimension() const { return dimension; }
+R3 Domain::getDimension() const noexcept { return dimension; }
 
 Boundary& Domain::getBoundary(BoundaryLocation location) {
     auto& boundary = boundaries[locationToIndex(location)];
     if (!boundary) {
-        throw std::runtime_error("Boundary at given location is null");
+        SPDLOG_ERROR("Boundary at location {} is null", static_cast<int>(location));
+        throw BoundaryException("Boundary at given location is null");
     }
     return *boundary;
 }
@@ -64,12 +66,13 @@ Boundary& Domain::getBoundary(BoundaryLocation location) {
 const Boundary& Domain::getBoundary(BoundaryLocation location) const {
     const auto& boundary = boundaries[locationToIndex(location)];
     if (!boundary) {
-        throw std::runtime_error("Boundary at given location is null");
+        SPDLOG_ERROR("Boundary at location {} is null", static_cast<int>(location));
+        throw BoundaryException("Boundary at given location is null");
     }
     return *boundary;
 }
 
-void Domain::applyBoundary(Particle& p, const ForceSource& force) const {
+void Domain::applyBoundary(Particle& p, const ForceSource& force) const noexcept {
     for (const auto& boundary : boundaries) {
         if (boundary) {
             boundary->applyBoundary(p, force);

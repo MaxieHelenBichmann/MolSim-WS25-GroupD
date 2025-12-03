@@ -13,7 +13,7 @@ using namespace mol_sim;
 LinkedCellContainer::LinkedCellContainer(R3 domain_size, double cutoff_radius)  // NOLINT
     : cutoff_radius(cutoff_radius), domain_size(domain_size) {
     if (cutoff_radius == std::numeric_limits<double>::infinity()) {
-        SPDLOG_INFO("Cutoff radius is infinite, halo cells will only be as large as the domain size.");
+        SPDLOG_INFO("Cutoff radius is infinite, halo cells will only be as large as the domain size");
         num_cells = {3U, 3U, 3U};
         cell_length = domain_size;
     } else {
@@ -30,9 +30,8 @@ LinkedCellContainer::LinkedCellContainer(R3 domain_size, double cutoff_radius)  
         }
     }
 
-    SPDLOG_DEBUG("Initializing Linked-Cell Container with dimensions: {} x {} x {}", num_cells[0], num_cells[1],
-                 num_cells[2]);
-    SPDLOG_DEBUG("and cell lengths: {} x {} x {}", cell_length[0], cell_length[1], cell_length[2]);
+    SPDLOG_INFO("Created LinkedCellContainer: {}x{}x{} cells, cell size: ({}, {}, {})", num_cells[0], num_cells[1],
+                num_cells[2], cell_length[0], cell_length[1], cell_length[2]);
 
     cells.reserve(num_cells[0] * num_cells[1] * num_cells[2]);
     for (size_t z = 0; z < num_cells[2]; ++z) {
@@ -290,25 +289,25 @@ void LinkedCellContainer::decreaseCellIndices(size_t starting_idx) {
     }
 }
 
-bool LinkedCellContainer::fitsDomain(R3 v) const {
+bool LinkedCellContainer::fitsDomain(R3 v) const noexcept {
     return (v[0] >= 0.0 && v[0] <= domain_size[0]) && (v[1] >= 0.0 && v[1] <= domain_size[1]) &&
            (v[2] >= 0.0 && v[2] <= domain_size[2]);
 }
 
-bool LinkedCellContainer::fitsContainer(R3 v) const {
+bool LinkedCellContainer::fitsContainer(R3 v) const noexcept {
     return (v[0] >= -cell_length[0] && v[0] <= domain_size[0] + cell_length[0]) &&
            (v[1] >= -cell_length[1] && v[1] <= domain_size[1] + cell_length[1]) &&
            (v[2] >= -cell_length[2] && v[2] <= domain_size[2] + cell_length[2]);
 }
 
-Particle& LinkedCellContainer::operator[](size_t idx) { return data[idx]; }
-const Particle& LinkedCellContainer::operator[](size_t idx) const { return data[idx]; }
+Particle& LinkedCellContainer::operator[](size_t idx) noexcept { return data[idx]; }
+const Particle& LinkedCellContainer::operator[](size_t idx) const noexcept { return data[idx]; }
 
-size_t LinkedCellContainer::size() const { return data.size(); }
-bool LinkedCellContainer::empty() const { return data.empty(); }
+size_t LinkedCellContainer::size() const noexcept { return data.size(); }
+bool LinkedCellContainer::empty() const noexcept { return data.empty(); }
 
 // modify
-void LinkedCellContainer::clear() {
+void LinkedCellContainer::clear() noexcept {
     data.clear();
     for (auto& cell : cells) {
         cell.clear();
@@ -319,6 +318,7 @@ void LinkedCellContainer::reserve(size_t n) { data.reserve(n); }
 void LinkedCellContainer::addParticle(Particle&& value) {
     R3 pos = value.getX();
     if (!fitsContainer(pos)) {
+        SPDLOG_WARN("Particle at ({}, {}, {}) outside container bounds, skipping", pos[0], pos[1], pos[2]);
         return;
     }
     data.push_back(std::move(value));
@@ -326,6 +326,8 @@ void LinkedCellContainer::addParticle(Particle&& value) {
 }
 void LinkedCellContainer::addParticle(const Particle& value) {
     if (!fitsContainer(value.getX())) {
+        SPDLOG_WARN("Particle at ({}, {}, {}) outside container bounds, skipping", value.getX()[0], value.getX()[1],
+                    value.getX()[2]);
         return;
     }
     data.push_back(value);
@@ -334,6 +336,7 @@ void LinkedCellContainer::addParticle(const Particle& value) {
 
 void LinkedCellContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg) {
     if (!fitsContainer(x_arg)) {
+        SPDLOG_WARN("Particle at ({}, {}, {}) outside container bounds, skipping", x_arg[0], x_arg[1], x_arg[2]);
         return;
     }
     data.emplace_back(x_arg, v_arg, m_arg, epsilon_arg, sigma_arg);
@@ -342,6 +345,7 @@ void LinkedCellContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double e
 void LinkedCellContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg,
                                       int type) {
     if (!fitsContainer(x_arg)) {
+        SPDLOG_WARN("Particle at ({}, {}, {}) outside container bounds, skipping", x_arg[0], x_arg[1], x_arg[2]);
         return;
     }
     data.emplace_back(x_arg, v_arg, m_arg, epsilon_arg, sigma_arg, type);
@@ -394,12 +398,12 @@ std::vector<Particle>::iterator LinkedCellContainer::updateParticlePosition(std:
 }
 
 // normal iterators
-std::vector<Particle>::iterator LinkedCellContainer::begin() { return data.begin(); }
-std::vector<Particle>::const_iterator LinkedCellContainer::begin() const { return data.begin(); }
-std::vector<Particle>::const_iterator LinkedCellContainer::cbegin() const { return data.cbegin(); }
-std::vector<Particle>::iterator LinkedCellContainer::end() { return data.end(); }
-std::vector<Particle>::const_iterator LinkedCellContainer::end() const { return data.end(); }
-std::vector<Particle>::const_iterator LinkedCellContainer::cend() const { return data.cend(); }
+std::vector<Particle>::iterator LinkedCellContainer::begin() noexcept { return data.begin(); }
+std::vector<Particle>::const_iterator LinkedCellContainer::begin() const noexcept { return data.begin(); }
+std::vector<Particle>::const_iterator LinkedCellContainer::cbegin() const noexcept { return data.cbegin(); }
+std::vector<Particle>::iterator LinkedCellContainer::end() noexcept { return data.end(); }
+std::vector<Particle>::const_iterator LinkedCellContainer::end() const noexcept { return data.end(); }
+std::vector<Particle>::const_iterator LinkedCellContainer::cend() const noexcept { return data.cend(); }
 
 // proximity iterators
 LinkedCellContainer::proximity_iterator LinkedCellContainer::proximityBegin(R3 center, size_t offset) {

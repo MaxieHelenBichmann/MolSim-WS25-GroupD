@@ -13,7 +13,7 @@ namespace mol_sim {
  */
 class InputException : public MolSimException {
    public:
-    InputException(const std::string& message) : MolSimException(message) {}
+    explicit InputException(const std::string& message) : MolSimException(message) {}
 };
 }  // namespace mol_sim
 #endif

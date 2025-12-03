@@ -22,7 +22,8 @@ namespace mol_sim {
 class ForceMock : public ForceSource {
    public:
     // Mocked method for applying force between two particles.
-    MOCK_METHOD(R3, applyForce, (const Particle& p1, const Particle& p2), (const, override));
+    // NOLINTNEXTLINE(bugprone-exception-escape)
+    MOCK_METHOD(R3, applyForce, (const Particle& p1, const Particle& p2), (const, noexcept, override));
 };
 
 /**

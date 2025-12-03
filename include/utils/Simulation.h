@@ -176,13 +176,18 @@ class Simulation {
     }
     /**
      * @brief Performs a full simulation run.
+     * @throws SimulationException if an error occurs during output writing.
      */
     void run() {
         double current_time = start_time;
         [[maybe_unused]] int iteration = 0;
 
+        SPDLOG_INFO("Starting simulation: {} particles, t=[{}, {}], dt={}", particles.size(), start_time, end_time,
+                    delta_t);
+
         // for this loop, we assume: current x, current f and current v are known
         while (current_time < end_time) {
+            SPDLOG_DEBUG("Iteration {}: Updating {} particle positions", iteration + 1, particles.size());
             // 1. Calculate new positions
             calculateX();
 
@@ -190,6 +195,7 @@ class Simulation {
             removeParticles();
 
             // 4. Calculate forces (including ghost interactions)
+            SPDLOG_DEBUG("Iteration {}: Calculating forces for {} particles", iteration + 1, particles.size());
             calculateF();
 
             // 6. Calculate new velocities
@@ -201,16 +207,16 @@ class Simulation {
                 try {
                     std::string out_name = base_name;
                     writer.plotParticles(particles, out_name, iteration);
-                } catch (std::runtime_error& e) {
-                    SPDLOG_ERROR("Something went wrong with plotting the Particles: ", e.what());
-                    throw SimulationException("Error while plotting Particles.");
+                } catch (const std::runtime_error& e) {
+                    SPDLOG_ERROR("Failed to plot particles at iteration {}: {}", iteration, e.what());
+                    throw SimulationException("Error while plotting Particles: " + std::string(e.what()));
                 }
             }
 #endif
-            SPDLOG_INFO("Iteration {} finished.", iteration);
+            SPDLOG_DEBUG("Iteration {} finished, {} particles remaining", iteration, particles.size());
             current_time += delta_t;
         }
-        SPDLOG_INFO("Output written. Terminating...");
+        SPDLOG_INFO("Simulation completed: {} iterations, {} particles remaining", iteration, particles.size());
     }
 };
 

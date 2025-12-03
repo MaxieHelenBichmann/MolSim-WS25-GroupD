@@ -14,6 +14,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "exceptions/ValidationException.h"
 #include "exceptions/XVMReaderException.h"
 #include "utils/Settings.h"
 
@@ -23,7 +24,9 @@ XVMReader::XVMReader() = default;
 
 XVMReader::~XVMReader() = default;
 
-void XVMReader::readSettings([[maybe_unused]] SettingsParam& settings, [[maybe_unused]] const std::string& filename) {}
+void XVMReader::readSettings([[maybe_unused]] SettingsParam& settings, [[maybe_unused]] const std::string& filename) {
+    SPDLOG_DEBUG("XVM files do not contain settings, using defaults");
+}
 
 void XVMReader::readParticles(ContainerRef particles, const std::string& filename) {
     std::array<double, 3> x;
@@ -46,7 +49,13 @@ void XVMReader::readParticles(ContainerRef particles, const std::string& filenam
 
         std::istringstream numstream(tmp_string);
         numstream >> num_particles;
-        SPDLOG_TRACE("Reading {} particles", num_particles);
+
+        if (num_particles <= 0) {
+            SPDLOG_ERROR("Invalid particle count: " + std::to_string(num_particles));
+            throw XVMReaderException("Invalid particle count: " + std::to_string(num_particles));
+        }
+
+        SPDLOG_DEBUG("Reading {} particles from XVM file", num_particles);
         getline(input_file, tmp_string);
         SPDLOG_TRACE("Read line: {}", tmp_string);
 
@@ -66,13 +75,26 @@ void XVMReader::readParticles(ContainerRef particles, const std::string& filenam
                 throw XVMReaderException("Error reading file: eof reached unexpectedly at line " + std::to_string(i));
             }
             datastream >> m;
+
+            if (m <= 0) {
+                SPDLOG_ERROR("XVM particle " + std::to_string(i) +
+                             ": mass must be positive, got: " + std::to_string(m));
+                throw ValidationException("XVM particle " + std::to_string(i) +
+                                          ": mass must be positive, got: " + std::to_string(m));
+            }
+
             particles.addParticle(x, v, m, SettingsParam::EPSILON_DEFAULT, SettingsParam::SIGMA_DEFAULT);
 
             getline(input_file, tmp_string);
             SPDLOG_TRACE("Read line: {}", tmp_string);
         }
+
+        if (particles.size() != static_cast<size_t>(num_particles)) {
+            SPDLOG_WARN("Expected {} particles, read {}", num_particles, particles.size());
+        }
+        SPDLOG_DEBUG("Successfully parsed {} XVM particles", particles.size());
     } else {
         SPDLOG_ERROR("Error: could not open file {}", filename);
-        throw XVMReaderException("Could not open file");
+        throw XVMReaderException("Could not open file: " + filename);
     }
 }

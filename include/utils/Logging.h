@@ -3,6 +3,8 @@
 
 #include <spdlog/spdlog.h>
 
+#include "exceptions/CLIException.h"
+
 namespace mol_sim {
 
 /**
@@ -20,7 +22,7 @@ inline void logInit(const std::string& option) {
     } else if (option == "Trace") {
         spdlog::set_level(spdlog::level::trace);
     } else {
-        throw std::invalid_argument{"Invalid Log Level"};
+        throw CLIException("Invalid log level: " + option);
     }
 };
 

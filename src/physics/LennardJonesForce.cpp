@@ -4,7 +4,7 @@
 
 using namespace mol_sim;
 
-Vector<double, 3> LennardJonesForce::applyForce(const Particle& p1, const Particle& p2) const {
+Vector<double, 3> LennardJonesForce::applyForce(const Particle& p1, const Particle& p2) const noexcept {
     const double sigma = (p1.getSigma() + p2.getSigma()) / 2;
     const double epsilon = std::sqrt(p1.getEpsilon() * p2.getEpsilon());
     const auto difference = p1.getX() - p2.getX();

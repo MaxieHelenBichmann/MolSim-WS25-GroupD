@@ -12,7 +12,7 @@ namespace mol_sim {
  */
 class SimulationException : public MolSimException {
    public:
-    SimulationException(const std::string& message) : MolSimException(message) {}
+    explicit SimulationException(const std::string& message) : MolSimException(message) {}
 };
 }  // namespace mol_sim
 #endif

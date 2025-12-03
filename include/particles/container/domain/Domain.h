@@ -24,6 +24,7 @@ class Domain {
 
     /**
      * @brief Maps BoundaryLocation enum to array index
+     * @throws BoundaryException if the given location is unknown.
      */
     static size_t locationToIndex(BoundaryLocation location);
 
@@ -46,7 +47,7 @@ class Domain {
      *
      * @param location The location of the boundary.
      * @return Boundary& The reference to the specified boundary.
-     * @throws std::runtime_error if the boundary at the given location is null.
+     * @throws BoundaryException if the boundary at the given location is null.
      */
     Boundary& getBoundary(BoundaryLocation location);
 
@@ -55,7 +56,7 @@ class Domain {
      *
      * @param location The location of the boundary.
      * @return const Boundary& The reference to the specified boundary.
-     * @throws std::runtime_error if the boundary at the given location is null.
+     * @throws BoundaryException if the boundary at the given location is null.
      */
     [[nodiscard]] const Boundary& getBoundary(BoundaryLocation location) const;
 
@@ -64,16 +65,16 @@ class Domain {
      *
      * @return R3 The dimensions of the domain.
      */
-    [[nodiscard]] R3 getDimension() const;
+    [[nodiscard]] R3 getDimension() const noexcept;
 
     /**
      * @brief Applies boundary conditions to a particle. Also (if needed) computes ghost particles
      * needed for a given particle.
      *
      * @param p The particle to apply boundaries to / compute ghost particles for.
-     * @return Vector of ghost particles.
+     * @param force The force source for ghost particle interactions.
      */
-    void applyBoundary(Particle& p, const ForceSource& force) const;
+    void applyBoundary(Particle& p, const ForceSource& force) const noexcept;
 
     Domain& operator=(const Domain& other) = delete;
     Domain& operator=(Domain&& other) noexcept;

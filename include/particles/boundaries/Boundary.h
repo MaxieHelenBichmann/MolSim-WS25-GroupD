@@ -38,7 +38,7 @@ class Boundary {
     R3 domain_size;
 
    public:
-    Boundary(BoundaryLocation location, BoundaryType type, R3 domain_size)
+    Boundary(BoundaryLocation location, BoundaryType type, R3 domain_size) noexcept
         : location(location), type(type), domain_size(domain_size) {}
     virtual ~Boundary() = default;
 
@@ -48,18 +48,18 @@ class Boundary {
      * @param p The particle to check.
      * @param force The force source to use for ghost particle interactions.
      */
-    virtual void applyBoundary(Particle& p, const ForceSource& force) const = 0;
+    virtual void applyBoundary(Particle& p, const ForceSource& force) const noexcept = 0;
 
-    [[nodiscard]] BoundaryType getType() const { return type; }
-    [[nodiscard]] BoundaryLocation getLocation() const { return location; }
-    [[nodiscard]] R3 getDomainSize() const { return domain_size; }
+    [[nodiscard]] BoundaryType getType() const noexcept { return type; }
+    [[nodiscard]] BoundaryLocation getLocation() const noexcept { return location; }
+    [[nodiscard]] R3 getDomainSize() const noexcept { return domain_size; }
 
    protected:
     /**
      * @brief Gets the axis index for the boundary.
      * @return 0 for LEFT/RIGHT (x), 1 for FRONT/BACK (y), 2 for UPPER/LOWER (z).
      */
-    [[nodiscard]] size_t getAxis() const {
+    [[nodiscard]] size_t getAxis() const noexcept {
         switch (location) {
             case BoundaryLocation::LEFT:
             case BoundaryLocation::RIGHT:
@@ -79,7 +79,7 @@ class Boundary {
      * @brief Gets the sign/direction for the boundary.
      * @return -1 for boundaries at min (LEFT, LOWER, FRONT), +1 for boundaries at max (RIGHT, UPPER, BACK).
      */
-    [[nodiscard]] int getSign() const {
+    [[nodiscard]] int getSign() const noexcept {
         switch (location) {
             case BoundaryLocation::LEFT:
             case BoundaryLocation::LOWER:
@@ -98,7 +98,7 @@ class Boundary {
      * @brief Computes the boundary position along its axis from domain size.
      * @return 0 for boundaries at min (LEFT, LOWER, FRONT), domain_size[axis] for boundaries at max.
      */
-    [[nodiscard]] double getBoundaryPosition() const {
+    [[nodiscard]] double getBoundaryPosition() const noexcept {
         size_t axis = getAxis();
         int sign = getSign();
         return (sign < 0) ? 0.0 : domain_size[axis];

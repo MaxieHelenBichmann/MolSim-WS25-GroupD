@@ -11,6 +11,7 @@
 #include <string>
 #include <utility>
 
+#include "exceptions/ValidationException.h"
 #include "exceptions/YAMLReaderException.h"
 #include "particles/boundaries/Boundary.h"
 #include "particles/boundaries/Outflow.h"
@@ -22,6 +23,50 @@
 #include "utils/Settings.h"
 
 namespace mol_sim {
+
+namespace {
+/**
+ * @brief      Used for validating general Simulation Settings.
+ *
+ * @param[in]  settings
+ * @throws ValidationException when bad values are read.
+ */
+void validateSettings(const SettingsParam& settings) {
+    if (settings.delta_t <= 0) {
+        SPDLOG_ERROR("delta_t must be positive, got: " + std::to_string(settings.delta_t));
+        throw ValidationException("delta_t must be positive, got: " + std::to_string(settings.delta_t));
+    }
+    if (settings.end_time <= settings.start_time) {
+        SPDLOG_ERROR("end_time must be greater than start_time");
+        throw ValidationException("end_time must be greater than start_time");
+    }
+    if (settings.cutoff < 0) {
+        SPDLOG_ERROR("cutoff must be non-negative, got: " + std::to_string(settings.cutoff));
+        throw ValidationException("cutoff must be non-negative, got: " + std::to_string(settings.cutoff));
+    }
+}
+/**
+ * @brief      Used for validating particle related Settings.
+ *
+ * @param[in]  settings
+ * @throws ValidationException when bad values are read.
+ */
+void validateParticleParams(double mass, double epsilon, double sigma, const std::string& context) {
+    if (mass <= 0) {
+        SPDLOG_ERROR(context + ": mass must be positive, got: " + std::to_string(mass));
+        throw ValidationException(context + ": mass must be positive, got: " + std::to_string(mass));
+    }
+    if (epsilon <= 0) {
+        SPDLOG_ERROR(context + ": epsilon must be positive, got: " + std::to_string(epsilon));
+        throw ValidationException(context + ": epsilon must be positive, got: " + std::to_string(epsilon));
+    }
+    if (sigma <= 0) {
+        SPDLOG_ERROR(context + ": sigma must be positive, got: " + std::to_string(sigma));
+        throw ValidationException(context + ": sigma must be positive, got: " + std::to_string(sigma));
+    }
+}
+}  // namespace
+
 YAMLReader::YAMLReader() = default;
 
 YAMLReader::~YAMLReader() = default;
@@ -61,11 +106,15 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
             } else if (force_str == "Gravitational") {
                 settings.force = GRAVITATIONAL;
             } else {
-                SPDLOG_WARN("Unknown Force Type, defaulting to Lennard Jones!");
+                throw ValidationException("Unknown force type: " + force_str);
             }
         }
         if (node["container"]) {
-            settings.container_type = node["container"].as<std::string>();
+            auto container_str = node["container"].as<std::string>();
+            if (container_str != "SIMPLE" && container_str != "LINKED") {
+                throw ValidationException("Unknown container type: " + container_str + " (expected SIMPLE or LINKED)");
+            }
+            settings.container_type = container_str;
         }
         if (node["frequency"]) {
             settings.frequency = node["frequency"].as<size_t>();
@@ -76,6 +125,10 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
         if (node["domain"]) {
             parseDomain(settings, node["domain"]);
         }
+
+        validateSettings(settings);
+        SPDLOG_DEBUG("Settings validated: delta_t={}, t=[{}, {}], cutoff={}", settings.delta_t, settings.start_time,
+                     settings.end_time, settings.cutoff);
     } catch (const YAML::Exception& e) {
         SPDLOG_ERROR("Error parsing YAML settings: {}", e.what());
         throw YAMLReaderException(e.what());
@@ -129,6 +182,7 @@ void YAMLReader::readXVM(ContainerRef particles, const YAML::Node& node) {
         if (node["particles"] && node["particles"].IsSequence()) {
             auto num_part = node["num_particles"].as<size_t>();
             particles.reserve(num_part);
+            size_t particle_idx = 0;
             for (const auto& curr : node["particles"]) {
                 R3 position;
                 const YAML::Node& coordinates = curr["coordinates"];
@@ -152,11 +206,14 @@ void YAMLReader::readXVM(ContainerRef particles, const YAML::Node& node) {
                 if (curr["sigma"]) {
                     sigma = curr["sigma"].as<double>();
                 }
+                validateParticleParams(mass, epsilon, sigma, "XVM particle " + std::to_string(particle_idx));
                 particles.addParticle(position, velocity, mass, epsilon, sigma);
+                particle_idx++;
             }
+            SPDLOG_DEBUG("Parsed {} XVM particles", particle_idx);
         }
     } catch (const YAML::Exception& e) {
-        SPDLOG_ERROR("Error parsing YAML: {}", e.what());
+        SPDLOG_ERROR("Error parsing XVM particles: {}", e.what());
         throw YAMLReaderException(e.what());
     }
 }
@@ -186,6 +243,15 @@ std::vector<YAMLReader::CuboidData> YAMLReader::parseCuboids(const YAML::Node& n
         data.avg_velo = node["mean_velo"].as<double>();
         data.epsilon = node["epsilon"].as<double>();
         data.sigma = node["sigma"].as<double>();
+
+        validateParticleParams(data.mass, data.epsilon, data.sigma, "Cuboid");
+        if (data.distance <= 0) {
+            SPDLOG_ERROR("Cuboid: distance must be positive, got: " + std::to_string(data.distance));
+            throw ValidationException("Cuboid: distance must be positive, got: " + std::to_string(data.distance));
+        }
+
+        SPDLOG_DEBUG("Parsed cuboid: {}x{}x{} particles at ({}, {}, {})", data.num_particles[0], data.num_particles[1],
+                     data.num_particles[2], data.position[0], data.position[1], data.position[2]);
 
         cuboids.push_back(data);
     }
@@ -218,6 +284,15 @@ std::vector<YAMLReader::DiscData> YAMLReader::parseDiscs(const YAML::Node& node)
         data.avg_velo = node["mean_velo"].as<double>();
         data.epsilon = node["epsilon"].as<double>();
         data.sigma = node["sigma"].as<double>();
+
+        validateParticleParams(data.mass, data.epsilon, data.sigma, "Disc");
+        if (data.distance <= 0) {
+            SPDLOG_ERROR("Disc: distance must be positive, got: " + std::to_string(data.distance));
+            throw ValidationException("Disc: distance must be positive, got: " + std::to_string(data.distance));
+        }
+
+        SPDLOG_DEBUG("Parsed disc: radius={} at ({}, {}, {})", data.radius, data.position[0], data.position[1],
+                     data.position[2]);
 
         discs.push_back(data);
 
