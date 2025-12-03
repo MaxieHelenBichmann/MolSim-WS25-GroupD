@@ -36,8 +36,8 @@ void generateCuboid(Container& particles, R3 position, R3 velocity, Vector<size_
     }
 }
 /**
- * @brief Tests the simulation with the parameters given in Assignment 2
- * Particle counts are 40x8x1 + 8x8x1
+ * @brief Tests the simulation with the parameters given in Assignment 3 Task 3
+ * Particle counts are 100x20x1 + 20x20x1
  *
  */
 static void bmSimulationGiven(benchmark::State& state) {

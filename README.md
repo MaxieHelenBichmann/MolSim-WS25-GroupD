@@ -33,7 +33,7 @@ MolSim is a molecular dynamics simulation framework developed as part of the PSE
 **Key Features:**
 - Multiple force implementations (Gravitational, Lennard-Jones)
 - Efficient particle containers (Direct Sum, Linked Cell)
-- Boundary condition support (Reflecting, Periodic, Outflow)
+- Boundary condition support (Reflecting, Outflow)
 - Particle generators utilities (Cuboid, Disc) with Brownian Motion
 - Output formats (VTK, XYZ)
 - Configurable via YAML input files

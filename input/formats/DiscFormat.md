@@ -19,11 +19,11 @@ The Disc object has the following keys:
   - `vy`: The y-component of the velocity.
   - `vz`: The z-component of the velocity.
 - `radius`: The radius of the disc (number of particles along the radius)
-- `mass`: The mass of each particle in the cuboid.
-- `distance`: The spacing between adjacent particles in the cuboid.
+- `mass`: The mass of each particle in the disc.
+- `distance`: The spacing between adjacent particles in the disc.
 - `mean_velo`: The mean velocity used for the Maxwell-Boltzmann distribution of the particles' velocities.
-- `epsilon`: The Epsilon value of all particles in this cuboid
-- `sigma`: The Sigma value of all particles in this cuboid
+- `epsilon`: The Epsilon value of all particles in this disc.
+- `sigma`: The Sigma value of all particles in this disc.
 ## Example
 
 ```yaml
