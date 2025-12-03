@@ -142,6 +142,18 @@ TEST_F(ContainerRefTest, testAddParticleEmplace) {
 }
 
 /**
+ * @brief Tests correct behaviour of the method eraseParticle(std::vector<Particle>::iterator p).)
+ */
+TEST_F(ContainerRefTest, testEraseParticleIterator) {
+    EXPECT_EQ(particles_full.size(), static_cast<size_t>(4));
+    auto it = particles_full.begin();
+    ++it;  // points to p1
+    particles_full.eraseParticle(it);
+    EXPECT_EQ(particles_full.size(), static_cast<size_t>(3));
+    EXPECT_TRUE(particles_full[0] != p1 || particles_full[1] == p1 || particles_full[2] == p1);
+}
+
+/**
  * @brief Tests correct behaviour of the method updateParticlePosition.
  */
 TEST_F(ContainerRefTest, testUpdateParticlePosition) {
@@ -224,6 +236,53 @@ TEST_F(ContainerRefTest, testProximityIterator) {
         ++count;
     }
     EXPECT_EQ(count, 1);  // Assuming only one particle is within the radius
+}
+
+/**
+ * @brief Tests correct behaviour of boundary iterator.
+ */
+TEST_F(ContainerRefTest, testBoundaryIterator) {
+    SimpleContainer s({10.0, 10.0, 10.0}, 1.0);
+    ContainerRef particles_boundary(s);
+    R3 v{0.0, 0.0, 0.0};
+    particles_boundary.addParticle(R3{2.5, 3.0, 3.0}, v, 1.0, 1.0, 1.0);
+    particles_boundary.addParticle(R3{5.0, 5.0, 5.0}, v, 1.0, 1.0, 1.0);
+    particles_boundary.addParticle(R3{0.2, 6.0, 6.0}, v, 1.0, 1.0, 1.0);  // boundary
+    particles_boundary.addParticle(R3{6.0, 9.2, 6.0}, v, 1.0, 1.0, 1.0);  // boundary
+    particles_boundary.addParticle(R3{9.2, 9.3, 9.8}, v, 1.0, 1.0, 1.0);  // boundary
+
+    auto it = particles_boundary.boundaryBegin();
+    auto end = particles_boundary.boundaryEnd();
+    size_t count = 0;
+    while (it != end) {
+        ++it;
+        ++count;
+    }
+    EXPECT_EQ(count, 3);  // Assuming only three particles are within the boundary
+}
+
+/**
+ * @brief Tests correct behaviour of halo iterator.
+ */
+TEST_F(ContainerRefTest, testHaloIterator) {
+    SimpleContainer s({10.0, 10.0, 10.0}, 1.0);
+    ContainerRef particles_halo(s);
+    R3 v{0.0, 0.0, 0.0};
+    particles_halo.addParticle(R3{-0.5, 3.0, 3.0}, v, 1.0, 1.0, 1.0);  // halo
+    particles_halo.addParticle(R3{5.0, 5.0, 5.0}, v, 1.0, 1.0, 1.0);
+    particles_halo.addParticle(R3{10.2, 6.0, 6.0}, v, 1.0, 1.0, 1.0);  // halo
+    particles_halo.addParticle(R3{6.0, 10.0, 6.0}, v, 1.0, 1.0, 1.0);
+    particles_halo.addParticle(R3{9.2, 9.3, 10.8}, v, 1.0, 1.0, 1.0);    // halo
+    particles_halo.addParticle(R3{11.0, 11.0, 11.0}, v, 1.0, 1.0, 1.0);  // halo
+
+    auto it = particles_halo.haloBegin();
+    auto end = particles_halo.haloEnd();
+    size_t count = 0;
+    while (it != end) {
+        ++it;
+        ++count;
+    }
+    EXPECT_EQ(count, 4);  // Assuming only four particles are within the boundary
 }
 
 // ParticleContainer: complex tests

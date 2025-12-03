@@ -132,6 +132,19 @@ TEST_F(SimpleContainerTest, testAddParticleEmplace) {
 }
 
 /**
+ * @brief Tests correct behaviour of the method eraseParticle(std::vector<Particle>::iterator p).)
+ */
+TEST_F(SimpleContainerTest, testEraseParticleIterator) {
+    auto it = particles_full.begin();
+    ++it;  // points to p1
+    particles_full.eraseParticle(it);
+    EXPECT_EQ(particles_full.size(), static_cast<size_t>(3));
+    EXPECT_TRUE(particles_full[0] == p0);
+    EXPECT_TRUE(particles_full[1] == p2);
+    EXPECT_TRUE(particles_full[2] == p3);
+}
+
+/**
  * @brief Tests correct behaviour of the method updateParticlePosition.
  */
 TEST_F(SimpleContainerTest, testUpdateParticlePosition) {
