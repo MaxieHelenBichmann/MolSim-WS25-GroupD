@@ -1,32 +1,37 @@
 #ifndef REFLECTING_H
 #define REFLECTING_H
 
-#include <cstdint>
-#include "particles/boundaries/BoundaryCondition.h"
+#include <optional>
+
+#include "particles/boundaries/Boundary.h"
 
 namespace mol_sim {
-using Reflecting = class Reflecting;
 
-class Reflecting : public BoundaryCondition {
-    R3 zero = {.0, .0, .0};
-    R3 max;  
-    // for now sigma + epsilon is that of the particle. but we could also do set up 
-    // like add a setting in settings that specifies the sigma and epsilon 
-    double counter_epsilon = 0;
-    double counter_sigma = 0;
-    bool use_particle_sigma_epsilon = false;
-    std::vector<Particle*> ghost_particles;
+class Reflecting : public Boundary {
+    bool ghost_on_boundary = false;
+    std::optional<double> boundary_epsilon;
+    std::optional<double> boundary_sigma;
 
-    void addCounterParticle(int sign, size_t coordinate, LinkedCellContainer& particles, Particle& p);
-    void boundaryStrategy(Particle& p) override;
-    void clean() override;
-
-    public: 
-    Reflecting(LinkedCellContainer& particles);
-    Reflecting(LinkedCellContainer& particles, double counter_sigma, double counter_epsilon);
+   public:
+    /**
+     * @brief Constructs a Reflecting boundary.
+     *
+     * @param location The boundary location (LEFT, RIGHT, etc.).
+     * @param domain_size The dimensions of the entire domain (x, y, z).
+     * @param ghost_on_boundary States that the ghost particles should be spawned right on the boundary if true
+     * instead of having them mirror.
+     * @param sigma Optional sigma for ghost particle interactions.
+     * @param epsilon Optional epsilon for ghost particle interactions.
+     */
+    Reflecting(BoundaryLocation location, R3 domain_size, bool ghost_on_boundary,
+               std::optional<double> sigma = std::nullopt, std::optional<double> epsilon = std::nullopt) noexcept;
     ~Reflecting() override = default;
+
+    void applyBoundary(Particle& p, const ForceSource& force) const noexcept override;
+    [[nodiscard]] std::optional<double> getBoundarySigma() const noexcept { return boundary_sigma; }
+    [[nodiscard]] std::optional<double> getBoundaryEpsilon() const noexcept { return boundary_epsilon; }
 };
 
-} // namespace mol_sim
+}  // namespace mol_sim
 
 #endif

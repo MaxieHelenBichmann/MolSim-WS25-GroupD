@@ -1,3 +1,8 @@
+settings:
+    format: Settings
+    delta_t: 0.005
+    end_time: 500.0
+
 cuboid_1:
     format: Cuboid
     coordinates:

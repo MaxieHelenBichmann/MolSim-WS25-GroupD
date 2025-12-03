@@ -18,7 +18,6 @@
 #include "utils/Logging.h"
 #include "utils/Settings.h"
 
-
 namespace mol_sim {
 
 /**
@@ -31,7 +30,7 @@ namespace mol_sim {
  * @param settings SettingsParam where options for the simulation are stored.
  * @throws CLIException if CLI parsing or file reading fails
  */
-void cliParse(int argc, char** argv, SimpleContainer& particles, SettingsParam& settings) {
+std::string cliParse(int argc, char** argv) {
     SPDLOG_INFO("Hello from MolSim for PSE!");
     CLI::App app{"MolSim - Molecular Dynamics Simulator"};
     argv = app.ensure_utf8(argv);
@@ -42,8 +41,6 @@ void cliParse(int argc, char** argv, SimpleContainer& particles, SettingsParam& 
     app.get_formatter()->label("TEXT", "");
     std::unique_ptr<FileReader> file_reader;
     std::filesystem::path filepath;
-    std::string force;
-
     std::string log_level = "Default";  // NOLINT
 
     // Define custom validator for file extensions
@@ -60,14 +57,6 @@ void cliParse(int argc, char** argv, SimpleContainer& particles, SettingsParam& 
         ->required()
         ->check(CLI::ExistingFile.description(""))
         ->check(CLI::Validator(file_ext_validator, ""));
-
-    app.add_option("-d,--delta_t", settings.delta_t, "Time step")->check(CLI::PositiveNumber.description(""));
-
-    app.add_option("-t,--end_time", settings.end_time, "Simulation end time")
-        ->check(CLI::PositiveNumber.description(""));
-
-    app.add_option("--force", force, "Force type: GRAV (gravitational) or LJ (Lennard-Jones)")
-        ->check(CLI::IsMember({"GRAV", "LJ"}).description("{GRAV, LJ}"));
 
 #if SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_TRACE
     app.add_option("-l,--log_level", log_level, "Logging verbosity level")
@@ -101,34 +90,11 @@ void cliParse(int argc, char** argv, SimpleContainer& particles, SettingsParam& 
         throw CLIException("CLI parsing error: " + std::string(e.what()));
     }
 
-    if (!force.empty()) {
-        if (force == "GRAV") {
-            settings.force = GRAVITATIONAL;
-        } else if (force == "LJ") {
-            settings.force = LENNARDJONES;
-        }
-    }
-
 #if SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_TRACE
     logInit(log_level);
 #endif
 
-    // Select appropriate file reader based on extension
-    if (filepath.extension() == ".txt") {
-        file_reader = std::make_unique<XVMReader>();
-    } else if (filepath.extension() == ".yaml") {
-        file_reader = std::make_unique<YAMLReader>();
-    } else {
-        throw CLIException("Unsupported file extension: " + filepath.extension().string());
-    }
-
-    // Read input file with error handling
-    try {
-        file_reader->readFile(particles, settings, filepath);
-    } catch (const std::exception& e) {
-        SPDLOG_ERROR("Failed to read input file: {}", e.what());
-        throw CLIException("File reading error: " + std::string(e.what()));
-    }
+    return filepath;
 }
 }  // namespace mol_sim
 

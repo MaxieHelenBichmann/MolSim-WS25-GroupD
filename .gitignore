@@ -36,6 +36,7 @@
 .vscode/
 .cache/
 *.DS_Store
+*sublime*
 .github/*copilot*
 
 # Build folders.

@@ -3,9 +3,7 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
-#include <limits>
 #include <set>
-#include <unordered_set>
 #include <vector>
 
 #include "particles/ParticleContainer.h"
@@ -145,17 +143,11 @@ TEST_F(LinkedCellContainerTest, testAddParticleEmplace) {
 }
 
 /**
- * @brief Tests correct behaviour of the method eraseParticle(Particle* p).
+ * @brief Tests correct behaviour of the method eraseParticle(std::vector<Particle>::iterator p).
  */
 TEST_F(LinkedCellContainerTest, testEraseParticle) {
     EXPECT_EQ(particles_full.size(), static_cast<size_t>(4));
-    Particle* p_ptr = &particles_full[2];
-    particles_full.eraseParticle(p_ptr);
-    EXPECT_EQ(particles_full.size(), static_cast<size_t>(3));
-
-    Particle p(42);
-    Particle* p_ptr_invalid = &p;
-    particles_full.eraseParticle(p_ptr_invalid);
+    particles_full.eraseParticle(particles_full.begin() + 2);
     EXPECT_EQ(particles_full.size(), static_cast<size_t>(3));
 }
 
@@ -184,48 +176,23 @@ TEST_F(LinkedCellContainerTest, testBeginConstInterator) {
 // proximity iterators
 
 /**
- * @brief Tests correct behaviour of proximity iterator with infinite radius.
- */
-TEST_F(LinkedCellContainerTest, testProximityIteratorInfiniteRadius) {
-    R3 v{0.0, 0.0, 0.0};
-    particles_empty.addParticle(R3{2.0, 2.0, 2.0}, v, 1.0, 1.0, 1.0);
-    particles_empty.addParticle(R3{4.0, 4.0, 4.0}, v, 1.0, 1.0, 1.0);
-    particles_empty.addParticle(R3{6.0, 6.0, 6.0}, v, 1.0, 1.0, 1.0);
-
-    R3 center{3.0, 3.0, 3.0};
-    double radius = std::numeric_limits<double>::infinity();
-
-    auto it = particles_empty.proximityBegin(center, radius);
-    auto end = particles_empty.proximityEnd(center, radius);
-
-    size_t count = 0;
-    while (it != end) {
-        EXPECT_LE((it->getX() - center).euclidNorm(), radius);
-        ++it;
-        ++count;
-    }
-    // only two particles are within the radius AND considered in the Newton's third law optimization
-    EXPECT_EQ(count, 2);
-}
-
-/**
  * @brief Tests correct behaviour of proximity iterator with finite radius.
  */
 TEST_F(LinkedCellContainerTest, testProximityIterator) {
+    LinkedCellContainer particles_one({10.0, 10.0, 10.0}, 1.0);
+
     R3 v{0.0, 0.0, 0.0};
-    particles_empty.addParticle(R3{2.5, 3.0, 3.0}, v, 1.0, 1.0, 1.0);
-    particles_empty.addParticle(R3{5.0, 5.0, 5.0}, v, 1.0, 1.0, 1.0);
-    particles_empty.addParticle(R3{6.0, 6.0, 6.0}, v, 1.0, 1.0, 1.0);
+    particles_one.addParticle(R3{2.5, 3.1, 3.1}, v, 1.0, 1.0, 1.0);
+    particles_one.addParticle(R3{5.0, 5.0, 5.0}, v, 1.0, 1.0, 1.0);
+    particles_one.addParticle(R3{6.0, 6.0, 6.0}, v, 1.0, 1.0, 1.0);
+    R3 center{3.1, 3.1, 3.1};
 
-    R3 center{3.0, 3.0, 3.0};
-    double radius = 1.0;
-
-    auto it = particles_empty.proximityBegin(center, radius);
-    auto end = particles_empty.proximityEnd(center, radius);
+    auto it = particles_one.proximityBegin(center, particles_one.size());
+    auto end = particles_one.proximityEnd(center);
 
     size_t count = 0;
     while (it != end) {
-        EXPECT_LE((it->getX() - center).euclidNorm(), radius);
+        EXPECT_LE((it->getX() - center).euclidNorm(), 1.0);
         ++it;
         ++count;
     }
@@ -367,8 +334,8 @@ TEST_F(LinkedCellContainerTest, testBoundaryIterator) {  // NOLINT
 
     // Only RIGHT boundary
     std::vector<Particle> boundary_right;
-    for (auto it = particles_empty.boundaryBegin({BoundaryType::RIGHT});
-         it != particles_empty.boundaryEnd({BoundaryType::RIGHT}); ++it) {
+    for (auto it = particles_empty.boundaryBegin({BoundaryLocation::RIGHT});
+         it != particles_empty.boundaryEnd({BoundaryLocation::RIGHT}); ++it) {
         boundary_right.push_back(*it);
     }
 
@@ -411,8 +378,8 @@ TEST_F(LinkedCellContainerTest, testHaloIterator) {  // NOLINT
     EXPECT_FALSE(std::count(halo_all.begin(), halo_all.end(), par_boundary) > 0);
     // Only RIGHT boundary
     std::vector<Particle> halo_right;
-    for (auto it = particles_empty.haloBegin({BoundaryType::RIGHT});
-         it != particles_empty.haloEnd({BoundaryType::RIGHT}); ++it) {
+    for (auto it = particles_empty.haloBegin({BoundaryLocation::RIGHT});
+         it != particles_empty.haloEnd({BoundaryLocation::RIGHT}); ++it) {
         halo_right.push_back(*it);
     }
 

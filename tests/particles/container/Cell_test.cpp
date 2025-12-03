@@ -2,8 +2,6 @@
 
 #include <gtest/gtest.h>
 
-#include <algorithm>
-
 namespace mol_sim {
 
 class CellTest : public ::testing::Test {

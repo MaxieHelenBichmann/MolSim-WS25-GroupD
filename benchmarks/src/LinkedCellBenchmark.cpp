@@ -1,7 +1,5 @@
 #include <benchmark/benchmark.h>
 
-#include <cstdint>
-
 #include "../code/linkedcellimpl/LinkedCellContainerDirect.h"
 #include "../code/linkedcellimpl/LinkedCellContainerExplicit.h"
 #include "../src/BenchmarkingUtils.h"
@@ -97,7 +95,7 @@ void bmIteratorExplicit(benchmark::State& state) {
 void bmProximityIteratorDirect(benchmark::State& state) {
     size_t n = state.range(0);
     R3 domain_size = {100.0, 100.0, 100.0};
-    double cutoff = 3.0;
+    double cutoff = 10.0;
     std::array<double, 6> bounds = {0., domain_size[0], 0., domain_size[1], 0., domain_size[2]};
 
     LinkedCellContainerDirect container(domain_size, cutoff);
@@ -108,12 +106,11 @@ void bmProximityIteratorDirect(benchmark::State& state) {
     }
 
     R3 center = {50.0, 50.0, 50.0};
-    double radius = 10.0;
     size_t count = 0;
 
     for ([[maybe_unused]] auto _ : state) {
-        auto it = container.proximityBegin(center, radius);
-        auto end = container.proximityEnd(center, radius);
+        auto it = container.proximityBegin(center);
+        auto end = container.proximityEnd(center);
         for (; it != end; ++it) {
             count += it->getType();
         }
@@ -125,7 +122,7 @@ void bmProximityIteratorDirect(benchmark::State& state) {
 void bmProximityIteratorExplicit(benchmark::State& state) {
     size_t n = state.range(0);
     R3 domain_size = {100.0, 100.0, 100.0};
-    double cutoff = 3.0;
+    double cutoff = 10.0;
     std::array<double, 6> bounds = {0., domain_size[0], 0., domain_size[1], 0., domain_size[2]};
 
     LinkedCellContainerExplicit container(domain_size, cutoff);
@@ -136,12 +133,11 @@ void bmProximityIteratorExplicit(benchmark::State& state) {
     }
 
     R3 center = {50.0, 50.0, 50.0};
-    double radius = 10.0;
     size_t count = 0;
 
     for ([[maybe_unused]] auto _ : state) {
-        auto it = container.proximityBegin(center, radius);
-        auto end = container.proximityEnd(center, radius);
+        auto it = container.proximityBegin(center);
+        auto end = container.proximityEnd(center);
         for (; it != end; ++it) {
             count += it->getType();
         }
@@ -205,7 +201,7 @@ void bmUpdatePositionExplicit(benchmark::State& state) {
 void bmMixedDirect(benchmark::State& state) {
     size_t n = state.range(0);
     R3 domain_size = {100.0, 100.0, 100.0};
-    double cutoff = 3.0;
+    double cutoff = 10.0;
     std::array<double, 6> bounds = {0., domain_size[0], 0., domain_size[1], 0., domain_size[2]};
 
     for ([[maybe_unused]] auto _ : state) {
@@ -222,9 +218,8 @@ void bmMixedDirect(benchmark::State& state) {
         }
 
         R3 center = {50.0, 50.0, 50.0};
-        double radius = 10.0;
-        auto it = container.proximityBegin(center, radius);
-        auto end = container.proximityEnd(center, radius);
+        auto it = container.proximityBegin(center);
+        auto end = container.proximityEnd(center);
         for (; it != end; ++it) {
             count += it->getType();
         }
@@ -237,7 +232,7 @@ void bmMixedDirect(benchmark::State& state) {
 void bmMixedExplicit(benchmark::State& state) {
     size_t n = state.range(0);
     R3 domain_size = {100.0, 100.0, 100.0};
-    double cutoff = 3.0;
+    double cutoff = 10.0;
     std::array<double, 6> bounds = {0., domain_size[0], 0., domain_size[1], 0., domain_size[2]};
 
     for ([[maybe_unused]] auto _ : state) {
@@ -254,9 +249,8 @@ void bmMixedExplicit(benchmark::State& state) {
         }
 
         R3 center = {50.0, 50.0, 50.0};
-        double radius = 10.0;
-        auto it = container.proximityBegin(center, radius);
-        auto end = container.proximityEnd(center, radius);
+        auto it = container.proximityBegin(center);
+        auto end = container.proximityEnd(center);
         for (; it != end; ++it) {
             count += it->getType();
         }
@@ -328,7 +322,7 @@ void bmHaloIteratorDirect(benchmark::State& state) {
     LinkedCellContainerDirect container(domain_size, cutoff);
 
     for (size_t i = 0; i < 6; i++) {
-        bounds[i] += 2.0 * static_cast<double>(i % 2) - 1.0;
+        bounds[i] += (2.0 * static_cast<double>(i % 2)) - 1.0;
         for (size_t j = 0; j < n / 6; j++) {
             R3 pos = randomR3(bounds);
             R3 vel = randomR3();
@@ -356,7 +350,7 @@ void bmHaloIteratorExplicit(benchmark::State& state) {
 
     LinkedCellContainerExplicit container(domain_size, cutoff);
     for (size_t i = 0; i < 6; i++) {
-        bounds[i] += 2.0 * static_cast<double>(i % 2) - 1.0;
+        bounds[i] += (2.0 * static_cast<double>(i % 2)) - 1.0;
         for (size_t j = 0; j < n / 6; j++) {
             R3 pos = randomR3(bounds);
             R3 vel = randomR3();

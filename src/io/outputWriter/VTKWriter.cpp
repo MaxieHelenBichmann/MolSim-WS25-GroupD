@@ -20,7 +20,7 @@
 
 using namespace mol_sim;
 
-void VTKWriter::plotParticles(ContainerRef particles, const std::string& filename, int iteration) {
+void VTKWriter::plotParticles(ContainerRef particles, const std::string& filename, int iteration) const {
     // Initialize points
     auto points = vtkSmartPointer<vtkPoints>::New();
 

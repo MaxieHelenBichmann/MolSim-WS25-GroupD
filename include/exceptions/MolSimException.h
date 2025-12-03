@@ -10,7 +10,7 @@ namespace mol_sim {
  */
 class MolSimException : public std::runtime_error {
    public:
-    MolSimException(const std::string& message) : std::runtime_error(message) {}
+    explicit MolSimException(const std::string& message) : std::runtime_error(message) {}
 };
 }  // namespace mol_sim
 #endif

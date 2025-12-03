@@ -4,9 +4,7 @@
 #include <array>
 #include <cstdint>
 #include <set>
-#include <vector>
 
-#include "particles/Particle.h"
 #include "utils/Vector.h"
 
 namespace mol_sim {
@@ -40,7 +38,7 @@ class Cell {
     /**
      * @brief Constructor, initializing a Cell with type and boundaries.
      */
-    Cell(CellType cell_type, std::array<double, 6> bounds);
+    Cell(CellType cell_type, std::array<double, 6> bounds) noexcept;
 
     /**
      * @brief Adding an index (of the std::vector data from the LinkedCellContainer) to an existing Particle to the
@@ -54,7 +52,7 @@ class Cell {
      *
      * @param idx Index of the Particle Index to remove.
      */
-    void removeParticle(size_t idx);
+    void removeParticle(size_t idx) noexcept;
     /**
      * @brief Update the index of a Particle in the cell.
      *
@@ -65,20 +63,20 @@ class Cell {
     /**
      * @brief Clear the entire cell, destructing no Particles.
      */
-    void clear();
+    void clear() noexcept;
     /**
      * @brief Access the set of Particle indices in the cell.
      *
      * @return Reference to the set of Particle indices.
      */
-    std::set<size_t>& particles();
+    std::set<size_t>& particles() noexcept;
 
     /**
      * @brief Access the const set of Particle indices in the cell.
      *
      * @return Reference to the set of Particle indices.
      */
-    [[nodiscard]] const std::set<size_t>& particles() const;
+    [[nodiscard]] const std::set<size_t>& particles() const noexcept;
 
     /**
      * @brief Check whether a Particle fits into the cell boundaries.
@@ -87,19 +85,19 @@ class Cell {
      *
      * @return True if Particle is within cell boundaries.
      */
-    [[nodiscard]] bool fits(R3 x) const;
+    [[nodiscard]] bool fits(R3 x) const noexcept;
     /**
      * @brief Returns the number of particles contained within the cell.
      *
      * @return size_t the number of particles contained within the cell.
      */
-    size_t size();
+    [[nodiscard]] size_t size() const noexcept;
     /**
      * @brief Returns the type of the cell (INNER, BOUNDARY, HALO).
      *
      * @return CellType the type of the cell.
      */
-    CellType getType();
+    [[nodiscard]] CellType getType() const noexcept;
 };
 
 }  // namespace mol_sim

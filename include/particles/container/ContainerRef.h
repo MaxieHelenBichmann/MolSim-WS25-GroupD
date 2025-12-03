@@ -1,10 +1,12 @@
 #ifndef CONTAINER_REF_H
 #define CONTAINER_REF_H
 
+#include <set>
 #include <type_traits>
-#include <utility>
 #include <variant>
+#include <vector>
 
+#include "particles/Particle.h"
 #include "particles/container/LinkedCellContainer.h"
 #include "particles/container/SimpleContainer.h"
 
@@ -30,16 +32,17 @@ namespace mol_sim {
  * acceptable
  *
  */
+using CONTAINER_REF = std::variant<SimpleContainer*, LinkedCellContainer*>;
 class ContainerRef {
     /**
      * Pointer to the current instance of the ContainerRef.
      * More containers can be added in the std::variant later.
      */
-    std::variant<SimpleContainer*, LinkedCellContainer*> instance;  // NOLINT
+    CONTAINER_REF instance;  // NOLINT
 
    public:
     // constructors
-
+    ContainerRef();
     /**
      * @brief Constructor, initializing ContainerRef with a reference to a SimpleContainer.
      */
@@ -49,6 +52,11 @@ class ContainerRef {
      * @brief Constructor, initializing ContainerRef with a reference to a LinkedCellContainer.
      */
     ContainerRef(LinkedCellContainer& c);
+
+    /**
+     * @brief Constructor, initializing ContainerRef with another CONTAINER_REF.
+     */
+    ContainerRef(CONTAINER_REF& c);
 
     // retrieve data
     Particle& operator[](size_t idx);
@@ -120,12 +128,29 @@ class ContainerRef {
     void addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type);
 
     /**
+     * @brief Removes a given particle from the container.
+     *
+     * @param p Iterator to the Particle to be removed.
+     *
+     * @return Iterator to the next Particle after the removed one.
+     */
+    std::vector<Particle>::iterator eraseParticle(std::vector<Particle>::iterator p);
+
+    /**
      * @brief Update the position of a given Particle in the Container.
      *
      * @param p Iterator to the Particle to update.
      * @param new_x New position to set.
+     *
+     * @return Iterator to the next Particle.
      */
-    void updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x);
+    std::vector<Particle>::iterator updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x);
+
+    /**
+     * @brief Get the Instance object.
+     *
+     */
+    CONTAINER_REF getInstance();
 
     // iterators
 
@@ -176,6 +201,7 @@ class ContainerRef {
      *
      * Satisfies the forward iterator concept.
      * Only iterates over particles within the given radius of the center, or all if the radius is infinite.
+     * Or is used for the iteration over halo and boundary particles.
      */
     class const_proximity_iterator {
         std::variant<SimpleContainer::const_proximity_iterator, LinkedCellContainer::const_proximity_iterator> cur;
@@ -225,6 +251,14 @@ class ContainerRef {
         friend bool operator!=(const const_proximity_iterator& a, const const_proximity_iterator& b) {
             return !(a == b);
         }
+
+        operator LinkedCellContainer::const_proximity_iterator() const {
+            return std::get<LinkedCellContainer::const_proximity_iterator>(cur);
+        }
+
+        operator SimpleContainer::const_proximity_iterator() const {
+            return std::get<SimpleContainer::const_proximity_iterator>(cur);
+        }
     };
     static_assert(std::forward_iterator<const_proximity_iterator>);
 
@@ -233,6 +267,7 @@ class ContainerRef {
      *
      * Satisfies the forward iterator concept.
      * Only iterates over particles within the given radius of the center, or all if the radius is infinite.
+     * Or is used for the iteration over halo and boundary particles.
      */
     class proximity_iterator {
         std::variant<SimpleContainer::proximity_iterator, LinkedCellContainer::proximity_iterator> cur;
@@ -279,51 +314,161 @@ class ContainerRef {
                 a.cur, b.cur);
         }
         friend bool operator!=(const proximity_iterator& a, const proximity_iterator& b) { return !(a == b); }
+
+        operator LinkedCellContainer::proximity_iterator() {
+            return std::get<LinkedCellContainer::proximity_iterator>(cur);
+        }
+
+        operator SimpleContainer::proximity_iterator() { return std::get<SimpleContainer::proximity_iterator>(cur); }
     };
     static_assert(std::forward_iterator<proximity_iterator>);
 
     /**
+     * @brief Remove a Particle. Used when iterating with proximity_iterator, not used yet
+     * (thus not tested), but could be useful.
+     *
+     * @param p Iterator to to the Particle to remove.
+     *
+     * @return Iterator to the next Particle after the removed one.
+     */
+    proximity_iterator eraseParticle(proximity_iterator p);
+
+    /**
      * @brief Mutable Iterator over particles in proximity.
      *
      * @param center Center point to check proximity from (position of the particle).
-     * @param radius Radius within which to consider particles in proximity.
      * @param offset Offset from the beginning of the container to start the iteration (used for N3L optimization).
      *
      * @return Mutable iterator to the first particle within the given radius of the center.
      */
-    [[nodiscard]] proximity_iterator proximityBegin(R3 center, double radius, size_t offset = 0);
+    [[nodiscard]] proximity_iterator proximityBegin(R3 center, size_t offset);
 
     /**
      * @brief Mutable Iterator over particles in proximity.
      *
      * @param center Center point to check proximity from (position of the particle).
-     * @param radius Radius within which to consider particles in proximity.
      *
      * @return Mutable iterator after the last particle within the given radius of the center.
      */
-    [[nodiscard]] proximity_iterator proximityEnd(R3 center, double radius);
-
+    [[nodiscard]] proximity_iterator proximityEnd(R3 center);
     /**
      * @brief Const Iterator over particles in proximity.
      *
      * @param center Center point to check proximity from (position of the particle).
-     * @param radius Radius within which to consider particles in proximity.
      * @param offset Offset from the beginning of the container to start the iteration (used for N3L optimization).
      *
      * @return Const iterator to the first particle within the given radius of the center.
      */
-    [[nodiscard]] const_proximity_iterator proximityBegin(R3 center, double radius, size_t offset = 0) const;
+    [[nodiscard]] const_proximity_iterator proximityBegin(R3 center, size_t offset) const;
 
     /**
      * @brief Const Iterator over particles in proximity.
      *
      * @param center Center point to check proximity from (position of the particle).
-     * @param radius Radius within which to consider particles in proximity.
      *
      * @return Const iterator after the last particle within the given radius of the center.
      */
-    [[nodiscard]] const_proximity_iterator proximityEnd(R3 center, double radius) const;
+    [[nodiscard]] const_proximity_iterator proximityEnd(R3 center) const;
+
+    // boundary and halo iterators
+
+    /**
+     * @brief Iterator over particles in halo.
+     *
+     * @param locations Boundary types to specify which halo boundary to iterate over. Defaults to all sides.
+     *
+     * @return Iterator to the first particle within the given halo.
+     */
+    [[nodiscard]] proximity_iterator haloBegin(const std::set<BoundaryLocation>& locations = {
+                                                   BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                   BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                   BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+
+    /**
+     * @brief Const Iterator over particles in halo.
+     *
+     * @param locations Boundary types to specify which halo boundary to iterate over. Defaults to all sides.
+     *
+     * @return Const iterator to the first particle within the given halo.
+     */
+    [[nodiscard]] const_proximity_iterator haloBegin(const std::set<BoundaryLocation>& locations = {
+                                                         BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                         BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                         BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
+
+    /**
+     * @brief Iterator over particles in halo.
+     *
+     * @param locations Boundary types to specify which halo boundary to iterate over. Defaults to all sides.
+     *
+     * @return Iterator after the last particle within the given halo.
+     */
+    [[nodiscard]] proximity_iterator haloEnd(const std::set<BoundaryLocation>& locations = {
+                                                 BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                 BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                 BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+
+    /**
+     * @brief Const Iterator over particles in halo.
+     *
+     * @param locations Boundary types to specify which halo boundary to iterate over. Defaults to all sides.
+     *
+     * @return Const iterator after the last particle within the given halo.
+     */
+    [[nodiscard]] const_proximity_iterator haloEnd(const std::set<BoundaryLocation>& locations = {
+                                                       BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                       BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                       BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
+
+    /**
+     * @brief Iterator over particles in boundary.
+     *
+     * @param locations Boundary types to specify which boundary to iterate over. Defaults to all sides.
+     *
+     * @return Iterator to the first particle within the given boundary.
+     */
+    [[nodiscard]] proximity_iterator boundaryBegin(const std::set<BoundaryLocation>& locations = {
+                                                       BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                       BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                       BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+
+    /**
+     * @brief Const Iterator over particles in boundary.
+     *
+     * @param locations Boundary types to specify which boundary to iterate over. Defaults to all sides.
+     *
+     * @return Const iterator to the first particle within the given boundary.
+     */
+    [[nodiscard]] const_proximity_iterator boundaryBegin(const std::set<BoundaryLocation>& locations = {
+                                                             BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                             BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                             BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
+
+    /**
+     * @brief Iterator over particles in boundary.
+     *
+     * @param locations Boundary types to specify which boundary to iterate over. Defaults to all sides.
+     *
+     * @return Iterator after the last particle within the given boundary.
+     */
+    [[nodiscard]] proximity_iterator boundaryEnd(const std::set<BoundaryLocation>& locations = {
+                                                     BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                     BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                     BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+
+    /**
+     * @brief Const Iterator over particles in boundary.
+     *
+     * @param locations Boundary types to specify which boundary to iterate over. Defaults to all sides.
+     *
+     * @return Const iterator after the last particle within the given boundary.
+     */
+    [[nodiscard]] const_proximity_iterator boundaryEnd(const std::set<BoundaryLocation>& locations = {
+                                                           BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                           BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                           BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
 };
+static_assert(ParticleContainer<ContainerRef>);
 
 }  // namespace mol_sim
 
