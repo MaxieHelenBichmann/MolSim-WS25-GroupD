@@ -1,5 +1,7 @@
 #include "particles/boundaries/Reflecting.h"
 
+#include <spdlog/spdlog.h>
+
 #include <cmath>
 
 namespace mol_sim {
@@ -49,6 +51,7 @@ std::optional<Particle> Reflecting::applyBoundary(Particle& p) {
         R3 ghost_pos = p.getX();
         ghost_pos[axis] = boundary_position + (ghost_on_boundary ? 0 : sign * distance_to_boundary);
 
+        SPDLOG_DEBUG("New ghost particle on ( {} , {} , {} )", ghost_pos[0], ghost_pos[1], ghost_pos[2]);
         return Particle(ghost_pos, {0.0, 0.0, 0.0}, 0.0, epsilon, sigma, -1);
     }
 

@@ -7,7 +7,7 @@ using namespace mol_sim;
 SimpleContainer::SimpleContainer(R3 domain_size_arg, double cutoff_radius_arg)
     : domain_size(domain_size_arg), cutoff_radius(cutoff_radius_arg) {}
 
-void SimpleContainer::addParticle(Particle&& value) { push_back(value); }
+void SimpleContainer::addParticle(Particle&& value) { push_back(std::move(value)); }
 void SimpleContainer::addParticle(const Particle& value) { push_back(value); }
 
 void SimpleContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg) {

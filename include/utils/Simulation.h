@@ -107,6 +107,7 @@ class Simulation {
      * @brief Applies boundary conditions by creating ghost particles for reflecting boundaries.
      */
     void applyReflectingBoundaries() {
+        SPDLOG_DEBUG("START: apply reflecting boundaries");
         std::vector<Particle> ghosts;
         auto it = particles.boundaryBegin();
         auto end = particles.boundaryEnd();
@@ -119,9 +120,11 @@ class Simulation {
                 }
             }
         }
+        SPDLOG_DEBUG("Adding {} ghost particles", ghosts.size());
         for (auto& ghost : ghosts) {
             particles.addParticle(std::move(ghost));
         }
+        SPDLOG_DEBUG("END:apply reflecting boundaries");
     }
 
     /**
@@ -129,11 +132,14 @@ class Simulation {
      */
     void removeParticles() {
         // Collect indices of particles to remove using halo iterator
+        SPDLOG_DEBUG("Container has currently {} particles before erase", particles.size());
         std::vector<size_t> to_remove;
         for (auto it = particles.haloBegin(); it != particles.haloEnd(); ++it) {
             size_t idx = &(*it) - &particles[0];
             to_remove.push_back(idx);
         }
+
+        SPDLOG_DEBUG("Added {} (ghost) particles to remove", to_remove.size());
 
         // Sort in descending order to remove from end first (avoids index shifting issues)
         std::sort(to_remove.begin(), to_remove.end(), std::greater<size_t>());  // NOLINT
@@ -142,6 +148,7 @@ class Simulation {
         for (size_t idx : to_remove) {
             particles.eraseParticle(particles.begin() + static_cast<std::ptrdiff_t>(idx));
         }
+        SPDLOG_DEBUG("Container has currently {} particles after erase", particles.size());
     }
 
     /**

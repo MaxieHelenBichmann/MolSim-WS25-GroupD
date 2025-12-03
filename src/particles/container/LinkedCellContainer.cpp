@@ -317,11 +317,12 @@ void LinkedCellContainer::clear() {
 void LinkedCellContainer::reserve(size_t n) { data.reserve(n); }
 
 void LinkedCellContainer::addParticle(Particle&& value) {
-    if (!fitsContainer(value.getX())) {
+    R3 pos = value.getX();
+    if (!fitsContainer(pos)) {
         return;
     }
-    data.push_back(value);
-    cells[findCellIndex(value.getX())].addParticle(data.size() - 1);
+    data.push_back(std::move(value));
+    cells[findCellIndex(pos)].addParticle(data.size() - 1);
 }
 void LinkedCellContainer::addParticle(const Particle& value) {
     if (!fitsContainer(value.getX())) {
