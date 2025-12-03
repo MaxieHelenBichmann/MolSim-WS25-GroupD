@@ -5,8 +5,11 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <execution>
 #include <functional>
+#include <limits>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 #include <vector>
 
@@ -14,6 +17,9 @@
 #include "io/OutputWriter.h"
 #include "particles/Particle.h"
 #include "particles/ParticleContainer.h"
+#include "particles/boundaries/Boundary.h"
+#include "particles/container/LinkedCellContainer.h"
+#include "particles/container/SimpleContainer.h"
 #include "particles/container/domain/Domain.h"
 #include "physics/ForceSource.h"
 #include "utils/Settings.h"
@@ -139,7 +145,7 @@ class Simulation {
             p.getF() = Vector<double, 3>();
         }
 
-        size_t idx = 0;
+        size_t idx = 1;
         for (auto it = particles.begin(); it != particles.end(); ++it, idx++) {
             Particle& p1 = *it;
             // TODO Optimization to only call this for relevant particles
