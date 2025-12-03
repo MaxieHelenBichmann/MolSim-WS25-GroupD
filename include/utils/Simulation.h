@@ -136,20 +136,28 @@ class Simulation {
     }
 
     /**
+     * @brief Applies the necessary boundary conditions to the particles.
+     */
+    void applyBoundaries() {
+        for (auto it = particles.begin(); it != particles.end();) {
+            (*it).getOldF() = (*it).getF();
+            (*it).getF() = Vector<double, 3>();
+            // TODO Optimization to only call this for relevant particles
+            domain.applyBoundary(*it, force_source);
+            // TODO: bit of an ugly workaround for now.
+            R3 new_position = (*it).getX();
+            (*it).getX() = (*it).getOldX();
+            it = particles.updateParticlePosition(it, new_position);
+        }
+    }
+
+    /**
      * @brief Calculates the forces of every particle for the next time step.
-     * Including Boundary conditions
      */
     void calculateF() {
-        for (auto& p : particles) {
-            p.getOldF() = p.getF();
-            p.getF() = Vector<double, 3>();
-        }
-
-        size_t idx = 1;
+        size_t idx = 0;
         for (auto it = particles.begin(); it != particles.end(); ++it, idx++) {
             Particle& p1 = *it;
-            // TODO Optimization to only call this for relevant particles
-            domain.applyBoundary(p1, force_source);
             for (auto it_prox = particles.proximityBegin(p1.getX(), idx); it_prox != particles.proximityEnd(p1.getX());
                  ++it_prox) {
                 Particle& p2 = *it_prox;
@@ -165,10 +173,9 @@ class Simulation {
      * @brief Calculates the positions of every particle for the next time step.
      */
     void calculateX() {
-        for (auto it = particles.begin(); it != particles.end();) {
-            const auto new_position =
-                (*it).getX() + (delta_t * (*it).getV()) + ((0.5 * delta_t * delta_t / (*it).getM()) * (*it).getF());
-            it = particles.updateParticlePosition(it, new_position);
+        for (auto& p : particles) {
+            p.getOldX() = p.getX();
+            p.getX() = p.getX() + (delta_t * p.getV()) + ((0.5 * delta_t * delta_t / p.getM()) * p.getF());
         }
     }
 
@@ -197,8 +204,11 @@ class Simulation {
             // 1. Calculate new positions
             calculateX();
 
-            // 2. Remove OOB particles
+            // 2. Apply boundaries
+            applyBoundaries();
+            // 3. Remove OOB particles
             removeParticles();
+            
 
             // 4. Calculate forces (including ghost interactions)
             SPDLOG_DEBUG("Iteration {}: Calculating forces for {} particles", iteration + 1, particles.size());

@@ -65,7 +65,7 @@ jobs:
       run: cmake --build "$BUILD_DIR" --config "${BUILD_TYPE}"
 
     - name: Run MolSim with ASan
-      run: ./"$BUILD_DIR"/project/MolSim ./input/particles.yaml -d 0.02 -t 1 # don't run for too long or create too many files
+      run: ./"$BUILD_DIR"/project/MolSim ./input/particles.yaml # don't run for too long or create too many files
       env:
         ASAN_OPTIONS: halt_on_error=1
 

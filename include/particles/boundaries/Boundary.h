@@ -29,7 +29,7 @@ enum class BoundaryLocation : std::uint8_t { UPPER, LOWER, FRONT, BACK, LEFT, RI
  * OUTFLOW: Outflow boundary condition: delete particles in halo cells
  * REFLECTING: Reflecting boundary condition: add ghost particles if particle gets too close to boundary
  */
-enum class BoundaryType : std::uint8_t { OUTFLOW, REFLECTING };
+enum class BoundaryType : std::uint8_t { OUTFLOW, REFLECTING, VELOCITYREFLECT };
 
 class Boundary {
    protected:
