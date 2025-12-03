@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "particles/boundaries/Boundary.h"
+#include "physics/ForceSource.h"
 #include "utils/Vector.h"
 
 namespace mol_sim {
@@ -70,7 +71,7 @@ class Domain {
      * @param p The particle to apply boundaries to / compute ghost particles for.
      * @return Vector of ghost particles.
      */
-    [[nodiscard]] std::vector<Particle> applyBoundary(Particle& p) const;
+    void applyBoundary(Particle& p, const ForceSource& force) const;
 
     Domain& operator=(const Domain& other) = delete;
     Domain& operator=(Domain&& other) noexcept;

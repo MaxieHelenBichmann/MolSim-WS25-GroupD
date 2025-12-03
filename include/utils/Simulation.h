@@ -49,9 +49,9 @@ class Simulation {
     /**
      * @brief Force source for calculating particle interactions.
      */
-    std::unique_ptr<ForceSource> force_source;
+    const ForceSource& force_source;
 
-    std::unique_ptr<OutputWriter> writer;
+    const OutputWriter& writer;
     /**
      * @brief Time step of simulation.
      */
@@ -90,12 +90,12 @@ class Simulation {
      * @param force_source Force source to be used in the simulation.
      * @param settings Simulation parameters.
      */
-    Simulation(containerType& particles, std::unique_ptr<ForceSource> force_source, SettingsParam& settings,
-               std::unique_ptr<OutputWriter> writer)
+    Simulation(containerType& particles, const ForceSource& force_source, SettingsParam& settings,
+               const OutputWriter& writer)
         : domain(std::move(settings.domain)),
           particles(particles),
-          force_source(std::move(force_source)),
-          writer(std::move(writer)),
+          force_source(force_source),
+          writer(writer),
           delta_t(settings.delta_t),
           start_time(settings.start_time),
           end_time(settings.end_time),
@@ -163,10 +163,11 @@ class Simulation {
         size_t idx = 0;
         for (auto it = particles.begin(); it != particles.end(); ++it, idx++) {
             Particle& p1 = *it;
+            domain.applyBoundary(p1, force_source);
             for (auto it_prox = particles.proximityBegin(p1.getX(), idx); it_prox != particles.proximityEnd(p1.getX());
                  ++it_prox) {
                 Particle& p2 = *it_prox;
-                Vector<double, 3> force = force_source->applyForce(p1, p2);
+                Vector<double, 3> force = force_source.applyForce(p1, p2);
                 // Apply force directly (Newton's 3rd law: equal and opposite)
                 p1.getF() = p1.getF() + force;
                 p2.getF() = p2.getF() - force;
@@ -208,14 +209,8 @@ class Simulation {
             // 2. Remove OOB particles
             removeParticles();
 
-            // 3. Apply reflecting boundaries (create ghost particles)
-            applyReflectingBoundaries();
-
             // 4. Calculate forces (including ghost interactions)
             calculateF();
-
-            // 5. Remove Halo particles
-            removeParticles();
 
             // 6. Calculate new velocities
             calculateV();
@@ -225,7 +220,7 @@ class Simulation {
             if (iteration % frequency == 0) {
                 try {
                     std::string out_name = base_name;
-                    writer->plotParticles(particles, out_name, iteration);
+                    writer.plotParticles(particles, out_name, iteration);
                 } catch (std::runtime_error& e) {
                     SPDLOG_ERROR("Something went wrong with plotting the Particles: ", e.what());
                     throw SimulationException("Error while plotting Particles.");

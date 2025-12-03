@@ -74,7 +74,7 @@ int main(int argc, char* argsv[]) {
                     settings.delta_t, settings.end_time);
 
         try {
-            Simulation<SimpleContainer> simulation(particle_container, std::move(force), settings, std::move(writer));
+            Simulation<SimpleContainer> simulation(particle_container, *force, settings, *writer);
             simulation.run();
         } catch (SimulationException& e) {
             exit(-1);
@@ -90,8 +90,7 @@ int main(int argc, char* argsv[]) {
         SPDLOG_INFO("Simulation configured with {} particles, delta_t={} end_time={}", particle_container.size(),
                     settings.delta_t, settings.end_time);
         try {
-            Simulation<LinkedCellContainer> simulation(particle_container, std::move(force), settings,
-                                                       std::move(writer));
+            Simulation<LinkedCellContainer> simulation(particle_container, *force, settings, *writer);
             simulation.run();
         } catch (SimulationException& e) {
             exit(-1);

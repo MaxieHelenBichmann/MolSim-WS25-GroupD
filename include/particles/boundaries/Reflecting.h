@@ -5,6 +5,7 @@
 #include <optional>
 
 #include "particles/boundaries/Boundary.h"
+#include "physics/ForceSource.h"
 #include "utils/Vector.h"
 
 namespace mol_sim {
@@ -42,7 +43,7 @@ class Reflecting : public Boundary {
                std::optional<double> sigma = std::nullopt, std::optional<double> epsilon = std::nullopt);
     ~Reflecting() override = default;
 
-    [[nodiscard]] std::optional<Particle> applyBoundary(Particle& p) override;
+    void applyBoundary(Particle& p, const ForceSource& force) override;
     [[nodiscard]] std::optional<double> getBoundarySigma() const { return boundary_sigma; }
     [[nodiscard]] std::optional<double> getBoundaryEpsilon() const { return boundary_epsilon; }
     [[nodiscard]] R3 getDomainSize() const { return domain_size; }

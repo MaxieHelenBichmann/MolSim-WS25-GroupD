@@ -4,6 +4,8 @@
 
 #include <cmath>
 
+#include "physics/ForceSource.h"
+
 namespace mol_sim {
 
 Reflecting::Reflecting(BoundaryLocation location, R3 domain_size, bool ghost_on_boundary, std::optional<double> sigma,
@@ -35,7 +37,7 @@ double Reflecting::getBoundaryPosition() const {
     return (sign < 0) ? 0.0 : domain_size[axis];
 }
 
-std::optional<Particle> Reflecting::applyBoundary(Particle& p) {
+void Reflecting::applyBoundary(Particle& p, const ForceSource& force) {
     double sigma = boundary_sigma.value_or(p.getSigma());
     double epsilon = boundary_epsilon.value_or(p.getEpsilon());
 
@@ -52,10 +54,8 @@ std::optional<Particle> Reflecting::applyBoundary(Particle& p) {
         ghost_pos[axis] = boundary_position + (ghost_on_boundary ? 0 : sign * distance_to_boundary);
 
         SPDLOG_DEBUG("New ghost particle on ( {} , {} , {} )", ghost_pos[0], ghost_pos[1], ghost_pos[2]);
-        return Particle(ghost_pos, {0.0, 0.0, 0.0}, 0.0, epsilon, sigma, -1);
+        p.getF() = p.getF() + force.applyForce(p, Particle(ghost_pos, {0.0, 0.0, 0.0}, p.getM(), epsilon, sigma, -1));
     }
-
-    return std::nullopt;
 }
 
 }  // namespace mol_sim

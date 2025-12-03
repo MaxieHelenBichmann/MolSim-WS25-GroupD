@@ -2,6 +2,7 @@
 #define OUTFLOW_H
 
 #include "particles/boundaries/Boundary.h"
+#include "physics/ForceSource.h"
 
 namespace mol_sim {
 
@@ -10,9 +11,9 @@ class Outflow : public Boundary {
     explicit Outflow(BoundaryLocation location) : Boundary(location, BoundaryType::OUTFLOW) {}
     ~Outflow() override = default;
 
-    [[nodiscard]] std::optional<Particle> applyBoundary(Particle& p) override {
+    void applyBoundary(Particle& p, const ForceSource& force) override {
         (void)p;
-        return std::nullopt;
+        (void)force;
     }
 };
 

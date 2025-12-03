@@ -31,7 +31,8 @@ class ForceMock : public ForceSource {
  */
 class OutputWriterMock : public OutputWriter {
    public:
-    MOCK_METHOD(void, plotParticles, (ContainerRef particles, const std::string& filename, int iteration), (override));
+    MOCK_METHOD(void, plotParticles, (ContainerRef particles, const std::string& filename, int iteration),
+                (const, override));
 };
 
 /**
@@ -65,7 +66,7 @@ TEST_F(SimulationTest, calculateX_dt) {
     particles.addParticle(x, v, 1.0, 5., 1.);
     auto force_source = std::make_unique<GravitationalForce>();
     auto writer = std::make_unique<OutputWriterMock>();
-    Simulation<SimpleContainer> simulation(particles, std::move(force_source), settings, std::move(writer));
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
     simulation.calculateX();
     R3 expected = {5.0, -10.0, 0.0};
     EXPECT_EQ(particles[0].getX(), expected);
@@ -86,7 +87,7 @@ TEST_F(SimulationTest, calculateX_force) {
     particles.addParticle(p);
     auto force_source = std::make_unique<GravitationalForce>();
     auto writer = std::make_unique<OutputWriterMock>();
-    Simulation<SimpleContainer> simulation(particles, std::move(force_source), settings, std::move(writer));
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
     simulation.calculateX();
     R3 expected = {10.0, 5.0, 0.0};
     EXPECT_EQ(particles[0].getX(), expected);
@@ -104,7 +105,7 @@ TEST_F(SimulationTest, calculateV_no_force) {
     particles.addParticle(x, v, 1.0, 5., 1.);
     auto force_source = std::make_unique<GravitationalForce>();
     auto writer = std::make_unique<OutputWriterMock>();
-    Simulation<SimpleContainer> simulation(particles, std::move(force_source), settings, std::move(writer));
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
     simulation.calculateV();
     EXPECT_EQ(particles[0].getV(), v);
 }
@@ -124,7 +125,7 @@ TEST_F(SimulationTest, calculateV_simple) {
     particles.addParticle(p);
     auto force_source = std::make_unique<GravitationalForce>();
     auto writer = std::make_unique<OutputWriterMock>();
-    Simulation<SimpleContainer> simulation(particles, std::move(force_source), settings, std::move(writer));
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
     simulation.calculateV();
     R3 expected = {10.5, -19.5, 30.5};
     EXPECT_EQ(particles[0].getV(), expected);
@@ -148,7 +149,7 @@ TEST_F(SimulationTest, calculateV_complex) {
     particles.addParticle(p);
     auto force_source = std::make_unique<GravitationalForce>();
     auto writer = std::make_unique<OutputWriterMock>();
-    Simulation<SimpleContainer> simulation(particles, std::move(force_source), settings, std::move(writer));
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
     simulation.calculateV();
     R3 expected = {11.0625, -19.375, 39.9375};
     EXPECT_EQ(particles[0].getV(), expected);
@@ -170,7 +171,7 @@ TEST_F(SimulationTest, calculateF_simple2_pairwise) {
     auto mock = std::make_unique<ForceMock>();
     EXPECT_CALL(*mock, applyForce(p1, p2)).Times(1).WillOnce(testing::Return(f12));
     auto writer = std::make_unique<OutputWriterMock>();
-    Simulation<SimpleContainer> simulation(particles, std::move(mock), settings, std::move(writer));
+    Simulation<SimpleContainer> simulation(particles, *mock, settings, *writer);
     simulation.calculateF();
     EXPECT_EQ(particles[0].getF(), f12);
     EXPECT_EQ(particles[1].getF(), -1.0 * f12);
@@ -178,8 +179,7 @@ TEST_F(SimulationTest, calculateF_simple2_pairwise) {
 
 /**
  * @brief Tests that the forces of 2 particles are calculated correctly
- especially in regards to Newton's third law. The inter-particle force
- is 3 dimensional.
+ especially in regards to Newton's third law. The inter-*mock is 3 dimensional.
  *
  */
 TEST_F(SimulationTest, calculateF_complex2_pairwise) {
@@ -192,7 +192,7 @@ TEST_F(SimulationTest, calculateF_complex2_pairwise) {
     auto mock = std::make_unique<ForceMock>();
     EXPECT_CALL(*mock, applyForce(p1, p2)).Times(1).WillOnce(testing::Return(f12));
     auto writer = std::make_unique<OutputWriterMock>();
-    Simulation<SimpleContainer> simulation(particles, std::move(mock), settings, std::move(writer));
+    Simulation<SimpleContainer> simulation(particles, *mock, settings, *writer);
     simulation.calculateF();
     EXPECT_EQ(particles[0].getF(), f12);
     EXPECT_EQ(particles[1].getF(), -1.0 * f12);
@@ -222,7 +222,7 @@ TEST_F(SimulationTest, calculateF_simple3_pairwise) {
     EXPECT_CALL(*mock, applyForce(p12, p3)).Times(1).WillOnce(testing::Return(f13));
     EXPECT_CALL(*mock, applyForce(p22, p32)).Times(1).WillOnce(testing::Return(f23));
     auto writer = std::make_unique<OutputWriterMock>();
-    Simulation<SimpleContainer> simulation(particles, std::move(mock), settings, std::move(writer));
+    Simulation<SimpleContainer> simulation(particles, *mock, settings, *writer);
     simulation.calculateF();
     R3 expected1 = {30.0, 0.0, 0.0};
     R3 expected2 = {-20.0, 0.0, 0.0};
@@ -256,7 +256,7 @@ TEST_F(SimulationTest, calculateF_complex3_pairwise) {
     EXPECT_CALL(*mock, applyForce(p12, p3)).Times(1).WillOnce(testing::Return(f13));
     EXPECT_CALL(*mock, applyForce(p22, p32)).Times(1).WillOnce(testing::Return(f23));
     auto writer = std::make_unique<OutputWriterMock>();
-    Simulation<SimpleContainer> simulation(particles, std::move(mock), settings, std::move(writer));
+    Simulation<SimpleContainer> simulation(particles, *mock, settings, *writer);
 
     simulation.calculateF();
     R3 expected1 = {30.0, 15.0, 13.0};
@@ -281,7 +281,7 @@ TEST_F(SimulationTest, run_gravitational_timestep) {
     particles.addParticle(p2);
     auto force_source = std::make_unique<GravitationalForce>();
     auto writer = std::make_unique<OutputWriterMock>();
-    Simulation<SimpleContainer> simulation(particles, std::move(force_source), settings, std::move(writer));
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
     simulation.run();
     // After 1 timestep: positions update first (with old_f=0), then forces calculated, then velocities
     Particle p1_expect({2.0, 1.0, 1.0}, {0.0078125, .0, .0}, {0.03125, .0, .0}, 1.0, 5., 1.);
@@ -305,7 +305,7 @@ TEST_F(SimulationTest, run_lennardjones_timestep) {
     particles.addParticle(p2);
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<OutputWriterMock>();
-    Simulation<SimpleContainer> simulation(particles, std::move(force_source), settings, std::move(writer));
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
     simulation.run();
     // At distance=1 with sigma=1, epsilon=5: F = -24*5*(1-2)*direction = 120*direction
     // p1-p2 = (1,0,0), so F on p1 = (120,0,0), F on p2 = (-120,0,0)

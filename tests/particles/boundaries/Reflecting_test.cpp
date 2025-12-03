@@ -77,8 +77,9 @@ TEST_F(ReflectingTest, X_reflecting_linked) {
     LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
 
-    Simulation<LinkedCellContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
-                                               std::make_unique<XYZWriter>());
+    auto force_source = std::make_unique<LennardJonesForce>();
+    auto writer = std::make_unique<XYZWriter>();
+    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer);
     simulation.run();
     R3 expected = {6.2, 5.0, 5.0};
     EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
@@ -93,8 +94,9 @@ TEST_F(ReflectingTest, X_reflecting_simple) {
     SimpleContainer particles;
     particles.addParticle(p);
 
-    Simulation<SimpleContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
-                                           std::make_unique<XYZWriter>());
+    auto force_source = std::make_unique<LennardJonesForce>();
+    auto writer = std::make_unique<XYZWriter>();
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
     simulation.run();
     R3 expected = {3.8, 5.0, 5.0};
     EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
@@ -109,8 +111,9 @@ TEST_F(ReflectingTest, Y_reflecting_linked) {
     LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
 
-    Simulation<LinkedCellContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
-                                               std::make_unique<XYZWriter>());
+    auto force_source = std::make_unique<LennardJonesForce>();
+    auto writer = std::make_unique<XYZWriter>();
+    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer);
     simulation.run();
     R3 expected = {5.0, 6.2, 5.0};
     EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
@@ -125,8 +128,9 @@ TEST_F(ReflectingTest, Y_reflecting_simple) {
     SimpleContainer particles;
     particles.addParticle(p);
 
-    Simulation<SimpleContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
-                                           std::make_unique<XYZWriter>());
+    auto force_source = std::make_unique<LennardJonesForce>();
+    auto writer = std::make_unique<XYZWriter>();
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
     simulation.run();
     R3 expected = {5.0, 3.8, 5.0};
     EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
@@ -141,8 +145,9 @@ TEST_F(ReflectingTest, Z_reflecting_linked) {
     LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
 
-    Simulation<LinkedCellContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
-                                               std::make_unique<XYZWriter>());
+    auto force_source = std::make_unique<LennardJonesForce>();
+    auto writer = std::make_unique<XYZWriter>();
+    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer);
     simulation.run();
     R3 expected = {5.0, 5.0, 6.2};
     EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
@@ -157,8 +162,9 @@ TEST_F(ReflectingTest, Z_reflecting_simple) {
     SimpleContainer particles;
     particles.addParticle(p);
 
-    Simulation<SimpleContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
-                                           std::make_unique<XYZWriter>());
+    auto force_source = std::make_unique<LennardJonesForce>();
+    auto writer = std::make_unique<XYZWriter>();
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
     simulation.run();
     R3 expected = {5.0, 5.0, 3.8};
     EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
@@ -173,8 +179,9 @@ TEST_F(ReflectingTest, Reflecting_two_sided_corner_linked) {
     LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
 
-    Simulation<LinkedCellContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
-                                               std::make_unique<XYZWriter>());
+    auto force_source = std::make_unique<LennardJonesForce>();
+    auto writer = std::make_unique<XYZWriter>();
+    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer);
     simulation.run();
     R3 expected = {3.8, 5.0, 3.8};
     EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
@@ -189,8 +196,9 @@ TEST_F(ReflectingTest, Reflecting_three_sided_corner_linked) {
     LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
 
-    Simulation<LinkedCellContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
-                                               std::make_unique<XYZWriter>());
+    auto force_source = std::make_unique<LennardJonesForce>();
+    auto writer = std::make_unique<XYZWriter>();
+    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer);
     simulation.run();
     R3 expected = {3.8, 3.8, 3.8};
     EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
@@ -206,8 +214,9 @@ TEST_F(ReflectingTest, Reflecting_Angular_trajectory_linked) {
     LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
 
-    Simulation<LinkedCellContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
-                                               std::make_unique<XYZWriter>());
+    auto force_source = std::make_unique<LennardJonesForce>();
+    auto writer = std::make_unique<XYZWriter>();
+    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer);
     simulation.run();
     R3 expected = {3.8, 5.0, 5.0};
     EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
@@ -236,8 +245,9 @@ TEST_F(ReflectingTest, Reflecting_particle_sigma_epsilon_linked) {
     LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
 
-    Simulation<LinkedCellContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
-                                               std::make_unique<XYZWriter>());
+    auto force_source = std::make_unique<LennardJonesForce>();
+    auto writer = std::make_unique<XYZWriter>();
+    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer);
     simulation.run();
     R3 expected = {5.0, 5.0, 3.8};
     EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
@@ -267,8 +277,9 @@ TEST_F(ReflectingTest, Reflecting_with_ghost_on_boundary_linked) {
     LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
 
-    Simulation<LinkedCellContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
-                                               std::make_unique<XYZWriter>());
+    auto force_source = std::make_unique<LennardJonesForce>();
+    auto writer = std::make_unique<XYZWriter>();
+    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer);
     simulation.run();
     R3 expected = {5.0, 5.0, 4.3};
     EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
@@ -283,8 +294,9 @@ TEST_F(ReflectingTest, Reflecting_two_sided_corner_simple) {
     SimpleContainer particles;
     particles.addParticle(p);
 
-    Simulation<SimpleContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
-                                           std::make_unique<XYZWriter>());
+    auto force_source = std::make_unique<LennardJonesForce>();
+    auto writer = std::make_unique<XYZWriter>();
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
     simulation.run();
     R3 expected = {3.8, 5.0, 3.8};
     EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
@@ -299,8 +311,9 @@ TEST_F(ReflectingTest, Reflecting_three_sided_corner_simple) {
     SimpleContainer particles;
     particles.addParticle(p);
 
-    Simulation<SimpleContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
-                                           std::make_unique<XYZWriter>());
+    auto force_source = std::make_unique<LennardJonesForce>();
+    auto writer = std::make_unique<XYZWriter>();
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
     simulation.run();
     R3 expected = {3.8, 3.8, 3.8};
     EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
@@ -316,8 +329,9 @@ TEST_F(ReflectingTest, Reflecting_Angular_trajectory_simple) {
     SimpleContainer particles;
     particles.addParticle(p);
 
-    Simulation<SimpleContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
-                                           std::make_unique<XYZWriter>());
+    auto force_source = std::make_unique<LennardJonesForce>();
+    auto writer = std::make_unique<XYZWriter>();
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
     simulation.run();
     R3 expected = {3.8, 5.0, 5.0};
     EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
@@ -345,8 +359,9 @@ TEST_F(ReflectingTest, Reflecting_particle_sigma_epsilon_simple) {
     SimpleContainer particles;
     particles.addParticle(p);
 
-    Simulation<SimpleContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
-                                           std::make_unique<XYZWriter>());
+    auto force_source = std::make_unique<LennardJonesForce>();
+    auto writer = std::make_unique<XYZWriter>();
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
     simulation.run();
     R3 expected = {5.0, 5.0, 3.8};
     EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
@@ -376,8 +391,9 @@ TEST_F(ReflectingTest, Reflecting_with_ghost_on_boundary_simple) {
     SimpleContainer particles;
     particles.addParticle(p);
 
-    Simulation<SimpleContainer> simulation(particles, std::make_unique<LennardJonesForce>(), settings,
-                                           std::make_unique<XYZWriter>());
+    auto force_source = std::make_unique<LennardJonesForce>();
+    auto writer = std::make_unique<XYZWriter>();
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
     simulation.run();
     R3 expected = {5.0, 5.0, 4.3};
     EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);

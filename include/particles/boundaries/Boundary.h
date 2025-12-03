@@ -6,6 +6,7 @@
 #include <string>
 
 #include "particles/Particle.h"
+#include "physics/ForceSource.h"
 
 namespace mol_sim {
 
@@ -44,7 +45,7 @@ class Boundary {
      * @param p The particle to check.
      * @return The ghost particle if needed, nullopt otherwise.
      */
-    [[nodiscard]] virtual std::optional<Particle> applyBoundary(Particle& p) = 0;
+    virtual void applyBoundary(Particle& p, const ForceSource& force) = 0;
     [[nodiscard]] BoundaryType& getType() { return type; }
     [[nodiscard]] BoundaryLocation& getLocation() { return location; }
     [[nodiscard]] const BoundaryType& getType() const { return type; }

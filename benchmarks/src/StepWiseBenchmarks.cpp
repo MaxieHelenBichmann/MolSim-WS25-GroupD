@@ -36,7 +36,7 @@ void bmSimulationSingleLC(benchmark::State& state) {
     auto writer = std::make_unique<XYZWriter>();
     generator.generateParticles(particles);
 
-    Simulation<LinkedCellContainer> simulation(part_container, std::move(force_source), settings, std::move(writer));
+    Simulation<LinkedCellContainer> simulation(part_container, *force_source, settings, *writer);
     for ([[maybe_unused]] auto _ : state) {
         benchmark::ClobberMemory();
         simulation.run();
@@ -63,7 +63,7 @@ void bmSimulationSingleDirSum(benchmark::State& state) {
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
     generator.generateParticles(particles);
-    Simulation<SimpleContainer> simulation(part_container, std::move(force_source), settings, std::move(writer));
+    Simulation<SimpleContainer> simulation(part_container, *force_source, settings, *writer);
     for ([[maybe_unused]] auto _ : state) {
         benchmark::ClobberMemory();
         simulation.run();

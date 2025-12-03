@@ -50,16 +50,12 @@ const Boundary* Domain::getBoundary(BoundaryLocation location) const {
     return boundaries[locationToIndex(location)].get();
 }
 
-std::vector<Particle> Domain::applyBoundary(Particle& p) const {
-    std::vector<Particle> ghosts;
+void Domain::applyBoundary(Particle& p, const ForceSource& force) const {
     for (const auto& boundary : boundaries) {
         if (boundary) {
-            if (auto ghost = boundary->applyBoundary(p)) {
-                ghosts.push_back(std::move(ghost.value()));
-            }
+            boundary->applyBoundary(p, force);
         }
     }
-    return ghosts;
 }
 
 Domain& Domain::operator=(Domain&& other) noexcept {
