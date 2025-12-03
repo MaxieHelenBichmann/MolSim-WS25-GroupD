@@ -341,10 +341,9 @@ TEST_F(YAMLReaderTest, ReadDomainAndBoundaries) {
     EXPECT_R3_EQ(settings.domain.getDimension(), expected_domain);
 
     // Verify LEFT boundary (REFLECTING with sigma=1.2, epsilon=5.0)
-    const Boundary* left = settings.domain.getBoundary(BoundaryLocation::LEFT);
-    ASSERT_NE(left, nullptr);
-    EXPECT_EQ(left->getType(), BoundaryType::REFLECTING);
-    const auto* left_reflecting = dynamic_cast<const Reflecting*>(left);
+    const Boundary& left = settings.domain.getBoundary(BoundaryLocation::LEFT);
+    EXPECT_EQ(left.getType(), BoundaryType::REFLECTING);
+    const auto* left_reflecting = dynamic_cast<const Reflecting*>(&left);
     ASSERT_NE(left_reflecting, nullptr);
     ASSERT_TRUE(left_reflecting->getBoundarySigma().has_value());
     EXPECT_DOUBLE_EQ(left_reflecting->getBoundarySigma().value(), 1.2);
@@ -352,25 +351,21 @@ TEST_F(YAMLReaderTest, ReadDomainAndBoundaries) {
     EXPECT_DOUBLE_EQ(left_reflecting->getBoundaryEpsilon().value(), 5.0);
 
     // Verify RIGHT boundary (REFLECTING without custom sigma/epsilon)
-    const Boundary* right = settings.domain.getBoundary(BoundaryLocation::RIGHT);
-    ASSERT_NE(right, nullptr);
-    EXPECT_EQ(right->getType(), BoundaryType::REFLECTING);
+    const Boundary& right = settings.domain.getBoundary(BoundaryLocation::RIGHT);
+    EXPECT_EQ(right.getType(), BoundaryType::REFLECTING);
 
     // Verify FRONT boundary (OUTFLOW)
-    const Boundary* front = settings.domain.getBoundary(BoundaryLocation::FRONT);
-    ASSERT_NE(front, nullptr);
-    EXPECT_EQ(front->getType(), BoundaryType::OUTFLOW);
+    const Boundary& front = settings.domain.getBoundary(BoundaryLocation::FRONT);
+    EXPECT_EQ(front.getType(), BoundaryType::OUTFLOW);
 
     // Verify BACK boundary (OUTFLOW)
-    const Boundary* back = settings.domain.getBoundary(BoundaryLocation::BACK);
-    ASSERT_NE(back, nullptr);
-    EXPECT_EQ(back->getType(), BoundaryType::OUTFLOW);
+    const Boundary& back = settings.domain.getBoundary(BoundaryLocation::BACK);
+    EXPECT_EQ(back.getType(), BoundaryType::OUTFLOW);
 
     // Verify UPPER boundary (REFLECTING with sigma=2.0, epsilon=10.0)
-    const Boundary* upper = settings.domain.getBoundary(BoundaryLocation::UPPER);
-    ASSERT_NE(upper, nullptr);
-    EXPECT_EQ(upper->getType(), BoundaryType::REFLECTING);
-    const auto* upper_reflecting = dynamic_cast<const Reflecting*>(upper);
+    const Boundary& upper = settings.domain.getBoundary(BoundaryLocation::UPPER);
+    EXPECT_EQ(upper.getType(), BoundaryType::REFLECTING);
+    const auto* upper_reflecting = dynamic_cast<const Reflecting*>(&upper);
     ASSERT_NE(upper_reflecting, nullptr);
     ASSERT_TRUE(upper_reflecting->getBoundarySigma().has_value());
     EXPECT_DOUBLE_EQ(upper_reflecting->getBoundarySigma().value(), 2.0);
@@ -378,9 +373,8 @@ TEST_F(YAMLReaderTest, ReadDomainAndBoundaries) {
     EXPECT_DOUBLE_EQ(upper_reflecting->getBoundaryEpsilon().value(), 10.0);
 
     // Verify LOWER boundary (OUTFLOW)
-    const Boundary* lower = settings.domain.getBoundary(BoundaryLocation::LOWER);
-    ASSERT_NE(lower, nullptr);
-    EXPECT_EQ(lower->getType(), BoundaryType::OUTFLOW);
+    const Boundary& lower = settings.domain.getBoundary(BoundaryLocation::LOWER);
+    EXPECT_EQ(lower.getType(), BoundaryType::OUTFLOW);
 
     EXPECT_EQ(output.find("Error"), std::string::npos);
 }

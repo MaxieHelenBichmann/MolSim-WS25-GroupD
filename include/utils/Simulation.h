@@ -50,7 +50,9 @@ class Simulation {
      * @brief Force source for calculating particle interactions.
      */
     const ForceSource& force_source;
-
+    /**
+     * @brief Writer used for output.
+     */
     const OutputWriter& writer;
     /**
      * @brief Time step of simulation.
@@ -104,30 +106,6 @@ class Simulation {
           cutoff_radius(settings.cutoff) {}
 
     /**
-     * @brief Applies boundary conditions by creating ghost particles for reflecting boundaries.
-     */
-    void applyReflectingBoundaries() {
-        SPDLOG_DEBUG("START: apply reflecting boundaries");
-        std::vector<Particle> ghosts;
-        auto it = particles.boundaryBegin();
-        auto end = particles.boundaryEnd();
-        // TODO: Optimze using boundary iterator
-        for (; it != end; ++it) {
-            if (it->getType() != -1) {  // Don't create ghosts for ghost particles
-                auto new_ghosts = domain.applyBoundary(*it);
-                for (auto& ghost : new_ghosts) {
-                    ghosts.push_back(std::move(ghost));
-                }
-            }
-        }
-        SPDLOG_DEBUG("Adding {} ghost particles", ghosts.size());
-        for (auto& ghost : ghosts) {
-            particles.addParticle(std::move(ghost));
-        }
-        SPDLOG_DEBUG("END:apply reflecting boundaries");
-    }
-
-    /**
      * @brief Removes all particles in the Halo from the container.
      */
     void removeParticles() {
@@ -153,6 +131,7 @@ class Simulation {
 
     /**
      * @brief Calculates the forces of every particle for the next time step.
+     * Including Boundary conditions
      */
     void calculateF() {
         for (auto& p : particles) {
@@ -163,6 +142,7 @@ class Simulation {
         size_t idx = 0;
         for (auto it = particles.begin(); it != particles.end(); ++it, idx++) {
             Particle& p1 = *it;
+            // TODO Optimization to only call this for relevant particles
             domain.applyBoundary(p1, force_source);
             for (auto it_prox = particles.proximityBegin(p1.getX(), idx); it_prox != particles.proximityEnd(p1.getX());
                  ++it_prox) {

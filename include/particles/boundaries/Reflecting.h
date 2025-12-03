@@ -1,32 +1,16 @@
 #ifndef REFLECTING_H
 #define REFLECTING_H
 
-#include <cmath>
 #include <optional>
 
 #include "particles/boundaries/Boundary.h"
-#include "physics/ForceSource.h"
-#include "utils/Vector.h"
 
 namespace mol_sim {
 
 class Reflecting : public Boundary {
-    R3 domain_size;
     bool ghost_on_boundary = false;
     std::optional<double> boundary_epsilon;
     std::optional<double> boundary_sigma;
-
-    /**
-     * @brief Gets the sign/direction for the boundary.
-     * @return -1 for boundaries at min (LEFT, LOWER, FRONT), +1 for boundaries at max (RIGHT, UPPER, BACK).
-     */
-    [[nodiscard]] int getSign() const;
-
-    /**
-     * @brief Computes the boundary position along its axis from domain size.
-     * @return 0 for boundaries at min (LEFT, LOWER, FRONT), domain_size[axis] for boundaries at max.
-     */
-    [[nodiscard]] double getBoundaryPosition() const;
 
    public:
     /**
@@ -43,10 +27,9 @@ class Reflecting : public Boundary {
                std::optional<double> sigma = std::nullopt, std::optional<double> epsilon = std::nullopt);
     ~Reflecting() override = default;
 
-    void applyBoundary(Particle& p, const ForceSource& force) override;
+    void applyBoundary(Particle& p, const ForceSource& force) const override;
     [[nodiscard]] std::optional<double> getBoundarySigma() const { return boundary_sigma; }
     [[nodiscard]] std::optional<double> getBoundaryEpsilon() const { return boundary_epsilon; }
-    [[nodiscard]] R3 getDomainSize() const { return domain_size; }
 };
 
 }  // namespace mol_sim

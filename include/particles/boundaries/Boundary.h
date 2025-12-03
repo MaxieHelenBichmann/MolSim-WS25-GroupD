@@ -7,6 +7,7 @@
 
 #include "particles/Particle.h"
 #include "physics/ForceSource.h"
+#include "utils/Vector.h"
 
 namespace mol_sim {
 
@@ -34,38 +35,73 @@ class Boundary {
    protected:
     BoundaryLocation location;
     BoundaryType type;
+    R3 domain_size;
 
    public:
-    Boundary(BoundaryLocation location, BoundaryType type) : location(location), type(type) {}
+    Boundary(BoundaryLocation location, BoundaryType type, R3 domain_size)
+        : location(location), type(type), domain_size(domain_size) {}
     virtual ~Boundary() = default;
 
     /**
      * @brief Applies the boundary condition to a particle (e.g., velocity reflection).
      * Computes a ghost particle if this boundary requires one for the given particle.
      * @param p The particle to check.
-     * @return The ghost particle if needed, nullopt otherwise.
+     * @param force The force source to use for ghost particle interactions.
      */
-    virtual void applyBoundary(Particle& p, const ForceSource& force) = 0;
-    [[nodiscard]] BoundaryType& getType() { return type; }
-    [[nodiscard]] BoundaryLocation& getLocation() { return location; }
-    [[nodiscard]] const BoundaryType& getType() const { return type; }
-    [[nodiscard]] const BoundaryLocation& getLocation() const { return location; }
+    virtual void applyBoundary(Particle& p, const ForceSource& force) const = 0;
+
+    [[nodiscard]] BoundaryType getType() const { return type; }
+    [[nodiscard]] BoundaryLocation getLocation() const { return location; }
+    [[nodiscard]] R3 getDomainSize() const { return domain_size; }
 
    protected:
+    /**
+     * @brief Gets the axis index for the boundary.
+     * @return 0 for LEFT/RIGHT (x), 1 for FRONT/BACK (y), 2 for UPPER/LOWER (z).
+     */
     [[nodiscard]] size_t getAxis() const {
         switch (location) {
             case BoundaryLocation::LEFT:
             case BoundaryLocation::RIGHT:
                 return 0;
+            case BoundaryLocation::FRONT:
+            case BoundaryLocation::BACK:
+                return 1;
             case BoundaryLocation::UPPER:
             case BoundaryLocation::LOWER:
                 return 2;
+            default:
+                return 0;
+        }
+    }
+
+    /**
+     * @brief Gets the sign/direction for the boundary.
+     * @return -1 for boundaries at min (LEFT, LOWER, FRONT), +1 for boundaries at max (RIGHT, UPPER, BACK).
+     */
+    [[nodiscard]] int getSign() const {
+        switch (location) {
+            case BoundaryLocation::LEFT:
+            case BoundaryLocation::LOWER:
             case BoundaryLocation::FRONT:
+                return -1;
+            case BoundaryLocation::RIGHT:
+            case BoundaryLocation::UPPER:
             case BoundaryLocation::BACK:
                 return 1;
             default:
                 return 0;
         }
+    }
+
+    /**
+     * @brief Computes the boundary position along its axis from domain size.
+     * @return 0 for boundaries at min (LEFT, LOWER, FRONT), domain_size[axis] for boundaries at max.
+     */
+    [[nodiscard]] double getBoundaryPosition() const {
+        size_t axis = getAxis();
+        int sign = getSign();
+        return (sign < 0) ? 0.0 : domain_size[axis];
     }
 };
 

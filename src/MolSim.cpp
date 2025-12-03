@@ -27,6 +27,7 @@ int main(int argc, char* argsv[]) {
     SettingsParam settings;
     std::unique_ptr<FileReader> file_reader;
     std::string file_name;
+    // Phase 1 reading in settings
     try {
         file_name = cliParse(argc, argsv);
         std::filesystem::path path = file_name;
@@ -52,6 +53,7 @@ int main(int argc, char* argsv[]) {
 #endif
 
     std::unique_ptr<ForceSource> force;
+
     switch (settings.force) {
         case GRAVITATIONAL: {
             force = std::make_unique<GravitationalForce>();
@@ -62,6 +64,8 @@ int main(int argc, char* argsv[]) {
             break;
         }
     }
+
+    // Phase 2 reading in Particles + running Simulation
     if (settings.container_type == "SIMPLE") {
         SimpleContainer particle_container(settings.domain.getDimension(), settings.cutoff);
         try {

@@ -4,40 +4,16 @@
 
 #include <cmath>
 
-#include "physics/ForceSource.h"
-
 namespace mol_sim {
 
 Reflecting::Reflecting(BoundaryLocation location, R3 domain_size, bool ghost_on_boundary, std::optional<double> sigma,
                        std::optional<double> epsilon)
-    : Boundary(location, BoundaryType::REFLECTING),
-      domain_size(domain_size),
+    : Boundary(location, BoundaryType::REFLECTING, domain_size),
       ghost_on_boundary(ghost_on_boundary),
       boundary_epsilon(epsilon),
       boundary_sigma(sigma) {}
 
-int Reflecting::getSign() const {
-    switch (location) {
-        case BoundaryLocation::LEFT:
-        case BoundaryLocation::LOWER:
-        case BoundaryLocation::FRONT:
-            return -1;
-        case BoundaryLocation::RIGHT:
-        case BoundaryLocation::UPPER:
-        case BoundaryLocation::BACK:
-            return 1;
-        default:
-            return 0;
-    }
-}
-
-double Reflecting::getBoundaryPosition() const {
-    size_t axis = getAxis();
-    int sign = getSign();
-    return (sign < 0) ? 0.0 : domain_size[axis];
-}
-
-void Reflecting::applyBoundary(Particle& p, const ForceSource& force) {
+void Reflecting::applyBoundary(Particle& p, const ForceSource& force) const {
     double sigma = boundary_sigma.value_or(p.getSigma());
     double epsilon = boundary_epsilon.value_or(p.getEpsilon());
 

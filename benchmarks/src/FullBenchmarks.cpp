@@ -50,11 +50,15 @@ static void bmSimulationGiven(benchmark::State& state) {
     settings.sigma = 1.0;
     settings.cutoff = 3.0;
 
+    R3 domain_size = {180.0, 90., 1.};
     std::array<std::unique_ptr<Boundary>, 6> boundaries{
-        std::make_unique<Outflow>(BoundaryLocation::LEFT),  std::make_unique<Outflow>(BoundaryLocation::RIGHT),
-        std::make_unique<Outflow>(BoundaryLocation::FRONT), std::make_unique<Outflow>(BoundaryLocation::BACK),
-        std::make_unique<Outflow>(BoundaryLocation::UPPER), std::make_unique<Outflow>(BoundaryLocation::LOWER)};
-    settings.domain = Domain({180.0, 90., 1.}, std::move(boundaries));
+        std::make_unique<Outflow>(BoundaryLocation::LEFT, domain_size),
+        std::make_unique<Outflow>(BoundaryLocation::RIGHT, domain_size),
+        std::make_unique<Outflow>(BoundaryLocation::FRONT, domain_size),
+        std::make_unique<Outflow>(BoundaryLocation::BACK, domain_size),
+        std::make_unique<Outflow>(BoundaryLocation::UPPER, domain_size),
+        std::make_unique<Outflow>(BoundaryLocation::LOWER, domain_size)};
+    settings.domain = Domain(domain_size, std::move(boundaries));
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
     Simulation<SimpleContainer> simulation(part_container, *force_source, settings, *writer);
@@ -77,11 +81,15 @@ void bmSimulationGivenCutOff(benchmark::State& state) {
     settings.epsilon = 5.0;
     settings.sigma = 1.0;
     settings.cutoff = 3.0;
+    R3 domain_size = {180.0, 90., 1.};
     std::array<std::unique_ptr<Boundary>, 6> boundaries{
-        std::make_unique<Outflow>(BoundaryLocation::LEFT),  std::make_unique<Outflow>(BoundaryLocation::RIGHT),
-        std::make_unique<Outflow>(BoundaryLocation::FRONT), std::make_unique<Outflow>(BoundaryLocation::BACK),
-        std::make_unique<Outflow>(BoundaryLocation::UPPER), std::make_unique<Outflow>(BoundaryLocation::LOWER)};
-    settings.domain = Domain({180.0, 90., 1.}, std::move(boundaries));
+        std::make_unique<Outflow>(BoundaryLocation::LEFT, domain_size),
+        std::make_unique<Outflow>(BoundaryLocation::RIGHT, domain_size),
+        std::make_unique<Outflow>(BoundaryLocation::FRONT, domain_size),
+        std::make_unique<Outflow>(BoundaryLocation::BACK, domain_size),
+        std::make_unique<Outflow>(BoundaryLocation::UPPER, domain_size),
+        std::make_unique<Outflow>(BoundaryLocation::LOWER, domain_size)};
+    settings.domain = Domain(domain_size, std::move(boundaries));
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
     Simulation<SimpleContainer> simulation(part_container, *force_source, settings, *writer);
@@ -104,11 +112,15 @@ void bmSimulationGivenLCDirect(benchmark::State& state) {
     settings.epsilon = 5.0;
     settings.sigma = 1.0;
     settings.cutoff = 3.0;
+    R3 domain_size = {180.0, 90., 1.};
     std::array<std::unique_ptr<Boundary>, 6> boundaries{
-        std::make_unique<Outflow>(BoundaryLocation::LEFT),  std::make_unique<Outflow>(BoundaryLocation::RIGHT),
-        std::make_unique<Outflow>(BoundaryLocation::FRONT), std::make_unique<Outflow>(BoundaryLocation::BACK),
-        std::make_unique<Outflow>(BoundaryLocation::UPPER), std::make_unique<Outflow>(BoundaryLocation::LOWER)};
-    settings.domain = Domain({180.0, 90., 1.}, std::move(boundaries));
+        std::make_unique<Outflow>(BoundaryLocation::LEFT, domain_size),
+        std::make_unique<Outflow>(BoundaryLocation::RIGHT, domain_size),
+        std::make_unique<Outflow>(BoundaryLocation::FRONT, domain_size),
+        std::make_unique<Outflow>(BoundaryLocation::BACK, domain_size),
+        std::make_unique<Outflow>(BoundaryLocation::UPPER, domain_size),
+        std::make_unique<Outflow>(BoundaryLocation::LOWER, domain_size)};
+    settings.domain = Domain(domain_size, std::move(boundaries));
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
     Simulation<LinkedCellContainerDirect> simulation(part_container, *force_source, settings, *writer);
@@ -132,11 +144,15 @@ void bmSimulationGivenLCExplicit(benchmark::State& state) {
     settings.sigma = 1.0;
     settings.cutoff = 3.0;
 
+    R3 domain_size = {180.0, 90., 1.};
     std::array<std::unique_ptr<Boundary>, 6> boundaries{
-        std::make_unique<Outflow>(BoundaryLocation::LEFT),  std::make_unique<Outflow>(BoundaryLocation::RIGHT),
-        std::make_unique<Outflow>(BoundaryLocation::FRONT), std::make_unique<Outflow>(BoundaryLocation::BACK),
-        std::make_unique<Outflow>(BoundaryLocation::UPPER), std::make_unique<Outflow>(BoundaryLocation::LOWER)};
-    settings.domain = Domain({180.0, 90., 1.}, std::move(boundaries));
+        std::make_unique<Outflow>(BoundaryLocation::LEFT, domain_size),
+        std::make_unique<Outflow>(BoundaryLocation::RIGHT, domain_size),
+        std::make_unique<Outflow>(BoundaryLocation::FRONT, domain_size),
+        std::make_unique<Outflow>(BoundaryLocation::BACK, domain_size),
+        std::make_unique<Outflow>(BoundaryLocation::UPPER, domain_size),
+        std::make_unique<Outflow>(BoundaryLocation::LOWER, domain_size)};
+    settings.domain = Domain(domain_size, std::move(boundaries));
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
     Simulation<LinkedCellContainerExplicit> simulation(part_container, *force_source, settings, *writer);

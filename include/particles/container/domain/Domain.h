@@ -42,20 +42,22 @@ class Domain {
     Domain(R3 dimension, std::array<std::unique_ptr<Boundary>, 6> boundaries);
 
     /**
-     * @brief Get a pointer to a specific Boundary object.
+     * @brief Get a reference to a specific Boundary object.
      *
      * @param location The location of the boundary.
-     * @return Boundary* The pointer to the specified boundary.
+     * @return Boundary& The reference to the specified boundary.
+     * @throws std::runtime_error if the boundary at the given location is null.
      */
-    Boundary* getBoundary(BoundaryLocation location);
+    Boundary& getBoundary(BoundaryLocation location);
 
     /**
-     * @brief Get a const pointer to a specific Boundary object.
+     * @brief Get a const reference to a specific Boundary object.
      *
      * @param location The location of the boundary.
-     * @return const Boundary* The pointer to the specified boundary.
+     * @return const Boundary& The reference to the specified boundary.
+     * @throws std::runtime_error if the boundary at the given location is null.
      */
-    [[nodiscard]] const Boundary* getBoundary(BoundaryLocation location) const;
+    [[nodiscard]] const Boundary& getBoundary(BoundaryLocation location) const;
 
     /**
      * @brief Get the domain's dimension vector.

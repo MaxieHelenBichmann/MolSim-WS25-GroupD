@@ -285,11 +285,11 @@ void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
                     }
                     case BoundaryType::OUTFLOW:
                     default:
-                        boundary = std::make_unique<Outflow>(location);
+                        boundary = std::make_unique<Outflow>(location, dimension);
                 }
                 boundaries[i] = std::move(boundary);
             } else {
-                boundaries[i] = std::make_unique<Outflow>(location);
+                boundaries[i] = std::make_unique<Outflow>(location, dimension);
             }
         }
         settings.domain = Domain(dimension, std::move(boundaries));
