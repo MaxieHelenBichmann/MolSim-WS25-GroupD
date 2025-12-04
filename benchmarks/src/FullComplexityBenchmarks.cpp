@@ -9,6 +9,7 @@
  */
 #include <benchmark/benchmark.h>
 
+#include <cmath>
 #include <cstddef>
 #include <memory>
 
@@ -25,15 +26,21 @@ namespace mol_sim {
 
 /**
  * @brief Benchmarks LinkedCellContainer simulation complexity.
- * Runs 1s simulation with NxNxN cuboid (N = 10-20) to measure O(n) scaling.
+ * Runs simulation with NxNx1 cuboid to measure O(n) scaling.
+ * Parameter is particle count (must be perfect square).
  */
 void bmSimulationComplexityLinkedCell(benchmark::State& state) {
-    size_t n = state.range(0);
-    LinkedCellContainer part_container({180., 90., 1.}, 3.0);
+    size_t particle_count = state.range(0);
+    auto n = static_cast<size_t>(std::sqrt(particle_count));
+    double spacing = 1.1225;
+    double grid_size = static_cast<double>(n) * spacing;
+    double margin = 100.0;
+    R3 domain_size = {grid_size + (2 * margin), grid_size + (2 * margin), 1.};
+    LinkedCellContainer part_container(domain_size, 3.0);
     ContainerRef particles(part_container);
 
-    CuboidGenerator generator({60.0, 60.0, 0.0}, {0.0, 0.0, 0.0}, {n, n, static_cast<size_t>(1)}, 1.0, 1.1225, 0.3, 5.0,
-                              1.0);
+    CuboidGenerator generator({margin, margin, 0.0}, {0.0, 0.0, 0.0}, {n, n, static_cast<size_t>(1)}, 1.0, spacing, 0.3,
+                              5.0, 1.0);
     SettingsParam settings;
     settings.delta_t = 0.0005;
     settings.start_time = 0;
@@ -41,7 +48,6 @@ void bmSimulationComplexityLinkedCell(benchmark::State& state) {
     settings.epsilon = 5.0;
     settings.sigma = 1.0;
     settings.cutoff = 3.0;
-    R3 domain_size = {180.0, 90., 1.};
     std::array<std::unique_ptr<Boundary>, 6> boundaries{
         std::make_unique<Outflow>(BoundaryLocation::LEFT, domain_size),
         std::make_unique<Outflow>(BoundaryLocation::RIGHT, domain_size),
@@ -65,21 +71,26 @@ void bmSimulationComplexityLinkedCell(benchmark::State& state) {
 
 /**
  * @brief Benchmarks SimpleContainer simulation complexity.
- * Runs 2s simulation with NxNxN cuboid (N = 10-20) to measure O(n²) scaling.
+ * Runs simulation with NxNx1 cuboid to measure O(n²) scaling.
+ * Parameter is particle count (must be perfect square).
  */
 void bmSimulationComplexityDirectSum(benchmark::State& state) {
-    size_t n = state.range(0);
+    size_t particle_count = state.range(0);
+    auto n = static_cast<size_t>(std::sqrt(particle_count));
+    double spacing = 1.1225;
+    double grid_size = static_cast<double>(n) * spacing;
+    double margin = 10.0;
+    R3 domain_size = {grid_size + 2 * margin, grid_size + 2 * margin, 1.};
     SimpleContainer part_container;
     ContainerRef particles(part_container);
-    CuboidGenerator generator({60.0, 60.0, 0.0}, {0., 0., 0.}, {n, n, static_cast<size_t>(1)}, 1.0, 1.1225, 0.3, 5.0,
-                              1.0);
+    CuboidGenerator generator({margin, margin, 0.0}, {0., 0., 0.}, {n, n, static_cast<size_t>(1)}, 1.0, spacing, 0.3,
+                              5.0, 1.0);
     SettingsParam settings;
     settings.delta_t = 0.0005;
     settings.start_time = 0;
     settings.end_time = 1.0;
     settings.epsilon = 5.0;
     settings.sigma = 1.0;
-    R3 domain_size = {180.0, 90., 1.};
     std::array<std::unique_ptr<Boundary>, 6> boundaries{
         std::make_unique<Outflow>(BoundaryLocation::LEFT, domain_size),
         std::make_unique<Outflow>(BoundaryLocation::RIGHT, domain_size),
@@ -100,18 +111,30 @@ void bmSimulationComplexityDirectSum(benchmark::State& state) {
     }
 }
 BENCHMARK(bmSimulationComplexityLinkedCell)
-    ->Name("Simulation/Complexity/LinkedCell")
-    ->DenseRange(10, 20, 2)
+    ->Name("Simulation/Complexity/LinkedCell"
+    ->Arg(100)
+    ->Arg(400)
+    ->Arg(900)
+    ->Arg(1600)
+    ->Arg(2500)
+    //->Arg(3600)
+    //->Arg(4900)
     ->Unit(benchmark::kMillisecond)
-    ->Complexity()
+    ->Complexity(benchmark::oN)
     ->Repetitions(5)
     ->DisplayAggregatesOnly(true);
 
 BENCHMARK(bmSimulationComplexityDirectSum)
     ->Name("Simulation/Complexity/DirectSum")
-    ->DenseRange(10, 20, 2)
+    ->Arg(100)
+    ->Arg(400)
+    ->Arg(900)
+    ->Arg(1600)
+    ->Arg(2500)
+    //->Arg(3600)
+    //->Arg(4900)
     ->Unit(benchmark::kMillisecond)
-    ->Complexity()
+    ->Complexity(benchmark::oNSquared)
     ->Repetitions(5)
     ->DisplayAggregatesOnly(true);
 }  // namespace mol_sim

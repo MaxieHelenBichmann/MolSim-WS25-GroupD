@@ -126,19 +126,17 @@ From the project root:
 
 **Planets simulation:**
 ```bash
-./build/project/MolSim ./input/planets.yaml -d 0.014 -t 1000 -f GRAV
+./build/project/MolSim ./input/planets.yaml 
 ```
 
 **Particles simulation:**
 ```bash
-./build/project/MolSim ./input/particles.yaml -d 0.0002 -t 5
+./build/project/MolSim ./input/particles.yaml
 ```
-
-**Parameters:**
-- `-d` : Delta T (time step)
-- `-t` : End T (simulation end time)
-- `-f` : Force type
-
+**Basin drop simulation**
+```bash
+./build/project/MolSim ./input/basin_drop.yaml
+```
 ---
 
 ## Documentation
@@ -178,10 +176,46 @@ ctest -V --test-dir ./build/tests
 
 ## Benchmarking the Project
 
-> **Note:** Ensure `ENABLE_BENCHMARK` is enabled in CMake configuration.
+> **Note:** Ensure `ENABLE_BENCHMARK` and `BENCHMARK_DOWNLOAD_DEPENDENCIES` are enabled in CMake configuration.
 
+### Running Benchmarks
+
+**Run all benchmarks:**
 ```bash
 ./build/benchmarks/MolSimBench
+```
+
+**Run specific benchmark suite:**
+```bash
+./build/benchmarks/MolSimBench --benchmark_filter=<pattern>
+```
+
+**Save results to file:**
+```bash
+./build/benchmarks/MolSimBench --benchmark_format=console > benchmark_results.txt
+```
+
+### Available Benchmark Suites
+
+| Filter Pattern | Description |
+|----------------|-------------|
+| `Simulation/Complexity/` | Compares O(n) LinkedCell vs O(n²) DirectSum scaling |
+| `Cell/` | Compares cell data structures (Vector, Set, UnorderedSet) |
+| `Boundary/` | Measures boundary condition overhead (Outflow, Reflecting) |
+| `Simulation/` | Full end-to-end simulation benchmarks |
+| `LinkedCell/` | LinkedCellContainer-specific operation benchmarks |
+
+### Example Benchmark Commands
+
+```bash
+# Run only complexity benchmarks
+./build/benchmarks/MolSimBench --benchmark_filter=Simulation/Complexity/
+
+# Run cell implementation comparison
+./build/benchmarks/MolSimBench --benchmark_filter=Cell/
+
+# Run boundary benchmarks
+./build/benchmarks/MolSimBench --benchmark_filter=Boundary/
 ```
 
 ---
