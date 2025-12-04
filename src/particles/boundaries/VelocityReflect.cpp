@@ -8,12 +8,12 @@ void VelocityReflect::applyBoundary(Particle& p, [[maybe_unused]] const ForceSou
     size_t axis = getAxis();
     int sign = getSign();
     if (sign < 0 && p.getX()[axis] < 0) {
-            p.getX()[axis] *= -1;
-            p.getV()[axis] *= -1;
+        p.getX()[axis] *= -1;
+        p.getV()[axis] *= -1;
     } else if (sign > 0 && p.getX()[axis] > domain_size[axis]) {
-            p.getX()[axis] -= 2 * (p.getX()[axis] - domain_size[axis]);
-            p.getV()[axis] *= -1;
+        p.getX()[axis] -= 2 * (p.getX()[axis] - domain_size[axis]);
+        p.getV()[axis] *= -1;
     }
 }
 
-}  // namespace mol_sim  
+}  // namespace mol_sim

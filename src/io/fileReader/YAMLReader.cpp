@@ -359,9 +359,9 @@ void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
                         boundary = std::make_unique<Reflecting>(location, dimension, ghost_on_boundary, sigma, epsilon);
                         break;
                     }
-                    case BoundaryType::VELOCITYREFLECT: 
+                    case BoundaryType::VELOCITYREFLECT:
                         boundary = std::make_unique<VelocityReflect>(location, dimension);
-                        break; 
+                        break;
                     case BoundaryType::OUTFLOW:
                     default:
                         boundary = std::make_unique<Outflow>(location, dimension);

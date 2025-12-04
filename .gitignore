@@ -48,3 +48,6 @@
 
 #Doxy 
 doxys_documentation/
+
+#data
+benchmark_data/

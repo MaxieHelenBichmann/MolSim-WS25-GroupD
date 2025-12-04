@@ -13,7 +13,7 @@ namespace mol_sim {
  */
 class YAMLReaderException : public InputException {
    public:
-    explicit YAMLReaderException(const std::string& message) : InputException(message) {};
+    explicit YAMLReaderException(const std::string& message) : InputException(message){};
 };
 }  // namespace mol_sim
 

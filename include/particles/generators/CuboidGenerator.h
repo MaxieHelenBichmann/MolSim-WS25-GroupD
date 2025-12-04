@@ -84,7 +84,7 @@ class CuboidGenerator : public Generator {
           distance(distance),
           avg_velo(avg_velo),
           epsilon(epsilon),
-          sigma(sigma) {};
+          sigma(sigma){};
 };
 }  // namespace mol_sim
 

@@ -5,21 +5,13 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <execution>
 #include <functional>
-#include <limits>
-#include <memory>
-#include <optional>
-#include <stdexcept>
 #include <vector>
 
 #include "exceptions/SimulationException.h"
 #include "io/OutputWriter.h"
 #include "particles/Particle.h"
 #include "particles/ParticleContainer.h"
-#include "particles/boundaries/Boundary.h"
-#include "particles/container/LinkedCellContainer.h"
-#include "particles/container/SimpleContainer.h"
 #include "particles/container/domain/Domain.h"
 #include "physics/ForceSource.h"
 #include "utils/Settings.h"
@@ -208,7 +200,6 @@ class Simulation {
             applyBoundaries();
             // 3. Remove OOB particles
             removeParticles();
-            
 
             // 4. Calculate forces (including ghost interactions)
             SPDLOG_DEBUG("Iteration {}: Calculating forces for {} particles", iteration + 1, particles.size());

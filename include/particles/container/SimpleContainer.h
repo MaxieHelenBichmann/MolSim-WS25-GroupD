@@ -465,9 +465,7 @@ class SimpleContainer : public std::vector<Particle> {
         friend bool operator==(const proximity_iterator& a, const proximity_iterator& b) noexcept {
             return a.cur == b.cur;
         }
-        friend bool operator!=(const proximity_iterator& a, const proximity_iterator& b) noexcept {
-            return !(a == b);
-        }
+        friend bool operator!=(const proximity_iterator& a, const proximity_iterator& b) noexcept { return !(a == b); }
 
         [[nodiscard]] R3 getCenter() const noexcept { return center_or_domain; }
         [[nodiscard]] double getRadius() const noexcept { return radius; }
