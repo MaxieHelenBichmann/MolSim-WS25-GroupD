@@ -26,8 +26,6 @@ namespace mol_sim {
  * Parses command line input and validates parameters.
  * @param argc Number of arguments including the program name
  * @param argsv Array of arguments
- * @param particles Container to place the generated particles in.
- * @param settings SettingsParam where options for the simulation are stored.
  * @throws CLIException if CLI parsing or file reading fails
  */
 std::string cliParse(int argc, char** argv) {

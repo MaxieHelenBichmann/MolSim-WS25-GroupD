@@ -5,6 +5,8 @@
 #include <optional>
 #include <string>
 
+#include <spdlog/spdlog.h>
+
 #include "particles/Particle.h"
 #include "physics/ForceSource.h"
 #include "utils/Vector.h"
@@ -117,6 +119,10 @@ inline BoundaryType parseBoundaryType(const std::string& type_str) {
     }
     if (type_str == "REFLECTING" || type_str == "reflecting" || type_str == "Reflecting") {
         return BoundaryType::REFLECTING;
+    }
+    if (type_str == "VELOCITYREFLECT" || type_str == "velocityreflect" || type_str == "VelocityReflect") {
+        SPDLOG_ERROR("VELREF");
+        return BoundaryType::VELOCITYREFLECT;
     }
     return BoundaryType::OUTFLOW;
 }
