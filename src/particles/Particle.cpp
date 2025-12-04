@@ -108,14 +108,14 @@ double& Particle::getEpsilon() noexcept { return epsilon; }
 
 std::string Particle::toString() const {
     std::stringstream stream;
-    stream << "Particle: x:" << x << " old_x:" << old_x << " v: " << v << " f: " << f << " old_f: " << old_f << "epsilon: " << epsilon
-           << "sigma:" << sigma << " type: " << type;
+    stream << "Particle: x:" << x << " old_x:" << old_x << " v: " << v << " f: " << f << " old_f: " << old_f
+           << "epsilon: " << epsilon << "sigma:" << sigma << " type: " << type;
     return stream.str();
 }
 
 bool Particle::operator==(const Particle& other) const noexcept {
-    return (x == other.x) and (old_x == other.old_x) and (v == other.v) and (f == other.f) and (type == other.type) and (m == other.m) and
-           (old_f == other.old_f) and (epsilon == other.epsilon) and (sigma == other.sigma);
+    return (x == other.x) and (old_x == other.old_x) and (v == other.v) and (f == other.f) and (type == other.type) and
+           (m == other.m) and (old_f == other.old_f) and (epsilon == other.epsilon) and (sigma == other.sigma);
 }
 
 std::ostream& operator<<(std::ostream& stream, Particle& p) {

@@ -27,11 +27,11 @@ void Reflecting::applyBoundary(Particle& p, const ForceSource& force) const noex
      *
      * Again note that the whole reason we do this sigma = (p.sigma + ghost.sigma)/2 in LennardJonesForce.cpp is because
      * it's an intuitive way of combining two different sigmas in the LJforce calculation. This is essential if we want
-     * to use the Newton's 3rd law optimization for Lennard Jones force for particles that have differing sigmas (and epsilons).
-     * If we didn't combine the sigma and epsilons like that there would be no way of actually using Newton's 3rd law as an
-     * optimization here, since if sigma or epsilon differ between the two particles F_ij != -F_ji (in general).
-     * Are these combinations 100% mathematically correct, no. But it does make the code far more efficient and the behavior
-     * isn't inherently unrealistic. That's just numerics for you.
+     * to use the Newton's 3rd law optimization for Lennard Jones force for particles that have differing sigmas (and
+     * epsilons). If we didn't combine the sigma and epsilons like that there would be no way of actually using Newton's
+     * 3rd law as an optimization here, since if sigma or epsilon differ between the two particles F_ij != -F_ji (in
+     * general). Are these combinations 100% mathematically correct, no. But it does make the code far more efficient
+     * and the behavior isn't inherently unrealistic. That's just numerics for you.
      */
 
     double sigma_ghost = boundary_sigma.value_or(p.getSigma());

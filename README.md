@@ -202,8 +202,8 @@ ctest -V --test-dir ./build/tests
 | `Simulation/Complexity/` | Compares O(n) LinkedCell vs O(n²) DirectSum scaling |
 | `Cell/` | Compares cell data structures (Vector, Set, UnorderedSet) |
 | `Boundary/` | Measures boundary condition overhead (Reflecting, VelocityReflect) |
-| `Simulation/` | Full end-to-end simulation benchmarks |
-| `LinkedCell/` | LinkedCellContainer-specific operation benchmarks |
+| `Simulation/` | Full end-to-end simulation benchmarks |(Do Not Work Currently)
+| `LinkedCell/` | LinkedCellContainer-specific operation benchmarks | (Do Not Work Currently)
 
 ### Example Benchmark Commands
 
