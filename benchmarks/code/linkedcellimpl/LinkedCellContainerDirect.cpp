@@ -401,14 +401,16 @@ LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::erasePa
             std::vector<CellDirect*> rel_cells = p.getCells();
             R3 center = p.getCenter();
             double radius = p.getRadius();
+            auto cur_cell = p.getCurCell();
+            std::vector<Particle> skipped = p.getSkipped();
 
             auto new_it = cells[cell_idx].particles().erase(it);
 
-            if (new_it == cells[cell_idx].particles().end() && rel_cells.size() > 1) {
-                rel_cells.erase(rel_cells.begin());
-                new_it = rel_cells.front()->particles().begin();
+            if (new_it == cells[cell_idx].particles().end() && cur_cell != rel_cells.end()) {
+                cur_cell++;
+                new_it = (*cur_cell)->particles().begin();
             }
-            return proximity_iterator{center, radius, new_it, rel_cells};
+            return proximity_iterator{center, radius, new_it, rel_cells, cur_cell, skipped};
         }
     }
     return ++p;
@@ -419,41 +421,17 @@ LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::updateP
     size_t old_cell_idx = findCellIndex(p->getX());
     if (!cells[old_cell_idx].fits(new_x)) {
         size_t new_cell_idx = findCellIndex(new_x);
-        size_t old_idx = std::find(cells[old_cell_idx].particles().begin(), cells[old_cell_idx].particles().end(), *p) -
-                         cells[old_cell_idx].particles().begin();
         if (new_cell_idx == cells.size()) {
-            std::vector<CellDirect*> rel_cells = p.getCells();
-            R3 center = p.getCenter();
-            double radius = p.getRadius();
-            std::vector<Particle> skipped = p.getSkipped();
-
-            auto new_it =
-                cells[old_cell_idx].particles().erase(cells[old_cell_idx].particles().begin() + old_idx);  // NOLINT
-
-            if (new_it == cells[old_cell_idx].particles().end() && rel_cells.size() > 1) {
-                rel_cells.erase(rel_cells.begin());
-                new_it = rel_cells.front()->particles().begin();
-            }
-            return proximity_iterator{center, radius, new_it, rel_cells, skipped};
+            return eraseParticle(p);
         }
-        Particle particle_to_move = cells[old_cell_idx].particles()[old_idx];
+        Particle particle_to_move = p.getParticle();
+        particle_to_move.getX() = new_x;
         cells[new_cell_idx].addParticle(particle_to_move);
 
-        std::vector<CellDirect*> rel_cells = p.getCells();
-        R3 center = p.getCenter();
-        double radius = p.getRadius();
-        std::vector<Particle> skipped = p.getSkipped();
-
-        auto new_it =
-            cells[old_cell_idx].particles().erase(cells[old_cell_idx].particles().begin() + old_idx);  // NOLINT
-
-        if (new_it == cells[old_cell_idx].particles().end() && rel_cells.size() > 1) {
-            rel_cells.erase(rel_cells.begin());
-            new_it = rel_cells.front()->particles().begin();
+        auto new_p = eraseParticle(p);
+        if (new_cell_idx > old_cell_idx) {
+            new_p.skipParticle(particle_to_move);
         }
-        proximity_iterator new_p = proximity_iterator{center, radius, new_it, rel_cells, skipped};
-        new_p.skipParticle(particle_to_move);
-
         return new_p;
     }
 
@@ -469,7 +447,7 @@ LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::begin()
         relevant_cells.push_back(&cell);
     }
     return proximity_iterator{R3(), std::numeric_limits<double>::infinity(), cells.front().particles().begin(),
-                              relevant_cells};
+                              relevant_cells, relevant_cells.begin()};
 }
 LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::begin() const {
     std::vector<const CellDirect*> relevant_cells;
@@ -478,7 +456,7 @@ LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::b
         relevant_cells.push_back(&cell);
     }
     return const_proximity_iterator{R3(), std::numeric_limits<double>::infinity(), cells.front().particles().begin(),
-                                    relevant_cells};
+                                    relevant_cells, relevant_cells.begin()};
 }
 LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::cbegin() const {
     std::vector<const CellDirect*> relevant_cells;
@@ -487,7 +465,7 @@ LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::c
         relevant_cells.push_back(&cell);
     }
     return const_proximity_iterator{R3(), std::numeric_limits<double>::infinity(), cells.front().particles().begin(),
-                                    relevant_cells};
+                                    relevant_cells, relevant_cells.begin()};
 }
 LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::end() {
     std::vector<CellDirect*> relevant_cells;
@@ -496,7 +474,7 @@ LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::end() {
         relevant_cells.push_back(&cell);
     }
     return proximity_iterator{R3(), std::numeric_limits<double>::infinity(), cells.back().particles().end(),
-                              relevant_cells};
+                              relevant_cells, relevant_cells.end()};
 }
 LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::end() const {
     std::vector<const CellDirect*> relevant_cells;
@@ -505,7 +483,7 @@ LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::e
         relevant_cells.push_back(&cell);
     }
     return const_proximity_iterator{R3(), std::numeric_limits<double>::infinity(), cells.back().particles().end(),
-                                    relevant_cells};
+                                    relevant_cells, relevant_cells.end()};
 }
 LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::cend() const {
     std::vector<const CellDirect*> relevant_cells;
@@ -514,7 +492,7 @@ LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::c
         relevant_cells.push_back(&cell);
     }
     return const_proximity_iterator{R3(), std::numeric_limits<double>::infinity(), cells.back().particles().end(),
-                                    relevant_cells};
+                                    relevant_cells, relevant_cells.end()};
 }
 
 // proximity iterators
@@ -531,7 +509,7 @@ LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::proximi
     }
 
     return proximity_iterator{center, cutoff_radius, nonempty_adjacent_cells.front()->particles().begin(),
-                              nonempty_adjacent_cells};
+                              nonempty_adjacent_cells, nonempty_adjacent_cells.begin()};
 }
 
 LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::proximityEnd(R3 center) {
@@ -546,7 +524,7 @@ LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::proximi
     }
 
     return proximity_iterator{center, cutoff_radius, nonempty_adjacent_cells.back()->particles().end(),
-                              nonempty_adjacent_cells};
+                              nonempty_adjacent_cells, nonempty_adjacent_cells.end()};
 }
 
 LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::proximityBegin(
@@ -562,7 +540,7 @@ LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::p
     }
 
     return const_proximity_iterator{center, cutoff_radius, nonempty_adjacent_cells.front()->particles().begin(),
-                                    nonempty_adjacent_cells};
+                                    nonempty_adjacent_cells, nonempty_adjacent_cells.begin()};
 }
 LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::proximityEnd(R3 center) const {
     std::vector<const CellDirect*> adjacent_cells = findAdjacentCells(findCellIndex(center));
@@ -576,7 +554,7 @@ LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::p
     }
 
     return const_proximity_iterator{center, cutoff_radius, nonempty_adjacent_cells.back()->particles().end(),
-                                    nonempty_adjacent_cells};
+                                    nonempty_adjacent_cells, nonempty_adjacent_cells.end()};
 }
 
 // boundary and halo iterators
@@ -599,7 +577,8 @@ LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::haloBeg
     }
 
     return proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
-                              unique_and_nonempty_cells.front()->particles().begin(), unique_and_nonempty_cells};
+                              unique_and_nonempty_cells.front()->particles().begin(), unique_and_nonempty_cells,
+                              unique_and_nonempty_cells.begin()};
 }
 LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::haloBegin(
     const std::set<BoundaryLocation>& boundary_types) const {
@@ -619,12 +598,9 @@ LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::h
         }
     }
 
-    return const_proximity_iterator{
-        R3{},
-        std::numeric_limits<double>::infinity(),
-        unique_and_nonempty_cells.front()->particles().begin(),
-        unique_and_nonempty_cells,
-    };
+    return const_proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
+                                    unique_and_nonempty_cells.front()->particles().begin(), unique_and_nonempty_cells,
+                                    unique_and_nonempty_cells.begin()};
 }
 LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::haloEnd(
     const std::set<BoundaryLocation>& boundary_types) {
@@ -645,7 +621,8 @@ LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::haloEnd
     }
 
     return proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
-                              unique_and_nonempty_cells.back()->particles().end(), unique_and_nonempty_cells};
+                              unique_and_nonempty_cells.back()->particles().end(), unique_and_nonempty_cells,
+                              unique_and_nonempty_cells.end()};
 }
 LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::haloEnd(
     const std::set<BoundaryLocation>& boundary_types) const {
@@ -666,7 +643,8 @@ LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::h
     }
 
     return const_proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
-                                    unique_and_nonempty_cells.back()->particles().end(), unique_and_nonempty_cells};
+                                    unique_and_nonempty_cells.back()->particles().end(), unique_and_nonempty_cells,
+                                    unique_and_nonempty_cells.end()};
 }
 
 LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::boundaryBegin(
@@ -687,7 +665,8 @@ LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::boundar
     }
 
     return proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
-                              unique_and_nonempty_cells.front()->particles().begin(), unique_and_nonempty_cells};
+                              unique_and_nonempty_cells.front()->particles().begin(), unique_and_nonempty_cells,
+                              unique_and_nonempty_cells.begin()};
 }
 LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::boundaryBegin(
     const std::set<BoundaryLocation>& boundary_types) const {
@@ -707,12 +686,9 @@ LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::b
         }
     }
 
-    return const_proximity_iterator{
-        R3{},
-        std::numeric_limits<double>::infinity(),
-        unique_and_nonempty_cells.front()->particles().begin(),
-        unique_and_nonempty_cells,
-    };
+    return const_proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
+                                    unique_and_nonempty_cells.front()->particles().begin(), unique_and_nonempty_cells,
+                                    unique_and_nonempty_cells.begin()};
 }
 LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::boundaryEnd(
     const std::set<BoundaryLocation>& boundary_types) {
@@ -732,7 +708,8 @@ LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::boundar
     }
 
     return proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
-                              unique_and_nonempty_cells.back()->particles().end(), unique_and_nonempty_cells};
+                              unique_and_nonempty_cells.back()->particles().end(), unique_and_nonempty_cells,
+                              unique_and_nonempty_cells.end()};
 }
 LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::boundaryEnd(
     const std::set<BoundaryLocation>& boundary_types) const {
@@ -752,16 +729,9 @@ LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::b
         }
     }
 
-    return const_proximity_iterator{
-        R3{},
-        std::numeric_limits<double>::infinity(),
-        unique_and_nonempty_cells.back()->particles().end(),
-        unique_and_nonempty_cells,
-    };
-}
-
-bool LinkedCellContainerDirect::isOnBoundary(Particle& p) {
-    return (cells[findCellIndex(p.getX())].getType() == CellType::BOUNDARY);
+    return const_proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
+                                    unique_and_nonempty_cells.back()->particles().end(), unique_and_nonempty_cells,
+                                    unique_and_nonempty_cells.end()};
 }
 
 R3 LinkedCellContainerDirect::getDomainSize() { return domain_size; }

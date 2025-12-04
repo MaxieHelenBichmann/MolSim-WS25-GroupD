@@ -301,7 +301,7 @@ void LinkedCellContainerExplicit::findBoundaryCells(const BoundaryLocation type,
 void LinkedCellContainerExplicit::decreaseCellIndices(size_t starting_idx) {
     for (size_t i = starting_idx; i < data.size(); ++i) {
         size_t cell_idx = findCellIndex(data[i].getX());
-        cells[cell_idx].updateParticleIndex(i, i - 1);
+        cells[cell_idx].updateParticleIndex(i + 1, i);
     }
 }
 
@@ -638,10 +638,6 @@ LinkedCellContainerExplicit::const_proximity_iterator LinkedCellContainerExplici
     return const_proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
                                     unique_and_nonempty_cells.back()->particles().end(), unique_and_nonempty_cells,
                                     &data};
-}
-
-bool LinkedCellContainerExplicit::isOnBoundary(Particle& p) {
-    return (cells[findCellIndex(p.getX())].getType() == CellType::BOUNDARY);
 }
 
 R3 LinkedCellContainerExplicit::getDomainSize() { return domain_size; }

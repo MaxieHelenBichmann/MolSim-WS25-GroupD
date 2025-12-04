@@ -162,11 +162,12 @@ class LinkedCellContainerDirect {
 
         proximity_iterator() noexcept : radius(0.0) {}
         proximity_iterator(R3 center, double radius, std::vector<Particle>::iterator cur,
-                           std::vector<CellDirect*> cells, std::vector<Particle> skipped_particles = {})
+                           std::vector<CellDirect*> cells, std::vector<CellDirect*>::iterator cur_cell,
+                           std::vector<Particle> skipped_particles = {})
             : cur(cur),
               end(cells.back()->particles().end()),
               begin(cells.front()->particles().begin()),
-              cur_cell(cells.begin()),
+              cur_cell(cur_cell),
               cells(cells),
               skipped_particles(std::move(skipped_particles)),
               radius(radius),
@@ -253,10 +254,12 @@ class LinkedCellContainerDirect {
 
         operator std::vector<Particle>::iterator() const { return cur; }
         [[nodiscard]] std::vector<CellDirect*> getCells() const { return cells; }
+        [[nodiscard]] std::vector<CellDirect*>::iterator getCurCell() const { return cur_cell; }
         [[nodiscard]] double getRadius() const { return radius; }
         [[nodiscard]] R3 getCenter() const { return center; }
         [[nodiscard]] std::vector<Particle> getSkipped() const { return skipped_particles; }
         void skipParticle(const Particle& p) { skipped_particles.push_back(p); }
+        [[nodiscard]] value_type getParticle() const { return *cur; }
     };
     static_assert(std::random_access_iterator<proximity_iterator>);
 
@@ -324,11 +327,13 @@ class LinkedCellContainerDirect {
 
         const_proximity_iterator() noexcept : radius(0.0) {}
         const_proximity_iterator(R3 center, double radius, std::vector<Particle>::const_iterator cur,
-                                 std::vector<const CellDirect*> cells, std::vector<Particle> skipped_particles = {})
+                                 std::vector<const CellDirect*> cells,
+                                 std::vector<const CellDirect*>::iterator cur_cell,
+                                 std::vector<Particle> skipped_particles = {})
             : cur(cur),
               end(cells.back()->particles().end()),
               begin(cells.front()->particles().begin()),
-              cur_cell(cells.begin()),
+              cur_cell(cur_cell),
               cells(cells),
               skipped_particles(std::move(skipped_particles)),
               radius(radius),
@@ -471,7 +476,6 @@ class LinkedCellContainerDirect {
                                                            BoundaryLocation::FRONT, BoundaryLocation::BACK,
                                                            BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
 
-    [[nodiscard]] bool isOnBoundary(Particle& p);
     [[nodiscard]] R3 getDomainSize();
 };
 static_assert(ParticleContainer<LinkedCellContainerDirect>);

@@ -1,14 +1,15 @@
 /**
- * @file StepWiseBenchmarks.cpp
- * @brief Benchmarks for single simulation step performance comparison.
+ * @file FullComplexityBenchmarks.cpp
+ * @brief Benchmarks for measuring simulation complexity scaling (O(n) vs O(n²)).
  *
- * Compares LinkedCellContainer vs SimpleContainer for a single simulation step,
- * useful for measuring per-step overhead without full simulation time.
+ * Compares LinkedCellContainer (expected O(n)) vs SimpleContainer (expected O(n²))
+ * across varying particle counts to validate algorithmic complexity.
  *
- * Filter: --benchmark_filter=Simulation/SingleStep/
+ * Filter: --benchmark_filter=Simulation/Complexity/
  */
 #include <benchmark/benchmark.h>
 
+#include <cstddef>
 #include <memory>
 
 #include "io/outputWriter/XYZWriter.h"
@@ -23,19 +24,20 @@
 namespace mol_sim {
 
 /**
- * @brief Benchmarks single simulation step with LinkedCellContainer.
- * Runs one step with NxNxN cuboid (N = 10-20) particles.
+ * @brief Benchmarks LinkedCellContainer simulation complexity.
+ * Runs 1s simulation with NxNxN cuboid (N = 10-20) to measure O(n) scaling.
  */
-void bmSimulationSingleStepLinkedCell(benchmark::State& state) {
+void bmSimulationComplexityLinkedCell(benchmark::State& state) {
     size_t n = state.range(0);
     LinkedCellContainer part_container({180., 90., 1.}, 3.0);
     ContainerRef particles(part_container);
 
-    CuboidGenerator generator({60.0, 60.0, 0.0}, {0.0, 0.0, 0.0}, {n, n, n}, 1.0, 1.1225, 0.1, 5.0, 1.0);
+    CuboidGenerator generator({60.0, 60.0, 0.0}, {0.0, 0.0, 0.0}, {n, n, static_cast<size_t>(1)}, 1.0, 1.1225, 0.3, 5.0,
+                              1.0);
     SettingsParam settings;
     settings.delta_t = 0.0005;
     settings.start_time = 0;
-    settings.end_time = 0.0005;
+    settings.end_time = 1.0;
     settings.epsilon = 5.0;
     settings.sigma = 1.0;
     settings.cutoff = 3.0;
@@ -50,10 +52,11 @@ void bmSimulationSingleStepLinkedCell(benchmark::State& state) {
     settings.domain = Domain(domain_size, std::move(boundaries));
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    generator.generateParticles(particles);
 
     Simulation<LinkedCellContainer> simulation(part_container, *force_source, settings, *writer);
     for ([[maybe_unused]] auto _ : state) {
+        particles.clear();
+        generator.generateParticles(particles);
         benchmark::ClobberMemory();
         simulation.run();
         benchmark::DoNotOptimize(particles);
@@ -61,18 +64,19 @@ void bmSimulationSingleStepLinkedCell(benchmark::State& state) {
 }
 
 /**
- * @brief Benchmarks single simulation step with SimpleContainer (direct sum).
- * Runs one step with NxNxN cuboid (N = 10-20) particles.
+ * @brief Benchmarks SimpleContainer simulation complexity.
+ * Runs 2s simulation with NxNxN cuboid (N = 10-20) to measure O(n²) scaling.
  */
-void bmSimulationSingleStepDirectSum(benchmark::State& state) {
+void bmSimulationComplexityDirectSum(benchmark::State& state) {
     size_t n = state.range(0);
     SimpleContainer part_container;
     ContainerRef particles(part_container);
-    CuboidGenerator generator({60.0, 60.0, 0.0}, {0., 0., 0.}, {n, n, n}, 1.0, 1.1225, 0.1, 5.0, 1.0);
+    CuboidGenerator generator({60.0, 60.0, 0.0}, {0., 0., 0.}, {n, n, static_cast<size_t>(1)}, 1.0, 1.1225, 0.3, 5.0,
+                              1.0);
     SettingsParam settings;
     settings.delta_t = 0.0005;
     settings.start_time = 0;
-    settings.end_time = 0.0005;
+    settings.end_time = 1.0;
     settings.epsilon = 5.0;
     settings.sigma = 1.0;
     R3 domain_size = {180.0, 90., 1.};
@@ -86,24 +90,25 @@ void bmSimulationSingleStepDirectSum(benchmark::State& state) {
     settings.domain = Domain(domain_size, std::move(boundaries));
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    generator.generateParticles(particles);
     Simulation<SimpleContainer> simulation(part_container, *force_source, settings, *writer);
     for ([[maybe_unused]] auto _ : state) {
+        particles.clear();
+        generator.generateParticles(particles);
         benchmark::ClobberMemory();
         simulation.run();
         benchmark::DoNotOptimize(particles);
     }
 }
-BENCHMARK(bmSimulationSingleStepLinkedCell)
-    ->Name("Simulation/SingleStep/LinkedCell")
+BENCHMARK(bmSimulationComplexityLinkedCell)
+    ->Name("Simulation/Complexity/LinkedCell")
     ->DenseRange(10, 20, 2)
     ->Unit(benchmark::kMillisecond)
     ->Complexity()
     ->Repetitions(5)
     ->DisplayAggregatesOnly(true);
 
-BENCHMARK(bmSimulationSingleStepDirectSum)
-    ->Name("Simulation/SingleStep/DirectSum")
+BENCHMARK(bmSimulationComplexityDirectSum)
+    ->Name("Simulation/Complexity/DirectSum")
     ->DenseRange(10, 20, 2)
     ->Unit(benchmark::kMillisecond)
     ->Complexity()

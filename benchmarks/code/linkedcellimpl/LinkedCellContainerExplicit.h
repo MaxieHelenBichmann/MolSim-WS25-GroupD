@@ -301,7 +301,6 @@ class LinkedCellContainerExplicit {
                                                            BoundaryLocation::FRONT, BoundaryLocation::BACK,
                                                            BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
 
-    [[nodiscard]] bool isOnBoundary(Particle& p);
     [[nodiscard]] R3 getDomainSize();
 };
 static_assert(ParticleContainer<LinkedCellContainerExplicit>);

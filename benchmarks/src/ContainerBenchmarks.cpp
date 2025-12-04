@@ -1,3 +1,12 @@
+/**
+ * @file ContainerBenchmarks.cpp
+ * @brief Benchmarks comparing concept-based (templated) vs abstract (virtual) container implementations.
+ *
+ * These benchmarks validate that compile-time polymorphism (C++ concepts) provides
+ * better performance than runtime polymorphism (virtual functions) for particle containers.
+ *
+ * Filter: --benchmark_filter=Container/
+ */
 #include <benchmark/benchmark.h>
 
 #include <memory>
@@ -16,7 +25,7 @@ namespace mol_sim {
  * @tparam containerType Type of container to be benchmarked
  */
 template <ParticleContainer containerType>
-void bmTemplatedContainer(benchmark::State& state) {
+void bmContainerConcept(benchmark::State& state) {
     containerType particles;
     size_t n = state.range(0);
     double res = 0;
@@ -34,8 +43,8 @@ void bmTemplatedContainer(benchmark::State& state) {
 };
 
 /**
- * @brief Benchmarks the ContainerRef.
- * By running the same Benchmark as for the templated Container but wrapping the templated Container in a ContainerRef.
+ * @brief Benchmarks the ContainerRef wrapper.
+ * Runs the same benchmark as for the templated Container but wrapping the templated Container in a ContainerRef.
  * @tparam containerType Type of container to be wrapped
  */
 template <ParticleContainer containerType>
@@ -58,12 +67,11 @@ void bmContainerRef(benchmark::State& state) {
 };
 
 /**
- * @brief Benchmarks a Container implemented using an abstract class.
+ * @brief Benchmarks a Container implemented using an abstract class (virtual functions).
  * Adds 8-8192 particles to the container, then iterates over all of them.
  * Reruns this Benchmark 10 times
-
  */
-void bmAbstractContainer(benchmark::State& state) {
+void bmContainerAbstract(benchmark::State& state) {
     std::unique_ptr<AbstractContainer> particles = std::make_unique<ContainerImpl>();
     size_t n = state.range(0);
     double res = 0;
@@ -80,34 +88,40 @@ void bmAbstractContainer(benchmark::State& state) {
     benchmark::DoNotOptimize(res);
 };
 
-BENCHMARK(bmTemplatedContainer<SimpleContainer>)
+BENCHMARK(bmContainerConcept<SimpleContainer>)
+    ->Name("Container/Concept/Small")
     ->Range(8 << 0, 8 << 6)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kNanosecond);
-BENCHMARK(bmTemplatedContainer<SimpleContainer>)
+BENCHMARK(bmContainerConcept<SimpleContainer>)
+    ->Name("Container/Concept/Large")
     ->Range(16 << 6, 16 << 10)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kMicrosecond);
 
 BENCHMARK(bmContainerRef<SimpleContainer>)
+    ->Name("Container/Ref/Small")
     ->Range(8 << 0, 8 << 6)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kNanosecond);
 BENCHMARK(bmContainerRef<SimpleContainer>)
+    ->Name("Container/Ref/Large")
     ->Range(16 << 6, 16 << 10)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kMicrosecond);
 
-BENCHMARK(bmAbstractContainer)
+BENCHMARK(bmContainerAbstract)
+    ->Name("Container/Abstract/Small")
     ->Range(8 << 0, 8 << 6)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kNanosecond);
-BENCHMARK(bmAbstractContainer)
+BENCHMARK(bmContainerAbstract)
+    ->Name("Container/Abstract/Large")
     ->Range(16 << 6, 16 << 10)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)

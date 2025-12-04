@@ -25,6 +25,7 @@
 
 using namespace mol_sim;
 
+// NOLINTNEXTLINE(bugprone-exception-escape)
 int main(int argc, char* argsv[]) {
     SettingsParam settings;
     std::unique_ptr<FileReader> file_reader;

@@ -1,3 +1,12 @@
+/**
+ * @file ForceCalcBenchmarks.cpp
+ * @brief Benchmarks comparing different force calculation optimization strategies.
+ *
+ * Compares unoptimized O(n²), optimized (Newton's 3rd law), and alternative optimized
+ * force calculation methods on SimpleContainer with LennardJonesForce.
+ *
+ * Filter: --benchmark_filter=Force/Calculation/
+ */
 #include <benchmark/benchmark.h>
 
 #include "../code/simulationimpl/ForceCalcMethods.h"
@@ -7,12 +16,11 @@
 
 namespace mol_sim {
 /**
- * @brief Benchmarks the unoptimized Force Calculation
- * Performs one calulateF() call on a container of 100-1000 particles
- *
+ * @brief Benchmarks the unoptimized force calculation (O(n²) full iteration).
+ * Performs one calculateF() call on a container of 100-10,000 particles.
  */
 template <ForceConcept forceType>
-void bmForceUnOptimized(benchmark::State& state) {
+void bmForceCalcUnoptimized(benchmark::State& state) {
     SimpleContainer particles;
     size_t n = state.range(0);
     particles.reserve(n);
@@ -27,12 +35,11 @@ void bmForceUnOptimized(benchmark::State& state) {
 }
 
 /**
- * @brief Benchmarks the optimized Force Calculation
- * Performs one calulateF() call on a container of 100-1000 particles
- *
+ * @brief Benchmarks the optimized force calculation (Newton's 3rd law).
+ * Performs one calculateF() call on a container of 100-10,000 particles.
  */
 template <ForceConcept forceType>
-void bmForceOptimized(benchmark::State& state) {
+void bmForceCalcOptimized(benchmark::State& state) {
     SimpleContainer particles;
     size_t n = state.range(0);
     particles.reserve(n);
@@ -48,12 +55,11 @@ void bmForceOptimized(benchmark::State& state) {
 }
 
 /**
- * @brief Benchmarks the alternative optimized Force Calculation
- * Performs one calulateF() call on a container of 100-1000 particles
- *
+ * @brief Benchmarks the alternative optimized force calculation.
+ * Performs one calculateF() call on a container of 100-10,000 particles.
  */
 template <ForceConcept forceType>
-void bmForceOptimizedAlt(benchmark::State& state) {
+void bmForceCalcOptimizedAlt(benchmark::State& state) {
     SimpleContainer particles;
     size_t n = state.range(0);
     particles.reserve(n);
@@ -68,21 +74,24 @@ void bmForceOptimizedAlt(benchmark::State& state) {
     }
 }
 
-BENCHMARK(bmForceUnOptimized<LennardJonesForce>)
+BENCHMARK(bmForceCalcUnoptimized<LennardJonesForce>)
+    ->Name("Force/Calculation/Unoptimized")
     ->RangeMultiplier(10)
     ->Range(100, 10000)
     ->Complexity()
     ->Repetitions(10)
     ->Unit(benchmark::kMicrosecond)
     ->DisplayAggregatesOnly(true);
-BENCHMARK(bmForceOptimized<LennardJonesForce>)
+BENCHMARK(bmForceCalcOptimized<LennardJonesForce>)
+    ->Name("Force/Calculation/Optimized")
     ->RangeMultiplier(10)
     ->Range(100, 10000)
     ->Complexity()
     ->Repetitions(10)
     ->Unit(benchmark::kMicrosecond)
     ->DisplayAggregatesOnly(true);
-BENCHMARK(bmForceOptimizedAlt<LennardJonesForce>)
+BENCHMARK(bmForceCalcOptimizedAlt<LennardJonesForce>)
+    ->Name("Force/Calculation/OptimizedAlt")
     ->RangeMultiplier(10)
     ->Range(100, 10000)
     ->Complexity()
