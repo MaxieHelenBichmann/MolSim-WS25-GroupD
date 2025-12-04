@@ -121,7 +121,6 @@ inline BoundaryType parseBoundaryType(const std::string& type_str) {
         return BoundaryType::REFLECTING;
     }
     if (type_str == "VELOCITYREFLECT" || type_str == "velocityreflect" || type_str == "VelocityReflect") {
-        SPDLOG_ERROR("VELREF");
         return BoundaryType::VELOCITYREFLECT;
     }
     return BoundaryType::OUTFLOW;
