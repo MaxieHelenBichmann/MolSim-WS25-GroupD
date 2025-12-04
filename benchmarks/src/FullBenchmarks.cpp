@@ -54,7 +54,7 @@ static void bmSimulationFullSimple(benchmark::State& state) {
     SettingsParam settings;
     settings.delta_t = 0.0005;
     settings.start_time = 0;
-    settings.end_time = 20;
+    settings.end_time = 1.0;
     settings.epsilon = 5.0;
     settings.sigma = 1.0;
     settings.cutoff = 3.0;
@@ -72,6 +72,7 @@ static void bmSimulationFullSimple(benchmark::State& state) {
     auto writer = std::make_unique<XYZWriter>();
     Simulation<SimpleContainer> simulation(part_container, *force_source, settings, *writer);
     for ([[maybe_unused]] auto _ : state) {
+        part_container.clear();
         generateCuboid(part_container, {20.0, 20.0, 0.0}, {0., 0.0, 0.0}, {100U, 20U, 1U}, 1.0, 1.1225, 0.1, 5.0, 1.0);
         generateCuboid(part_container, {70.0, 60.0, 0.0}, {0.0, -10.0, 0.0}, {20U, 20U, 1U}, 1.0, 1.1225, 0.1, 5.0,
                        1.0);
@@ -90,7 +91,7 @@ void bmSimulationFullSimpleCutoff(benchmark::State& state) {
     SettingsParam settings;
     settings.delta_t = 0.0005;
     settings.start_time = 0;
-    settings.end_time = 20;
+    settings.end_time = 1.0;
     settings.epsilon = 5.0;
     settings.sigma = 1.0;
     settings.cutoff = 3.0;
@@ -107,6 +108,7 @@ void bmSimulationFullSimpleCutoff(benchmark::State& state) {
     auto writer = std::make_unique<XYZWriter>();
     Simulation<SimpleContainer> simulation(part_container, *force_source, settings, *writer);
     for ([[maybe_unused]] auto _ : state) {
+        part_container.clear();
         generateCuboid(part_container, {20.0, 20.0, 0.0}, {0., 0.0, 0.0}, {100U, 20U, 1U}, 1.0, 1.1225, 0.1, 5.0, 1.0);
         generateCuboid(part_container, {70.0, 60.0, 0.0}, {0.0, -10.0, 0.0}, {20U, 20U, 1U}, 1.0, 1.1225, 0.1, 5.0,
                        1.0);
@@ -118,14 +120,14 @@ void bmSimulationFullSimpleCutoff(benchmark::State& state) {
 
 /**
  * @brief Benchmarks full simulation with LinkedCellContainerDirect.
- * Particle counts are 100x20x1 + 20x20x1 (2400 total), 20s simulation time.
+ * Particle counts are 100x20x1 + 20x20x1 (2400 total), 1s simulation time.
  */
 void bmSimulationFullLinkedCellDirect(benchmark::State& state) {
     LinkedCellContainerDirect part_container({180., 90., 1.}, 3.0);
     SettingsParam settings;
     settings.delta_t = 0.0005;
     settings.start_time = 0;
-    settings.end_time = 20;
+    settings.end_time = 1.0;
     settings.epsilon = 5.0;
     settings.sigma = 1.0;
     settings.cutoff = 3.0;
@@ -142,6 +144,7 @@ void bmSimulationFullLinkedCellDirect(benchmark::State& state) {
     auto writer = std::make_unique<XYZWriter>();
     Simulation<LinkedCellContainerDirect> simulation(part_container, *force_source, settings, *writer);
     for ([[maybe_unused]] auto _ : state) {
+        part_container.clear();
         generateCuboid(part_container, {20.0, 20.0, 0.0}, {0., 0.0, 0.0}, {100U, 20U, 1U}, 1.0, 1.1225, 0.1, 5.0, 1.0);
         generateCuboid(part_container, {70.0, 60.0, 0.0}, {0.0, -10.0, 0.0}, {20U, 20U, 1U}, 1.0, 1.1225, 0.1, 5.0,
                        1.0);
@@ -153,14 +156,14 @@ void bmSimulationFullLinkedCellDirect(benchmark::State& state) {
 
 /**
  * @brief Benchmarks full simulation with LinkedCellContainerExplicit.
- * Particle counts are 100x20x1 + 20x20x1 (2400 total), 20s simulation time.
+ * Particle counts are 100x20x1 + 20x20x1 (2400 total), 1s simulation time.
  */
 void bmSimulationFullLinkedCellExplicit(benchmark::State& state) {
     LinkedCellContainerExplicit part_container({180., 90., 1.}, 3.0);
     SettingsParam settings;
     settings.delta_t = 0.0005;
     settings.start_time = 0;
-    settings.end_time = 20;
+    settings.end_time = 1.0;
     settings.epsilon = 5.0;
     settings.sigma = 1.0;
     settings.cutoff = 3.0;
@@ -178,6 +181,7 @@ void bmSimulationFullLinkedCellExplicit(benchmark::State& state) {
     auto writer = std::make_unique<XYZWriter>();
     Simulation<LinkedCellContainerExplicit> simulation(part_container, *force_source, settings, *writer);
     for ([[maybe_unused]] auto _ : state) {
+        part_container.clear();
         generateCuboid(part_container, {20.0, 20.0, 0.0}, {0., 0.0, 0.0}, {100U, 20U, 1U}, 1.0, 1.1225, 0.1, 5.0, 1.0);
         generateCuboid(part_container, {70.0, 60.0, 0.0}, {0.0, -10.0, 0.0}, {20U, 20U, 1U}, 1.0, 1.1225, 0.1, 5.0,
                        1.0);
@@ -187,11 +191,27 @@ void bmSimulationFullLinkedCellExplicit(benchmark::State& state) {
     }
 }
 
-BENCHMARK(bmSimulationFullSimple)->Name("Simulation/Full/Simple")->Unit(benchmark::kMillisecond)->Repetitions(5)->DisplayAggregatesOnly(true);
+BENCHMARK(bmSimulationFullSimple)
+    ->Name("Simulation/Full/Simple")
+    ->Unit(benchmark::kMillisecond)
+    ->Repetitions(5)
+    ->DisplayAggregatesOnly(true);
 
-BENCHMARK(bmSimulationFullSimpleCutoff)->Name("Simulation/Full/SimpleCutoff")->Unit(benchmark::kMillisecond)->Repetitions(5)->DisplayAggregatesOnly(true);
+BENCHMARK(bmSimulationFullSimpleCutoff)
+    ->Name("Simulation/Full/SimpleCutoff")
+    ->Unit(benchmark::kMillisecond)
+    ->Repetitions(5)
+    ->DisplayAggregatesOnly(true);
 
-BENCHMARK(bmSimulationFullLinkedCellDirect)->Name("Simulation/Full/LinkedCellDirect")->Unit(benchmark::kMillisecond)->Repetitions(5)->DisplayAggregatesOnly(true);
-BENCHMARK(bmSimulationFullLinkedCellExplicit)->Name("Simulation/Full/LinkedCellExplicit")->Unit(benchmark::kMillisecond)->Repetitions(5)->DisplayAggregatesOnly(true);
+BENCHMARK(bmSimulationFullLinkedCellDirect)
+    ->Name("Simulation/Full/LinkedCellDirect")
+    ->Unit(benchmark::kMillisecond)
+    ->Repetitions(5)
+    ->DisplayAggregatesOnly(true);
+BENCHMARK(bmSimulationFullLinkedCellExplicit)
+    ->Name("Simulation/Full/LinkedCellExplicit")
+    ->Unit(benchmark::kMillisecond)
+    ->Repetitions(5)
+    ->DisplayAggregatesOnly(true);
 
 }  // namespace mol_sim
