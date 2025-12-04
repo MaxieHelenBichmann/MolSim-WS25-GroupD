@@ -14,6 +14,7 @@
 
 #include "../code/linkedcellimpl/LinkedCellContainerDirect.h"
 #include "../code/linkedcellimpl/LinkedCellContainerExplicit.h"
+#include "../code/linkedcellimpl/SimpleContainerControl.h"
 #include "io/outputWriter/XYZWriter.h"
 #include "particles/boundaries/Boundary.h"
 #include "particles/boundaries/Outflow.h"
@@ -50,7 +51,7 @@ void generateCuboid(Container& particles, R3 position, R3 velocity, Vector<size_
  * Particle counts are 100x20x1 + 20x20x1 (2400 total), 20s simulation time.
  */
 static void bmSimulationFullSimple(benchmark::State& state) {
-    SimpleContainer part_container;
+    SimpleContainerControl part_container;
     SettingsParam settings;
     settings.delta_t = 0.0005;
     settings.start_time = 0;
@@ -70,7 +71,7 @@ static void bmSimulationFullSimple(benchmark::State& state) {
     settings.domain = Domain(domain_size, std::move(boundaries));
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<SimpleContainer> simulation(part_container, *force_source, settings, *writer);
+    Simulation<SimpleContainerControl> simulation(part_container, *force_source, settings, *writer);
     for ([[maybe_unused]] auto _ : state) {
         part_container.clear();
         generateCuboid(part_container, {20.0, 20.0, 0.0}, {0., 0.0, 0.0}, {100U, 20U, 1U}, 1.0, 1.1225, 0.1, 5.0, 1.0);
@@ -105,8 +106,8 @@ void bmSimulationFullSimpleCutoff(benchmark::State& state) {
     settings.domain = Domain(domain_size, std::move(boundaries));
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    SimpleContainer part_container(domain_size, settings.cutoff);
-    Simulation<SimpleContainer> simulation(part_container, *force_source, settings, *writer);
+    SimpleContainerControl part_container(domain_size, settings.cutoff);
+    Simulation<SimpleContainerControl> simulation(part_container, *force_source, settings, *writer);
     for ([[maybe_unused]] auto _ : state) {
         part_container.clear();
         generateCuboid(part_container, {20.0, 20.0, 0.0}, {0., 0.0, 0.0}, {100U, 20U, 1U}, 1.0, 1.1225, 0.1, 5.0, 1.0);
