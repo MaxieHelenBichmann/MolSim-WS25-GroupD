@@ -51,12 +51,12 @@ void bmBoundaryReflecting(benchmark::State& state) {
     settings.domain = Domain(domain_size, std::move(boundaries));
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    CuboidGenerator generator1({20.0, 20.0, 0.0}, {0., 0.0, 0.0}, {100U, 20U, 1U}, 1.0, 1.1225, 0.1, 5.0, 1.0);
-    CuboidGenerator generator2({70.0, 60.0, 0.0}, {0.0, -10.0, 0.0}, {20U, 20U, 1U}, 1.0, 1.1225, 0.1, 5.0, 1.0);
+    CuboidGenerator generator1({20.0, 20.0, 0.0}, {0., -10.0, 0.0}, {100U, 20U, 1U}, 1.0, 1.1225, 0.1, 5.0, 1.0);
+
     Simulation<LinkedCellContainer> simulation(part_container, *force_source, settings, *writer);
     for ([[maybe_unused]] auto _ : state) {
+        ref.clear();
         generator1.generateParticles(ref);
-        generator2.generateParticles(ref);
         benchmark::ClobberMemory();
         simulation.run();
         benchmark::DoNotOptimize(part_container);
@@ -89,12 +89,11 @@ void bmBoundaryVelocityReflect(benchmark::State& state) {
     settings.domain = Domain(domain_size, std::move(boundaries));
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    CuboidGenerator generator1({20.0, 20.0, 0.0}, {0., 0.0, 0.0}, {100U, 20U, 1U}, 1.0, 1.1225, 0.1, 5.0, 1.0);
-    CuboidGenerator generator2({70.0, 60.0, 0.0}, {0.0, -10.0, 0.0}, {20U, 20U, 1U}, 1.0, 1.1225, 0.1, 5.0, 1.0);
+    CuboidGenerator generator1({20.0, 20.0, 0.0}, {0., -10.0, 0.0}, {100U, 20U, 1U}, 1.0, 1.1225, 0.1, 5.0, 1.0);
     Simulation<LinkedCellContainer> simulation(part_container, *force_source, settings, *writer);
     for ([[maybe_unused]] auto _ : state) {
+        ref.clear();
         generator1.generateParticles(ref);
-        generator2.generateParticles(ref);
         benchmark::ClobberMemory();
         simulation.run();
         benchmark::DoNotOptimize(part_container);
