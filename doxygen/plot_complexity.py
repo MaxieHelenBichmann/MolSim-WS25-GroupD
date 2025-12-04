@@ -62,7 +62,7 @@ def plot_complexity(linked_cell, direct_sum, output_file):
 
 def main():
     input_file = sys.argv[1] if len(sys.argv) > 1 else '../benchmark_data/complexityData.txt'
-    output_file = sys.argv[2] if len(sys.argv) > 2 else 'complexity_plot.png'
+    output_file = sys.argv[2] if len(sys.argv) > 2 else 'graphics/complexity_plot.png'
 
     linked_cell, direct_sum = parse_benchmark_data(input_file)
 

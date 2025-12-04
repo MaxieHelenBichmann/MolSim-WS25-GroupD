@@ -59,7 +59,7 @@ class Particle {
      */
     double sigma;
     /**
-     * Type of the particle. 
+     * Type of the particle.
      * -1 if particle is GHOST particle
      *  0 default
      */

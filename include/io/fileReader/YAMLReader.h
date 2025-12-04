@@ -5,13 +5,10 @@
 #include <yaml-cpp/node/node.h>
 
 #include <cstddef>
-#include <memory>
-#include <optional>
 #include <string>
 #include <vector>
 
 #include "io/FileReader.h"
-#include "particles/boundaries/Boundary.h"
 #include "particles/container/ContainerRef.h"
 #include "utils/Settings.h"
 #include "utils/Vector.h"

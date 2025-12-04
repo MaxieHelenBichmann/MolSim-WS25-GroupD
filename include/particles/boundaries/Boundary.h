@@ -1,11 +1,10 @@
 #ifndef BOUNDARY_H
 #define BOUNDARY_H
 
-#include <cstdint>
-#include <optional>
-#include <string>
-
 #include <spdlog/spdlog.h>
+
+#include <cstdint>
+#include <string>
 
 #include "particles/Particle.h"
 #include "physics/ForceSource.h"

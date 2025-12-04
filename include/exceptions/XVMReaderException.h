@@ -13,7 +13,7 @@ namespace mol_sim {
  */
 class XVMReaderException : public InputException {
    public:
-    explicit XVMReaderException(const std::string& message) : InputException(message) {};
+    explicit XVMReaderException(const std::string& message) : InputException(message){};
 };
 }  // namespace mol_sim
 

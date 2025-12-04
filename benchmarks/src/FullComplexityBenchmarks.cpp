@@ -80,7 +80,7 @@ void bmSimulationComplexityDirectSum(benchmark::State& state) {
     double spacing = 1.1225;
     double grid_size = static_cast<double>(n) * spacing;
     double margin = 10.0;
-    R3 domain_size = {grid_size + 2 * margin, grid_size + 2 * margin, 1.};
+    R3 domain_size = {grid_size + (2 * margin), grid_size + (2 * margin), 1.};
     SimpleContainer part_container;
     ContainerRef particles(part_container);
     CuboidGenerator generator({margin, margin, 0.0}, {0., 0., 0.}, {n, n, static_cast<size_t>(1)}, 1.0, spacing, 0.3,
@@ -111,7 +111,7 @@ void bmSimulationComplexityDirectSum(benchmark::State& state) {
     }
 }
 BENCHMARK(bmSimulationComplexityLinkedCell)
-    ->Name("Simulation/Complexity/LinkedCell"
+    ->Name("Simulation/Complexity/LinkedCell")
     ->Arg(100)
     ->Arg(400)
     ->Arg(900)

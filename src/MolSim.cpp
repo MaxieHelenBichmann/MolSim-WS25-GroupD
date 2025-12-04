@@ -2,16 +2,13 @@
 
 #include <cstdlib>
 #include <memory>
-#include <optional>
-#include <stdexcept>
 
-#include "exceptions/CLIException.h"
 #include "exceptions/InputException.h"
 #include "exceptions/MolSimException.h"
 #include "exceptions/SimulationException.h"
-#include "exceptions/YAMLReaderException.h"
 #include "io/CLIParse.h"
 #include "io/FileReader.h"
+#include "io/fileReader/XVMReader.h"
 #include "io/fileReader/YAMLReader.h"
 #include "io/outputWriter/VTKWriter.h"
 #include "io/outputWriter/XYZWriter.h"
