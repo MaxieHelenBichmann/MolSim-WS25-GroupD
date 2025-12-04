@@ -48,7 +48,7 @@ void Reflecting::applyBoundary(Particle& p, const ForceSource& force) const noex
 
         SPDLOG_TRACE("Creating ghost particle at ({}, {}, {}) for particle at ({}, {}, {})", ghost_pos[0], ghost_pos[1],
                      ghost_pos[2], p.getX()[0], p.getX()[1], p.getX()[2]);
-        p.getF() = p.getF() + force.applyForce(p, Particle(ghost_pos, {0.0, 0.0, 0.0}, p.getM(), epsilon, sigma, -1));
+        p.getF() = p.getF() + force.applyForce(p, Particle(ghost_pos, {0.0, 0.0, 0.0}, p.getM(), epsilon, sigma_ghost, -1));
     }
 }
 
