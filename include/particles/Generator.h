@@ -8,6 +8,7 @@ namespace mol_sim {
  *
  */
 class Generator {
+   public:
     /**
      * @brief Generates particles and places them in the container.
      *

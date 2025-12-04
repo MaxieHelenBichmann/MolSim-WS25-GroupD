@@ -8,13 +8,13 @@
 
 namespace mol_sim {
 /**
- * @brief Particle Generator, which generates a Cube of Particles with Brownian Motion.
+ * @brief Particle Generator, which generates a Disc of Particles with Brownian Motion.
  *
  */
 class DiscGenerator : public Generator {
    private:
     /**
-     * @brief Postion of the center of the disc of particles.
+     * @brief Position of the center of the disc of particles.
      *
      */
     R3 position;
@@ -24,7 +24,7 @@ class DiscGenerator : public Generator {
      */
     R3 velocity;
     /**
-     * @brief number of particles along the radiues of the disc
+     * @brief number of particles along the radius of the disc
      *
      */
     size_t radius;
@@ -66,7 +66,7 @@ class DiscGenerator : public Generator {
      *
      * @param position Postion of the lower left corner of the cube of particles.
      * @param velocity Initial velocity of the cube of particles.
-     * @param num_particles Number of particles per dimension.
+     * @param radius radius in particles of the disc.
      * @param mass Mass of the particles.
      * @param distance Mesh width of the grid of particles.
      * @param avg_velo Mean value of velocity of the Brownian Motion.

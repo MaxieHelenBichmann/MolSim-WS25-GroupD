@@ -18,7 +18,7 @@ class GravitationalForce : public ForceSource {
     /**
      * @brief Calculates the gravitational force a particle p2 exerts on a different particle p1.
      *
-     * @param p1 Particle whos force is to be calculated.
+     * @param p1 Particle whose force is to be calculated.
      * @param p2 Particle which exerts force on p1.
      * @return Vector<double, 3> Force exerted on p1 by p2.
      *

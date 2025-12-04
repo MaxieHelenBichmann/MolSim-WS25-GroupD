@@ -8,7 +8,7 @@
 
 namespace mol_sim {
 /**
- * @brief Concept of a ForceSource.
+ * @brief Abstract class of a ForceSource.
  * Each Force must implement this applyForce Method, which calculates the force between two particles.
  */
 class ForceSource {

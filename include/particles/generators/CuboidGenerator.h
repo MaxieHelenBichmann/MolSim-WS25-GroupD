@@ -16,7 +16,7 @@ using N3 = Vector<size_t, 3>;
 class CuboidGenerator : public Generator {
    private:
     /**
-     * @brief Postion of the lower left corner of the cube of particles.
+     * @brief Position of the lower left corner of the cube of particles.
      *
      */
     R3 position;
