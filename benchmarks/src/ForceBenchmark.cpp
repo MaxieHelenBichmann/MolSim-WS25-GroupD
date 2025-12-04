@@ -1,3 +1,12 @@
+/**
+ * @file ForceBenchmark.cpp
+ * @brief Benchmarks comparing concept-based vs abstract (virtual) force implementations.
+ *
+ * These benchmarks validate that compile-time polymorphism (C++ concepts) provides
+ * better performance than runtime polymorphism (virtual functions) for force calculations.
+ *
+ * Filter: --benchmark_filter=Force/Polymorphism/
+ */
 #include <benchmark/benchmark.h>
 
 #include <memory>
@@ -10,12 +19,11 @@
 
 namespace mol_sim {
 /**
- * @brief Benchmarks a force Source implemented using an abstract class.
- * Runs the gravitational force calculation 1.000-1.000.000 times
- * Reruns this Benchmark 10 Times
+ * @brief Benchmarks a force source implemented using an abstract class (virtual functions).
+ * Runs the gravitational force calculation 1,000-1,000,000 times.
+ * Reruns this Benchmark 10 times.
  */
-
-void bmAbstractForce(benchmark::State& state) {
+void bmForceAbstract(benchmark::State& state) {
     std::unique_ptr<ForceAbstract> force = std::make_unique<GravitationalAbstract>();
     Particle p1 = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0, 5., 1.};
     Particle p2 = {{1.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0, 5., 1.};
@@ -31,13 +39,13 @@ void bmAbstractForce(benchmark::State& state) {
 };
 
 /**
- * @brief Benchmarks a force Source implemented using a concept.
- * Runs the gravitational force calculation 1.000-1.000.000 times
- * Reruns this Benchmark 10 Times
+ * @brief Benchmarks a force source implemented using a concept (compile-time polymorphism).
+ * Runs the gravitational force calculation 1,000-1,000,000 times.
+ * Reruns this Benchmark 10 times.
  * @tparam forceType Type of force to benchmark
  */
 template <ForceConcept forceType>
-void bmConceptForce(benchmark::State& state) {
+void bmForceConcept(benchmark::State& state) {
     forceType force;
     Particle p1 = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0, 5., 1.};
     Particle p2 = {{1.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, 1.0, 5., 1.};
@@ -52,7 +60,8 @@ void bmConceptForce(benchmark::State& state) {
     }
 };
 
-BENCHMARK(bmAbstractForce)
+BENCHMARK(bmForceAbstract)
+    ->Name("Force/Polymorphism/Abstract")
     ->RangeMultiplier(10)
     ->Range(1000, 1000000)
     ->Complexity()
@@ -60,7 +69,8 @@ BENCHMARK(bmAbstractForce)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kMicrosecond);
 
-BENCHMARK(bmConceptForce<GravitationalConcept>)
+BENCHMARK(bmForceConcept<GravitationalConcept>)
+    ->Name("Force/Polymorphism/Concept")
     ->RangeMultiplier(10)
     ->Range(1000, 1000000)
     ->Complexity()

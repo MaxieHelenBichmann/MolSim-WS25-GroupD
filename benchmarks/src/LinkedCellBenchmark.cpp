@@ -1,3 +1,12 @@
+/**
+ * @file LinkedCellBenchmark.cpp
+ * @brief Benchmarks comparing LinkedCellContainer implementation strategies.
+ *
+ * Compares Direct (iterator-based cell management) vs Explicit (index-based cell management)
+ * implementations across various operations: add, iterate, proximity, update, boundary, halo.
+ *
+ * Filter: --benchmark_filter=LinkedCell/
+ */
 #include <benchmark/benchmark.h>
 
 #include "../code/linkedcellimpl/LinkedCellContainerDirect.h"
@@ -6,9 +15,11 @@
 
 namespace mol_sim {
 
-// Add particle Benchmark
-
-void bmAddDirect(benchmark::State& state) {
+/**
+ * @brief Benchmarks particle addition to LinkedCellContainerDirect.
+ * Adds N random particles (N = 128 to 8192).
+ */
+void bmLinkedCellAddDirect(benchmark::State& state) {
     size_t n = state.range(0);
     R3 domain_size = {100.0, 100.0, 100.0};
     double cutoff = 3.0;
@@ -25,7 +36,11 @@ void bmAddDirect(benchmark::State& state) {
     }
 }
 
-void bmAddExplicit(benchmark::State& state) {
+/**
+ * @brief Benchmarks particle addition to LinkedCellContainerExplicit.
+ * Adds N random particles (N = 128 to 8192).
+ */
+void bmLinkedCellAddExplicit(benchmark::State& state) {
     size_t n = state.range(0);
     R3 domain_size = {100.0, 100.0, 100.0};
     double cutoff = 3.0;
@@ -42,9 +57,11 @@ void bmAddExplicit(benchmark::State& state) {
     }
 }
 
-// Iterator Benchmark (all particles)
-
-void bmIteratorDirect(benchmark::State& state) {
+/**
+ * @brief Benchmarks full iteration over LinkedCellContainerDirect.
+ * Iterates over N particles (N = 128 to 8192).
+ */
+void bmLinkedCellIteratorDirect(benchmark::State& state) {
     size_t n = state.range(0);
     R3 domain_size = {100.0, 100.0, 100.0};
     double cutoff = 3.0;
@@ -67,7 +84,11 @@ void bmIteratorDirect(benchmark::State& state) {
     benchmark::DoNotOptimize(count);
 }
 
-void bmIteratorExplicit(benchmark::State& state) {
+/**
+ * @brief Benchmarks full iteration over LinkedCellContainerExplicit.
+ * Iterates over N particles (N = 128 to 8192).
+ */
+void bmLinkedCellIteratorExplicit(benchmark::State& state) {
     size_t n = state.range(0);
     R3 domain_size = {100.0, 100.0, 100.0};
     double cutoff = 3.0;
@@ -90,9 +111,11 @@ void bmIteratorExplicit(benchmark::State& state) {
     benchmark::DoNotOptimize(count);
 }
 
-// Proximity Iterator Benchmark
-
-void bmProximityIteratorDirect(benchmark::State& state) {
+/**
+ * @brief Benchmarks proximity iteration on LinkedCellContainerDirect.
+ * Finds neighbors within cutoff radius from center position (N = 128 to 8192).
+ */
+void bmLinkedCellProximityDirect(benchmark::State& state) {
     size_t n = state.range(0);
     R3 domain_size = {100.0, 100.0, 100.0};
     double cutoff = 10.0;
@@ -119,7 +142,11 @@ void bmProximityIteratorDirect(benchmark::State& state) {
     benchmark::DoNotOptimize(count);
 }
 
-void bmProximityIteratorExplicit(benchmark::State& state) {
+/**
+ * @brief Benchmarks proximity iteration on LinkedCellContainerExplicit.
+ * Finds neighbors within cutoff radius from center position (N = 128 to 8192).
+ */
+void bmLinkedCellProximityExplicit(benchmark::State& state) {
     size_t n = state.range(0);
     R3 domain_size = {100.0, 100.0, 100.0};
     double cutoff = 10.0;
@@ -146,9 +173,11 @@ void bmProximityIteratorExplicit(benchmark::State& state) {
     benchmark::DoNotOptimize(count);
 }
 
-// Update Position Benchmark (with cell switching)
-
-void bmUpdatePositionDirect(benchmark::State& state) {
+/**
+ * @brief Benchmarks position updates on LinkedCellContainerDirect.
+ * Updates particle positions causing cell migrations (N = 128 to 8192).
+ */
+void bmLinkedCellUpdateDirect(benchmark::State& state) {
     size_t n = state.range(0);
     R3 domain_size = {100.0, 100.0, 100.0};
     double cutoff = 3.0;
@@ -172,7 +201,11 @@ void bmUpdatePositionDirect(benchmark::State& state) {
     }
 }
 
-void bmUpdatePositionExplicit(benchmark::State& state) {
+/**
+ * @brief Benchmarks position updates on LinkedCellContainerExplicit.
+ * Updates particle positions causing cell migrations (N = 128 to 8192).
+ */
+void bmLinkedCellUpdateExplicit(benchmark::State& state) {
     size_t n = state.range(0);
     R3 domain_size = {100.0, 100.0, 100.0};
     double cutoff = 3.0;
@@ -196,9 +229,11 @@ void bmUpdatePositionExplicit(benchmark::State& state) {
     }
 }
 
-// Mixed Operations Benchmark
-
-void bmMixedDirect(benchmark::State& state) {
+/**
+ * @brief Benchmarks mixed operations on LinkedCellContainerDirect.
+ * Performs add, iterate, and proximity operations (N = 128 to 8192).
+ */
+void bmLinkedCellMixedDirect(benchmark::State& state) {
     size_t n = state.range(0);
     R3 domain_size = {100.0, 100.0, 100.0};
     double cutoff = 10.0;
@@ -229,7 +264,11 @@ void bmMixedDirect(benchmark::State& state) {
     }
 }
 
-void bmMixedExplicit(benchmark::State& state) {
+/**
+ * @brief Benchmarks mixed operations on LinkedCellContainerExplicit.
+ * Performs add, iterate, and proximity operations (N = 128 to 8192).
+ */
+void bmLinkedCellMixedExplicit(benchmark::State& state) {
     size_t n = state.range(0);
     R3 domain_size = {100.0, 100.0, 100.0};
     double cutoff = 10.0;
@@ -260,9 +299,11 @@ void bmMixedExplicit(benchmark::State& state) {
     }
 }
 
-// Boundary Iterator Benchmark
-
-void bmBoundaryIteratorDirect(benchmark::State& state) {
+/**
+ * @brief Benchmarks boundary iteration on LinkedCellContainerDirect.
+ * Iterates over particles in boundary cells (N = 128 to 8192).
+ */
+void bmLinkedCellBoundaryDirect(benchmark::State& state) {
     size_t n = state.range(0);
     R3 domain_size = {100.0, 100.0, 100.0};
     double cutoff = 3.0;
@@ -287,7 +328,11 @@ void bmBoundaryIteratorDirect(benchmark::State& state) {
     benchmark::DoNotOptimize(count);
 }
 
-void bmBoundaryIteratorExplicit(benchmark::State& state) {
+/**
+ * @brief Benchmarks boundary iteration on LinkedCellContainerExplicit.
+ * Iterates over particles in boundary cells (N = 128 to 8192).
+ */
+void bmLinkedCellBoundaryExplicit(benchmark::State& state) {
     size_t n = state.range(0);
     R3 domain_size = {100.0, 100.0, 100.0};
     double cutoff = 3.0;
@@ -312,9 +357,11 @@ void bmBoundaryIteratorExplicit(benchmark::State& state) {
     benchmark::DoNotOptimize(count);
 }
 
-// Halo Iterator Benchmark
-
-void bmHaloIteratorDirect(benchmark::State& state) {
+/**
+ * @brief Benchmarks halo iteration on LinkedCellContainerDirect.
+ * Iterates over particles in halo cells (N = 128 to 8192).
+ */
+void bmLinkedCellHaloDirect(benchmark::State& state) {
     size_t n = state.range(0);
     R3 domain_size = {100.0, 100.0, 100.0};
     double cutoff = 3.0;
@@ -342,7 +389,11 @@ void bmHaloIteratorDirect(benchmark::State& state) {
     benchmark::DoNotOptimize(count);
 }
 
-void bmHaloIteratorExplicit(benchmark::State& state) {
+/**
+ * @brief Benchmarks halo iteration on LinkedCellContainerExplicit.
+ * Iterates over particles in halo cells (N = 128 to 8192).
+ */
+void bmLinkedCellHaloExplicit(benchmark::State& state) {
     size_t n = state.range(0);
     R3 domain_size = {100.0, 100.0, 100.0};
     double cutoff = 3.0;
@@ -372,14 +423,16 @@ void bmHaloIteratorExplicit(benchmark::State& state) {
 
 // Benchmark Registrations
 
-BENCHMARK(bmAddDirect)
+BENCHMARK(bmLinkedCellAddDirect)
+    ->Name("LinkedCell/Add/Direct")
     ->RangeMultiplier(2)
     ->Range(128, 8192)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kMillisecond)
     ->Complexity();
-BENCHMARK(bmAddExplicit)
+BENCHMARK(bmLinkedCellAddExplicit)
+    ->Name("LinkedCell/Add/Explicit")
     ->RangeMultiplier(2)
     ->Range(128, 8192)
     ->Repetitions(10)
@@ -387,29 +440,16 @@ BENCHMARK(bmAddExplicit)
     ->Unit(benchmark::kMillisecond)
     ->Complexity();
 
-BENCHMARK(bmIteratorDirect)
+BENCHMARK(bmLinkedCellIteratorDirect)
+    ->Name("LinkedCell/Iterator/Direct")
     ->RangeMultiplier(2)
     ->Range(128, 8192)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kMicrosecond)
     ->Complexity();
-BENCHMARK(bmIteratorExplicit)
-    ->RangeMultiplier(2)
-    ->Range(128, 8192)
-    ->Repetitions(10)
-    ->DisplayAggregatesOnly(true)
-    ->Unit(benchmark::kMicrosecond)
-    ->Complexity();
-
-BENCHMARK(bmProximityIteratorDirect)
-    ->RangeMultiplier(2)
-    ->Range(128, 8192)
-    ->Repetitions(10)
-    ->DisplayAggregatesOnly(true)
-    ->Unit(benchmark::kMicrosecond)
-    ->Complexity();
-BENCHMARK(bmProximityIteratorExplicit)
+BENCHMARK(bmLinkedCellIteratorExplicit)
+    ->Name("LinkedCell/Iterator/Explicit")
     ->RangeMultiplier(2)
     ->Range(128, 8192)
     ->Repetitions(10)
@@ -417,52 +457,77 @@ BENCHMARK(bmProximityIteratorExplicit)
     ->Unit(benchmark::kMicrosecond)
     ->Complexity();
 
-BENCHMARK(bmUpdatePositionDirect)
+BENCHMARK(bmLinkedCellProximityDirect)
+    ->Name("LinkedCell/Proximity/Direct")
+    ->RangeMultiplier(2)
+    ->Range(128, 8192)
+    ->Repetitions(10)
+    ->DisplayAggregatesOnly(true)
+    ->Unit(benchmark::kMicrosecond)
+    ->Complexity();
+BENCHMARK(bmLinkedCellProximityExplicit)
+    ->Name("LinkedCell/Proximity/Explicit")
+    ->RangeMultiplier(2)
+    ->Range(128, 8192)
+    ->Repetitions(10)
+    ->DisplayAggregatesOnly(true)
+    ->Unit(benchmark::kMicrosecond)
+    ->Complexity();
+
+BENCHMARK(bmLinkedCellUpdateDirect)
+    ->Name("LinkedCell/Update/Direct")
     ->RangeMultiplier(2)
     ->Range(128, 8192)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kMillisecond);
-BENCHMARK(bmUpdatePositionExplicit)
+BENCHMARK(bmLinkedCellUpdateExplicit)
+    ->Name("LinkedCell/Update/Explicit")
     ->RangeMultiplier(2)
     ->Range(128, 8192)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kMillisecond);
 
-BENCHMARK(bmBoundaryIteratorDirect)
+BENCHMARK(bmLinkedCellBoundaryDirect)
+    ->Name("LinkedCell/Boundary/Direct")
     ->RangeMultiplier(2)
     ->Range(128, 8192)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kMicrosecond);
-BENCHMARK(bmBoundaryIteratorExplicit)
-    ->RangeMultiplier(2)
-    ->Range(128, 8192)
-    ->Repetitions(10)
-    ->DisplayAggregatesOnly(true)
-    ->Unit(benchmark::kMicrosecond);
-
-BENCHMARK(bmHaloIteratorDirect)
-    ->RangeMultiplier(2)
-    ->Range(128, 8192)
-    ->Repetitions(10)
-    ->DisplayAggregatesOnly(true)
-    ->Unit(benchmark::kMicrosecond);
-BENCHMARK(bmHaloIteratorExplicit)
+BENCHMARK(bmLinkedCellBoundaryExplicit)
+    ->Name("LinkedCell/Boundary/Explicit")
     ->RangeMultiplier(2)
     ->Range(128, 8192)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kMicrosecond);
 
-BENCHMARK(bmMixedDirect)
+BENCHMARK(bmLinkedCellHaloDirect)
+    ->Name("LinkedCell/Halo/Direct")
+    ->RangeMultiplier(2)
+    ->Range(128, 8192)
+    ->Repetitions(10)
+    ->DisplayAggregatesOnly(true)
+    ->Unit(benchmark::kMicrosecond);
+BENCHMARK(bmLinkedCellHaloExplicit)
+    ->Name("LinkedCell/Halo/Explicit")
+    ->RangeMultiplier(2)
+    ->Range(128, 8192)
+    ->Repetitions(10)
+    ->DisplayAggregatesOnly(true)
+    ->Unit(benchmark::kMicrosecond);
+
+BENCHMARK(bmLinkedCellMixedDirect)
+    ->Name("LinkedCell/Mixed/Direct")
     ->RangeMultiplier(2)
     ->Range(128, 8192)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kMillisecond);
-BENCHMARK(bmMixedExplicit)
+BENCHMARK(bmLinkedCellMixedExplicit)
+    ->Name("LinkedCell/Mixed/Explicit")
     ->RangeMultiplier(2)
     ->Range(128, 8192)
     ->Repetitions(10)

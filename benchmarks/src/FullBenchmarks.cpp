@@ -1,3 +1,12 @@
+/**
+ * @file FullBenchmarks.cpp
+ * @brief End-to-end simulation benchmarks comparing different container implementations.
+ *
+ * Runs full simulations with Assignment 3 Task 3 parameters to compare performance
+ * of SimpleContainer, LinkedCellContainerDirect, and LinkedCellContainerExplicit.
+ *
+ * Filter: --benchmark_filter=Simulation/Full/
+ */
 #include <benchmark/benchmark.h>
 
 #include <array>
@@ -35,12 +44,12 @@ void generateCuboid(Container& particles, R3 position, R3 velocity, Vector<size_
         }
     }
 }
+
 /**
- * @brief Tests the simulation with the parameters given in Assignment 3 Task 3
- * Particle counts are 100x20x1 + 20x20x1
- *
+ * @brief Benchmarks full simulation with SimpleContainer using Assignment 3 parameters.
+ * Particle counts are 100x20x1 + 20x20x1 (2400 total), 20s simulation time.
  */
-static void bmSimulationGiven(benchmark::State& state) {
+static void bmSimulationFullSimple(benchmark::State& state) {
     SimpleContainer part_container;
     SettingsParam settings;
     settings.delta_t = 0.0005;
@@ -72,7 +81,11 @@ static void bmSimulationGiven(benchmark::State& state) {
     }
 }
 
-void bmSimulationGivenCutOff(benchmark::State& state) {
+/**
+ * @brief Benchmarks full simulation with SimpleContainer using cutoff radius.
+ * Particle counts are 100x20x1 + 20x20x1 (2400 total), 20s simulation time.
+ */
+void bmSimulationFullSimpleCutoff(benchmark::State& state) {
     SimpleContainer part_container;
     SettingsParam settings;
     settings.delta_t = 0.0005;
@@ -103,7 +116,11 @@ void bmSimulationGivenCutOff(benchmark::State& state) {
     }
 }
 
-void bmSimulationGivenLCDirect(benchmark::State& state) {
+/**
+ * @brief Benchmarks full simulation with LinkedCellContainerDirect.
+ * Particle counts are 100x20x1 + 20x20x1 (2400 total), 20s simulation time.
+ */
+void bmSimulationFullLinkedCellDirect(benchmark::State& state) {
     LinkedCellContainerDirect part_container({180., 90., 1.}, 3.0);
     SettingsParam settings;
     settings.delta_t = 0.0005;
@@ -134,7 +151,11 @@ void bmSimulationGivenLCDirect(benchmark::State& state) {
     }
 }
 
-void bmSimulationGivenLCExplicit(benchmark::State& state) {
+/**
+ * @brief Benchmarks full simulation with LinkedCellContainerExplicit.
+ * Particle counts are 100x20x1 + 20x20x1 (2400 total), 20s simulation time.
+ */
+void bmSimulationFullLinkedCellExplicit(benchmark::State& state) {
     LinkedCellContainerExplicit part_container({180., 90., 1.}, 3.0);
     SettingsParam settings;
     settings.delta_t = 0.0005;
@@ -166,11 +187,11 @@ void bmSimulationGivenLCExplicit(benchmark::State& state) {
     }
 }
 
-BENCHMARK(bmSimulationGiven)->Unit(benchmark::kMillisecond)->Repetitions(5)->DisplayAggregatesOnly(true);
+BENCHMARK(bmSimulationFullSimple)->Name("Simulation/Full/Simple")->Unit(benchmark::kMillisecond)->Repetitions(5)->DisplayAggregatesOnly(true);
 
-BENCHMARK(bmSimulationGivenCutOff)->Unit(benchmark::kMillisecond)->Repetitions(5)->DisplayAggregatesOnly(true);
+BENCHMARK(bmSimulationFullSimpleCutoff)->Name("Simulation/Full/SimpleCutoff")->Unit(benchmark::kMillisecond)->Repetitions(5)->DisplayAggregatesOnly(true);
 
-BENCHMARK(bmSimulationGivenLCDirect)->Unit(benchmark::kMillisecond)->Repetitions(5)->DisplayAggregatesOnly(true);
-BENCHMARK(bmSimulationGivenLCExplicit)->Unit(benchmark::kMillisecond)->Repetitions(5)->DisplayAggregatesOnly(true);
+BENCHMARK(bmSimulationFullLinkedCellDirect)->Name("Simulation/Full/LinkedCellDirect")->Unit(benchmark::kMillisecond)->Repetitions(5)->DisplayAggregatesOnly(true);
+BENCHMARK(bmSimulationFullLinkedCellExplicit)->Name("Simulation/Full/LinkedCellExplicit")->Unit(benchmark::kMillisecond)->Repetitions(5)->DisplayAggregatesOnly(true);
 
 }  // namespace mol_sim

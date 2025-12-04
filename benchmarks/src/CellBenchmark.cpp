@@ -1,3 +1,13 @@
+/**
+ * @file CellBenchmark.cpp
+ * @brief Benchmarks comparing different cell data structure implementations.
+ *
+ * Compares Vector, Set, and UnorderedSet implementations for cell operations:
+ * add, iterate, update, remove, and mixed operations. Used to determine the
+ * optimal data structure for LinkedCellContainer's internal cells.
+ *
+ * Filter: --benchmark_filter=Cell/
+ */
 #include <benchmark/benchmark.h>
 
 #include <array>
@@ -7,9 +17,11 @@
 #include "../code/cellimpl/CellVector.h"
 namespace mol_sim {
 
-// Add particle Benchmark
-
-void bmAddVector(benchmark::State& state) {
+/**
+ * @brief Benchmarks particle addition using std::vector-backed cell.
+ * Adds N particles to a cell (N = 8 to 8192).
+ */
+void bmCellAddVector(benchmark::State& state) {
     std::array<double, 6> bounds = {0., 1., 0., 1., 0., 1.};
     size_t n = state.range(0);
     for ([[maybe_unused]] auto _ : state) {
@@ -20,7 +32,12 @@ void bmAddVector(benchmark::State& state) {
         benchmark::DoNotOptimize(cell);
     }
 }
-void bmAddSet(benchmark::State& state) {
+
+/**
+ * @brief Benchmarks particle addition using std::set-backed cell.
+ * Adds N particles to a cell (N = 8 to 8192).
+ */
+void bmCellAddSet(benchmark::State& state) {
     std::array<double, 6> bounds = {0., 1., 0., 1., 0., 1.};
     size_t n = state.range(0);
     for ([[maybe_unused]] auto _ : state) {
@@ -31,7 +48,12 @@ void bmAddSet(benchmark::State& state) {
         benchmark::DoNotOptimize(cell);
     }
 }
-void bmAddUnOrdSet(benchmark::State& state) {
+
+/**
+ * @brief Benchmarks particle addition using std::unordered_set-backed cell.
+ * Adds N particles to a cell (N = 8 to 8192).
+ */
+void bmCellAddUnorderedSet(benchmark::State& state) {
     std::array<double, 6> bounds = {0., 1., 0., 1., 0., 1.};
     size_t n = state.range(0);
     for ([[maybe_unused]] auto _ : state) {
@@ -43,9 +65,11 @@ void bmAddUnOrdSet(benchmark::State& state) {
     }
 }
 
-// Iterator Benchmark
-
-void bmIteratorVector(benchmark::State& state) {
+/**
+ * @brief Benchmarks iteration over std::vector-backed cell.
+ * Iterates over N particles in a cell (N = 8 to 8192).
+ */
+void bmCellIteratorVector(benchmark::State& state) {
     std::array<double, 6> bounds = {0., 1., 0., 1., 0., 1.};
     CellVector cell(bounds);
     size_t n = state.range(0);
@@ -63,7 +87,11 @@ void bmIteratorVector(benchmark::State& state) {
     benchmark::DoNotOptimize(res);
 }
 
-void bmIteratorSet(benchmark::State& state) {
+/**
+ * @brief Benchmarks iteration over std::set-backed cell.
+ * Iterates over N particles in a cell (N = 8 to 8192).
+ */
+void bmCellIteratorSet(benchmark::State& state) {
     std::array<double, 6> bounds = {0., 1., 0., 1., 0., 1.};
     CellSet cell(bounds);
     size_t n = state.range(0);
@@ -81,7 +109,11 @@ void bmIteratorSet(benchmark::State& state) {
     benchmark::DoNotOptimize(res);
 }
 
-void bmIteratorUnOrdSet(benchmark::State& state) {
+/**
+ * @brief Benchmarks iteration over std::unordered_set-backed cell.
+ * Iterates over N particles in a cell (N = 8 to 8192).
+ */
+void bmCellIteratorUnorderedSet(benchmark::State& state) {
     std::array<double, 6> bounds = {0., 1., 0., 1., 0., 1.};
     CellUnorderedSet cell(bounds);
     size_t n = state.range(0);
@@ -102,9 +134,11 @@ void bmIteratorUnOrdSet(benchmark::State& state) {
     benchmark::DoNotOptimize(res);
 }
 
-// Update Benchmark
-
-void bmUpdateVector(benchmark::State& state) {
+/**
+ * @brief Benchmarks particle index updates in std::vector-backed cell.
+ * Updates N particle indices (N = 8 to 8192).
+ */
+void bmCellUpdateVector(benchmark::State& state) {
     size_t n = state.range(0);
     std::array<double, 6> bounds = {-static_cast<double>(n), static_cast<double>(n),  -static_cast<double>(n),
                                     static_cast<double>(n),  -static_cast<double>(n), static_cast<double>(n)};
@@ -121,7 +155,11 @@ void bmUpdateVector(benchmark::State& state) {
     }
 }
 
-void bmUpdateSet(benchmark::State& state) {
+/**
+ * @brief Benchmarks particle index updates in std::set-backed cell.
+ * Updates N particle indices (N = 8 to 8192).
+ */
+void bmCellUpdateSet(benchmark::State& state) {
     size_t n = state.range(0);
     std::array<double, 6> bounds = {-static_cast<double>(n), static_cast<double>(n),  -static_cast<double>(n),
                                     static_cast<double>(n),  -static_cast<double>(n), static_cast<double>(n)};
@@ -138,7 +176,11 @@ void bmUpdateSet(benchmark::State& state) {
     }
 }
 
-void bmUpdateUnOrdSet(benchmark::State& state) {
+/**
+ * @brief Benchmarks particle index updates in std::unordered_set-backed cell.
+ * Updates N particle indices (N = 8 to 8192).
+ */
+void bmCellUpdateUnorderedSet(benchmark::State& state) {
     size_t n = state.range(0);
     std::array<double, 6> bounds = {-static_cast<double>(n), static_cast<double>(n),  -static_cast<double>(n),
                                     static_cast<double>(n),  -static_cast<double>(n), static_cast<double>(n)};
@@ -154,9 +196,11 @@ void bmUpdateUnOrdSet(benchmark::State& state) {
     }
 }
 
-// Remove Benchmark
-
-void bmRemoveVector(benchmark::State& state) {
+/**
+ * @brief Benchmarks particle removal from std::vector-backed cell.
+ * Removes N particles from a cell (N = 8 to 8192).
+ */
+void bmCellRemoveVector(benchmark::State& state) {
     std::array<double, 6> bounds = {0., 1., 0., 1., 0., 1.};
     size_t n = state.range(0);
     for ([[maybe_unused]] auto _ : state) {
@@ -172,7 +216,11 @@ void bmRemoveVector(benchmark::State& state) {
     }
 }
 
-void bmRemoveSet(benchmark::State& state) {
+/**
+ * @brief Benchmarks particle removal from std::set-backed cell.
+ * Removes N particles from a cell (N = 8 to 8192).
+ */
+void bmCellRemoveSet(benchmark::State& state) {
     std::array<double, 6> bounds = {0., 1., 0., 1., 0., 1.};
     size_t n = state.range(0);
     for ([[maybe_unused]] auto _ : state) {
@@ -188,7 +236,11 @@ void bmRemoveSet(benchmark::State& state) {
     }
 }
 
-void bmRemoveUnOrdSet(benchmark::State& state) {
+/**
+ * @brief Benchmarks particle removal from std::unordered_set-backed cell.
+ * Removes N particles from a cell (N = 8 to 8192).
+ */
+void bmCellRemoveUnorderedSet(benchmark::State& state) {
     std::array<double, 6> bounds = {0., 1., 0., 1., 0., 1.};
     size_t n = state.range(0);
     for ([[maybe_unused]] auto _ : state) {
@@ -204,9 +256,11 @@ void bmRemoveUnOrdSet(benchmark::State& state) {
     }
 }
 
-// Mixed Operations Benchmark
-
-void bmMixedVector(benchmark::State& state) {
+/**
+ * @brief Benchmarks mixed operations on std::vector-backed cell.
+ * Performs add, iterate, and remove operations (N = 8 to 8192).
+ */
+void bmCellMixedVector(benchmark::State& state) {
     std::array<double, 6> bounds = {0., 1., 0., 1., 0., 1.};
     size_t n = state.range(0);
 
@@ -227,7 +281,11 @@ void bmMixedVector(benchmark::State& state) {
     }
 }
 
-void bmMixedSet(benchmark::State& state) {
+/**
+ * @brief Benchmarks mixed operations on std::set-backed cell.
+ * Performs add, iterate, and remove operations (N = 8 to 8192).
+ */
+void bmCellMixedSet(benchmark::State& state) {
     std::array<double, 6> bounds = {0., 1., 0., 1., 0., 1.};
     size_t n = state.range(0);
 
@@ -248,7 +306,11 @@ void bmMixedSet(benchmark::State& state) {
     }
 }
 
-void bmMixedUnOrdSet(benchmark::State& state) {
+/**
+ * @brief Benchmarks mixed operations on std::unordered_set-backed cell.
+ * Performs add, iterate, and remove operations (N = 8 to 8192).
+ */
+void bmCellMixedUnorderedSet(benchmark::State& state) {
     std::array<double, 6> bounds = {0., 1., 0., 1., 0., 1.};
     size_t n = state.range(0);
 
@@ -273,43 +335,24 @@ void bmMixedUnOrdSet(benchmark::State& state) {
 
 // Benchmark Registrations
 
-BENCHMARK(bmAddVector)
+BENCHMARK(bmCellAddVector)
+    ->Name("Cell/Add/Vector")
     ->RangeMultiplier(2)
     ->Range(8, 8 << 10)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kNanosecond)
     ->Complexity();
-BENCHMARK(bmAddSet)
+BENCHMARK(bmCellAddSet)
+    ->Name("Cell/Add/Set")
     ->RangeMultiplier(2)
     ->Range(8, 8 << 10)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kNanosecond)
     ->Complexity();
-BENCHMARK(bmAddUnOrdSet)
-    ->RangeMultiplier(2)
-    ->Range(8, 8 << 10)
-    ->Repetitions(10)
-    ->DisplayAggregatesOnly(true)
-    ->Unit(benchmark::kNanosecond)
-    ->Complexity();
-
-BENCHMARK(bmIteratorVector)
-    ->RangeMultiplier(2)
-    ->Range(8, 8 << 10)
-    ->Repetitions(10)
-    ->DisplayAggregatesOnly(true)
-    ->Unit(benchmark::kNanosecond)
-    ->Complexity();
-BENCHMARK(bmIteratorSet)
-    ->RangeMultiplier(2)
-    ->Range(8, 8 << 10)
-    ->Repetitions(10)
-    ->DisplayAggregatesOnly(true)
-    ->Unit(benchmark::kNanosecond)
-    ->Complexity();
-BENCHMARK(bmIteratorUnOrdSet)
+BENCHMARK(bmCellAddUnorderedSet)
+    ->Name("Cell/Add/UnorderedSet")
     ->RangeMultiplier(2)
     ->Range(8, 8 << 10)
     ->Repetitions(10)
@@ -317,43 +360,24 @@ BENCHMARK(bmIteratorUnOrdSet)
     ->Unit(benchmark::kNanosecond)
     ->Complexity();
 
-BENCHMARK(bmUpdateVector)
+BENCHMARK(bmCellIteratorVector)
+    ->Name("Cell/Iterator/Vector")
     ->RangeMultiplier(2)
     ->Range(8, 8 << 10)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kNanosecond)
     ->Complexity();
-BENCHMARK(bmUpdateSet)
+BENCHMARK(bmCellIteratorSet)
+    ->Name("Cell/Iterator/Set")
     ->RangeMultiplier(2)
     ->Range(8, 8 << 10)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kNanosecond)
     ->Complexity();
-BENCHMARK(bmUpdateUnOrdSet)
-    ->RangeMultiplier(2)
-    ->Range(8, 8 << 10)
-    ->Repetitions(10)
-    ->DisplayAggregatesOnly(true)
-    ->Unit(benchmark::kNanosecond)
-    ->Complexity();
-
-BENCHMARK(bmRemoveVector)
-    ->RangeMultiplier(2)
-    ->Range(8, 8 << 10)
-    ->Repetitions(10)
-    ->DisplayAggregatesOnly(true)
-    ->Unit(benchmark::kNanosecond)
-    ->Complexity();
-BENCHMARK(bmRemoveSet)
-    ->RangeMultiplier(2)
-    ->Range(8, 8 << 10)
-    ->Repetitions(10)
-    ->DisplayAggregatesOnly(true)
-    ->Unit(benchmark::kNanosecond)
-    ->Complexity();
-BENCHMARK(bmRemoveUnOrdSet)
+BENCHMARK(bmCellIteratorUnorderedSet)
+    ->Name("Cell/Iterator/UnorderedSet")
     ->RangeMultiplier(2)
     ->Range(8, 8 << 10)
     ->Repetitions(10)
@@ -361,19 +385,72 @@ BENCHMARK(bmRemoveUnOrdSet)
     ->Unit(benchmark::kNanosecond)
     ->Complexity();
 
-BENCHMARK(bmMixedVector)
+BENCHMARK(bmCellUpdateVector)
+    ->Name("Cell/Update/Vector")
+    ->RangeMultiplier(2)
+    ->Range(8, 8 << 10)
+    ->Repetitions(10)
+    ->DisplayAggregatesOnly(true)
+    ->Unit(benchmark::kNanosecond)
+    ->Complexity();
+BENCHMARK(bmCellUpdateSet)
+    ->Name("Cell/Update/Set")
+    ->RangeMultiplier(2)
+    ->Range(8, 8 << 10)
+    ->Repetitions(10)
+    ->DisplayAggregatesOnly(true)
+    ->Unit(benchmark::kNanosecond)
+    ->Complexity();
+BENCHMARK(bmCellUpdateUnorderedSet)
+    ->Name("Cell/Update/UnorderedSet")
+    ->RangeMultiplier(2)
+    ->Range(8, 8 << 10)
+    ->Repetitions(10)
+    ->DisplayAggregatesOnly(true)
+    ->Unit(benchmark::kNanosecond)
+    ->Complexity();
+
+BENCHMARK(bmCellRemoveVector)
+    ->Name("Cell/Remove/Vector")
+    ->RangeMultiplier(2)
+    ->Range(8, 8 << 10)
+    ->Repetitions(10)
+    ->DisplayAggregatesOnly(true)
+    ->Unit(benchmark::kNanosecond)
+    ->Complexity();
+BENCHMARK(bmCellRemoveSet)
+    ->Name("Cell/Remove/Set")
+    ->RangeMultiplier(2)
+    ->Range(8, 8 << 10)
+    ->Repetitions(10)
+    ->DisplayAggregatesOnly(true)
+    ->Unit(benchmark::kNanosecond)
+    ->Complexity();
+BENCHMARK(bmCellRemoveUnorderedSet)
+    ->Name("Cell/Remove/UnorderedSet")
+    ->RangeMultiplier(2)
+    ->Range(8, 8 << 10)
+    ->Repetitions(10)
+    ->DisplayAggregatesOnly(true)
+    ->Unit(benchmark::kNanosecond)
+    ->Complexity();
+
+BENCHMARK(bmCellMixedVector)
+    ->Name("Cell/Mixed/Vector")
     ->RangeMultiplier(2)
     ->Range(8, 8 << 10)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kNanosecond);
-BENCHMARK(bmMixedSet)
+BENCHMARK(bmCellMixedSet)
+    ->Name("Cell/Mixed/Set")
     ->RangeMultiplier(2)
     ->Range(8, 8 << 10)
     ->Repetitions(10)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kNanosecond);
-BENCHMARK(bmMixedUnOrdSet)
+BENCHMARK(bmCellMixedUnorderedSet)
+    ->Name("Cell/Mixed/UnorderedSet")
     ->RangeMultiplier(2)
     ->Range(8, 8 << 10)
     ->Repetitions(10)
