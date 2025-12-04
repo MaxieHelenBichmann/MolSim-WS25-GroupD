@@ -133,7 +133,7 @@ BENCHMARK(bmBoundaryReflecting)
     ->Name("Boundary/Reflecting")
     ->RangeMultiplier(2)
     ->Range(128, 8192)
-    ->Unit(benchmark::kMicrosecond)
+    ->Unit(benchmark::kMillisecond)
     ->Repetitions(5)
     ->DisplayAggregatesOnly(true);
 
@@ -141,7 +141,7 @@ BENCHMARK(bmBoundaryVelocityReflect)
     ->Name("Boundary/VelocityReflect")
     ->RangeMultiplier(2)
     ->Range(128, 8192)
-    ->Unit(benchmark::kMicrosecond)
+    ->Unit(benchmark::kMillisecond)
     ->Repetitions(5)
     ->DisplayAggregatesOnly(true);
 
