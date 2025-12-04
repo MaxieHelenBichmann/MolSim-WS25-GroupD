@@ -457,6 +457,7 @@ BENCHMARK(bmLinkedCellIteratorExplicit)
     ->Unit(benchmark::kMicrosecond)
     ->Complexity();
 
+// there seems to be be a problem with the direct proximity iterators immediately returning
 BENCHMARK(bmLinkedCellProximityDirect)
     ->Name("LinkedCell/Proximity/Direct")
     ->RangeMultiplier(2)
@@ -465,6 +466,7 @@ BENCHMARK(bmLinkedCellProximityDirect)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kMicrosecond)
     ->Complexity();
+// there seems to be be a problem with the explicit proximity iterators causing segfaults
 BENCHMARK(bmLinkedCellProximityExplicit)
     ->Name("LinkedCell/Proximity/Explicit")
     ->RangeMultiplier(2)

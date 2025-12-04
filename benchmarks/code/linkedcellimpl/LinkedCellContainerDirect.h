@@ -114,14 +114,15 @@ class LinkedCellContainerDirect {
         R3 center;
 
         void inc() {
-            if (cells.empty() || cur_cell == cells.end() || cur == end) {
+            if (cells.empty() || (cur_cell == cells.end() && cur == end)) {
                 return;
             }
             SPDLOG_DEBUG("Incrementing proximity iterator");
-            if (cur != end) {
+            if (cur != (*cur_cell)->particles().end()) {
                 ++cur;
+                return;
             }
-            while (cur_cell != cells.end() && cur == (*cur_cell)->particles().end() && cur != end) {
+            while (cur_cell != cells.end() && cur == (*cur_cell)->particles().end()) {
                 ++cur_cell;
                 if (cur_cell == cells.end()) {
                     cur = end;
@@ -131,21 +132,22 @@ class LinkedCellContainerDirect {
             }
         }
         void dec() {
-            if (cells.empty() || cur_cell == cells.end() || cur == begin) {
+            if (cells.empty() || (cur_cell == cells.begin() && cur == begin)) {
                 return;
             }
             SPDLOG_DEBUG("Decremeting proximity iterator");
-            if (cur != begin && cur != (*cur_cell)->particles().begin()) {
+            if (cur != (*cur_cell)->particles().begin()) {
                 --cur;
+                return;
             }
-            while (cur_cell != cells.begin() && cur == (*cur_cell)->particles().begin() && cur != begin) {
+            while (cur_cell != cells.begin() && cur == (*cur_cell)->particles().begin()) {
                 --cur_cell;
                 cur = (*cur_cell)->particles().end();
             }
         }
 
         void satisfyInc() {
-            while (!cells.empty() && cur_cell != cells.end() && cur != end &&
+            while (!cells.empty() && cur_cell != cells.end() &&
                    (cur == (*cur_cell)->particles().end() || !((center - (*cur).getX()).euclidNorm() <= radius) ||
                     std::ranges::find(skipped_particles.begin(), skipped_particles.end(), *cur) !=
                         skipped_particles.end())) {
@@ -153,7 +155,7 @@ class LinkedCellContainerDirect {
             }
         }
         void satisfyDec() {
-            while (!cells.empty() && cur != begin &&
+            while (!cells.empty() &&
                    (cur == (*cur_cell)->particles().begin() || !((center - (*cur).getX()).euclidNorm() <= radius) ||
                     std::ranges::find(skipped_particles.begin(), skipped_particles.end(), *cur) !=
                         skipped_particles.end())) {
@@ -288,14 +290,15 @@ class LinkedCellContainerDirect {
         R3 center;
 
         void inc() {
-            if (cells.empty() || cur_cell == cells.end() || cur == end) {
+            if (cells.empty() || (cur_cell == cells.end() && cur == end)) {
                 return;
             }
             SPDLOG_DEBUG("Incrementing proximity iterator");
-            if (cur != end) {
+            if (cur != (*cur_cell)->particles().end()) {
                 ++cur;
+                return;
             }
-            while (cur_cell != cells.end() && cur == (*cur_cell)->particles().end() && cur != end) {
+            while (cur_cell != cells.end() && cur == (*cur_cell)->particles().end()) {
                 ++cur_cell;
                 if (cur_cell == cells.end()) {
                     cur = end;
@@ -305,22 +308,22 @@ class LinkedCellContainerDirect {
             }
         }
         void dec() {
-            if (cells.empty() || cur_cell == cells.end() || cur == begin) {
+            if (cells.empty() || (cur_cell == cells.begin() && cur == begin)) {
                 return;
             }
             SPDLOG_DEBUG("Decremeting proximity iterator");
-            if (cur != begin) {
+            if (cur != (*cur_cell)->particles().begin()) {
                 --cur;
+                return;
             }
-            while (cur_cell != cells.begin() && cur == (*cur_cell)->particles().begin() &&
-                   cur != cells.front()->particles().begin()) {
+            while (cur_cell != cells.begin() && cur == (*cur_cell)->particles().begin()) {
                 --cur_cell;
                 cur = (*cur_cell)->particles().end();
             }
         }
 
         void satisfyInc() {
-            while (!cells.empty() && cur_cell != cells.end() && cur != end &&
+            while (!cells.empty() && cur_cell != cells.end() &&
                    (cur == (*cur_cell)->particles().end() || !((center - (*cur).getX()).euclidNorm() <= radius) ||
                     std::ranges::find(skipped_particles.begin(), skipped_particles.end(), *cur) !=
                         skipped_particles.end())) {
@@ -328,7 +331,7 @@ class LinkedCellContainerDirect {
             }
         }
         void satisfyDec() {
-            while (!cells.empty() && cur != begin &&
+            while (!cells.empty() &&
                    (cur == (*cur_cell)->particles().begin() || !((center - (*cur).getX()).euclidNorm() <= radius) ||
                     std::ranges::find(skipped_particles.begin(), skipped_particles.end(), *cur) !=
                         skipped_particles.end())) {

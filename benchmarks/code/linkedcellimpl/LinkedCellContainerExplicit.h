@@ -119,7 +119,7 @@ class LinkedCellContainerExplicit {
             if (cur != cell_end) {
                 ++cur;
             }
-            while (cur == cell_end && cur != end) {  // reached end of current cell
+            while (cur == cell_end && cells.size() > 1) {  // reached end of current cell
                 cells.erase(cells.begin());
                 cur = cells.front()->particles().begin();
                 cell_end = cells.front()->particles().end();
@@ -192,7 +192,7 @@ class LinkedCellContainerExplicit {
             if (cur != cell_end) {
                 ++cur;
             }
-            while (cur == cell_end && cur != end) {  // reached end of current cell
+            while (cur == cell_end && cells.size() > 1) {  // reached end of current cell
                 cells.erase(cells.begin());
                 cur = cells.front()->particles().begin();
                 cell_end = cells.front()->particles().end();

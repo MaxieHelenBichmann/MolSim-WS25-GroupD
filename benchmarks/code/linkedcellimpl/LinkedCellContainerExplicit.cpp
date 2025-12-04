@@ -486,6 +486,11 @@ LinkedCellContainerExplicit::proximity_iterator LinkedCellContainerExplicit::hal
         }
     }
 
+    if (unique_and_nonempty_cells.empty()) {
+        return proximity_iterator{
+            R3{}, std::numeric_limits<double>::infinity(), cells.front().particles().begin(), {&cells.front()}, &data};
+    }
+
     return proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
                               unique_and_nonempty_cells.front()->particles().begin(), unique_and_nonempty_cells, &data};
 }
@@ -505,6 +510,11 @@ LinkedCellContainerExplicit::const_proximity_iterator LinkedCellContainerExplici
         if (seen.insert(c).second && !c->particles().empty()) {
             unique_and_nonempty_cells.push_back(c);
         }
+    }
+
+    if (unique_and_nonempty_cells.empty()) {
+        return const_proximity_iterator{
+            R3{}, std::numeric_limits<double>::infinity(), cells.front().particles().begin(), {&cells.front()}, &data};
     }
 
     return const_proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
@@ -529,6 +539,10 @@ LinkedCellContainerExplicit::proximity_iterator LinkedCellContainerExplicit::hal
         }
     }
 
+    if (unique_and_nonempty_cells.empty()) {
+        return haloBegin(boundary_types);
+    }
+
     return proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
                               unique_and_nonempty_cells.back()->particles().end(), unique_and_nonempty_cells, &data};
 }
@@ -548,6 +562,10 @@ LinkedCellContainerExplicit::const_proximity_iterator LinkedCellContainerExplici
         if (seen.insert(c).second && !c->particles().empty()) {
             unique_and_nonempty_cells.push_back(c);
         }
+    }
+
+    if (unique_and_nonempty_cells.empty()) {
+        return haloBegin(boundary_types);
     }
 
     return const_proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
@@ -572,6 +590,11 @@ LinkedCellContainerExplicit::proximity_iterator LinkedCellContainerExplicit::bou
         }
     }
 
+    if (unique_and_nonempty_cells.empty()) {
+        return proximity_iterator{
+            R3{}, std::numeric_limits<double>::infinity(), cells.front().particles().begin(), {&cells.front()}, &data};
+    }
+
     return proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
                               unique_and_nonempty_cells.front()->particles().begin(), unique_and_nonempty_cells, &data};
 }
@@ -591,6 +614,11 @@ LinkedCellContainerExplicit::const_proximity_iterator LinkedCellContainerExplici
         if (seen.insert(c).second && !c->particles().empty()) {
             unique_and_nonempty_cells.push_back(c);
         }
+    }
+
+    if (unique_and_nonempty_cells.empty()) {
+        return const_proximity_iterator{
+            R3{}, std::numeric_limits<double>::infinity(), cells.front().particles().begin(), {&cells.front()}, &data};
     }
 
     return const_proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
@@ -613,6 +641,9 @@ LinkedCellContainerExplicit::proximity_iterator LinkedCellContainerExplicit::bou
             unique_and_nonempty_cells.push_back(c);
         }
     }
+    if (unique_and_nonempty_cells.empty()) {
+        return boundaryBegin(boundary_types);
+    }
 
     return proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
                               unique_and_nonempty_cells.back()->particles().end(), unique_and_nonempty_cells, &data};
@@ -633,6 +664,10 @@ LinkedCellContainerExplicit::const_proximity_iterator LinkedCellContainerExplici
         if (seen.insert(c).second && !c->particles().empty()) {
             unique_and_nonempty_cells.push_back(c);
         }
+    }
+
+    if (unique_and_nonempty_cells.empty()) {
+        return boundaryBegin(boundary_types);
     }
 
     return const_proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
