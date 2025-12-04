@@ -356,13 +356,11 @@ class LinkedCellContainer {
         friend bool operator==(const proximity_iterator& a, const proximity_iterator& b) noexcept {
             return a.cur == b.cur;
         }
-        friend bool operator!=(const proximity_iterator& a, const proximity_iterator& b) noexcept {
-            return !(a == b);
-        }
+        friend bool operator!=(const proximity_iterator& a, const proximity_iterator& b) noexcept { return !(a == b); }
 
-        [[nodiscard]] std::vector<Cell*> getCells() const noexcept { return cells; }
+        [[nodiscard]] std::vector<Cell*> getCells() const noexcept { return cells; }  // NOLINT
         [[nodiscard]] double getRadius() const noexcept { return radius; }
-        [[nodiscard]] R3 getCenter() const noexcept { return center; }
+        [[nodiscard]] R3 getCenter() const noexcept { return center; }  // NOLINT
         [[nodiscard]] size_t getCenterIdx() const noexcept { return center_idx; }
         [[nodiscard]] size_t getIdx() const noexcept { return *cur; }
     };
