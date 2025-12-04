@@ -75,6 +75,8 @@ class SimulationBenchmark {
 
     void applyBoundaries() {
         for (auto it = particles.begin(); it != particles.end();) {
+            (*it).getOldF() = (*it).getF();
+            (*it).getF() = Vector<double, 3>();
             domain.applyBoundary(*it, force_source);
         }
     }
@@ -117,6 +119,7 @@ class SimulationBenchmark {
 
             // 2. Apply boundaries
             applyBoundaries();
+
             // 3. Remove OOB particles
             removeParticles();
 
