@@ -35,7 +35,7 @@ void bmBoundaryReflecting(benchmark::State& state) {
     SettingsParam settings;
     settings.delta_t = 0.0005;
     settings.start_time = 0;
-    settings.end_time = 20;
+    settings.end_time = 5.;
     settings.epsilon = 5.0;
     settings.sigma = 1.0;
     settings.cutoff = 3.0;
@@ -73,7 +73,7 @@ void bmBoundaryVelocityReflect(benchmark::State& state) {
     SettingsParam settings;
     settings.delta_t = 0.0005;
     settings.start_time = 0;
-    settings.end_time = 20;
+    settings.end_time = 5.;
     settings.epsilon = 5.0;
     settings.sigma = 1.0;
     settings.cutoff = 3.0;
@@ -101,7 +101,15 @@ void bmBoundaryVelocityReflect(benchmark::State& state) {
     }
 }
 
-BENCHMARK(bmBoundaryReflecting)->Name("Boundary/Reflecting")->Unit(benchmark::kMillisecond)->Repetitions(5)->DisplayAggregatesOnly(true);
-BENCHMARK(bmBoundaryVelocityReflect)->Name("Boundary/VelocityReflect")->Unit(benchmark::kMillisecond)->Repetitions(5)->DisplayAggregatesOnly(true);
+BENCHMARK(bmBoundaryReflecting)
+    ->Name("Boundary/Reflecting")
+    ->Unit(benchmark::kMillisecond)
+    ->Repetitions(5)
+    ->DisplayAggregatesOnly(true);
+BENCHMARK(bmBoundaryVelocityReflect)
+    ->Name("Boundary/VelocityReflect")
+    ->Unit(benchmark::kMillisecond)
+    ->Repetitions(5)
+    ->DisplayAggregatesOnly(true);
 
 }  // namespace mol_sim
