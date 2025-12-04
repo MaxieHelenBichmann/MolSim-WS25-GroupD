@@ -265,10 +265,10 @@ Output location: `build/coverage/`
 
 ### Build Configuration for Profiling
 
-| Profiling Type | Recommended Build Type | Notes |
-|----------------|------------------------|-------|
-| **Performance (perf)** | `RelWithDebInfo` | Optimized code with debug symbols for accurate profiling<br> Debug builds dont show accurate performance |
-| **Memory (valgrind)** | `Debug` or `RelWithDebInfo` | Debug symbols (-g) required for detailed stack traces<br> Release builds may not show accurate line numbers |
+| Profiling Type | Recommended Build Type | 
+|----------------|------------------------|
+| **Performance (perf)** | `RelWithDebInfo` |
+| **Memory (valgrind)** | `Debug` or `RelWithDebInfo` |
 
 ### Customizing Profiling Inputs
 
@@ -287,19 +287,6 @@ Output location: `build/coverage/`
 > **Note:** Valgrind runs much slower, so use shorter simulations for memory checks.
 
 ### Perf Profiling
-
-<details>
-<summary><b>Available Targets</b></summary>
-
-| Target | Command | Description |
-|--------|---------|-------------|
-| **perf-record** | `make perf-record` | Record performance data with call graph information<br>Creates `perf.data` in build directory |
-| **perf-report** | `make perf-report` | Interactive analysis of recorded data<br>Opens TUI to explore hotspots and call chains |
-| **perf-report-text** | `make perf-report-text` | Generate text-based performance report<br>Saves to `build/perf-report.txt` |
-| **perf-stat** | `make perf-stat` | Display hardware counter statistics<br>CPU cycles, instructions, cache misses |
-| **perf-cache** | `make perf-cache` | Analyze cache performance in detail<br>Cache references, misses, L1 behavior |
-
-</details>
 
 **Recommended Workflow:**
 ```bash
