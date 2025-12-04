@@ -35,15 +35,15 @@ enum class BoundaryType : std::uint8_t { OUTFLOW, REFLECTING, VELOCITYREFLECT };
 class Boundary {
    protected:
     /**
-    * @brief The location of the boundary (UPPER, LOWER, FRONT, BACK, LEFT, RIGHT)
-    */
+     * @brief The location of the boundary (UPPER, LOWER, FRONT, BACK, LEFT, RIGHT)
+     */
     BoundaryLocation location;
     /**
-    * @brief The type of the boundary (OUTFLOW, REFLECTING, VELOCITYREF)
-    */
+     * @brief The type of the boundary (OUTFLOW, REFLECTING, VELOCITYREF)
+     */
     BoundaryType type;
     /**
-     * @brief The size of the simulation domain (i.e the upper back right corner 
+     * @brief The size of the simulation domain (i.e the upper back right corner
      * assuming the lower front left corner is the origin)
      */
     R3 domain_size;
@@ -63,19 +63,19 @@ class Boundary {
 
     /**
      * @brief Returns the type of the boundary.
-     * 
+     *
      * @return BoundaryType The type of the boundary.
      */
     [[nodiscard]] BoundaryType getType() const noexcept { return type; }
     /**
      * @brief Returns the location of the boundary.
-     * 
+     *
      * @return BoundaryLocation The location of the boundary.
      */
     [[nodiscard]] BoundaryLocation getLocation() const noexcept { return location; }
     /**
      * @brief Returns the size of the domain the boundary belongs to.
-     * 
+     *
      * @return R3 The size of the domain the boundary belongs to.
      */
     [[nodiscard]] R3 getDomainSize() const noexcept { return domain_size; }

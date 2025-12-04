@@ -34,9 +34,12 @@ void generateBoundaryParticles(LinkedCellContainer& container, R3 domain_size, s
             R3 vel = maxwellBoltzmannDistributedVelocity(1.0, 3);
 
             double margin = sigma * 0.5;
-            double rand_x = margin + ((static_cast<double>(rand()) / RAND_MAX) * (domain_size[0] - 2 * margin));
-            double rand_y = margin + ((static_cast<double>(rand()) / RAND_MAX) * (domain_size[1] - 2 * margin));
-            double rand_z = margin + ((static_cast<double>(rand()) / RAND_MAX) * (domain_size[2] - 2 * margin));
+            double rand_x =
+                margin + ((static_cast<double>(rand()) / RAND_MAX) * (domain_size[0] - 2 * margin));  // NOLINT
+            double rand_y =
+                margin + ((static_cast<double>(rand()) / RAND_MAX) * (domain_size[1] - 2 * margin));  // NOLINT
+            double rand_z =
+                margin + ((static_cast<double>(rand()) / RAND_MAX) * (domain_size[2] - 2 * margin));  // NOLINT
 
             switch (face) {
                 case 0:  // LEFT (x = 0)
