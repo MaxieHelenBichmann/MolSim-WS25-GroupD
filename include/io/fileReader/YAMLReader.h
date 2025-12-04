@@ -113,8 +113,23 @@ class YAMLReader : public FileReader {
      * @param[in]  node YAML::Node of the start of the domain block
      */
     void parseDomain(SettingsParam& settings, const YAML::Node& node);
+    /**
+     * @brief      Helper function to create XVM particles
+     *
+     * @param[in]  node YAML::Node of the start of the particles block
+     */
     void readXVM(ContainerRef particles, const YAML::Node& node);
+    /**
+     * @brief      Helper function to create cuboid particles
+     *
+     * @param[in]  node YAML::Node of the start of the cuboid block
+     */
     void readCube(ContainerRef particles, const YAML::Node& node);
+    /**
+     * @brief      Helper function to create disc particles
+     *
+     * @param[in]  node YAML::Node of the start of the disc block
+     */
     void readDisc(ContainerRef particles, const YAML::Node& node);
 };
 
