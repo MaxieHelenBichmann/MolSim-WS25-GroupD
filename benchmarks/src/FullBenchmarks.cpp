@@ -87,7 +87,6 @@ static void bmSimulationFullSimple(benchmark::State& state) {
  * Particle counts are 100x20x1 + 20x20x1 (2400 total), 20s simulation time.
  */
 void bmSimulationFullSimpleCutoff(benchmark::State& state) {
-    SimpleContainer part_container;
     SettingsParam settings;
     settings.delta_t = 0.0005;
     settings.start_time = 0;
@@ -106,6 +105,7 @@ void bmSimulationFullSimpleCutoff(benchmark::State& state) {
     settings.domain = Domain(domain_size, std::move(boundaries));
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
+    SimpleContainer part_container(domain_size, settings.cutoff);
     Simulation<SimpleContainer> simulation(part_container, *force_source, settings, *writer);
     for ([[maybe_unused]] auto _ : state) {
         part_container.clear();
