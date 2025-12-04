@@ -144,6 +144,7 @@ TEST_F(OutflowTest, outflow_linked_no_erase) {
     Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer);
     simulation.run();
     Particle expected({9.5, 5.0, 5.0}, p.getV(), p.getM(), p.getEpsilon(), p.getSigma(), p.getType());
+    expected.getOldX() = p.getX();
     EXPECT_TRUE(particles[0] == expected);
 }
 /**
@@ -160,6 +161,7 @@ TEST_F(OutflowTest, outflow_simple_no_erase) {
     Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
     simulation.run();
     Particle expected({9.5, 5.0, 5.0}, p.getV(), p.getM(), p.getEpsilon(), p.getSigma(), p.getType());
+    expected.getOldX() = p.getX();
     EXPECT_TRUE(particles[0] == expected);
 }
 }  // namespace mol_sim

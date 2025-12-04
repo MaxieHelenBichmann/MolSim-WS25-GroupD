@@ -28,6 +28,7 @@ Particle::Particle(const Particle& other) {
     f = other.f;
     epsilon = other.epsilon;
     sigma = other.sigma;
+    old_x = other.old_x;
     old_f = other.old_f;
     m = other.m;
     type = other.type;
@@ -43,6 +44,7 @@ Particle& Particle::operator=(const Particle& other) {
     f = other.f;
     epsilon = other.epsilon;
     sigma = other.sigma;
+    old_x = other.old_x;
     old_f = other.old_f;
     m = other.m;
     type = other.type;
@@ -52,6 +54,7 @@ Particle& Particle::operator=(const Particle& other) {
 
 Particle::Particle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg)
     : x(x_arg),
+      old_x(R3{0., 0., 0.}),
       v(v_arg),
       f(R3(0., 0., 0.)),
       old_f(R3{0., 0., 0.}),
@@ -63,6 +66,7 @@ Particle::Particle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double 
 }
 Particle::Particle(R3 x_arg, R3 v_arg, R3 f_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg)
     : x(x_arg),
+      old_x(R3{0., 0., 0.}),
       v(v_arg),
       f(f_arg),
       old_f(R3{0., 0., 0.}),
@@ -104,13 +108,13 @@ double& Particle::getEpsilon() noexcept { return epsilon; }
 
 std::string Particle::toString() const {
     std::stringstream stream;
-    stream << "Particle: X:" << x << " v: " << v << " f: " << f << " old_f: " << old_f << "epsilon: " << epsilon
+    stream << "Particle: x:" << x << " old_x:" << old_x << " v: " << v << " f: " << f << " old_f: " << old_f << "epsilon: " << epsilon
            << "sigma:" << sigma << " type: " << type;
     return stream.str();
 }
 
 bool Particle::operator==(const Particle& other) const noexcept {
-    return (x == other.x) and (v == other.v) and (f == other.f) and (type == other.type) and (m == other.m) and
+    return (x == other.x) and (old_x == other.old_x) and (v == other.v) and (f == other.f) and (type == other.type) and (m == other.m) and
            (old_f == other.old_f) and (epsilon == other.epsilon) and (sigma == other.sigma);
 }
 

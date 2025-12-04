@@ -44,13 +44,27 @@ class Reflecting : public Boundary {
 
     /**
      * @brief The applyBoundary routine of Reflecting. It checks if the given particle is close enough to the boundary
-     * to where this particle would be within
+     * to where this particle would be in the repulsive range of the ghost particle. If that is the case, it spawns said
+     * ghost particle to push the particle away from the boundary.
      * 
-     * @param p 
-     * @param force 
+     * @param p The particle which the boundary should be applied to.
+     * @param force The force source to be used for the inter-force calculation between ghost and normal particle.
+     * For now only supports Lennard-Jones-Force.
      */
     void applyBoundary(Particle& p, const ForceSource& force) const noexcept override;
+    /**
+     * @brief Returns the sigma of the ghost particles of this boundary.
+     * 
+     * @return std::optional<double> The sigma of the ghost particles of this boundary. If 
+     * std::nullopt is returned that means the ghosts take the sigma of the normal particles.
+     */
     [[nodiscard]] std::optional<double> getBoundarySigma() const noexcept { return boundary_sigma; }
+    /**
+     * @brief Returns the epsilon of the ghost particles of this boundary.
+     * 
+     * @return std::optional<double> The epsilon of the ghost particles of this boundary. If 
+     * std::nullopt is returned that means the ghosts take the epsilon of the normal particles.
+     */
     [[nodiscard]] std::optional<double> getBoundaryEpsilon() const noexcept { return boundary_epsilon; }
 };
 

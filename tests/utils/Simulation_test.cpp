@@ -297,6 +297,8 @@ TEST_F(SimulationTest, run_gravitational_timestep_simplecontainer) {
     // After 1 timestep: positions update first (with old_f=0), then forces calculated, then velocities
     Particle p1_expect({2.0, 1.0, 1.0}, {0.0078125, .0, .0}, {0.03125, .0, .0}, 1.0, 5., 1.);
     Particle p2_expect({6.0, 1.0, 1.0}, {9.984375, .0, .0}, {-0.03125, .0, .0}, 0.5, 5., 1.);
+    p1_expect.getOldX() = {2.0, 1.0, 1.0};
+    p2_expect.getOldX() = {1.0, 1.0, 1.0};
     EXPECT_EQ(particles_simple[0], p1_expect);
     EXPECT_EQ(particles_simple[1], p2_expect);
 }
@@ -326,6 +328,8 @@ TEST_F(SimulationTest, run_lennardjones_timestep_simplecontainer) {
     // v2 = 0 + 0.5*0.5/1*(0-120,0,0) = (-30,0,0)
     Particle p1_expect({5.0, 1.0, 1.0}, {30.0, .0, .0}, {120.0, .0, .0}, 1.0, 5., 1.);
     Particle p2_expect({4.0, 1.0, 1.0}, {-30.0, .0, .0}, {-120.0, .0, .0}, 1.0, 5., 1.);
+    p1_expect.getOldX() = {5.0, 1.0, 1.0};
+    p2_expect.getOldX() = {4.0, 1.0, 1.0};
     EXPECT_EQ(particles_simple[0], p1_expect);
     EXPECT_EQ(particles_simple[1], p2_expect);
 }
@@ -561,6 +565,8 @@ TEST_F(SimulationTest, run_gravitational_timestep_linkedcellcontainer) {
     // After 1 timestep: positions update first (with old_f=0), then forces calculated, then velocities
     Particle p1_expect({2.0, 1.0, 1.0}, {0.0078125, .0, .0}, {0.03125, .0, .0}, 1.0, 5., 1.);
     Particle p2_expect({6.0, 1.0, 1.0}, {9.984375, .0, .0}, {-0.03125, .0, .0}, 0.5, 5., 1.);
+    p1_expect.getOldX() = {2.0, 1.0, 1.0};
+    p2_expect.getOldX() = {1.0, 1.0, 1.0};
     EXPECT_EQ(particles_linked[0], p1_expect);
     EXPECT_EQ(particles_linked[1], p2_expect);
 }
@@ -590,6 +596,8 @@ TEST_F(SimulationTest, run_lennardjones_timestep_linkedcellcontainer) {
     // v2 = 0 + 0.5*0.5/1*(0-120,0,0) = (-30,0,0)
     Particle p1_expect({5.0, 1.0, 1.0}, {30.0, .0, .0}, {120.0, .0, .0}, 1.0, 5., 1.);
     Particle p2_expect({4.0, 1.0, 1.0}, {-30.0, .0, .0}, {-120.0, .0, .0}, 1.0, 5., 1.);
+    p1_expect.getOldX() = {5.0, 1.0, 1.0};
+    p2_expect.getOldX() = {4.0, 1.0, 1.0};
     EXPECT_EQ(particles_linked[0], p1_expect);
     EXPECT_EQ(particles_linked[1], p2_expect);
 }
