@@ -162,12 +162,12 @@ class LinkedCellContainerDirect {
 
         proximity_iterator() noexcept : radius(0.0) {}
         proximity_iterator(R3 center, double radius, std::vector<Particle>::iterator cur,
-                           std::vector<CellDirect*> cells, std::vector<CellDirect*>::iterator cur_cell,
+                           std::vector<CellDirect*> cells, size_t cur_cell,
                            std::vector<Particle> skipped_particles = {})
             : cur(cur),
               end(cells.back()->particles().end()),
               begin(cells.front()->particles().begin()),
-              cur_cell(cur_cell),
+              cur_cell(cells.begin() + static_cast<difference_type>(cur_cell)),
               cells(cells),
               skipped_particles(std::move(skipped_particles)),
               radius(radius),
@@ -254,7 +254,7 @@ class LinkedCellContainerDirect {
 
         operator std::vector<Particle>::iterator() const { return cur; }
         [[nodiscard]] std::vector<CellDirect*> getCells() const { return cells; }
-        [[nodiscard]] std::vector<CellDirect*>::iterator getCurCell() const { return cur_cell; }
+        [[nodiscard]] size_t getCurCell() const { return cur_cell - cells.begin(); }
         [[nodiscard]] double getRadius() const { return radius; }
         [[nodiscard]] R3 getCenter() const { return center; }
         [[nodiscard]] std::vector<Particle> getSkipped() const { return skipped_particles; }
@@ -327,13 +327,12 @@ class LinkedCellContainerDirect {
 
         const_proximity_iterator() noexcept : radius(0.0) {}
         const_proximity_iterator(R3 center, double radius, std::vector<Particle>::const_iterator cur,
-                                 std::vector<const CellDirect*> cells,
-                                 std::vector<const CellDirect*>::iterator cur_cell,
+                                 std::vector<const CellDirect*> cells, size_t cur_cell,
                                  std::vector<Particle> skipped_particles = {})
             : cur(cur),
               end(cells.back()->particles().end()),
               begin(cells.front()->particles().begin()),
-              cur_cell(cur_cell),
+              cur_cell(cells.begin() + static_cast<difference_type>(cur_cell)),
               cells(cells),
               skipped_particles(std::move(skipped_particles)),
               radius(radius),
