@@ -15,6 +15,7 @@
 #include "../code/linkedcellimpl/LinkedCellContainerDirect.h"
 #include "../code/linkedcellimpl/LinkedCellContainerExplicit.h"
 #include "../code/linkedcellimpl/SimpleContainerControl.h"
+#include "../code/simulationimpl/SimulationBenchmark.h"
 #include "io/outputWriter/XYZWriter.h"
 #include "particles/boundaries/Boundary.h"
 #include "particles/boundaries/Outflow.h"
@@ -71,7 +72,7 @@ static void bmSimulationFullSimple(benchmark::State& state) {
     settings.domain = Domain(domain_size, std::move(boundaries));
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<SimpleContainerControl> simulation(part_container, *force_source, settings, *writer);
+    SimulationBenchmark<SimpleContainerControl> simulation(part_container, *force_source, settings, *writer);
     for ([[maybe_unused]] auto _ : state) {
         part_container.clear();
         generateCuboid(part_container, {20.0, 20.0, 0.0}, {0., 0.0, 0.0}, {100U, 20U, 1U}, 1.0, 1.1225, 0.1, 5.0, 1.0);
@@ -107,7 +108,7 @@ void bmSimulationFullSimpleCutoff(benchmark::State& state) {
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
     SimpleContainerControl part_container(domain_size, settings.cutoff);
-    Simulation<SimpleContainerControl> simulation(part_container, *force_source, settings, *writer);
+    SimulationBenchmark<SimpleContainerControl> simulation(part_container, *force_source, settings, *writer);
     for ([[maybe_unused]] auto _ : state) {
         part_container.clear();
         generateCuboid(part_container, {20.0, 20.0, 0.0}, {0., 0.0, 0.0}, {100U, 20U, 1U}, 1.0, 1.1225, 0.1, 5.0, 1.0);
@@ -143,7 +144,7 @@ void bmSimulationFullLinkedCellDirect(benchmark::State& state) {
     settings.domain = Domain(domain_size, std::move(boundaries));
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<LinkedCellContainerDirect> simulation(part_container, *force_source, settings, *writer);
+    SimulationBenchmark<LinkedCellContainerDirect> simulation(part_container, *force_source, settings, *writer);
     for ([[maybe_unused]] auto _ : state) {
         part_container.clear();
         generateCuboid(part_container, {20.0, 20.0, 0.0}, {0., 0.0, 0.0}, {100U, 20U, 1U}, 1.0, 1.1225, 0.1, 5.0, 1.0);
@@ -180,7 +181,7 @@ void bmSimulationFullLinkedCellExplicit(benchmark::State& state) {
     settings.domain = Domain(domain_size, std::move(boundaries));
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<LinkedCellContainerExplicit> simulation(part_container, *force_source, settings, *writer);
+    SimulationBenchmark<LinkedCellContainerExplicit> simulation(part_container, *force_source, settings, *writer);
     for ([[maybe_unused]] auto _ : state) {
         part_container.clear();
         generateCuboid(part_container, {20.0, 20.0, 0.0}, {0., 0.0, 0.0}, {100U, 20U, 1U}, 1.0, 1.1225, 0.1, 5.0, 1.0);

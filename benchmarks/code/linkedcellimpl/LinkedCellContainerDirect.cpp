@@ -483,7 +483,7 @@ LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::e
         relevant_cells.push_back(&cell);
     }
     return const_proximity_iterator{R3(), std::numeric_limits<double>::infinity(), cells.back().particles().end(),
-                                    relevant_cells, relevant_cells.size() - 1};
+                                    relevant_cells, relevant_cells.size()};
 }
 LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::cend() const {
     std::vector<const CellDirect*> relevant_cells;
@@ -508,6 +508,11 @@ LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::proximi
         }
     }
 
+    if (nonempty_adjacent_cells.empty()) {
+        std::vector<CellDirect*> same_cell = {&cells[findCellIndex(center)]};
+        return proximity_iterator{center, cutoff_radius, same_cell.front()->particles().begin(), same_cell, 0};
+    }
+
     return proximity_iterator{center, cutoff_radius, nonempty_adjacent_cells.front()->particles().begin(),
                               nonempty_adjacent_cells, 0};
 }
@@ -521,6 +526,10 @@ LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::proximi
         if (!c->particles().empty()) {
             nonempty_adjacent_cells.push_back(c);
         }
+    }
+
+    if (nonempty_adjacent_cells.empty()) {
+        return proximityBegin(center);
     }
 
     return proximity_iterator{center, cutoff_radius, nonempty_adjacent_cells.back()->particles().end(),
@@ -539,6 +548,11 @@ LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::p
         }
     }
 
+    if (nonempty_adjacent_cells.empty()) {
+        std::vector<const CellDirect*> same_cell = {&cells[findCellIndex(center)]};
+        return const_proximity_iterator{center, cutoff_radius, same_cell.front()->particles().begin(), same_cell, 0};
+    }
+
     return const_proximity_iterator{center, cutoff_radius, nonempty_adjacent_cells.front()->particles().begin(),
                                     nonempty_adjacent_cells, 0};
 }
@@ -551,6 +565,10 @@ LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::p
         if (!c->particles().empty()) {
             nonempty_adjacent_cells.push_back(c);
         }
+    }
+
+    if (nonempty_adjacent_cells.empty()) {
+        return proximityBegin(center);
     }
 
     return const_proximity_iterator{center, cutoff_radius, nonempty_adjacent_cells.back()->particles().end(),
