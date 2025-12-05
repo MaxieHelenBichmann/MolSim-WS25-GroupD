@@ -123,7 +123,8 @@ class Simulation {
           dimensions(settings.dimensions),
           cutoff_radius(settings.cutoff),
           target_temp(settings.target_temp),
-          delta_temp(settings.delta_temp) {
+          delta_temp(settings.delta_temp),
+          thermostat_freq(settings.thermostat_freq) {
         for (const Particle& p : particles) {
             total_energy += p.getM() * R3::scalarProduct(p.getV(), p.getV());
         }
@@ -210,6 +211,17 @@ class Simulation {
         }
         total_energy = 0.5 * curr_energy;
     }
+    /**
+     * @brief      Calculates the thermostat factor used to modulate velocity.
+     *
+     * @return     The thermostat factor.
+     */
+    double calculateThermostatFactor() {
+        double curr_temp = (2.0 * total_energy) / (dimensions * particles.size());
+
+        double clamped_target = curr_temp + std::clamp((target_temp - curr_temp), -delta_temp, delta_temp);
+        return sqrt(clamped_target / curr_temp);
+    }
 
     /**
      * @brief Performs a full simulation run.
@@ -238,10 +250,10 @@ class Simulation {
             calculateF();
 
             // 5. Calculate thermostat factor
-            double curr_temp = (2.0 * total_energy) / (dimensions * particles.size());
-
-            double clamped_target = curr_temp + std::clamp((target_temp - curr_temp), -delta_temp, delta_temp);
-            double thermo_factor = (iteration % thermostat_freq == 0) ? sqrt(clamped_target / curr_temp) : 1.0;
+            double thermo_factor = 1.0;
+            if (iteration % thermostat_freq == 0) {
+                thermo_factor = calculateThermostatFactor();
+            }
             // 6. Calculate new velocities
             calculateV(thermo_factor);
 
