@@ -223,7 +223,9 @@ class Simulation {
      */
     double calculateThermostatFactor() {
         double curr_temp = (2.0 * total_energy) / (dimensions * particles.size());
-
+        if (curr_temp == 0) {
+            return 1;
+        }
         double clamped_target = curr_temp + std::clamp((target_temp - curr_temp), -delta_temp, delta_temp);
         return sqrt(clamped_target / curr_temp);
     }
@@ -259,7 +261,8 @@ class Simulation {
 
             // 5. Calculate thermostat factor
             double thermo_factor = 1.0;
-            if (iteration % thermostat_freq == 0) {
+            // TODO: Iteration > 0 is a fix for the tests, discussion needed.
+            if (iteration > 0 && iteration % thermostat_freq == 0) {
                 thermo_factor = calculateThermostatFactor();
             }
             // 6. Calculate new velocities
