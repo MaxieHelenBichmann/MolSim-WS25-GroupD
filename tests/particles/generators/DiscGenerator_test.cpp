@@ -148,6 +148,7 @@ TEST_F(DiscGeneratorTest, testAverageVelocity) {
     ContainerRef particles(particle_container);
     radius = 10;
     double avg_velo = 0.5;
+    double init_temp = 0.25;
     R3 initial_velocity = {1.0, 2.0, 0.0};
 
     DiscGenerator generator(position, initial_velocity, radius, mass, distance, avg_velo, epsilon, sigma, init_temp);

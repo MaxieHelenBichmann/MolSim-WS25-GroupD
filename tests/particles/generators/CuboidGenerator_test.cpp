@@ -139,6 +139,7 @@ TEST_F(CuboidGeneratorTest, testAverageVelocity) {
     ContainerRef particles(particle_container);
     N3 num_particles = {10U, 10U, 10U};
     double avg_velo = 0.5;
+    double init_temp = 0.25;
     R3 initial_velocity = {1.0, 2.0, 0.0};
 
     CuboidGenerator generator(position, initial_velocity, num_particles, mass, distance, avg_velo, epsilon, sigma,
