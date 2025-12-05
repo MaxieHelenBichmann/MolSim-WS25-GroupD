@@ -98,13 +98,6 @@ LinkedCellContainerExplicit::LinkedCellContainerExplicit(R3 domain_size, double 
 }
 
 size_t LinkedCellContainerExplicit::findCellIndex(R3 vec) const {
-    if (!fitsContainer(vec)) {
-        SPDLOG_INFO("Position not not in container!");
-        return cells.size();
-    }
-    if (!fitsDomain(vec)) {
-        SPDLOG_INFO("Position of ghost particle!");
-    }
     const auto index_for_dim = [this](double coord, size_t dim) {
         const double normalized = (coord + cell_length[dim]) / cell_length[dim];
 
@@ -418,6 +411,11 @@ LinkedCellContainerExplicit::proximity_iterator LinkedCellContainerExplicit::pro
         }
     }
 
+    if (nonempty_adjacent_cells.empty()) {
+        std::vector<CellExplicit*> same_cell = {&cells[findCellIndex(center)]};
+        return proximity_iterator{center, cutoff_radius, same_cell.front()->particles().begin(), same_cell, &data};
+    }
+
     return proximity_iterator{center, cutoff_radius, nonempty_adjacent_cells.front()->particles().begin(),
                               nonempty_adjacent_cells, &data};
 }
@@ -431,6 +429,10 @@ LinkedCellContainerExplicit::proximity_iterator LinkedCellContainerExplicit::pro
         if (!c->particles().empty()) {
             nonempty_adjacent_cells.push_back(c);
         }
+    }
+
+    if (nonempty_adjacent_cells.empty()) {
+        return proximityBegin(center);
     }
 
     return proximity_iterator{center, cutoff_radius, nonempty_adjacent_cells.back()->particles().end(),
@@ -449,6 +451,12 @@ LinkedCellContainerExplicit::const_proximity_iterator LinkedCellContainerExplici
         }
     }
 
+    if (nonempty_adjacent_cells.empty()) {
+        std::vector<const CellExplicit*> same_cell = {&cells[findCellIndex(center)]};
+        return const_proximity_iterator{center, cutoff_radius, same_cell.front()->particles().begin(), same_cell,
+                                        &data};
+    }
+
     return const_proximity_iterator{center, cutoff_radius, nonempty_adjacent_cells.front()->particles().begin(),
                                     nonempty_adjacent_cells, &data};
 }
@@ -461,6 +469,10 @@ LinkedCellContainerExplicit::const_proximity_iterator LinkedCellContainerExplici
         if (!c->particles().empty()) {
             nonempty_adjacent_cells.push_back(c);
         }
+    }
+
+    if (nonempty_adjacent_cells.empty()) {
+        return proximityBegin(center);
     }
 
     return const_proximity_iterator{center, cutoff_radius, nonempty_adjacent_cells.back()->particles().end(),

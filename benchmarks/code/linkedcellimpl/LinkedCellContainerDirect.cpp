@@ -106,13 +106,6 @@ LinkedCellContainerDirect::LinkedCellContainerDirect(R3 domain_size, double cuto
 }
 
 size_t LinkedCellContainerDirect::findCellIndex(R3 vec) const {
-    if (!fitsContainer(vec)) {
-        SPDLOG_INFO("Position not not in container!");
-        return cells.size();
-    }
-    if (!fitsDomain(vec)) {
-        SPDLOG_INFO("Position of ghost particle!");
-    }
     const auto index_for_dim = [this](double coord, size_t dim) {
         const double normalized = (coord + cell_length[dim]) / cell_length[dim];
 
