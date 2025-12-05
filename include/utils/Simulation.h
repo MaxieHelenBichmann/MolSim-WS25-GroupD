@@ -84,11 +84,22 @@ class Simulation {
      * @brief Cutoff radius for particles in proximity.
      */
     double cutoff_radius;
-
+    /**
+     * @brief Total energy of the current system.
+     */
     double total_energy;
-
+    /**
+     * @brief Target temperature of the system.
+     */
     double target_temp;
+    /**
+     * @brief maximum allowed temperature change in one iteration.
+     */
     double delta_temp;
+    /**
+     * @brief Frequency with which the thermostat is applied.
+     */
+    size_t thermostat_freq;
 
    public:
     /**
@@ -230,7 +241,7 @@ class Simulation {
             double curr_temp = (2.0 * total_energy) / (dimensions * particles.size());
 
             double clamped_target = curr_temp + std::clamp((target_temp - curr_temp), -delta_temp, delta_temp);
-            double thermo_factor = sqrt(clamped_target / curr_temp);
+            double thermo_factor = (iteration % thermostat_freq == 0) ? sqrt(clamped_target / curr_temp) : 1.0;
             // 6. Calculate new velocities
             calculateV(thermo_factor);
 

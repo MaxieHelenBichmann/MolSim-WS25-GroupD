@@ -45,6 +45,19 @@ void validateSettings(const SettingsParam& settings) {
         SPDLOG_ERROR("cutoff must be non-negative, got: " + std::to_string(settings.cutoff));
         throw ValidationException("cutoff must be non-negative, got: " + std::to_string(settings.cutoff));
     }
+    if (settings.delta_temp <= 0) {
+        SPDLOG_ERROR("delta_temp must be greater then 0, got: " + std::to_string(settings.delta_temp));
+        throw ValidationException("delta_temp must be greater then 0, got: " + std::to_string(settings.delta_temp));
+    }
+    if (settings.frequency <= 0) {
+        SPDLOG_ERROR("frequency must be non-negative, got: " + std::to_string(settings.frequency));
+        throw ValidationException("frequency must be non-negative, got: " + std::to_string(settings.frequency));
+    }
+    if (settings.thermostat_freq <= 0) {
+        SPDLOG_ERROR("thermostat_freq must be non-negative, got: " + std::to_string(settings.thermostat_freq));
+        throw ValidationException("thermostat_freq must be non-negative, got: " +
+                                  std::to_string(settings.thermostat_freq));
+    }
 }
 /**
  * @brief      Used for validating particle related Settings.
@@ -122,6 +135,18 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
         }
         if (node["cutoff"]) {
             settings.cutoff = node["cutoff"].as<double>();
+        }
+        if (node["initial_temp"]) {
+            settings.init_temp = node["initial_temp"].as<double>();
+        }
+        if (node["target_temp"]) {
+            settings.target_temp = node["target_temp"].as<double>();
+        }
+        if (node["n_thermostat"]) {
+            settings.thermostat_freq = node["n_thermostat"].as<size_t>();
+        }
+        if (node["delta_temp"]) {
+            settings.delta_temp = node["delta_temp"].as<double>();
         }
         if (node["domain"]) {
             parseDomain(settings, node["domain"]);
