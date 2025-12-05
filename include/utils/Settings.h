@@ -83,6 +83,8 @@ class SettingsParam {
      * Output is written every *frequency* iterations.
      */
     size_t frequency = FREQUENCY_DEFAULT;
+
+    size_t dimensions;
     /**
      * @brief Cutoff radius for the linked cells algorithm.
      */
@@ -98,6 +100,11 @@ class SettingsParam {
      * @brief The domain of the simulation.
      */
     Domain domain;
+
+    double init_temp;
+    double target_temp;
+    double thermostat_freq;
+    double delta_temp;
 
     /**
      * @brief Construct new SettingsParam with default values.
