@@ -81,7 +81,7 @@ class YAMLReader : public FileReader {
      * @throws YAMLReaderException if the file cannot be parsed or has no particle definitions.
      * @throws ValidationException if particle parameters are invalid.
      */
-    void readParticles(ContainerRef particles, const std::string& filename) override;
+    void readParticles(ContainerRef particles, const SettingsParam& settings, const std::string& filename) override;
     /**
      * @brief      Helper function to parse Cuboid Format
      *
@@ -121,13 +121,13 @@ class YAMLReader : public FileReader {
      *
      * @param[in]  node YAML::Node of the start of the cuboid block
      */
-    void readCube(ContainerRef particles, const YAML::Node& node);
+    void readCube(ContainerRef particles, const SettingsParam& settings, const YAML::Node& node);
     /**
      * @brief      Helper function to create disc particles
      *
      * @param[in]  node YAML::Node of the start of the disc block
      */
-    void readDisc(ContainerRef particles, const YAML::Node& node);
+    void readDisc(ContainerRef particles, const SettingsParam& settings, const YAML::Node& node);
     /**
      * @brief Get the Cell Size object
      * 

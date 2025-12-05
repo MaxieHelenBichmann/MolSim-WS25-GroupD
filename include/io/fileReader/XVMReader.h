@@ -40,7 +40,7 @@ class XVMReader : public FileReader {
      * @throws XVMReaderException if file cannot be opened or is malformed.
      * @throws ValidationException if particle mass is invalid.
      */
-    void readParticles(ContainerRef particles, const std::string& filename) override;
+    void readParticles(ContainerRef particles, const SettingsParam& settings, const std::string& filename) override;
 };
 
 }  // namespace mol_sim

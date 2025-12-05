@@ -32,13 +32,14 @@ class DiscGeneratorTest : public testing::Test {
     double sigma = 1.0;
     double distance = 1.0;
     double avg_velo = 0.1;
+    double init_temp = 0.01;
     double precision = 1e-1;
     DiscGenerator generator;
 
     DiscGeneratorTest()
         : particle_container(),
           particles(particle_container),
-          generator(position, velocity, radius, mass, distance, avg_velo, epsilon, sigma) {}
+          generator(position, velocity, radius, mass, distance, avg_velo, epsilon, sigma, init_temp) {}
 
     void SetUp() override {
         particles.clear();
@@ -125,7 +126,7 @@ TEST_F(DiscGeneratorTest, testVelocityDistribution) {
     ContainerRef particles(particle_container);
     radius = 10;
     R3 initial_velocity = {1.0, 2.0, 0.0};
-    DiscGenerator generator(position, initial_velocity, radius, mass, distance, avg_velo, epsilon, sigma);
+    DiscGenerator generator(position, initial_velocity, radius, mass, distance, avg_velo, epsilon, sigma, init_temp);
     generator.generateParticles(particles);
 
     R3 mean_velocity = {0.0, 0.0, 0.0};
@@ -149,7 +150,7 @@ TEST_F(DiscGeneratorTest, testAverageVelocity) {
     double avg_velo = 0.5;
     R3 initial_velocity = {1.0, 2.0, 0.0};
 
-    DiscGenerator generator(position, initial_velocity, radius, mass, distance, avg_velo, epsilon, sigma);
+    DiscGenerator generator(position, initial_velocity, radius, mass, distance, avg_velo, epsilon, sigma, init_temp);
     generator.generateParticles(particles);
 
     // Calculate mean velocity
@@ -181,7 +182,7 @@ TEST_F(DiscGeneratorTest, testZeroParticleGeneration) {
     SimpleContainer particle_container;
     ContainerRef particles(particle_container);
     radius = 0;
-    DiscGenerator generator(position, velocity, radius, mass, distance, avg_velo, epsilon, sigma);
+    DiscGenerator generator(position, velocity, radius, mass, distance, avg_velo, epsilon, sigma, init_temp);
     generator.generateParticles(particles);
     EXPECT_EQ(particles.size(), 0);
 }

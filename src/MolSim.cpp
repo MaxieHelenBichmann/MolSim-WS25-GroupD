@@ -72,7 +72,7 @@ int main(int argc, char* argsv[]) {
     try {
         if (settings.container_type == "SIMPLE") {
             SimpleContainer particle_container(settings.domain.getDimension(), settings.cutoff);
-            file_reader->readParticles(particle_container, file_name);
+            file_reader->readParticles(particle_container, settings, file_name);
             SPDLOG_INFO("Loaded {} particles from {}", particle_container.size(), file_name);
             SPDLOG_INFO("Simulation configured: {} particles, delta_t={}, t=[{}, {}]", particle_container.size(),
                         settings.delta_t, settings.start_time, settings.end_time);
@@ -81,7 +81,7 @@ int main(int argc, char* argsv[]) {
             simulation.run();
         } else if (settings.container_type == "LINKED") {
             LinkedCellContainer particle_container{settings.domain.getDimension(), settings.cutoff};
-            file_reader->readParticles(particle_container, file_name);
+            file_reader->readParticles(particle_container, settings, file_name);
             SPDLOG_INFO("Loaded {} particles from {}", particle_container.size(), file_name);
             SPDLOG_INFO("Simulation configured: {} particles, delta_t={}, t=[{}, {}]", particle_container.size(),
                         settings.delta_t, settings.start_time, settings.end_time);

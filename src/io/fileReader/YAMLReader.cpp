@@ -162,7 +162,7 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
     }
 }
 
-void YAMLReader::readParticles(ContainerRef particles, const std::string& filename) {
+void YAMLReader::readParticles(ContainerRef particles, const SettingsParam& settings, const std::string& filename) {
     try {
         YAML::Node root = YAML::LoadFile(filename);
 
@@ -187,10 +187,10 @@ void YAMLReader::readParticles(ContainerRef particles, const std::string& filena
                 readXVM(particles, node);
             } else if (format == "Cuboid") {
                 has_particle_definition = true;
-                readCube(particles, node);
+                readCube(particles, settings, node);
             } else if (format == "Disc") {
                 has_particle_definition = true;
-                readDisc(particles, node);
+                readDisc(particles, settings, node);
             }
             // Skip Settings and unknown formats silently in phase 2
         }
@@ -330,20 +330,20 @@ std::vector<YAMLReader::DiscData> YAMLReader::parseDiscs(const YAML::Node& node)
     return discs;
 }
 
-void YAMLReader::readCube(ContainerRef particles, const YAML::Node& node) {
+void YAMLReader::readCube(ContainerRef particles, const SettingsParam& settings, const YAML::Node& node) {
     auto cuboids = parseCuboids(node);
     for (const auto& data : cuboids) {
         CuboidGenerator generator(data.position, data.velocity, data.num_particles, data.mass, data.distance,
-                                  data.avg_velo, data.epsilon, data.sigma);
+                                  data.avg_velo, data.epsilon, data.sigma, settings.init_temp);
         generator.generateParticles(particles);
     }
 }
 
-void YAMLReader::readDisc(ContainerRef particles, const YAML::Node& node) {
+void YAMLReader::readDisc(ContainerRef particles, const SettingsParam& settings, const YAML::Node& node) {
     auto discs = parseDiscs(node);
     for (const auto& data : discs) {
         DiscGenerator generator(data.position, data.velocity, data.radius, data.mass, data.distance, data.avg_velo,
-                                data.epsilon, data.sigma);
+                                data.epsilon, data.sigma, settings.init_temp);
         generator.generateParticles(particles);
     }
 }
