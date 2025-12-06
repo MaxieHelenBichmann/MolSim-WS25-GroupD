@@ -231,6 +231,16 @@ TEST_F(YAMLReaderTest, ReadFullConfigFile) {
 
     EXPECT_DOUBLE_EQ(settings.cutoff, 1.);
 
+    EXPECT_EQ(settings.container_type, "LINKED");
+
+    EXPECT_DOUBLE_EQ(settings.target_temp, 10.);
+
+    EXPECT_DOUBLE_EQ(settings.init_temp, 7.);
+
+    EXPECT_DOUBLE_EQ(settings.delta_temp, 1.);
+
+    EXPECT_EQ(settings.thermostat_freq, 5);
+
     EXPECT_EQ(output.find("Error"), std::string::npos);
 }
 
