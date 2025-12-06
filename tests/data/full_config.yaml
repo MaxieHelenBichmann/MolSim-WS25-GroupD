@@ -7,6 +7,11 @@ settings:
     force: "Lennard Jones"
     frequency: 10
     cutoff: 1.
+    container: "LINKED"
+    initial_temp = 7.
+    target_temp: 10.
+    n_thermostat = 5
+    delta_temp = 1.
     domain:
       x: 1.
       y: 1.
