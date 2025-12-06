@@ -7,6 +7,11 @@ using namespace mol_sim;
 SimpleContainerControl::SimpleContainerControl(R3 domain_size_arg, double cutoff_radius_arg)
     : domain_size(domain_size_arg), cutoff_radius(cutoff_radius_arg) {}
 
+bool SimpleContainerControl::fitsDomain(R3 v) const noexcept {
+    return (v[0] >= 0.0 && v[0] <= domain_size[0]) && (v[1] >= 0.0 && v[1] <= domain_size[1]) &&
+           (v[2] >= 0.0 && v[2] <= domain_size[2]);
+}
+
 void SimpleContainerControl::addParticle(Particle&& value) { push_back(std::move(value)); }
 void SimpleContainerControl::addParticle(const Particle& value) { push_back(value); }
 

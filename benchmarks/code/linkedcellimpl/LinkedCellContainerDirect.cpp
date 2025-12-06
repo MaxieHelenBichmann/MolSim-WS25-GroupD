@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <limits>
 #include <unordered_set>
 #include <vector>
@@ -382,53 +383,88 @@ void LinkedCellContainerDirect::addParticle(R3 x_arg, R3 v_arg, double m_arg, do
     cells[findCellIndex(x_arg)].addParticle(Particle(x_arg, v_arg, m_arg, epsilon_arg, sigma_arg, type));
 }
 
-LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::eraseParticle(
+LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::eraseParticle(  // NOLINT
     LinkedCellContainerDirect::proximity_iterator p) {
-    size_t cell_idx = findCellIndex(p->getX());
+    SPDLOG_DEBUG("Before Erase Particle: N = {}", size());
+    std::vector<CellDirect*> rel_cells = p.getCells();
+    R3 center = p.getCenter();
+    double radius = p.getRadius();
+    size_t cur_cell = p.getCurCell();
+    std::vector<Particle> skipped = p.getSkipped();
 
-    if (cell_idx < cells.size()) {
-        auto it = std::find_if(cells[cell_idx].particles().begin(), cells[cell_idx].particles().end(),
-                               [p](const Particle& particle) { return &particle == (&(*p)); });  // NOLINT
+    // Find the actual cell containing the particle
+    size_t actual_cell_idx = findCellIndex(p->getX());
 
-        if (it != cells[cell_idx].particles().end()) {
-            std::vector<CellDirect*> rel_cells = p.getCells();
-            R3 center = p.getCenter();
-            double radius = p.getRadius();
-            size_t cur_cell = p.getCurCell();
-            std::vector<Particle> skipped = p.getSkipped();
-
-            auto new_it = cells[cell_idx].particles().erase(it);
-
-            if (new_it == cells[cell_idx].particles().end() && cur_cell < rel_cells.size()) {
-                cur_cell++;
-                new_it = rel_cells[cur_cell]->particles().begin();
-            }
-            return proximity_iterator{center, radius, new_it, rel_cells, cur_cell, skipped};
+    // Find which index in rel_cells corresponds to the actual cell
+    size_t cell_idx_in_rel = cur_cell;
+    for (size_t i = 0; i < rel_cells.size(); i++) {
+        if (rel_cells[i] == &cells[actual_cell_idx]) {
+            cell_idx_in_rel = i;
+            break;
         }
     }
+
+    if (cell_idx_in_rel < rel_cells.size()) {
+        auto& current_cell_particles = rel_cells[cell_idx_in_rel]->particles();
+        auto it = std::ranges::find_if(current_cell_particles,
+                                       [p](const Particle& particle) { return &particle == (&(*p)); });
+
+        if (it != current_cell_particles.end()) {
+            auto it_n = current_cell_particles.erase(it);
+
+            if (it_n != rel_cells[cell_idx_in_rel]->particles().end()) {
+                SPDLOG_DEBUG("After Erase Particle (Erased): N = {}", size());
+                return proximity_iterator{center, radius, it_n, rel_cells, cell_idx_in_rel, skipped};
+            }
+
+            // Move to next non-empty cell after the one we erased from
+            size_t next_cell = cell_idx_in_rel + 1;
+            while (next_cell < rel_cells.size() && rel_cells[next_cell]->particles().empty()) {
+                next_cell++;
+            }
+
+            if (next_cell < rel_cells.size()) {
+                auto new_it = rel_cells[next_cell]->particles().begin();
+                SPDLOG_DEBUG("After Erase Particle (Erased): N = {}", size());
+                return proximity_iterator{center, radius, new_it, rel_cells, next_cell, skipped};
+            }
+
+            auto new_it = rel_cells.back()->particles().end();
+            SPDLOG_DEBUG("After Erase Particle (Erased): N = {}", size());
+            return proximity_iterator{center, radius, new_it, rel_cells, rel_cells.size(), skipped};
+        }
+    }
+    SPDLOG_WARN("Erase Particle: Particle not found! N = {}", size());
     return ++p;
 }
 
 LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::updateParticlePosition(
     LinkedCellContainerDirect::proximity_iterator p, R3 new_x) {
+    SPDLOG_DEBUG("Before Update Particle Pos: N = {}", size());
     size_t old_cell_idx = findCellIndex(p->getX());
     if (!cells[old_cell_idx].fits(new_x)) {
         size_t new_cell_idx = findCellIndex(new_x);
         if (new_cell_idx == cells.size()) {
+            SPDLOG_DEBUG("After Update Particle Pos: N = {}", size());
             return eraseParticle(p);
         }
+
         Particle particle_to_move = p.getParticle();
         particle_to_move.getX() = new_x;
-        cells[new_cell_idx].addParticle(particle_to_move);
 
         auto new_p = eraseParticle(p);
+
+        cells[new_cell_idx].addParticle(particle_to_move);
+
         if (new_cell_idx > old_cell_idx) {
             new_p.skipParticle(particle_to_move);
         }
+        SPDLOG_DEBUG("After Update Particle Pos: N = {}", size());
         return new_p;
     }
 
     p->getX() = new_x;
+    SPDLOG_DEBUG("After Update Particle Pos: N = {}", size());
     return ++p;
 }
 
@@ -543,8 +579,17 @@ LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::p
 
     if (nonempty_adjacent_cells.empty()) {
         std::vector<const CellDirect*> same_cell = {&cells[findCellIndex(center)]};
+        assert(!nonempty_adjacent_cells.empty());  // for debugging
+        assert(std::ranges::all_of(nonempty_adjacent_cells, [](const CellDirect* c) {
+            return c != nullptr && !c->particles().empty();
+        }));  // for debugging
         return const_proximity_iterator{center, cutoff_radius, same_cell.front()->particles().begin(), same_cell, 0};
     }
+
+    assert(!nonempty_adjacent_cells.empty());  // for debugging
+    assert(std::ranges::all_of(nonempty_adjacent_cells, [](const CellDirect* c) {
+        return c != nullptr && !c->particles().empty();
+    }));  // for debugging
 
     return const_proximity_iterator{center, cutoff_radius, nonempty_adjacent_cells.front()->particles().begin(),
                                     nonempty_adjacent_cells, 0};
@@ -563,6 +608,11 @@ LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::p
     if (nonempty_adjacent_cells.empty()) {
         return proximityBegin(center);
     }
+
+    assert(!nonempty_adjacent_cells.empty());  // for debugging
+    assert(std::ranges::all_of(nonempty_adjacent_cells, [](const CellDirect* c) {
+        return c != nullptr && !c->particles().empty();
+    }));  // for debugging
 
     return const_proximity_iterator{center, cutoff_radius, nonempty_adjacent_cells.back()->particles().end(),
                                     nonempty_adjacent_cells, nonempty_adjacent_cells.size()};
@@ -592,6 +642,11 @@ LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::haloBeg
             R3{}, std::numeric_limits<double>::infinity(), cells.front().particles().begin(), {&cells.front()}, 0};
     }
 
+    assert(!unique_and_nonempty_cells.empty());  // for debugging
+    assert(std::ranges::all_of(unique_and_nonempty_cells, [](const CellDirect* c) {
+        return c != nullptr && !c->particles().empty();
+    }));  // for debugging
+
     return proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
                               unique_and_nonempty_cells.front()->particles().begin(), unique_and_nonempty_cells, 0};
 }
@@ -617,6 +672,11 @@ LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::h
         return const_proximity_iterator{
             R3{}, std::numeric_limits<double>::infinity(), cells.front().particles().begin(), {&cells.front()}, 0};
     }
+
+    assert(!unique_and_nonempty_cells.empty());  // for debugging
+    assert(std::ranges::all_of(unique_and_nonempty_cells, [](const CellDirect* c) {
+        return c != nullptr && !c->particles().empty();
+    }));  // for debugging
 
     return const_proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
                                     unique_and_nonempty_cells.front()->particles().begin(), unique_and_nonempty_cells,
@@ -644,6 +704,11 @@ LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::haloEnd
         return haloBegin(boundary_types);
     }
 
+    assert(!unique_and_nonempty_cells.empty());  // for debugging
+    assert(std::ranges::all_of(unique_and_nonempty_cells, [](const CellDirect* c) {
+        return c != nullptr && !c->particles().empty();
+    }));  // for debugging
+
     return proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
                               unique_and_nonempty_cells.back()->particles().end(), unique_and_nonempty_cells,
                               unique_and_nonempty_cells.size()};
@@ -669,6 +734,11 @@ LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::h
     if (unique_and_nonempty_cells.empty()) {
         return haloBegin(boundary_types);
     }
+
+    assert(!unique_and_nonempty_cells.empty());  // for debugging
+    assert(std::ranges::all_of(unique_and_nonempty_cells, [](const CellDirect* c) {
+        return c != nullptr && !c->particles().empty();
+    }));  // for debugging
 
     return const_proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
                                     unique_and_nonempty_cells.back()->particles().end(), unique_and_nonempty_cells,
@@ -696,6 +766,11 @@ LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::boundar
             R3{}, std::numeric_limits<double>::infinity(), cells.front().particles().begin(), {&cells.front()}, 0};
     }
 
+    assert(!unique_and_nonempty_cells.empty());  // for debugging
+    assert(std::ranges::all_of(unique_and_nonempty_cells, [](const CellDirect* c) {
+        return c != nullptr && !c->particles().empty();
+    }));  // for debugging
+
     return proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
                               unique_and_nonempty_cells.front()->particles().begin(), unique_and_nonempty_cells, 0};
 }
@@ -720,6 +795,11 @@ LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::b
         return const_proximity_iterator{
             R3{}, std::numeric_limits<double>::infinity(), cells.front().particles().begin(), {&cells.front()}, 0};
     }
+
+    assert(!unique_and_nonempty_cells.empty());  // for debugging
+    assert(std::ranges::all_of(unique_and_nonempty_cells, [](const CellDirect* c) {
+        return c != nullptr && !c->particles().empty();
+    }));  // for debugging
 
     return const_proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
                                     unique_and_nonempty_cells.front()->particles().begin(), unique_and_nonempty_cells,
@@ -746,6 +826,11 @@ LinkedCellContainerDirect::proximity_iterator LinkedCellContainerDirect::boundar
         return boundaryBegin(boundary_types);
     }
 
+    assert(!unique_and_nonempty_cells.empty());  // for debugging
+    assert(std::ranges::all_of(unique_and_nonempty_cells, [](const CellDirect* c) {
+        return c != nullptr && !c->particles().empty();
+    }));  // for debugging
+
     return proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
                               unique_and_nonempty_cells.back()->particles().end(), unique_and_nonempty_cells,
                               unique_and_nonempty_cells.size()};
@@ -771,6 +856,11 @@ LinkedCellContainerDirect::const_proximity_iterator LinkedCellContainerDirect::b
     if (unique_and_nonempty_cells.empty()) {
         return boundaryBegin(boundary_types);
     }
+
+    assert(!unique_and_nonempty_cells.empty());  // for debugging
+    assert(std::ranges::all_of(unique_and_nonempty_cells, [](const CellDirect* c) {
+        return c != nullptr && !c->particles().empty();
+    }));  // for debugging
 
     return const_proximity_iterator{R3{}, std::numeric_limits<double>::infinity(),
                                     unique_and_nonempty_cells.back()->particles().end(), unique_and_nonempty_cells,
