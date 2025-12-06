@@ -2,6 +2,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <io/outputWriter/XYZWriter.h>
 #include <particles/container/domain/Domain.h>
 #include <physics/GravitationalForce.h>
 #include <physics/LennardJonesForce.h>
@@ -63,10 +64,12 @@ class SimulationTestBase : public testing::Test {
    protected:
     Container particles = ContainerTraits<Container>::create();
     SettingsParam settings;
+    // NOLINTNEXTLINE
+    const double precision = 5e-8;
 
     void SetUp() override {
         settings.cutoff = std::numeric_limits<double>::infinity();
-        settings.thermostat_freq = std::numeric_limits<size_t>::max();  // Disable thermostat in tests
+        settings.thermostat_freq = std::numeric_limits<size_t>::max();
         particles.clear();
     }
 
@@ -89,6 +92,10 @@ TYPED_TEST_SUITE(CalculateVTest, ContainerTypes);
 template <typename Container>
 class CalculateFTest : public SimulationTestBase<Container> {};
 TYPED_TEST_SUITE(CalculateFTest, ContainerTypes);
+
+template <typename Container>
+class CalculateThermostatTest : public SimulationTestBase<Container> {};
+TYPED_TEST_SUITE(CalculateThermostatTest, ContainerTypes);
 
 template <typename Container>
 class SimulationRunTest : public SimulationTestBase<Container> {};
@@ -293,6 +300,78 @@ TYPED_TEST(CalculateFTest, calculateF_complex3_pairwise) {
     EXPECT_EQ(this->particles[2].getF(), expected3);
 }
 
+TYPED_TEST(CalculateThermostatTest, test_total_energy_0) {
+    const Particle p{{1., 1., 0.}, {0., 0., 0.}, {0., 0., 0.}, 1., 5., 1.};
+    this->particles.addParticle(p);
+    LennardJonesForce force;
+    XYZWriter writer;
+    Simulation<TypeParam> simulation(this->particles, force, this->settings, writer);
+    simulation.getTotalEnergy() = 0;
+    EXPECT_EQ(simulation.calculateThermostatFactor(), 1.);
+}
+
+TYPED_TEST(CalculateThermostatTest, test_factor_without_delta) {
+    const Particle p1{{1., 1., 0.}, {10., 0., 0.}, {0., 0., 0.}, 1., 5., 1.};
+    const Particle p2{{2., 1., 0.}, {5., 5., 0.}, {0., 0., 0.}, 3., 5., 1.};
+    const Particle p3{{3., 1., 0.}, {3., 4., 5.}, {0., 0., 0.}, 2., 5., 1.};
+    // total energy should be 175
+    // current temp should be 350/9 = 38.88...
+    double expected = 1.133893419;
+    this->particles.addParticle(p1);
+    this->particles.addParticle(p2);
+    this->particles.addParticle(p3);
+    this->settings.target_temp = 50;
+    this->settings.delta_temp = std::numeric_limits<double>::infinity();
+    LennardJonesForce force;
+    XYZWriter writer;
+    Simulation<TypeParam> simulation(this->particles, force, this->settings, writer);
+    simulation.getTotalEnergy() = 175;
+    EXPECT_NEAR(simulation.calculateThermostatFactor(), expected, this->precision);
+}
+TYPED_TEST(CalculateThermostatTest, test_factor_at_target_temp) {
+    const Particle p1{{1., 1., 0.}, {10., 0., 0.}, {0., 0., 0.}, 1., 5., 1.};
+    const Particle p2{{2., 1., 0.}, {5., 5., 0.}, {0., 0., 0.}, 3., 5., 1.};
+    // total energy at 125
+    // current temp at 125/3
+    this->particles.addParticle(p1);
+    this->particles.addParticle(p2);
+    this->settings.target_temp = 125. / 3.;
+    LennardJonesForce force;
+    XYZWriter writer;
+    Simulation<TypeParam> simulation(this->particles, force, this->settings, writer);
+    simulation.getTotalEnergy() = 125;
+    EXPECT_NEAR(simulation.calculateThermostatFactor(), 1., this->precision);
+}
+TYPED_TEST(CalculateThermostatTest, test_delta_temp) {
+    const Particle p1{{1., 1., 0.}, {10., 0., 0.}, {0., 0., 0.}, 1., 5., 1.};
+    const Particle p2{{2., 1., 0.}, {5., 5., 0.}, {0., 0., 0.}, 3., 5., 1.};
+    const Particle p3{{3., 1., 0.}, {3., 4., 5.}, {0., 0., 0.}, 2., 5., 1.};
+    // total energy should be 175
+    // current temp should be 350/9 = 38.88...
+    this->particles.addParticle(p1);
+    this->particles.addParticle(p2);
+    this->particles.addParticle(p3);
+    this->settings.target_temp = 50;
+    this->settings.delta_temp = 1.;
+    LennardJonesForce force;
+    XYZWriter writer;
+    Simulation<TypeParam> simulation(this->particles, force, this->settings, writer);
+    simulation.getTotalEnergy() = 175;
+    double b = simulation.calculateThermostatFactor();
+
+    double new_energy = 0.;
+
+    for (Particle& p : this->particles) {
+        p.getV() = p.getV() * b;
+        new_energy += p.getM() * R3::scalarProduct(p.getV(), p.getV());
+    }
+    new_energy *= 0.5;
+
+    double new_temp = (2. * new_energy) / (this->settings.dimensions * this->particles.size());
+    double curr_temp = 350. / 9;
+    EXPECT_NEAR(new_temp - curr_temp, 1., this->precision);
+}
+
 /**
  * @brief Tests that a single timestep is calculated correctly in run() with
  gravitational forces and 2 particles.
@@ -314,11 +393,10 @@ TYPED_TEST(SimulationRunTest, run_gravitational_timestep) {
     R3 p2_x_expect = {6.0, 1.0, 1.0};
     R3 p1_v_expect = {0.0078125, 0.0, 0.0};
     R3 p2_v_expect = {9.984375, 0.0, 0.0};
-    constexpr double tol = 5e-8;
-    EXPECT_R3_NEAR(this->particles[0].getX(), p1_x_expect, tol);
-    EXPECT_R3_NEAR(this->particles[1].getX(), p2_x_expect, tol);
-    EXPECT_R3_NEAR(this->particles[0].getV(), p1_v_expect, tol);
-    EXPECT_R3_NEAR(this->particles[1].getV(), p2_v_expect, tol);
+    EXPECT_R3_NEAR(this->particles[0].getX(), p1_x_expect, this->precision);
+    EXPECT_R3_NEAR(this->particles[1].getX(), p2_x_expect, this->precision);
+    EXPECT_R3_NEAR(this->particles[0].getV(), p1_v_expect, this->precision);
+    EXPECT_R3_NEAR(this->particles[1].getV(), p2_v_expect, this->precision);
 }
 
 /**
@@ -348,11 +426,11 @@ TYPED_TEST(SimulationRunTest, run_lennardjones_timestep) {
     R3 p2_x_expect = {4.0, 1.0, 1.0};
     R3 p1_v_expect = {30.0, 0.0, 0.0};
     R3 p2_v_expect = {-30.0, 0.0, 0.0};
-    constexpr double tol = 5e-8;
-    EXPECT_R3_NEAR(this->particles[0].getX(), p1_x_expect, tol);
-    EXPECT_R3_NEAR(this->particles[1].getX(), p2_x_expect, tol);
-    EXPECT_R3_NEAR(this->particles[0].getV(), p1_v_expect, tol);
-    EXPECT_R3_NEAR(this->particles[1].getV(), p2_v_expect, tol);
+
+    EXPECT_R3_NEAR(this->particles[0].getX(), p1_x_expect, this->precision);
+    EXPECT_R3_NEAR(this->particles[1].getX(), p2_x_expect, this->precision);
+    EXPECT_R3_NEAR(this->particles[0].getV(), p1_v_expect, this->precision);
+    EXPECT_R3_NEAR(this->particles[1].getV(), p2_v_expect, this->precision);
 }
 
 }  // namespace mol_sim
