@@ -106,36 +106,48 @@ class LinkedCellContainerDirect {
     class proximity_iterator {
         std::vector<CellDirect*> cells;
         std::vector<Particle>::iterator cur;
-        std::vector<Particle>::iterator end;
-        std::vector<Particle>::iterator begin;
         std::vector<CellDirect*>::iterator cur_cell;
         std::vector<Particle> skipped_particles;
         double radius;
         R3 center;
 
         void inc() {
-            if (cells.empty() || (cur_cell == cells.end() && cur == end)) {
+            if (cells.empty() || (cur_cell == cells.end() && cur == cells.back()->particles().end())) {
                 return;
             }
             SPDLOG_DEBUG("Incrementing proximity iterator");
-            if (cur != (*cur_cell)->particles().end()) {
+            if (cur_cell != cells.end() && (*cur_cell) != nullptr && cur != (*cur_cell)->particles().end()) {
                 ++cur;
                 return;
             }
-            while (cur_cell != cells.end() && cur == (*cur_cell)->particles().end()) {
+            while (cur_cell != cells.end() && (*cur_cell) != nullptr && cur == (*cur_cell)->particles().end()) {
                 ++cur_cell;
                 if (cur_cell == cells.end()) {
-                    cur = end;
+                    cur = cells.back()->particles().end();
                     break;
                 }
-                cur = (*cur_cell)->particles().begin();
+                while (cur_cell != cells.end() && (*cur_cell) == nullptr) {
+                    ++cur_cell;
+                }
+                if (cur_cell != cells.end()) {
+                    cur = (*cur_cell)->particles().begin();
+                } else {
+                    cur = cells.back()->particles().end();
+                }
             }
         }
         void dec() {
-            if (cells.empty() || (cur_cell == cells.begin() && cur == begin)) {
+            if (cells.empty() || (cur_cell == cells.begin() && cur == cells.front()->particles().begin())) {
                 return;
             }
             SPDLOG_DEBUG("Decremeting proximity iterator");
+
+            // Handle case when at end position (cur_cell points past last element)
+            if (cur_cell == cells.end()) {
+                --cur_cell;
+                cur = (*cur_cell)->particles().end();
+            }
+
             if (cur != (*cur_cell)->particles().begin()) {
                 --cur;
                 return;
@@ -144,22 +156,54 @@ class LinkedCellContainerDirect {
                 --cur_cell;
                 cur = (*cur_cell)->particles().end();
             }
+            // After moving to end of previous cell, decrement to get last element
+            if (cur != (*cur_cell)->particles().begin()) {
+                --cur;
+            }
         }
 
         void satisfyInc() {
-            while (!cells.empty() && cur_cell != cells.end() &&
-                   (cur == (*cur_cell)->particles().end() || !((center - (*cur).getX()).euclidNorm() <= radius) ||
+            while (!cells.empty() && cur_cell != cells.end()) {
+                // Check if current cell is null or we're at end of current cell's particles
+                if (*cur_cell == nullptr) {
+                    inc();
+                    continue;
+                }
+                if (cur == (*cur_cell)->particles().end()) {
+                    inc();
+                    // After inc(), cur_cell might be at end - recheck loop condition
+                    continue;
+                }
+                if (!((center - (*cur).getX()).euclidNorm() <= radius) ||
                     std::ranges::find(skipped_particles.begin(), skipped_particles.end(), *cur) !=
-                        skipped_particles.end())) {
-                inc();
+                        skipped_particles.end()) {
+                    inc();
+                    continue;
+                }
+                break;
             }
         }
         void satisfyDec() {
-            while (!cells.empty() &&
-                   (cur == (*cur_cell)->particles().begin() || !((center - (*cur).getX()).euclidNorm() <= radius) ||
-                    std::ranges::find(skipped_particles.begin(), skipped_particles.end(), *cur) !=
-                        skipped_particles.end())) {
+            // Handle being at the end position first
+            while (!cells.empty() && cur_cell == cells.end()) {
                 dec();
+            }
+            while (!cells.empty() && cur_cell != cells.begin()) {
+                if (*cur_cell == nullptr) {
+                    dec();
+                    continue;
+                }
+                if (cur == (*cur_cell)->particles().begin()) {
+                    dec();
+                    continue;
+                }
+                if (!((center - (*cur).getX()).euclidNorm() <= radius) ||
+                    std::ranges::find(skipped_particles.begin(), skipped_particles.end(), *cur) !=
+                        skipped_particles.end()) {
+                    dec();
+                    continue;
+                }
+                break;
             }
         }
 
@@ -176,8 +220,6 @@ class LinkedCellContainerDirect {
                            std::vector<Particle> skipped_particles = {})
             : cells(std::move(cells_input)),
               cur(cur),
-              end(cells.back()->particles().end()),
-              begin(cells.front()->particles().begin()),
               cur_cell(cells.begin() + static_cast<difference_type>(cur_cell)),
               skipped_particles(std::move(skipped_particles)),
               radius(radius),
@@ -282,36 +324,48 @@ class LinkedCellContainerDirect {
     class const_proximity_iterator {
         std::vector<const CellDirect*> cells;
         std::vector<Particle>::const_iterator cur;
-        std::vector<Particle>::const_iterator end;
-        std::vector<Particle>::const_iterator begin;
         std::vector<const CellDirect*>::iterator cur_cell;
         std::vector<Particle> skipped_particles;
         double radius;
         R3 center;
 
         void inc() {
-            if (cells.empty() || (cur_cell == cells.end() && cur == end)) {
+            if (cells.empty() || (cur_cell == cells.end() && cur == cells.back()->particles().end())) {
                 return;
             }
             SPDLOG_DEBUG("Incrementing proximity iterator");
-            if (cur != (*cur_cell)->particles().end()) {
+            if (cur_cell != cells.end() && (*cur_cell) != nullptr && cur != (*cur_cell)->particles().end()) {
                 ++cur;
                 return;
             }
-            while (cur_cell != cells.end() && cur == (*cur_cell)->particles().end()) {
+            while (cur_cell != cells.end() && (*cur_cell) != nullptr && cur == (*cur_cell)->particles().end()) {
                 ++cur_cell;
                 if (cur_cell == cells.end()) {
-                    cur = end;
+                    cur = cells.back()->particles().end();
                     break;
                 }
-                cur = (*cur_cell)->particles().begin();
+                while (cur_cell != cells.end() && (*cur_cell) == nullptr) {
+                    ++cur_cell;
+                }
+                if (cur_cell != cells.end()) {
+                    cur = (*cur_cell)->particles().begin();
+                } else {
+                    cur = cells.back()->particles().end();
+                }
             }
         }
         void dec() {
-            if (cells.empty() || (cur_cell == cells.begin() && cur == begin)) {
+            if (cells.empty() || (cur_cell == cells.begin() && cur == cells.front()->particles().begin())) {
                 return;
             }
             SPDLOG_DEBUG("Decremeting proximity iterator");
+
+            // Handle case when at end position (cur_cell points past last element)
+            if (cur_cell == cells.end()) {
+                --cur_cell;
+                cur = (*cur_cell)->particles().end();
+            }
+
             if (cur != (*cur_cell)->particles().begin()) {
                 --cur;
                 return;
@@ -320,22 +374,54 @@ class LinkedCellContainerDirect {
                 --cur_cell;
                 cur = (*cur_cell)->particles().end();
             }
+            // After moving to end of previous cell, decrement to get last element
+            if (cur != (*cur_cell)->particles().begin()) {
+                --cur;
+            }
         }
 
         void satisfyInc() {
-            while (!cells.empty() && cur_cell != cells.end() &&
-                   (cur == (*cur_cell)->particles().end() || !((center - (*cur).getX()).euclidNorm() <= radius) ||
+            while (!cells.empty() && cur_cell != cells.end()) {
+                // Check if current cell is null or we're at end of current cell's particles
+                if (*cur_cell == nullptr) {
+                    inc();
+                    continue;
+                }
+                if (cur == (*cur_cell)->particles().end()) {
+                    inc();
+                    // After inc(), cur_cell might be at end - recheck loop condition
+                    continue;
+                }
+                if (!((center - (*cur).getX()).euclidNorm() <= radius) ||
                     std::ranges::find(skipped_particles.begin(), skipped_particles.end(), *cur) !=
-                        skipped_particles.end())) {
-                inc();
+                        skipped_particles.end()) {
+                    inc();
+                    continue;
+                }
+                break;
             }
         }
         void satisfyDec() {
-            while (!cells.empty() &&
-                   (cur == (*cur_cell)->particles().begin() || !((center - (*cur).getX()).euclidNorm() <= radius) ||
-                    std::ranges::find(skipped_particles.begin(), skipped_particles.end(), *cur) !=
-                        skipped_particles.end())) {
+            // Handle being at the end position first
+            while (!cells.empty() && cur_cell == cells.end()) {
                 dec();
+            }
+            while (!cells.empty() && cur_cell != cells.begin()) {
+                if (*cur_cell == nullptr) {
+                    dec();
+                    continue;
+                }
+                if (cur == (*cur_cell)->particles().begin()) {
+                    dec();
+                    continue;
+                }
+                if (!((center - (*cur).getX()).euclidNorm() <= radius) ||
+                    std::ranges::find(skipped_particles.begin(), skipped_particles.end(), *cur) !=
+                        skipped_particles.end()) {
+                    dec();
+                    continue;
+                }
+                break;
             }
         }
 
@@ -352,8 +438,6 @@ class LinkedCellContainerDirect {
                                  std::vector<Particle> skipped_particles = {})
             : cells(std::move(cells_input)),
               cur(cur),
-              end(cells.back()->particles().end()),
-              begin(cells.front()->particles().begin()),
               cur_cell(cells.begin() + static_cast<difference_type>(cur_cell)),
               skipped_particles(std::move(skipped_particles)),
               radius(radius),

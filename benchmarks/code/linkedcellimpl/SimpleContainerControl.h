@@ -32,6 +32,8 @@ class SimpleContainerControl : public std::vector<Particle> {
 
     SimpleContainerControl(R3 domain_size_arg, double cutoff_radius_arg);
 
+    [[nodiscard]] bool fitsDomain(R3 v) const noexcept;
+
     void addParticle(Particle&& value);
     void addParticle(const Particle& value);
     void addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg);
