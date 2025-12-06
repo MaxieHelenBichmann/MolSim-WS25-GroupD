@@ -300,6 +300,10 @@ TYPED_TEST(CalculateFTest, calculateF_complex3_pairwise) {
     EXPECT_EQ(this->particles[2].getF(), expected3);
 }
 
+/**
+ * @brief Tests that the Thermostat behaves correctly when the total energy of the system is 0.
+ * There should not be a division by zero
+ */
 TYPED_TEST(CalculateThermostatTest, test_total_energy_0) {
     const Particle p{{1., 1., 0.}, {0., 0., 0.}, {0., 0., 0.}, 1., 5., 1.};
     this->particles.addParticle(p);
@@ -310,6 +314,9 @@ TYPED_TEST(CalculateThermostatTest, test_total_energy_0) {
     EXPECT_EQ(simulation.calculateThermostatFactor(), 1.);
 }
 
+/**
+ * @brief Tests the beta is computed correctly when there is no delta T limit applied.
+ */
 TYPED_TEST(CalculateThermostatTest, test_factor_without_delta) {
     const Particle p1{{1., 1., 0.}, {10., 0., 0.}, {0., 0., 0.}, 1., 5., 1.};
     const Particle p2{{2., 1., 0.}, {5., 5., 0.}, {0., 0., 0.}, 3., 5., 1.};
@@ -328,6 +335,11 @@ TYPED_TEST(CalculateThermostatTest, test_factor_without_delta) {
     simulation.getTotalEnergy() = 175;
     EXPECT_NEAR(simulation.calculateThermostatFactor(), expected, this->precision);
 }
+
+/**
+ * @brief Tests that the thermostat behaves correctly when the system is already at the target temperature.
+ * I.E. no change in velocities should happen.
+ */
 TYPED_TEST(CalculateThermostatTest, test_factor_at_target_temp) {
     const Particle p1{{1., 1., 0.}, {10., 0., 0.}, {0., 0., 0.}, 1., 5., 1.};
     const Particle p2{{2., 1., 0.}, {5., 5., 0.}, {0., 0., 0.}, 3., 5., 1.};
@@ -342,6 +354,10 @@ TYPED_TEST(CalculateThermostatTest, test_factor_at_target_temp) {
     simulation.getTotalEnergy() = 125;
     EXPECT_NEAR(simulation.calculateThermostatFactor(), 1., this->precision);
 }
+
+/**
+ * @brief Tests that the limit in temperature change specified by delta temp is applied correctly.
+ */
 TYPED_TEST(CalculateThermostatTest, test_delta_temp) {
     const Particle p1{{1., 1., 0.}, {10., 0., 0.}, {0., 0., 0.}, 1., 5., 1.};
     const Particle p2{{2., 1., 0.}, {5., 5., 0.}, {0., 0., 0.}, 3., 5., 1.};
