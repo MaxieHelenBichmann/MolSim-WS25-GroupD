@@ -131,6 +131,8 @@ class Simulation {
         total_energy *= 0.5;
     }
 
+    double& getTotalEnergy() { return total_energy; }
+
     /**
      * @brief Removes all particles in the Halo from the container.
      */

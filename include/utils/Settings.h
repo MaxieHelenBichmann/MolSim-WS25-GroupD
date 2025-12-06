@@ -56,7 +56,7 @@ class SettingsParam {
     /**
      * @brief Default delta temperature of the simulation.
      */
-    static constexpr double DELTA_TEMP_DEFAULT = 0.0005;
+    static constexpr double DELTA_TEMP_DEFAULT = std::numeric_limits<double>::infinity();
     /**
      * @brief Default thermostat frequency of the simulation.
      */
@@ -133,7 +133,7 @@ class SettingsParam {
     /**
      * @brief Maximum allowed temperature change of the system with one thermostat application.
      */
-    double delta_temp = DELTA_T_DEFAULT;
+    double delta_temp = DELTA_TEMP_DEFAULT;
 
     /**
      * @brief Construct new SettingsParam with default values.
