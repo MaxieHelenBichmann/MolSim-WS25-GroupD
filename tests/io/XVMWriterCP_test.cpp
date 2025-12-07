@@ -31,10 +31,10 @@ class XVMWriterCPTest : public testing::Test {
     }
 
     void TearDown() override {
-        // for (const auto& path : created_files) {
-        // std::error_code ec;
-        // std::filesystem::remove(path, ec);
-        // }
+        for (const auto& path : created_files) {
+            std::error_code ec;
+            std::filesystem::remove(path, ec);
+        }
         created_files.clear();
     }
 
