@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "exceptions/SimulationException.h"
+#include "io/CheckpointWriter.h"
 #include "io/OutputWriter.h"
 #include "particles/Particle.h"
 #include "particles/ParticleContainer.h"
@@ -51,9 +52,17 @@ class Simulation {
      */
     const ForceSource& force_source;
     /**
+     * @brief Force type, used in checkpointing.
+     */
+    Force force;
+    /**
      * @brief Writer used for output.
      */
     const OutputWriter& writer;
+    /**
+     * @brief Writer used for output.
+     */
+    const CheckpointWriter& cp_writer;
     /**
      * @brief Time step of simulation.
      */
@@ -72,7 +81,12 @@ class Simulation {
     /**
      * @brief Frequency of output file writing.
      */
-    size_t frequency;
+    size_t frequency_output;
+
+    /**
+     * @brief Frequency of checkpoint writing.
+     */
+    size_t frequency_checkpoint;
 
     /**
      * @brief Base name for output files.
@@ -110,15 +124,18 @@ class Simulation {
      * @param settings Simulation parameters.
      */
     Simulation(containerType& particles, const ForceSource& force_source, SettingsParam& settings,
-               const OutputWriter& writer)
+               const OutputWriter& writer, const CheckpointWriter& cp_writer)
         : domain(std::move(settings.domain)),
           particles(particles),
           force_source(force_source),
+          force(settings.force),
           writer(writer),
+          cp_writer(cp_writer),
           delta_t(settings.delta_t),
           start_time(settings.start_time),
           end_time(settings.end_time),
-          frequency(settings.frequency),
+          frequency_output(settings.frequency_output),
+          frequency_checkpoint(settings.frequency_checkpoint),
           base_name(settings.base_name),
           dimensions(settings.dimensions),
           cutoff_radius(settings.cutoff),
@@ -272,7 +289,7 @@ class Simulation {
 
             iteration++;
 #ifndef DISABLE_IO
-            if (iteration % frequency == 0) {
+            if (iteration % frequency_output == 0) {
                 try {
                     std::string out_name = base_name;
                     writer.plotParticles(particles, out_name, iteration);
@@ -282,6 +299,19 @@ class Simulation {
                 }
             }
 #endif
+#ifndef DISABLE_CHECKPOINTING
+            if (iteration % frequency_checkpoint == 0) {
+                try {
+                    cp_writer.createCheckpoint(domain, particles, iteration, force, delta_t, start_time, end_time,
+                                               frequency_output, frequency_checkpoint, base_name, cutoff_radius,
+                                               static_cast<size_t>(std::ceil((end_time - start_time) / delta_t)));
+                } catch (const std::runtime_error& e) {
+                    SPDLOG_ERROR("Failed to create a checkpoint at iteration {}: {}", iteration, e.what());
+                    throw SimulationException("Error while creating checkpoint: " + std::string(e.what()));
+                }
+            }
+#endif
+
             SPDLOG_DEBUG("Iteration {} finished, {} particles remaining", iteration, particles.size());
             current_time += delta_t;
         }

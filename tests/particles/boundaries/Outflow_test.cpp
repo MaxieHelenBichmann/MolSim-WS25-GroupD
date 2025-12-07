@@ -5,6 +5,7 @@
 #include <limits>
 #include <memory>
 
+#include "io/checkpointWriter/XVMWriterCP.h"
 #include "io/outputWriter/XYZWriter.h"
 #include "particles/Particle.h"
 #include "particles/container/domain/Domain.h"
@@ -56,7 +57,8 @@ TEST_F(OutflowTest, X_outflow_linked) {
     particles.addParticle(p);
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer);
+    auto cp_writer = std::make_unique<XVMWriterCP>();
+    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
     simulation.run();
     EXPECT_TRUE(particles.empty());
 }
@@ -70,7 +72,8 @@ TEST_F(OutflowTest, X_outflow_simple) {
     particles.addParticle(p);
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
+    auto cp_writer = std::make_unique<XVMWriterCP>();
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
     simulation.run();
     EXPECT_TRUE(particles.empty());
 }
@@ -84,7 +87,8 @@ TEST_F(OutflowTest, Y_outflow_linked) {
     particles.addParticle(p);
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer);
+    auto cp_writer = std::make_unique<XVMWriterCP>();
+    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
     simulation.run();
     EXPECT_TRUE(particles.empty());
 }
@@ -98,7 +102,8 @@ TEST_F(OutflowTest, Y_outflow_simple) {
     particles.addParticle(p);
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
+    auto cp_writer = std::make_unique<XVMWriterCP>();
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
     simulation.run();
     EXPECT_TRUE(particles.empty());
 }
@@ -112,7 +117,8 @@ TEST_F(OutflowTest, Z_outflow_linked) {
     particles.addParticle(p);
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer);
+    auto cp_writer = std::make_unique<XVMWriterCP>();
+    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
     simulation.run();
     EXPECT_TRUE(particles.empty());
 }
@@ -126,7 +132,8 @@ TEST_F(OutflowTest, Z_outflow_simple) {
     particles.addParticle(p);
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
+    auto cp_writer = std::make_unique<XVMWriterCP>();
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
     simulation.run();
     EXPECT_TRUE(particles.empty());
 }
@@ -141,7 +148,8 @@ TEST_F(OutflowTest, outflow_linked_no_erase) {
     particles.addParticle(p);
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer);
+    auto cp_writer = std::make_unique<XVMWriterCP>();
+    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
     simulation.run();
     Particle expected({9.5, 5.0, 5.0}, p.getV(), p.getM(), p.getEpsilon(), p.getSigma(), p.getType());
     expected.getOldX() = p.getX();
@@ -158,7 +166,8 @@ TEST_F(OutflowTest, outflow_simple_no_erase) {
     particles.addParticle(p);
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
+    auto cp_writer = std::make_unique<XVMWriterCP>();
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
     simulation.run();
     Particle expected({9.5, 5.0, 5.0}, p.getV(), p.getM(), p.getEpsilon(), p.getSigma(), p.getType());
     expected.getOldX() = p.getX();
