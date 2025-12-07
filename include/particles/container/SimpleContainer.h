@@ -70,6 +70,23 @@ class SimpleContainer : public std::vector<Particle> {
     void addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type);
 
     /**
+     * @brief Directly constructing a Particle with its required parameters, including type, in-place.
+     * Only used for checkpointing.
+     *
+     * @param x_arg Initial coordinates of the Particle.
+     * @param old_x_arg Old coordinates of the Particle (only used when restoring from checkpoint).
+     * @param v_arg Initial velocities of the Particle.
+     * @param f_arg Forces on the Particle (only used when restoring from checkpoint).
+     * @param old_f_arg Old forces on the Particle (only used when restoring from checkpoint).
+     * @param m_arg Mass of the Particle.
+     * @param epsilon_arg Epsilon of the Particle.
+     * @param sigma_arg Sigma of the Particle.
+     * @param type Type of the Particle.
+     */
+    void addParticle(R3 x_arg, R3 old_x_arg, R3 v_arg, R3 f_arg, R3 old_f_arg, double m_arg, double epsilon_arg,
+                     double sigma_arg, int type);
+
+    /**
      * @brief Update the position of a given Particle in the Container.
      *
      * @param p Iterator to the Particle to update.

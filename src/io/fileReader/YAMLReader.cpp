@@ -23,6 +23,7 @@
 #include "particles/generators/DiscGenerator.h"
 #include "physics/ForceSource.h"
 #include "utils/Settings.h"
+#include "utils/Vector.h"
 
 namespace mol_sim {
 
@@ -220,11 +221,35 @@ void YAMLReader::readXVM(ContainerRef particles, const YAML::Node& node) {
                 position[1] = coordinates["y"].as<double>();
                 position[2] = coordinates["z"].as<double>();
 
+                R3 old_position = R3{0., 0., 0.};
+                if (curr["oldCoordinates"]) {
+                    const YAML::Node& old_coordinates_node = curr["oldCoordinates"];
+                    old_position[0] = old_coordinates_node["ox"].as<double>();
+                    old_position[1] = old_coordinates_node["oy"].as<double>();
+                    old_position[2] = old_coordinates_node["oz"].as<double>();
+                }
+
                 R3 velocity;
                 const YAML::Node& velocity_node = curr["velocity"];
                 velocity[0] = velocity_node["vx"].as<double>();
                 velocity[1] = velocity_node["vy"].as<double>();
                 velocity[2] = velocity_node["vz"].as<double>();
+
+                R3 force = R3{0., 0., 0.};
+                if (curr["force"]) {
+                    const YAML::Node& force_node = curr["force"];
+                    force[0] = force_node["fx"].as<double>();
+                    force[1] = force_node["fy"].as<double>();
+                    force[2] = force_node["fz"].as<double>();
+                }
+
+                R3 old_force = R3{0., 0., 0.};
+                if (curr["oldForce"]) {
+                    const YAML::Node& old_force_node = curr["oldForce"];
+                    old_force[0] = old_force_node["ofx"].as<double>();
+                    old_force[1] = old_force_node["ofy"].as<double>();
+                    old_force[2] = old_force_node["ofz"].as<double>();
+                }
 
                 auto mass = curr["mass"].as<double>();
 
@@ -236,8 +261,12 @@ void YAMLReader::readXVM(ContainerRef particles, const YAML::Node& node) {
                 if (curr["sigma"]) {
                     sigma = curr["sigma"].as<double>();
                 }
+                int type = 0;
+                if (curr["type"]) {
+                    type = curr["type"].as<int>();
+                }
                 validateParticleParams(mass, epsilon, sigma, "XVM particle " + std::to_string(particle_idx));
-                particles.addParticle(position, velocity, mass, epsilon, sigma);
+                particles.addParticle(position, old_position, velocity, force, old_force, mass, epsilon, sigma, type);
                 particle_idx++;
             }
             SPDLOG_DEBUG("Parsed {} XVM particles", particle_idx);
