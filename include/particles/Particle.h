@@ -199,7 +199,7 @@ class Particle {
     [[nodiscard]] std::string toString() const;
 };
 
-std::ostream& operator<<(std::ostream& stream, Particle& p);
+std::ostream& operator<<(std::ostream& stream, const Particle& p);
 
 }  // namespace mol_sim
 
