@@ -30,7 +30,7 @@ void YAMLWriterCP::createCheckpoint(const Domain& domain, ContainerRef particles
     }
     std::ofstream file;
     std::stringstream strstr;
-    strstr << "cp_" << std::setfill('0') << std::setw(decimal_places) << iteration << ".txt";
+    strstr << "cp_" << std::setfill('0') << std::setw(decimal_places) << iteration << ".yaml";
 
     file.open(strstr.str().c_str());
 

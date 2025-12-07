@@ -48,7 +48,7 @@ class SettingsParam {
     /**
      * @brief Default checkpoint frequency of the simulation.
      */
-    static constexpr size_t FREQUENCY_CHECKPOINT_DEFAULT = 100;
+    static constexpr size_t FREQUENCY_CHECKPOINT_DEFAULT = 5000;
     /**
      * @brief Default cutoff radius for the linked cells.
      */
