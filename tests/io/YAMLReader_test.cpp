@@ -393,4 +393,69 @@ TEST_F(YAMLReaderTest, ReadDomainAndBoundaries) {
     EXPECT_EQ(output.find("Error"), std::string::npos);
 }
 
+/**
+ * @brief Tests the YAML Readers ability to read a checkpoint file with full settings and particle data
+ *
+ */
+TEST_F(YAMLReaderTest, ReadCheckpointFile) {
+    YAMLReader reader;
+    reader.readSettings(settings, test_data_dir + "/checkpoint.yaml");
+    reader.readParticles(particles, test_data_dir + "/checkpoint.yaml");
+    std::string output = log_stream->str();
+
+    // Verify settings
+    EXPECT_EQ(settings.delta_t, 0.005);
+    EXPECT_DOUBLE_EQ(settings.end_time, 500.0);
+    EXPECT_DOUBLE_EQ(settings.start_time, 0.0);
+    EXPECT_EQ(settings.base_name, "MD");
+    EXPECT_EQ(settings.force, LENNARDJONES);
+    EXPECT_EQ(settings.frequency_output, 10);
+    EXPECT_EQ(settings.frequency_checkpoint, 100);
+    EXPECT_DOUBLE_EQ(settings.cutoff, 1.);
+
+    R3 expected_domain = {10., 10., 10.};
+    const Boundary& upper = settings.domain.getBoundary(BoundaryLocation::UPPER);
+    const Boundary& lower = settings.domain.getBoundary(BoundaryLocation::LOWER);
+    const Boundary& left = settings.domain.getBoundary(BoundaryLocation::LEFT);
+    const Boundary& right = settings.domain.getBoundary(BoundaryLocation::RIGHT);
+    const Boundary& front = settings.domain.getBoundary(BoundaryLocation::FRONT);
+    const Boundary& back = settings.domain.getBoundary(BoundaryLocation::BACK);
+
+    EXPECT_R3_EQ(settings.domain.getDimension(), expected_domain);
+    EXPECT_EQ(upper.getType(), BoundaryType::OUTFLOW);
+    EXPECT_EQ(lower.getType(), BoundaryType::REFLECTING);
+    EXPECT_EQ(left.getType(), BoundaryType::REFLECTING);
+    EXPECT_EQ(right.getType(), BoundaryType::REFLECTING);
+    EXPECT_EQ(front.getType(), BoundaryType::REFLECTING);
+    EXPECT_EQ(back.getType(), BoundaryType::REFLECTING);
+
+    const auto* lower_reflecting = dynamic_cast<const Reflecting*>(&lower);
+    ASSERT_NE(lower_reflecting, nullptr);
+    ASSERT_TRUE(lower_reflecting->getBoundarySigma().has_value());
+    EXPECT_DOUBLE_EQ(lower_reflecting->getBoundarySigma().value(), 1.2);
+    ASSERT_TRUE(lower_reflecting->getBoundaryEpsilon().has_value());
+    EXPECT_DOUBLE_EQ(lower_reflecting->getBoundaryEpsilon().value(), 5.0);
+
+    // Verify particle data
+    EXPECT_EQ(particles.size(), 1);
+
+    R3 expected_pos = {0.5, 6., 2.3};
+    R3 expected_old_pos = {1., 1., 1.};
+    R3 expected_velo = {-2., 7., 0.8};
+    R3 expected_force = {6., 6., 7.};
+    R3 expected_old_force = {4., 5.5, 1.2};
+
+    EXPECT_R3_EQ(particles[0].getX(), expected_pos);
+    EXPECT_R3_EQ(particles[0].getOldX(), expected_old_pos);
+    EXPECT_R3_EQ(particles[0].getV(), expected_velo);
+    EXPECT_R3_EQ(particles[0].getF(), expected_force);
+    EXPECT_R3_EQ(particles[0].getOldF(), expected_old_force);
+    EXPECT_EQ(particles[0].getM(), 69.0);
+    EXPECT_EQ(particles[0].getEpsilon(), 420.0);
+    EXPECT_EQ(particles[0].getSigma(), 1337.0);
+    EXPECT_EQ(particles[0].getType(), 42);
+
+    EXPECT_EQ(output.find("Error"), std::string::npos);
+}
+
 }  // namespace mol_sim

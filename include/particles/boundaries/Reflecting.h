@@ -70,6 +70,12 @@ class Reflecting : public Boundary {
      * std::nullopt is returned that means the ghosts take the epsilon of the normal particles.
      */
     [[nodiscard]] std::optional<double> getBoundaryEpsilon() const noexcept { return boundary_epsilon; }
+    /**
+     * @brief Returns frag whether ghost particles are spawned on the boundary or mirrored.
+     *
+     * @return true if ghost particles are spawned on the boundary, false if they are mirrored.
+     */
+    [[nodiscard]] bool isGhostOnBoundary() const noexcept { return ghost_on_boundary; }
 };
 
 }  // namespace mol_sim
