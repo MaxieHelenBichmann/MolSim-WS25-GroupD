@@ -16,6 +16,11 @@ void SimpleContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsil
 void SimpleContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type) {
     emplace_back(x_arg, v_arg, m_arg, epsilon_arg, sigma_arg, type);
 };
+void SimpleContainer::addParticle(R3 x_arg, R3 old_x_arg, R3 v_arg, R3 f_arg, R3 old_f_arg, double m_arg,
+                                  double epsilon_arg, double sigma_arg, int type) {
+    emplace_back(x_arg, old_x_arg, v_arg, f_arg, old_f_arg, m_arg, epsilon_arg, sigma_arg, type);
+};
+
 std::vector<Particle>::iterator SimpleContainer::eraseParticle(std::vector<Particle>::iterator p) { return erase(p); };
 
 SimpleContainer::proximity_iterator<Particle> SimpleContainer::eraseParticle(
