@@ -44,7 +44,11 @@ class SettingsParam {
     /**
      * @brief Default write frequency of the simulation.
      */
-    static constexpr size_t FREQUENCY_DEFAULT = 10;
+    static constexpr size_t FREQUENCY_OUTPUT_DEFAULT = 10;
+    /**
+     * @brief Default checkpoint frequency of the simulation.
+     */
+    static constexpr size_t FREQUENCY_CHECKPOINT_DEFAULT = 100;
     /**
      * @brief Default cutoff radius for the linked cells.
      */
@@ -101,7 +105,12 @@ class SettingsParam {
      * @brief Frequency of output files being written.
      * Output is written every *frequency* iterations.
      */
-    size_t frequency = FREQUENCY_DEFAULT;
+    size_t frequency_output = FREQUENCY_OUTPUT_DEFAULT;
+    /**
+     * @brief Frequency of checkpoint files being written.
+     * Checkpoints are written every *frequency* iterations.
+     */
+    size_t frequency_checkpoint = FREQUENCY_CHECKPOINT_DEFAULT;
     /**
      * @brief Dimensions of the simulation.
      * TODO: use this for 2D optimizations.

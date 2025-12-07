@@ -9,12 +9,14 @@
 
 #include <limits>
 
+#include "io/CheckpointWriter.h"
 #include "io/OutputWriter.h"
 #include "particles/Particle.h"
 #include "particles/container/LinkedCellContainer.h"
 #include "particles/container/SimpleContainer.h"
 #include "testingUtils.h"
 #include "utils/Vector.h"
+
 
 namespace mol_sim {
 
@@ -35,6 +37,19 @@ class ForceMock : public ForceSource {
 class OutputWriterMock : public OutputWriter {
    public:
     MOCK_METHOD(void, plotParticles, (ContainerRef particles, const std::string& filename, int iteration),
+                (const, override));
+};
+
+/**
+ * @brief Mocks CheckpointWriter for testing without file I/O.
+ *
+ */
+class CheckpointWriterMock : public CheckpointWriter {
+   public:
+    MOCK_METHOD(void, createCheckpoint,
+                (const Domain& domain, ContainerRef particles, int iteration, Force force, double delta_t,
+                 double start_time, double end_time, size_t frequency_output, size_t frequency_checkpoint,
+                 const std::string& base_name, double cutoff_radius, size_t N),
                 (const, override));
 };
 

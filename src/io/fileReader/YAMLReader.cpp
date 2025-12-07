@@ -132,7 +132,10 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
             settings.container_type = container_str;
         }
         if (node["frequency"]) {
-            settings.frequency = node["frequency"].as<size_t>();
+            settings.frequency_output = node["frequency"].as<size_t>();
+        }
+        if (node["checkpoint"]) {
+            settings.frequency_checkpoint = node["checkpoint"].as<size_t>();
         }
         if (node["cutoff"]) {
             settings.cutoff = node["cutoff"].as<double>();

@@ -6,6 +6,7 @@ settings:
     base_name: "MD"
     force: "Lennard Jones"
     frequency: 10
+    checkpoint: 100
     cutoff: 1.
     container: "LINKED"
     initial_temp: 7.
