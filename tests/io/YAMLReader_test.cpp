@@ -227,7 +227,9 @@ TEST_F(YAMLReaderTest, ReadFullConfigFile) {
 
     EXPECT_EQ(settings.force, LENNARDJONES);
 
-    EXPECT_EQ(settings.frequency, 10);
+    EXPECT_EQ(settings.frequency_output, 10);
+
+    EXPECT_EQ(settings.frequency_checkpoint, 100);
 
     EXPECT_DOUBLE_EQ(settings.cutoff, 1.);
 

@@ -13,6 +13,7 @@
 #include <cstddef>
 #include <memory>
 
+#include "io/checkpointWriter/XVMWriterCP.h"
 #include "io/outputWriter/XYZWriter.h"
 #include "particles/boundaries/Outflow.h"
 #include "particles/container/LinkedCellContainer.h"
@@ -57,9 +58,10 @@ void bmSimulationComplexityLinkedCell(benchmark::State& state) {
         std::make_unique<Outflow>(BoundaryLocation::LOWER, domain_size)};
     settings.domain = Domain(domain_size, std::move(boundaries));
     auto force_source = std::make_unique<LennardJonesForce>();
+    auto cp_writer = std::make_unique<XVMWriterCP>();
     auto writer = std::make_unique<XYZWriter>();
 
-    Simulation<LinkedCellContainer> simulation(part_container, *force_source, settings, *writer);
+    Simulation<LinkedCellContainer> simulation(part_container, *force_source, settings, *writer, *cp_writer);
     for ([[maybe_unused]] auto _ : state) {
         particles.clear();
         generator.generateParticles(particles);
@@ -101,7 +103,8 @@ void bmSimulationComplexityDirectSum(benchmark::State& state) {
     settings.domain = Domain(domain_size, std::move(boundaries));
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<SimpleContainer> simulation(part_container, *force_source, settings, *writer);
+    auto cp_writer = std::make_unique<XVMWriterCP>();
+    Simulation<SimpleContainer> simulation(part_container, *force_source, settings, *writer, *cp_writer);
     for ([[maybe_unused]] auto _ : state) {
         particles.clear();
         generator.generateParticles(particles);

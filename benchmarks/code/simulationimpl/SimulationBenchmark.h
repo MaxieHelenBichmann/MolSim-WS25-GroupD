@@ -27,25 +27,21 @@ class SimulationBenchmark {
     Domain domain;
     containerType& particles;
     const ForceSource& force_source;
-    const OutputWriter& writer;
     double delta_t;
     double start_time;
     double end_time;
-    size_t frequency;
     std::string base_name;
     double cutoff_radius;
 
    public:
     SimulationBenchmark(containerType& particles, const ForceSource& force_source, SettingsParam& settings,
-                        const OutputWriter& writer)
+                        [[maybe_unused]] const OutputWriter& writer)
         : domain(std::move(settings.domain)),
           particles(particles),
           force_source(force_source),
-          writer(writer),
           delta_t(settings.delta_t),
           start_time(settings.start_time),
           end_time(settings.end_time),
-          frequency(settings.frequency),
           base_name(settings.base_name),
           cutoff_radius(settings.cutoff) {}
 
@@ -133,18 +129,7 @@ class SimulationBenchmark {
             calculateV();
 
             iteration++;
-#ifndef DISABLE_IO
-            if (iteration % frequency == 0) {
-                try {
-                    std::string out_name = base_name;
-                    writer.plotParticles(particles, out_name, iteration);
-                } catch (const std::runtime_error& e) {
-                    SPDLOG_ERROR("Failed to plot particles at iteration {}: {}", iteration, e.what());
-                    throw SimulationException("Error while plotting Particles: " + std::string(e.what()));
-                }
-            }
-#endif
-            SPDLOG_INFO("Iteration {} finished, {} particles remaining", iteration, particles.size());
+            SPDLOG_DEBUG("Iteration {} finished, {} particles remaining", iteration, particles.size());
             current_time += delta_t;
         }
         SPDLOG_INFO("Simulation completed: {} iterations, {} particles remaining", iteration, particles.size());
