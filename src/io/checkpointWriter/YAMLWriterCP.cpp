@@ -1,6 +1,7 @@
 #include "io/checkpointWriter/YAMLWriterCP.h"
 
 #include <spdlog/spdlog.h>
+#include <yaml-cpp/emitter.h>
 #include <yaml-cpp/exceptions.h>
 #include <yaml-cpp/node/node.h>
 #include <yaml-cpp/yaml.h>
@@ -11,6 +12,7 @@
 #include <sstream>
 
 #include "particles/boundaries/Boundary.h"
+#include "particles/boundaries/Reflecting.h"
 
 using namespace mol_sim;
 
@@ -65,20 +67,50 @@ void YAMLWriterCP::createCheckpoint(const Domain& domain, ContainerRef particles
         return "OUTFLOW";
     };
 
+    const auto boundary_extra = [](const Boundary& b, YAML::Emitter& out) {
+        if (b.getType() == BoundaryType::REFLECTING) {
+            const auto& refl_boundary = dynamic_cast<const Reflecting&>(b);
+            if (refl_boundary.getBoundarySigma().has_value()) {
+                out << YAML::Key << "sigma" << YAML::Value << refl_boundary.getBoundarySigma().value();
+            }
+            if (refl_boundary.getBoundaryEpsilon().has_value()) {
+                out << YAML::Key << "epsilon" << YAML::Value << refl_boundary.getBoundaryEpsilon().value();
+            }
+            out << YAML::Key << "ghost_on_boundary" << YAML::Value << refl_boundary.isGhostOnBoundary();
+        }
+    };
+
     out << YAML::Key << "boundaries" << YAML::Value << YAML::BeginMap;  // open boundaries
 
-    out << YAML::Key << "UPPER" << YAML::Value << YAML::BeginMap << YAML::Key << "type" << YAML::Value
-        << boundary_type_string(domain.getBoundary(BoundaryLocation::UPPER).getType()) << YAML::EndMap;
-    out << YAML::Key << "LOWER" << YAML::Value << YAML::BeginMap << YAML::Key << "type" << YAML::Value
-        << boundary_type_string(domain.getBoundary(BoundaryLocation::LOWER).getType()) << YAML::EndMap;
-    out << YAML::Key << "LEFT" << YAML::Value << YAML::BeginMap << YAML::Key << "type" << YAML::Value
-        << boundary_type_string(domain.getBoundary(BoundaryLocation::LEFT).getType()) << YAML::EndMap;
-    out << YAML::Key << "RIGHT" << YAML::Value << YAML::BeginMap << YAML::Key << "type" << YAML::Value
-        << boundary_type_string(domain.getBoundary(BoundaryLocation::RIGHT).getType()) << YAML::EndMap;
-    out << YAML::Key << "FRONT" << YAML::Value << YAML::BeginMap << YAML::Key << "type" << YAML::Value
-        << boundary_type_string(domain.getBoundary(BoundaryLocation::FRONT).getType()) << YAML::EndMap;
-    out << YAML::Key << "BACK" << YAML::Value << YAML::BeginMap << YAML::Key << "type" << YAML::Value
-        << boundary_type_string(domain.getBoundary(BoundaryLocation::BACK).getType()) << YAML::EndMap;
+    out << YAML::Key << "upper" << YAML::Value << YAML::BeginMap << YAML::Key << "type" << YAML::Value
+        << boundary_type_string(domain.getBoundary(BoundaryLocation::UPPER).getType());
+    boundary_extra(domain.getBoundary(BoundaryLocation::UPPER), out);
+    out << YAML::EndMap;
+
+    out << YAML::Key << "lower" << YAML::Value << YAML::BeginMap << YAML::Key << "type" << YAML::Value
+        << boundary_type_string(domain.getBoundary(BoundaryLocation::LOWER).getType());
+    boundary_extra(domain.getBoundary(BoundaryLocation::LOWER), out);
+    out << YAML::EndMap;
+
+    out << YAML::Key << "left" << YAML::Value << YAML::BeginMap << YAML::Key << "type" << YAML::Value
+        << boundary_type_string(domain.getBoundary(BoundaryLocation::LEFT).getType());
+    boundary_extra(domain.getBoundary(BoundaryLocation::LEFT), out);
+    out << YAML::EndMap;
+
+    out << YAML::Key << "right" << YAML::Value << YAML::BeginMap << YAML::Key << "type" << YAML::Value
+        << boundary_type_string(domain.getBoundary(BoundaryLocation::RIGHT).getType());
+    boundary_extra(domain.getBoundary(BoundaryLocation::RIGHT), out);
+    out << YAML::EndMap;
+
+    out << YAML::Key << "front" << YAML::Value << YAML::BeginMap << YAML::Key << "type" << YAML::Value
+        << boundary_type_string(domain.getBoundary(BoundaryLocation::FRONT).getType());
+    boundary_extra(domain.getBoundary(BoundaryLocation::FRONT), out);
+    out << YAML::EndMap;
+
+    out << YAML::Key << "back" << YAML::Value << YAML::BeginMap << YAML::Key << "type" << YAML::Value
+        << boundary_type_string(domain.getBoundary(BoundaryLocation::BACK).getType());
+    boundary_extra(domain.getBoundary(BoundaryLocation::BACK), out);
+    out << YAML::EndMap;
 
     out << YAML::EndMap;  // close boundaries
     out << YAML::EndMap;  // close domain
@@ -98,7 +130,7 @@ void YAMLWriterCP::createCheckpoint(const Domain& domain, ContainerRef particles
         out << YAML::Key << "z" << YAML::Value << p.getX()[2];
         out << YAML::EndMap;
 
-        out << YAML::Key << "oldCoordinates" << YAML::Value << YAML::BeginMap;
+        out << YAML::Key << "old_coordinates" << YAML::Value << YAML::BeginMap;
         out << YAML::Key << "ox" << YAML::Value << p.getOldX()[0];
         out << YAML::Key << "oy" << YAML::Value << p.getOldX()[1];
         out << YAML::Key << "oz" << YAML::Value << p.getOldX()[2];
@@ -116,7 +148,7 @@ void YAMLWriterCP::createCheckpoint(const Domain& domain, ContainerRef particles
         out << YAML::Key << "fz" << YAML::Value << p.getF()[2];
         out << YAML::EndMap;
 
-        out << YAML::Key << "oldForce" << YAML::Value << YAML::BeginMap;
+        out << YAML::Key << "old_force" << YAML::Value << YAML::BeginMap;
         out << YAML::Key << "ofx" << YAML::Value << p.getOldF()[0];
         out << YAML::Key << "ofy" << YAML::Value << p.getOldF()[1];
         out << YAML::Key << "ofz" << YAML::Value << p.getOldF()[2];

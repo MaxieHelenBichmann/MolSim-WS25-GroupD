@@ -222,8 +222,8 @@ void YAMLReader::readXVM(ContainerRef particles, const YAML::Node& node) {
                 position[2] = coordinates["z"].as<double>();
 
                 R3 old_position = R3{0., 0., 0.};
-                if (curr["oldCoordinates"]) {
-                    const YAML::Node& old_coordinates_node = curr["oldCoordinates"];
+                if (curr["old_coordinates"]) {
+                    const YAML::Node& old_coordinates_node = curr["old_coordinates"];
                     old_position[0] = old_coordinates_node["ox"].as<double>();
                     old_position[1] = old_coordinates_node["oy"].as<double>();
                     old_position[2] = old_coordinates_node["oz"].as<double>();
@@ -244,8 +244,8 @@ void YAMLReader::readXVM(ContainerRef particles, const YAML::Node& node) {
                 }
 
                 R3 old_force = R3{0., 0., 0.};
-                if (curr["oldForce"]) {
-                    const YAML::Node& old_force_node = curr["oldForce"];
+                if (curr["old_force"]) {
+                    const YAML::Node& old_force_node = curr["old_force"];
                     old_force[0] = old_force_node["ofx"].as<double>();
                     old_force[1] = old_force_node["ofy"].as<double>();
                     old_force[2] = old_force_node["ofz"].as<double>();
