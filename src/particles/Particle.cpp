@@ -118,7 +118,9 @@ bool Particle::operator==(const Particle& other) const noexcept {
            (m == other.m) and (old_f == other.old_f) and (epsilon == other.epsilon) and (sigma == other.sigma);
 }
 
-std::ostream& operator<<(std::ostream& stream, Particle& p) {
+namespace mol_sim {
+std::ostream& operator<<(std::ostream& stream, const Particle& p) {
     stream << p.toString();
     return stream;
 }
+}  // namespace mol_sim
