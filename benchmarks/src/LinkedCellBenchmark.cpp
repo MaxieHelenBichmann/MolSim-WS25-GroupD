@@ -124,18 +124,34 @@ void bmLinkedCellProximityDirect(benchmark::State& state) {
     LinkedCellContainerDirect container(domain_size, cutoff);
     for (size_t i = 0; i < n; i++) {
         R3 pos = randomR3(bounds);
+        SPDLOG_DEBUG("Adding particle at position: [{}, {}, {}]", pos[0], pos[1], pos[2]);
         R3 vel = randomR3();
         container.addParticle(pos, vel, 1.0, 1.0, 1.0);
+    }
+
+    for (auto& cell : container.getCells()) {
+        SPDLOG_DEBUG("cell size: {} --- bounds: [{} - {}, {} - {}, {} - {}]", cell.particles().size(),
+                     cell.getBounds()[0], cell.getBounds()[1], cell.getBounds()[2], cell.getBounds()[3],
+                     cell.getBounds()[4], cell.getBounds()[5]);
     }
 
     R3 center = {50.0, 50.0, 50.0};
     size_t count = 0;
 
     for ([[maybe_unused]] auto _ : state) {
+        SPDLOG_DEBUG("make begin");
         auto it = container.proximityBegin(center);
+        SPDLOG_DEBUG("begin: cur = {}, cur_cell = {}, cells size = {}", it.getCur(), it.getCurCell(),
+                     it.getCells().size());
+
+        SPDLOG_DEBUG("make end");
         auto end = container.proximityEnd(center);
+        SPDLOG_DEBUG("end: cur = {}, cur_cell = {}, cells size = {}", end.getCur(), end.getCurCell(),
+                     end.getCells().size());
+        SPDLOG_DEBUG("begin iteration");
         for (; it != end; ++it) {
             count += it->getType();
+            SPDLOG_DEBUG("iteration");
         }
         benchmark::ClobberMemory();
     }
@@ -470,8 +486,6 @@ BENCHMARK(bmLinkedCellProximityExplicit)
     ->DisplayAggregatesOnly(true)
     ->Unit(benchmark::kMicrosecond);
 
-// BENCHMARK DISABLED: Same iterator invalidation issue as full simulation benchmark.
-// updateParticlePosition() causes iterator corruption when particles move between cells.
 BENCHMARK(bmLinkedCellUpdateDirect)
     ->Name("LinkedCell/Update/Direct")
     ->RangeMultiplier(2)

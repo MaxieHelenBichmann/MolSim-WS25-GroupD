@@ -1,5 +1,7 @@
 #include "SimpleContainerControl.h"
 
+#include <particles/Particle.h>
+
 #include <cstddef>
 
 using namespace mol_sim;
@@ -26,14 +28,14 @@ std::vector<Particle>::iterator SimpleContainerControl::eraseParticle(std::vecto
     return erase(p);
 };
 
-SimpleContainerControl::proximity_iterator SimpleContainerControl::eraseParticle(
-    const SimpleContainerControl::proximity_iterator& p) {
+SimpleContainerControl::proximity_iterator<Particle> SimpleContainerControl::eraseParticle(
+    const SimpleContainerControl::proximity_iterator<Particle>& p) {
     R3 center = p.getCenter();
     double radius = p.getRadius();
     bool prox = p.isProximity();
     std::set<BoundaryLocation> locations = p.getLocations();
     size_t idx = erase(begin() + (&(*p) - data())) - begin();
-    return proximity_iterator{center, radius, data(), data() + idx, 0, prox, locations};
+    return proximity_iterator<Particle>{center, radius, data(), data() + idx, 0, prox, locations};
 };
 
 std::vector<Particle>::iterator SimpleContainerControl::updateParticlePosition(std::vector<Particle>::iterator p,
@@ -43,60 +45,62 @@ std::vector<Particle>::iterator SimpleContainerControl::updateParticlePosition(s
 }
 
 // proximity iterators
-SimpleContainerControl::proximity_iterator SimpleContainerControl::proximityBegin(R3 center,
-                                                                                  [[maybe_unused]] size_t offset) {
-    return proximity_iterator{center, cutoff_radius, data(), data() + size(), 0};  // NOLINT
+SimpleContainerControl::proximity_iterator<Particle> SimpleContainerControl::proximityBegin(
+    R3 center, [[maybe_unused]] size_t offset) {
+    return proximity_iterator<Particle>{center, cutoff_radius, data(), data() + size(), 0};  // NOLINT
 };
 
-SimpleContainerControl::const_proximity_iterator SimpleContainerControl::proximityBegin(
+SimpleContainerControl::proximity_iterator<const Particle> SimpleContainerControl::proximityBegin(
     R3 center, [[maybe_unused]] size_t offset) const {
-    return const_proximity_iterator{center, cutoff_radius, data(), data() + size(), 0};  // NOLINT
+    return proximity_iterator<const Particle>{center, cutoff_radius, data(), data() + size(), 0};  // NOLINT
 };
 
-SimpleContainerControl::proximity_iterator SimpleContainerControl::proximityEnd(R3 center) {
-    return proximity_iterator{center, cutoff_radius, data() + size(), data() + size(), 0};  // NOLINT
+SimpleContainerControl::proximity_iterator<Particle> SimpleContainerControl::proximityEnd(R3 center) {
+    return proximity_iterator<Particle>{center, cutoff_radius, data() + size(), data() + size(), 0};  // NOLINT
 };
 
-SimpleContainerControl::const_proximity_iterator SimpleContainerControl::proximityEnd(R3 center) const {
-    return const_proximity_iterator{center, cutoff_radius, data() + size(), data() + size(), 0};  // NOLINT
+SimpleContainerControl::proximity_iterator<const Particle> SimpleContainerControl::proximityEnd(R3 center) const {
+    return proximity_iterator<const Particle>{center, cutoff_radius, data() + size(), data() + size(), 0};  // NOLINT
 };
 
 // boundary and halo iterators
-SimpleContainerControl::proximity_iterator SimpleContainerControl::haloBegin(
+SimpleContainerControl::proximity_iterator<Particle> SimpleContainerControl::haloBegin(
     const std::set<BoundaryLocation>& locations) {
-    return proximity_iterator{domain_size, cutoff_radius, data(), data() + size(), 0, false, locations};  // NOLINT
+    return proximity_iterator<Particle>{domain_size, cutoff_radius, data(),   data() + size(),  // NOLINT
+                                        0,           false,         locations};
 };
-SimpleContainerControl::proximity_iterator SimpleContainerControl::haloEnd(
+SimpleContainerControl::proximity_iterator<Particle> SimpleContainerControl::haloEnd(
     const std::set<BoundaryLocation>& locations) {
-    return proximity_iterator{domain_size, cutoff_radius, data() + size(), data() + size(),  // NOLINT
-                              0,           false,         locations};
+    return proximity_iterator<Particle>{domain_size, cutoff_radius, data() + size(), data() + size(),  // NOLINT
+                                        0,           false,         locations};
 };
-SimpleContainerControl::const_proximity_iterator SimpleContainerControl::haloBegin(
+SimpleContainerControl::proximity_iterator<const Particle> SimpleContainerControl::haloBegin(
     const std::set<BoundaryLocation>& locations) const {
-    return const_proximity_iterator{domain_size, cutoff_radius, data(),   data() + size(),  // NOLINT
-                                    0,           false,         locations};
+    return proximity_iterator<const Particle>{domain_size, cutoff_radius, data(),   data() + size(),  // NOLINT
+                                              0,           false,         locations};
 };
-SimpleContainerControl::const_proximity_iterator SimpleContainerControl::haloEnd(
+SimpleContainerControl::proximity_iterator<const Particle> SimpleContainerControl::haloEnd(
     const std::set<BoundaryLocation>& locations) const {
-    return const_proximity_iterator{domain_size, cutoff_radius, data() + size(), data() + size(),  // NOLINT
-                                    0,           false,         locations};
+    return proximity_iterator<const Particle>{domain_size, cutoff_radius, data() + size(), data() + size(),  // NOLINT
+                                              0,           false,         locations};
 };
-SimpleContainerControl::proximity_iterator SimpleContainerControl::boundaryBegin(
+SimpleContainerControl::proximity_iterator<Particle> SimpleContainerControl::boundaryBegin(
     const std::set<BoundaryLocation>& locations) {
-    return proximity_iterator{domain_size, -cutoff_radius, data(), data() + size(), 0, false, locations};  // NOLINT
+    return proximity_iterator<Particle>{domain_size, -cutoff_radius, data(),   data() + size(),  // NOLINT
+                                        0,           false,          locations};
 };
-SimpleContainerControl::proximity_iterator SimpleContainerControl::boundaryEnd(
+SimpleContainerControl::proximity_iterator<Particle> SimpleContainerControl::boundaryEnd(
     const std::set<BoundaryLocation>& locations) {
-    return proximity_iterator{domain_size, -cutoff_radius, data() + size(), data() + size(),  // NOLINT
-                              0,           false,          locations};
+    return proximity_iterator<Particle>{domain_size, -cutoff_radius, data() + size(), data() + size(),  // NOLINT
+                                        0,           false,          locations};
 };
-SimpleContainerControl::const_proximity_iterator SimpleContainerControl::boundaryBegin(
+SimpleContainerControl::proximity_iterator<const Particle> SimpleContainerControl::boundaryBegin(
     const std::set<BoundaryLocation>& locations) const {
-    return const_proximity_iterator{domain_size, -cutoff_radius, data(),   data() + size(),  // NOLINT
-                                    0,           false,          locations};
+    return proximity_iterator<const Particle>{domain_size, -cutoff_radius, data(),   data() + size(),  // NOLINT
+                                              0,           false,          locations};
 };
-SimpleContainerControl::const_proximity_iterator SimpleContainerControl::boundaryEnd(
+SimpleContainerControl::proximity_iterator<const Particle> SimpleContainerControl::boundaryEnd(
     const std::set<BoundaryLocation>& locations) const {
-    return const_proximity_iterator{domain_size, -cutoff_radius, data() + size(), data() + size(),  // NOLINT
-                                    0,           false,          locations};
+    return proximity_iterator<const Particle>{domain_size, -cutoff_radius, data() + size(), data() + size(),  // NOLINT
+                                              0,           false,          locations};
 };
