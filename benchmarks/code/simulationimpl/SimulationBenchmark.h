@@ -144,7 +144,7 @@ class SimulationBenchmark {
                 }
             }
 #endif
-            SPDLOG_DEBUG("Iteration {} finished, {} particles remaining", iteration, particles.size());
+            SPDLOG_INFO("Iteration {} finished, {} particles remaining", iteration, particles.size());
             current_time += delta_t;
         }
         SPDLOG_INFO("Simulation completed: {} iterations, {} particles remaining", iteration, particles.size());
