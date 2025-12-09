@@ -129,12 +129,6 @@ void bmLinkedCellProximityDirect(benchmark::State& state) {
         container.addParticle(pos, vel, 1.0, 1.0, 1.0);
     }
 
-    for (auto& cell : container.getCells()) {
-        SPDLOG_DEBUG("cell size: {} --- bounds: [{} - {}, {} - {}, {} - {}]", cell.particles().size(),
-                     cell.getBounds()[0], cell.getBounds()[1], cell.getBounds()[2], cell.getBounds()[3],
-                     cell.getBounds()[4], cell.getBounds()[5]);
-    }
-
     R3 center = {50.0, 50.0, 50.0};
     size_t count = 0;
 
