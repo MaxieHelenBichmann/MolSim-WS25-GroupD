@@ -13,7 +13,7 @@ Reflecting::Reflecting(BoundaryLocation location, R3 domain_size, bool ghost_on_
       boundary_epsilon(epsilon),
       boundary_sigma(sigma) {}
 
-void Reflecting::applyBoundary(Particle& p, const ForceSource& force) const noexcept {
+std::optional<std::vector<Particle>> Reflecting::applyBoundary(Particle& p, const ForceSource& force) noexcept {
     /**
      * Note that we spawn the ghost particle with either the specified sigma or the sigma of the passed particle,
      * BUT: we check whether or not the boundary condition applies with sigma_check. We do this because in the
@@ -55,6 +55,8 @@ void Reflecting::applyBoundary(Particle& p, const ForceSource& force) const noex
         p.getF() =
             p.getF() + force.applyForce(p, Particle(ghost_pos, {0.0, 0.0, 0.0}, p.getM(), epsilon, sigma_ghost, -1));
     }
+
+    return std::nullopt;
 }
 
 }  // namespace mol_sim

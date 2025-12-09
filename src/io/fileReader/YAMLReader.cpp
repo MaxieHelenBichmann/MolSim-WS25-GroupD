@@ -17,6 +17,7 @@
 #include "particles/boundaries/Outflow.h"
 #include "particles/boundaries/Reflecting.h"
 #include "particles/boundaries/VelocityReflect.h"
+#include "particles/boundaries/Periodic.h"
 #include "particles/container/domain/Domain.h"
 #include "particles/generators/CuboidGenerator.h"
 #include "particles/generators/DiscGenerator.h"
@@ -362,6 +363,10 @@ void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
                     case BoundaryType::VELOCITYREFLECT:
                         boundary = std::make_unique<VelocityReflect>(location, dimension);
                         break;
+                    case BoundaryType::PERIODIC: {
+                        boundary = std::make_unique<Periodic>(location, dimension, getCellSize(settings, dimension));
+                        break;
+                    } 
                     case BoundaryType::OUTFLOW:
                     default:
                         boundary = std::make_unique<Outflow>(location, dimension);
@@ -377,5 +382,29 @@ void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
         throw YAMLReaderException(e.what());
     }
 }
+
+//--------------------------------------------------------------------------------------------------
+/** TODO: This code until next comment is copy-pasted from LCC.cpp. Make this prettier.
+ * Also make sure this works for SimpleContainer.
+ */
+R3 YAMLReader::getCellSize(SettingsParam& settings, R3 dimension) {
+    R3 cell_length = dimension;
+    if (settings.cutoff == std::numeric_limits<double>::infinity()) {
+        SPDLOG_INFO("Cutoff radius is infinite, halo cells will only be as large as the domain size");
+    } else {
+        for (size_t dim = 0; dim < 3; ++dim) {
+            size_t inner_cells = 0U;
+            if (settings.cutoff > 0.0) {
+                inner_cells = static_cast<size_t>(std::floor(dimension[dim] / settings.cutoff));
+            }
+            if (inner_cells == 0U) {
+                inner_cells = 1U;
+            }
+            cell_length[dim] = dimension[dim] / static_cast<double>(inner_cells);
+        }
+    }
+    return cell_length;
+}
+//------------------------------------------------------------------------------------------------- 
 
 }  // namespace mol_sim
