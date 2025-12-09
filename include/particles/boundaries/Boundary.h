@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <string>
+#include <optional>
 
 #include "particles/Particle.h"
 #include "physics/ForceSource.h"
@@ -29,8 +30,10 @@ enum class BoundaryLocation : std::uint8_t { UPPER, LOWER, FRONT, BACK, LEFT, RI
  *
  * OUTFLOW: Outflow boundary condition: delete particles in halo cells
  * REFLECTING: Reflecting boundary condition: add ghost particles if particle gets too close to boundary
+ * VELOCITYREFLECT: Reflecting boundary condition: reflect particle like a ball that flew against a flat surface
+ * PERIODIC: Periodic boundary condition: imagine portals (like those in the Portal games) on each boundary.
  */
-enum class BoundaryType : std::uint8_t { OUTFLOW, REFLECTING, VELOCITYREFLECT };
+enum class BoundaryType : std::uint8_t { OUTFLOW, REFLECTING, VELOCITYREFLECT, PERIODIC };
 
 class Boundary {
    protected:
@@ -58,8 +61,10 @@ class Boundary {
      * Computes a ghost particle if this boundary requires one for the given particle.
      * @param p The particle to check.
      * @param force The force source to use for ghost particle interactions.
+     * @return Newly generated particles that need further processing beyond the scope of 
+     * this / an implementing class.
      */
-    virtual void applyBoundary(Particle& p, const ForceSource& force) const noexcept = 0;
+    virtual std::optional<std::vector<Particle>> applyBoundary(Particle& p, const ForceSource& force) noexcept = 0;
 
     /**
      * @brief Returns the type of the boundary.

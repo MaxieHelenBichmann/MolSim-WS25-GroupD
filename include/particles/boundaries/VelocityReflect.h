@@ -18,9 +18,10 @@ class VelocityReflect : public Boundary {
      * In other words this boundary condition can be thought of as throwing a ball against a flat wall.
      *
      * @param p The particle we want to apply the boundary condition on.
-     * @param force The force source used in this boundary condition (irrelevant in this case).
+     * @param force The force source used  in this boundary condition (irrelevant in this case).
+     * @return std::nullopt always, since no new particles are generated here.
      */
-    void applyBoundary(Particle& p, [[maybe_unused]] const ForceSource& force) const noexcept override;
+    std::optional<std::vector<Particle>> applyBoundary(Particle& p, [[maybe_unused]] const ForceSource& force) noexcept override;
 };
 }  // namespace mol_sim
 #endif

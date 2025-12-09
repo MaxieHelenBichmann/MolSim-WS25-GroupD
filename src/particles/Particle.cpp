@@ -96,7 +96,8 @@ R3& Particle::getOldF() noexcept { return old_f; }
 
 double Particle::getM() const noexcept { return m; }
 
-int Particle::getType() const noexcept { return type; }
+const int& Particle::getType() const noexcept { return type; }
+int& Particle::getType() noexcept { return type; }
 
 double Particle::getSigma() const noexcept { return sigma; }
 

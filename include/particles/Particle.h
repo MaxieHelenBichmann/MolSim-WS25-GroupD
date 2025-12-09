@@ -62,6 +62,7 @@ class Particle {
      * Type of the particle.
      * -1 if particle is GHOST particle
      *  0 default
+     *  1 if particle is a mirrored particle (in periodic boundaries)
      */
     int type;
 
@@ -159,7 +160,13 @@ class Particle {
      *
      * @return Int of the type of the Particle.
      */
-    [[nodiscard]] int getType() const noexcept;
+    [[nodiscard]] int& getType() noexcept;
+    /**
+     * @brief Access the type of a Particle.
+     *
+     * @return Int of the type of the Particle.
+     */
+    [[nodiscard]] const int& getType() const noexcept;
 
     /**
      * @brief Access to the sigma of this Particle
