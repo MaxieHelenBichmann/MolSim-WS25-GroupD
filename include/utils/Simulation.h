@@ -297,7 +297,7 @@ class Simulation {
             calculateV(thermo_factor);
 
             iteration++;
-#ifndef DISABLE_IO
+#ifdef ENABLE_IO
             if (iteration % frequency_output == 0) {
                 try {
                     std::string out_name = base_name;
@@ -308,7 +308,7 @@ class Simulation {
                 }
             }
 #endif
-#ifndef DISABLE_CHECKPOINTING
+#ifdef ENABLE_CHECKPOINTING
             if (iteration % frequency_checkpoint == 0) {
                 try {
                     cp_writer.createCheckpoint(domain, particles, iteration, force, delta_t, start_time, end_time,
