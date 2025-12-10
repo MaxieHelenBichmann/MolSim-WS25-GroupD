@@ -97,7 +97,7 @@ def main(args: list[str]):
         for bench_name in unique_benchmarks:
             bench_data = data_frame_pivot[data_frame_pivot['Benchmark'] == bench_name]
             unit = bench_data['TimeUnit'].iloc[0]
-            plot_benchmark(benchmark_name=(class_name+ " " + bench_name + " Benchmark"), time_unit=unit, data=bench_data)
+            plot_benchmark(benchmark_name=(class_name+ " " + bench_name), time_unit=unit, data=bench_data)
 
 if __name__ == "__main__":
     main(sys.argv)
