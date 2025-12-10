@@ -64,6 +64,9 @@ if(ENABLE_CLANG_TIDY)
 endif()
 
 
+option(COVERAGE "Enable generation of LLVM coverage artifacts" OFF)
+option(ENABLE_IO "Enable file input/output operations for result files" ON)
+option(ENABLE_CHECKPOINTS "Enable creating checkpoints" ON)
 
 add_subdirectory(src project)
 add_subdirectory(tests)
