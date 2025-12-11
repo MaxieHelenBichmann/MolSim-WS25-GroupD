@@ -136,11 +136,14 @@ class Simulation {
     /**
      * @brief Removes all particles in the Halo from the container.
      */
-    void removeParticles() {
+    void removeParticles(bool removeMirrorParticles) {
         // Collect indices of particles to remove using halo iterator
         SPDLOG_DEBUG("Container has currently {} particles before erase", particles.size());
         std::vector<size_t> to_remove;
         for (auto it = particles.haloBegin(); it != particles.haloEnd(); ++it) {
+            if (!removeMirrorParticles && (*it).getType() == 1) { //don't remove mirrored particles (relevant for periodic boundaries)
+                continue;
+            }
             size_t idx = &(*it) - &particles[0];
             to_remove.push_back(idx);
         }
@@ -164,9 +167,11 @@ class Simulation {
         for (auto it = particles.begin(); it != particles.end();) {
             (*it).getOldF() = (*it).getF();
             (*it).getF() = Vector<double, 3>();
-            // TODO Optimization to only call this for relevant particles
-            domain.applyBoundary(*it, force_source);
-            // TODO: bit of an ugly workaround for now.
+            // TODO: Optimization to only call this for relevant particles
+            for (auto& p : domain.applyBoundary(*it, force_source)) {
+                particles.addParticle(p);
+            }
+            // TODO: bit of an ugly workaround for now.sx
             R3 new_position = (*it).getX();
             (*it).getX() = (*it).getOldX();
             it = particles.updateParticlePosition(it, new_position);
@@ -246,12 +251,15 @@ class Simulation {
 
             // 2. Apply boundaries
             applyBoundaries();
+
             // 3. Remove OOB particles
-            removeParticles();
+            removeParticles(false);
 
             // 4. Calculate forces (including ghost interactions)
             SPDLOG_DEBUG("Iteration {}: Calculating forces for {} particles", iteration + 1, particles.size());
             calculateF();
+
+            removeParticles(true);
 
             // 5. Calculate thermostat factor
             double thermo_factor = 1.0;
