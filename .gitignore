@@ -37,6 +37,7 @@
 .cache/
 *.DS_Store
 *sublime*
+.gdbinit
 .github/*copilot*
 
 # Build folders.
