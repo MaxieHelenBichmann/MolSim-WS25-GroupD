@@ -40,7 +40,7 @@ void bmSimulationComplexityLinkedCell(benchmark::State& state) {
     ContainerRef particles(part_container);
 
     CuboidGenerator generator({margin, margin, 0.0}, {0.0, 0.0, 0.0}, {n, n, static_cast<size_t>(1)}, 1.0, spacing, 0.3,
-                              5.0, 1.0);
+                              5.0, 1.0, 0.01);
     SettingsParam settings;
     settings.delta_t = 0.0005;
     settings.start_time = 0;
@@ -84,7 +84,7 @@ void bmSimulationComplexityDirectSum(benchmark::State& state) {
     SimpleContainer part_container;
     ContainerRef particles(part_container);
     CuboidGenerator generator({margin, margin, 0.0}, {0., 0., 0.}, {n, n, static_cast<size_t>(1)}, 1.0, spacing, 0.3,
-                              5.0, 1.0);
+                              5.0, 1.0, 0.01);
     SettingsParam settings;
     settings.delta_t = 0.0005;
     settings.start_time = 0;

@@ -323,7 +323,10 @@ class LinkedCellContainerDirect {
         [[nodiscard]] double getRadius() const { return radius; }
         [[nodiscard]] R3 getCenter() const { return center; }
         [[nodiscard]] std::vector<Particle> getSkipped() const { return skipped_particles; }
-        void skipParticle(const Particle& p) { skipped_particles.push_back(p); }
+        void skipParticle(const Particle& p) {
+            skipped_particles.push_back(p);
+            satisfyInc();
+        }
         [[nodiscard]] value_type getParticle() const { return cells[cur_cell]->particles()[cur]; }
     };
     static_assert(std::random_access_iterator<proximity_iterator<Particle, CellDirect>>);

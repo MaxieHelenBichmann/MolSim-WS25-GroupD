@@ -28,7 +28,8 @@ void XVMReader::readSettings([[maybe_unused]] SettingsParam& settings, [[maybe_u
     SPDLOG_DEBUG("XVM files do not contain settings, using defaults");
 }
 
-void XVMReader::readParticles(ContainerRef particles, const std::string& filename) {
+void XVMReader::readParticles(ContainerRef particles, const SettingsParam& settings, const std::string& filename) {
+    (void)settings;
     std::array<double, 3> x;
     std::array<double, 3> v;
     double m;

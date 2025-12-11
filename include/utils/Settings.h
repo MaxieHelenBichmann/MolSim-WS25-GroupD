@@ -49,7 +49,22 @@ class SettingsParam {
      * @brief Default cutoff radius for the linked cells.
      */
     static constexpr double CUTOFF_DEFAULT = std::numeric_limits<double>::infinity();
-
+    /**
+     * @brief Default initial temperature for the system.
+     */
+    static constexpr double INIT_TEMP_DEFAULT = 40.;
+    /**
+     * @brief Default delta temperature of the simulation.
+     */
+    static constexpr double DELTA_TEMP_DEFAULT = std::numeric_limits<double>::infinity();
+    /**
+     * @brief Default thermostat frequency of the simulation.
+     */
+    static constexpr size_t THERMOSTAT_FREQ_DEFAULT = 1000;
+    /**
+     * @brief Default dimensions of the simulation..
+     */
+    static constexpr size_t DIMENSIONS_DEFAULT = 3;
     /**
      * @brief delta_t of the simulation.
      */
@@ -84,6 +99,11 @@ class SettingsParam {
      */
     size_t frequency = FREQUENCY_DEFAULT;
     /**
+     * @brief Dimensions of the simulation.
+     * TODO: use this for 2D optimizations.
+     */
+    size_t dimensions = DIMENSIONS_DEFAULT;
+    /**
      * @brief Cutoff radius for the linked cells algorithm.
      */
     double cutoff = CUTOFF_DEFAULT;
@@ -98,6 +118,22 @@ class SettingsParam {
      * @brief The domain of the simulation.
      */
     Domain domain;
+    /**
+     * @brief Target initial temperature of the system.
+     */
+    double init_temp = INIT_TEMP_DEFAULT;
+    /**
+     * @brief General target temperature of the system.
+     */
+    double target_temp = init_temp;
+    /**
+     * @brief Frequency with which the thermostat gets applied.
+     */
+    size_t thermostat_freq = THERMOSTAT_FREQ_DEFAULT;
+    /**
+     * @brief Maximum allowed temperature change of the system with one thermostat application.
+     */
+    double delta_temp = DELTA_TEMP_DEFAULT;
 
     /**
      * @brief Construct new SettingsParam with default values.

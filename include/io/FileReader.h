@@ -41,7 +41,7 @@ class FileReader {
      * @param particles The ParticleContainer to store particles in.
      * @param filename The path to the input file.
      */
-    virtual void readParticles(ContainerRef particles, const std::string& filename) = 0;
+    virtual void readParticles(ContainerRef particles, const SettingsParam& settings, const std::string& filename) = 0;
 };
 
 }  // namespace mol_sim

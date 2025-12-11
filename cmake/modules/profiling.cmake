@@ -28,7 +28,7 @@ function(add_perf_targets TARGET_NAME)
     message(WARNING " Performance profiling (perf) should be used with RelWithDebInfo")
     endif()
     set(PERF_INPUT_FILE "${PROJECT_SOURCE_DIR}/input/particles.yaml" CACHE STRING "Input file for perf profiling")
-    set(PERF_ARGS "-d 0.0002 -t 5" CACHE STRING "Arguments for perf profiling runs")
+    set(PERF_ARGS "" CACHE STRING "Arguments for perf profiling runs")
     
     add_custom_target(perf-record
         COMMAND ${PERF_EXECUTABLE} record --call-graph=dwarf -F 997

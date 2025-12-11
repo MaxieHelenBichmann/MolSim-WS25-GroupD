@@ -1,6 +1,7 @@
 #ifndef TEST_UTILS_H
 #define TEST_UTILS_H
 #include <gtest/gtest.h>
+#include <particles/Particle.h>
 
 #include <cmath>
 
@@ -31,6 +32,26 @@ inline ::testing::AssertionResult equalityR3(const R3& actual, const R3& expecte
 #define EXPECT_R3_EQ(expected, actual) EXPECT_TRUE(equalityR3(expected, actual))
 // NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define EXPECT_R3_NEAR(expected, actual, tolerance) EXPECT_TRUE(equalityR3(expected, actual, tolerance))
-}  // namespace mol_sim
 
+inline ::testing::AssertionResult equalityParticle(const mol_sim::Particle& actual, const mol_sim::Particle& expected,
+                                                   double tolerance = 1e-9) {
+    if (actual.getEpsilon() == expected.getEpsilon() && actual.getM() == expected.getM() &&
+        actual.getSigma() == expected.getSigma() && actual.getType() == expected.getType() &&
+        equalityR3(actual.getF(), expected.getF(), tolerance) &&
+        equalityR3(actual.getOldF(), expected.getOldF(), tolerance) &&
+        equalityR3(actual.getV(), expected.getV(), tolerance) &&
+        equalityR3(actual.getX(), expected.getX(), tolerance) &&
+        equalityR3(actual.getOldX(), expected.getOldX(), tolerance)) {
+        return ::testing::AssertionSuccess();
+    }
+
+    return ::testing::AssertionFailure() << "R3 objects are not equal within tolerance " << tolerance << ".\n"
+                                         << "  Expected: " << expected.toString() << "\n"
+                                         << "  Actual: " << actual.toString() << "}";
+}
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define EXPECT_PARTICLE_EQ(expected, actual) EXPECT_TRUE(equalityParticle(expected, actual))
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#define EXPECT_PARTICLE_NEAR(expected, actual, tolerance) EXPECT_TRUE(equalityParticle(expected, actual, tolerance))
+}  // namespace mol_sim
 #endif

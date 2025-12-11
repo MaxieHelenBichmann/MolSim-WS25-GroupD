@@ -81,7 +81,7 @@ class YAMLReader : public FileReader {
      * @throws YAMLReaderException if the file cannot be parsed or has no particle definitions.
      * @throws ValidationException if particle parameters are invalid.
      */
-    void readParticles(ContainerRef particles, const std::string& filename) override;
+    void readParticles(ContainerRef particles, const SettingsParam& settings, const std::string& filename) override;
     /**
      * @brief      Helper function to parse Cuboid Format
      *
@@ -121,23 +121,13 @@ class YAMLReader : public FileReader {
      *
      * @param[in]  node YAML::Node of the start of the cuboid block
      */
-    void readCube(ContainerRef particles, const YAML::Node& node);
+    void readCube(ContainerRef particles, const SettingsParam& settings, const YAML::Node& node);
     /**
      * @brief      Helper function to create disc particles
      *
      * @param[in]  node YAML::Node of the start of the disc block
      */
-    void readDisc(ContainerRef particles, const YAML::Node& node);
-    /**
-     * @brief Get the Cell Size object
-     * 
-     * @param settings The settings
-     * @param dimension The dimension of the domain
-     * 
-     * @return R3 the cell size of the LinkedCellContainer and also what it would be for a SimpleContainer
-     * @note: This is a temporary fix until we / I figure out a prettier way to do this.
-     */
-    R3 getCellSize(SettingsParam& settings, R3 dimension);
+    void readDisc(ContainerRef particles, const SettingsParam& settings, const YAML::Node& node);
 };
 
 }  // namespace mol_sim

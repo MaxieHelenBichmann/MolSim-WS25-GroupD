@@ -4,6 +4,7 @@
 #include <spdlog/spdlog.h>
 
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
 #include <functional>
 #include <vector>
@@ -15,6 +16,7 @@
 #include "particles/container/domain/Domain.h"
 #include "physics/ForceSource.h"
 #include "utils/Settings.h"
+#include "utils/Vector.h"
 
 /**
  * @namespace mol_sim
@@ -77,10 +79,27 @@ class Simulation {
      */
     std::string base_name;
 
+    size_t dimensions;
     /**
      * @brief Cutoff radius for particles in proximity.
      */
     double cutoff_radius;
+    /**
+     * @brief Total energy of the current system.
+     */
+    double total_energy;
+    /**
+     * @brief Target temperature of the system.
+     */
+    double target_temp;
+    /**
+     * @brief maximum allowed temperature change in one iteration.
+     */
+    double delta_temp;
+    /**
+     * @brief Frequency with which the thermostat is applied.
+     */
+    size_t thermostat_freq;
 
    public:
     /**
@@ -101,7 +120,18 @@ class Simulation {
           end_time(settings.end_time),
           frequency(settings.frequency),
           base_name(settings.base_name),
-          cutoff_radius(settings.cutoff) {}
+          dimensions(settings.dimensions),
+          cutoff_radius(settings.cutoff),
+          target_temp(settings.target_temp),
+          delta_temp(settings.delta_temp),
+          thermostat_freq(settings.thermostat_freq) {
+        for (const Particle& p : particles) {
+            total_energy += p.getM() * R3::scalarProduct(p.getV(), p.getV());
+        }
+        total_energy *= 0.5;
+    }
+
+    double& getTotalEnergy() { return total_energy; }
 
     /**
      * @brief Removes all particles in the Halo from the container.
@@ -179,11 +209,29 @@ class Simulation {
     /**
      * @brief Calculates the velocities of every particle for the next time step.
      */
-    void calculateV() {
+    void calculateV(double scalar_factor) {
+        double curr_energy = 0;
         for (auto& p : particles) {
-            p.getV() = p.getV() + ((0.5 * delta_t / p.getM()) * (p.getOldF() + p.getF()));
+            R3 new_v = scalar_factor * (p.getV() + ((0.5 * delta_t / p.getM()) * (p.getOldF() + p.getF())));
+            p.getV() = new_v;
+            curr_energy += p.getM() * R3::scalarProduct(new_v, new_v);
         }
+        total_energy = 0.5 * curr_energy;
     }
+    /**
+     * @brief      Calculates the thermostat factor used to modulate velocity.
+     *
+     * @return     The thermostat factor.
+     */
+    double calculateThermostatFactor() {
+        double curr_temp = (2.0 * total_energy) / (dimensions * particles.size());
+        if (curr_temp == 0) {
+            return 1;
+        }
+        double clamped_target = curr_temp + std::clamp((target_temp - curr_temp), -delta_temp, delta_temp);
+        return sqrt(clamped_target / curr_temp);
+    }
+
     /**
      * @brief Performs a full simulation run.
      * @throws SimulationException if an error occurs during output writing.
@@ -213,8 +261,14 @@ class Simulation {
 
             removeParticles(true);
 
+            // 5. Calculate thermostat factor
+            double thermo_factor = 1.0;
+            // TODO: Iteration > 0 is a fix for the tests, discussion needed.
+            if (iteration > 0 && iteration % thermostat_freq == 0) {
+                thermo_factor = calculateThermostatFactor();
+            }
             // 6. Calculate new velocities
-            calculateV();
+            calculateV(thermo_factor);
 
             iteration++;
 #ifndef DISABLE_IO

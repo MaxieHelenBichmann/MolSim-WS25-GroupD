@@ -439,10 +439,9 @@ LinkedCellContainerDirect::proximity_iterator<Particle, CellDirect> LinkedCellCo
 
         Particle particle_to_move = p.getParticle();
         particle_to_move.getX() = new_x;
+        cells[new_cell_idx].addParticle(particle_to_move);
 
         auto new_p = eraseParticle(p);
-
-        cells[new_cell_idx].addParticle(particle_to_move);
 
         if (new_cell_idx > old_cell_idx) {
             new_p.skipParticle(particle_to_move);

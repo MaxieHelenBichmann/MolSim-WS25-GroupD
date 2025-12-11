@@ -74,7 +74,7 @@ std::mutex YAMLReaderTest::mtx;
  */
 TEST_F(YAMLReaderTest, ReadSimpleXVM) {
     YAMLReader reader;
-    reader.readParticles(particles, test_data_dir + "/simple_XVM.yaml");
+    reader.readParticles(particles, settings, test_data_dir + "/simple_XVM.yaml");
     std::string output = log_stream->str();
     R3 expected_pos = {0., 0., 0.};
     R3 expected_velo = {0., 0., 0.};
@@ -144,7 +144,8 @@ TEST_F(YAMLReaderTest, ReadSettingsNonExistentFile) {
 TEST_F(YAMLReaderTest, ReadWrongFileFormat) {
     YAMLReader reader;
     // File with unknown format has no valid particle definitions
-    EXPECT_THROW(reader.readParticles(particles, test_data_dir + "/unknown_format.yaml"), YAMLReaderException);
+    EXPECT_THROW(reader.readParticles(particles, settings, test_data_dir + "/unknown_format.yaml"),
+                 YAMLReaderException);
 }
 
 /**
@@ -162,7 +163,8 @@ TEST_F(YAMLReaderTest, ReadSettingsMalformedFile) {
  */
 TEST_F(YAMLReaderTest, ReadParticleMissingFields) {
     YAMLReader reader;
-    EXPECT_THROW(reader.readParticles(particles, test_data_dir + "/missing_fields.yaml"), YAMLReaderException);
+    EXPECT_THROW(reader.readParticles(particles, settings, test_data_dir + "/missing_fields.yaml"),
+                 YAMLReaderException);
 }
 
 /**
@@ -181,7 +183,7 @@ TEST_F(YAMLReaderTest, ReadSettingsEmptyFile) {
 TEST_F(YAMLReaderTest, ReadMultipleObjects) {
     YAMLReader reader;
     reader.readSettings(settings, test_data_dir + "/multiple_objects.yaml");
-    reader.readParticles(particles, test_data_dir + "/multiple_objects.yaml");
+    reader.readParticles(particles, settings, test_data_dir + "/multiple_objects.yaml");
     std::string output = log_stream->str();
     EXPECT_EQ(particles.size(), 5);
     EXPECT_EQ(output.find("Error"), std::string::npos);
@@ -193,7 +195,7 @@ TEST_F(YAMLReaderTest, ReadMultipleObjects) {
  */
 TEST_F(YAMLReaderTest, ReadFileWithOnlySettings) {
     YAMLReader reader;
-    EXPECT_THROW(reader.readParticles(particles, test_data_dir + "/only_settings.yaml"), YAMLReaderException);
+    EXPECT_THROW(reader.readParticles(particles, settings, test_data_dir + "/only_settings.yaml"), YAMLReaderException);
 }
 
 /**
@@ -211,7 +213,7 @@ TEST_F(YAMLReaderTest, ReadFileWithNoSettings) {
 TEST_F(YAMLReaderTest, ReadFullConfigFile) {
     YAMLReader reader;
     reader.readSettings(settings, test_data_dir + "/full_config.yaml");
-    reader.readParticles(particles, test_data_dir + "/full_config.yaml");
+    reader.readParticles(particles, settings, test_data_dir + "/full_config.yaml");
     std::string output = log_stream->str();
     EXPECT_EQ(particles.size(), 1);
 
@@ -228,6 +230,16 @@ TEST_F(YAMLReaderTest, ReadFullConfigFile) {
     EXPECT_EQ(settings.frequency, 10);
 
     EXPECT_DOUBLE_EQ(settings.cutoff, 1.);
+
+    EXPECT_EQ(settings.container_type, "LINKED");
+
+    EXPECT_DOUBLE_EQ(settings.target_temp, 10.);
+
+    EXPECT_DOUBLE_EQ(settings.init_temp, 7.);
+
+    EXPECT_DOUBLE_EQ(settings.delta_temp, 1.);
+
+    EXPECT_EQ(settings.thermostat_freq, 5);
 
     EXPECT_EQ(output.find("Error"), std::string::npos);
 }
@@ -254,7 +266,7 @@ TEST_F(YAMLReaderTest, ReadSettingsOnly) {
  */
 TEST_F(YAMLReaderTest, ReadParticlesOnly) {
     YAMLReader reader;
-    reader.readParticles(particles, test_data_dir + "/full_config.yaml");
+    reader.readParticles(particles, settings, test_data_dir + "/full_config.yaml");
 
     // Particles should be populated
     EXPECT_EQ(particles.size(), 1);
@@ -276,7 +288,7 @@ TEST_F(YAMLReaderTest, TwoStepReading) {
     EXPECT_EQ(particles.size(), 0);
 
     // Step 2: Read particles
-    reader.readParticles(particles, test_data_dir + "/full_config.yaml");
+    reader.readParticles(particles, settings, test_data_dir + "/full_config.yaml");
     EXPECT_EQ(particles.size(), 1);
 
     // Both should now be populated
@@ -301,7 +313,7 @@ TEST_F(YAMLReaderTest, ReadSettingsFromOnlySettingsFile) {
  */
 TEST_F(YAMLReaderTest, ReadParticlesFromNoSettingsFile) {
     YAMLReader reader;
-    reader.readParticles(particles, test_data_dir + "/no_settings.yaml");
+    reader.readParticles(particles, settings, test_data_dir + "/no_settings.yaml");
 
     ASSERT_EQ(particles.size(), 1);
     R3 expected_pos = {0., 0., 0.};
@@ -316,7 +328,7 @@ TEST_F(YAMLReaderTest, ReadParticlesFromNoSettingsFile) {
  */
 TEST_F(YAMLReaderTest, ReadParticlesEmptyFile) {
     YAMLReader reader;
-    EXPECT_THROW(reader.readParticles(particles, test_data_dir + "/empty.yaml"), YAMLReaderException);
+    EXPECT_THROW(reader.readParticles(particles, settings, test_data_dir + "/empty.yaml"), YAMLReaderException);
 }
 
 /**
@@ -324,7 +336,7 @@ TEST_F(YAMLReaderTest, ReadParticlesEmptyFile) {
  */
 TEST_F(YAMLReaderTest, ReadParticlesNonExistentFile) {
     YAMLReader reader;
-    EXPECT_THROW(reader.readParticles(particles, test_data_dir + "/bogus_file.yaml"), YAMLReaderException);
+    EXPECT_THROW(reader.readParticles(particles, settings, test_data_dir + "/bogus_file.yaml"), YAMLReaderException);
 }
 
 /**

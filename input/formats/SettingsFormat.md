@@ -27,6 +27,10 @@ The settings block has the following keys, with every key except format being op
 - `frequency`: A whole number specifying the frequency of the output files of the simulation.
 - `cutoff`: A floating-point number specifying the cutoff radius of the Linked Cells of the simulation.
 - `container`: Container type, either `"SIMPLE"` or `"LINKED"` (default: `"LINKED"`).
+- `initial_temp`: A floating-point number specifying the initial target temperature of the simulation.
+- `target_temp`: A floating-point number specifying the normal target temperature of the simulation.
+- `n_thermostat`: A whole point number specifying the frequency with which the thermostat gets applied.
+- `delta_temp`: A floating-point number specifying the maximum allowed change of temperature with one application of the thermostat.
 - `domain`: A map defining the domain of the simulation (see Domain Configuration below).
 
 ## Domain Configuration
