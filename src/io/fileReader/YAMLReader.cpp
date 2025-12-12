@@ -15,9 +15,9 @@
 #include "exceptions/YAMLReaderException.h"
 #include "particles/boundaries/Boundary.h"
 #include "particles/boundaries/Outflow.h"
+#include "particles/boundaries/Periodic.h"
 #include "particles/boundaries/Reflecting.h"
 #include "particles/boundaries/VelocityReflect.h"
-#include "particles/boundaries/Periodic.h"
 #include "particles/container/domain/Domain.h"
 #include "particles/generators/CuboidGenerator.h"
 #include "particles/generators/DiscGenerator.h"
@@ -51,9 +51,14 @@ void validateSettings(const SettingsParam& settings) {
         SPDLOG_ERROR("delta_temp must be greater then 0, got: " + std::to_string(settings.delta_temp));
         throw ValidationException("delta_temp must be greater then 0, got: " + std::to_string(settings.delta_temp));
     }
-    if (settings.frequency <= 0) {
-        SPDLOG_ERROR("frequency must be non-negative, got: " + std::to_string(settings.frequency));
-        throw ValidationException("frequency must be non-negative, got: " + std::to_string(settings.frequency));
+    if (settings.frequency_output <= 0) {
+        SPDLOG_ERROR("frequency must be non-negative, got: " + std::to_string(settings.frequency_output));
+        throw ValidationException("frequency must be non-negative, got: " + std::to_string(settings.frequency_output));
+    }
+    if (settings.frequency_checkpoint <= 0) {
+        SPDLOG_ERROR("checkpoint must be non-negative, got: " + std::to_string(settings.frequency_checkpoint));
+        throw ValidationException("checkpoint must be non-negative, got: " +
+                                  std::to_string(settings.frequency_checkpoint));
     }
     if (settings.thermostat_freq <= 0) {
         SPDLOG_ERROR("thermostat_freq must be non-negative, got: " + std::to_string(settings.thermostat_freq));
@@ -427,7 +432,7 @@ void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
                     case BoundaryType::PERIODIC: {
                         boundary = std::make_unique<Periodic>(location, dimension, settings.cutoff);
                         break;
-                    } 
+                    }
                     case BoundaryType::OUTFLOW:
                     default:
                         boundary = std::make_unique<Outflow>(location, dimension);

@@ -238,7 +238,8 @@ TEST_F(YAMLWriterCPTest, testReadBackCheckpointWithYAMLReader) {  // NOLINT
     // Particle data
     SimpleContainer restored;
     ContainerRef restored_ref(restored);
-    reader.readParticles(restored_ref, file_path.string());
+    SettingsParam dummy_settings;
+    reader.readParticles(restored_ref, dummy_settings, file_path.string());
 
     ASSERT_EQ(restored.size(), container.size());
 

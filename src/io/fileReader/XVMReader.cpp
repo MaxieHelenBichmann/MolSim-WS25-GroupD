@@ -96,7 +96,6 @@ void XVMReader::readParticles(ContainerRef particles, const SettingsParam& setti
     std::array<double, 3> x;
     std::array<double, 3> v;
     double m;
-    int num_particles = 0;
 
     std::ifstream input_file(filename);
     std::string tmp_string;
