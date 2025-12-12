@@ -110,7 +110,8 @@ TEST_F(XVMWriterCPTest, ReadBackCheckpointWithXVMReader) {
     SimpleContainer restored;
     ContainerRef restored_ref(restored);
     XVMReader reader;
-    reader.readParticles(restored_ref, file_path.string());
+    SettingsParam dummy_settings;
+    reader.readParticles(restored_ref, dummy_settings, file_path.string());
 
     const auto contains = [](const Particle& particle, SimpleContainer& cont) -> bool {
         for (auto p : cont) {
