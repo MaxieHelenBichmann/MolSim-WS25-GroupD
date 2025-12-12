@@ -15,14 +15,15 @@
 #include "exceptions/YAMLReaderException.h"
 #include "particles/boundaries/Boundary.h"
 #include "particles/boundaries/Outflow.h"
+#include "particles/boundaries/Periodic.h"
 #include "particles/boundaries/Reflecting.h"
 #include "particles/boundaries/VelocityReflect.h"
-#include "particles/boundaries/Periodic.h"
 #include "particles/container/domain/Domain.h"
 #include "particles/generators/CuboidGenerator.h"
 #include "particles/generators/DiscGenerator.h"
 #include "physics/ForceSource.h"
 #include "utils/Settings.h"
+#include "utils/Vector.h"
 
 namespace mol_sim {
 
@@ -50,9 +51,14 @@ void validateSettings(const SettingsParam& settings) {
         SPDLOG_ERROR("delta_temp must be greater then 0, got: " + std::to_string(settings.delta_temp));
         throw ValidationException("delta_temp must be greater then 0, got: " + std::to_string(settings.delta_temp));
     }
-    if (settings.frequency <= 0) {
-        SPDLOG_ERROR("frequency must be non-negative, got: " + std::to_string(settings.frequency));
-        throw ValidationException("frequency must be non-negative, got: " + std::to_string(settings.frequency));
+    if (settings.frequency_output <= 0) {
+        SPDLOG_ERROR("frequency must be non-negative, got: " + std::to_string(settings.frequency_output));
+        throw ValidationException("frequency must be non-negative, got: " + std::to_string(settings.frequency_output));
+    }
+    if (settings.frequency_checkpoint <= 0) {
+        SPDLOG_ERROR("checkpoint must be non-negative, got: " + std::to_string(settings.frequency_checkpoint));
+        throw ValidationException("checkpoint must be non-negative, got: " +
+                                  std::to_string(settings.frequency_checkpoint));
     }
     if (settings.thermostat_freq <= 0) {
         SPDLOG_ERROR("thermostat_freq must be non-negative, got: " + std::to_string(settings.thermostat_freq));
@@ -132,7 +138,10 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
             settings.container_type = container_str;
         }
         if (node["frequency"]) {
-            settings.frequency = node["frequency"].as<size_t>();
+            settings.frequency_output = node["frequency"].as<size_t>();
+        }
+        if (node["checkpoint"]) {
+            settings.frequency_checkpoint = node["checkpoint"].as<size_t>();
         }
         if (node["cutoff"]) {
             settings.cutoff = node["cutoff"].as<double>();
@@ -217,11 +226,35 @@ void YAMLReader::readXVM(ContainerRef particles, const YAML::Node& node) {
                 position[1] = coordinates["y"].as<double>();
                 position[2] = coordinates["z"].as<double>();
 
+                R3 old_position = R3{0., 0., 0.};
+                if (curr["old_coordinates"]) {
+                    const YAML::Node& old_coordinates_node = curr["old_coordinates"];
+                    old_position[0] = old_coordinates_node["ox"].as<double>();
+                    old_position[1] = old_coordinates_node["oy"].as<double>();
+                    old_position[2] = old_coordinates_node["oz"].as<double>();
+                }
+
                 R3 velocity;
                 const YAML::Node& velocity_node = curr["velocity"];
                 velocity[0] = velocity_node["vx"].as<double>();
                 velocity[1] = velocity_node["vy"].as<double>();
                 velocity[2] = velocity_node["vz"].as<double>();
+
+                R3 force = R3{0., 0., 0.};
+                if (curr["force"]) {
+                    const YAML::Node& force_node = curr["force"];
+                    force[0] = force_node["fx"].as<double>();
+                    force[1] = force_node["fy"].as<double>();
+                    force[2] = force_node["fz"].as<double>();
+                }
+
+                R3 old_force = R3{0., 0., 0.};
+                if (curr["old_force"]) {
+                    const YAML::Node& old_force_node = curr["old_force"];
+                    old_force[0] = old_force_node["ofx"].as<double>();
+                    old_force[1] = old_force_node["ofy"].as<double>();
+                    old_force[2] = old_force_node["ofz"].as<double>();
+                }
 
                 auto mass = curr["mass"].as<double>();
 
@@ -233,8 +266,12 @@ void YAMLReader::readXVM(ContainerRef particles, const YAML::Node& node) {
                 if (curr["sigma"]) {
                     sigma = curr["sigma"].as<double>();
                 }
+                int type = 0;
+                if (curr["type"]) {
+                    type = curr["type"].as<int>();
+                }
                 validateParticleParams(mass, epsilon, sigma, "XVM particle " + std::to_string(particle_idx));
-                particles.addParticle(position, velocity, mass, epsilon, sigma);
+                particles.addParticle(position, old_position, velocity, force, old_force, mass, epsilon, sigma, type);
                 particle_idx++;
             }
             SPDLOG_DEBUG("Parsed {} XVM particles", particle_idx);
@@ -395,7 +432,7 @@ void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
                     case BoundaryType::PERIODIC: {
                         boundary = std::make_unique<Periodic>(location, dimension, settings.cutoff);
                         break;
-                    } 
+                    }
                     case BoundaryType::OUTFLOW:
                     default:
                         boundary = std::make_unique<Outflow>(location, dimension);

@@ -72,7 +72,7 @@ const Boundary& Domain::getBoundary(BoundaryLocation location) const {
     return *boundary;
 }
 
-std::vector<Particle> Domain::applyBoundary(Particle& p, const ForceSource& force) const noexcept {
+std::vector<Particle> Domain::applyBoundary(Particle& p, const ForceSource& force) const noexcept {  // NOLINT
     std::vector<Particle> particles;
     for (const auto& boundary : boundaries) {
         if (boundary) {

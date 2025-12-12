@@ -25,6 +25,13 @@ target_compile_options(MolSim
 
 include(profiling)
 
+if(ENABLE_IO)
+    target_compile_definitions(MolSim PRIVATE ENABLE_IO)
+endif()
+if(ENABLE_CHECKPOINTS)
+    target_compile_definitions(MolSim PRIVATE ENABLE_CHECKPOINTING)
+endif()
+
 
 if(COVERAGE)
     include(GenerateCoverage)

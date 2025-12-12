@@ -40,6 +40,13 @@ void CellDirect::addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_ar
         data.emplace_back(x_arg, v_arg, m_arg, epsilon_arg, sigma_arg, type);
     }
 }
+void CellDirect::addParticle(R3 x_arg, R3 old_x_arg, R3 v_arg, R3 f_arg, R3 old_f_arg, double m_arg, double epsilon_arg,
+                             double sigma_arg, int type) {
+    if (std::find(data.begin(), data.end(), Particle(x_arg, v_arg, m_arg, epsilon_arg, sigma_arg, type)) ==  // NOLINT
+        data.end()) {
+        data.emplace_back(x_arg, old_x_arg, v_arg, f_arg, old_f_arg, m_arg, epsilon_arg, sigma_arg, type);
+    }
+}
 Particle CellDirect::removeParticle(size_t idx) {
     Particle p = data[idx];
     data.erase(data.begin() + idx);  // NOLINT
@@ -381,6 +388,15 @@ void LinkedCellContainerDirect::addParticle(R3 x_arg, R3 v_arg, double m_arg, do
         return;
     }
     cells[findCellIndex(x_arg)].addParticle(Particle(x_arg, v_arg, m_arg, epsilon_arg, sigma_arg, type));
+}
+
+void LinkedCellContainerDirect::addParticle(R3 x_arg, R3 old_x_arg, R3 v_arg, R3 f_arg, R3 old_f_arg, double m_arg,
+                                            double epsilon_arg, double sigma_arg, int type) {
+    if (!fitsContainer(x_arg)) {
+        return;
+    }
+    cells[findCellIndex(x_arg)].addParticle(
+        Particle(x_arg, old_x_arg, v_arg, f_arg, old_f_arg, m_arg, epsilon_arg, sigma_arg, type));
 }
 
 LinkedCellContainerDirect::proximity_iterator<Particle, CellDirect> LinkedCellContainerDirect::eraseParticle(  // NOLINT
