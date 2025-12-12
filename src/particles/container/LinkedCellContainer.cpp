@@ -12,24 +12,8 @@ using namespace mol_sim;
 
 LinkedCellContainer::LinkedCellContainer(R3 domain_size, double cutoff_radius)  // NOLINT
     : cutoff_radius(cutoff_radius), domain_size(domain_size) {
-    if (cutoff_radius == std::numeric_limits<double>::infinity()) {
-        SPDLOG_INFO("Cutoff radius is infinite, halo cells will only be as large as the domain size");
-        num_cells = {3U, 3U, 3U};
-        cell_length = domain_size;
-    } else {
-        for (size_t dim = 0; dim < 3; ++dim) {
-            size_t inner_cells = 0U;
-            if (cutoff_radius > 0.0) {
-                inner_cells = static_cast<size_t>(std::floor(domain_size[dim] / cutoff_radius));
-            }
-            if (inner_cells == 0U) {
-                inner_cells = 1U;
-            }
-            cell_length[dim] = domain_size[dim] / static_cast<double>(inner_cells);
-            num_cells[dim] = inner_cells + 2U;
-        }
-    }
-
+    computeCellsOrCorners(num_cells, cell_length, domain_size, cutoff_radius);
+    
     SPDLOG_INFO("Created LinkedCellContainer: {}x{}x{} cells, cell size: ({}, {}, {})", num_cells[0], num_cells[1],
                 num_cells[2], cell_length[0], cell_length[1], cell_length[2]);
 
@@ -59,6 +43,27 @@ LinkedCellContainer::LinkedCellContainer(R3 domain_size, double cutoff_radius)  
 
                 cells.emplace_back(type, bounds);
             }
+        }
+    }
+}
+
+void LinkedCellContainer::computeCellsOrCorners(std::array<size_t, 3>& num_cells, std::array<double, 3>& cell_length, 
+    R3 domain_size, double cutoff_radius) {
+    if (cutoff_radius == std::numeric_limits<double>::infinity()) {
+        SPDLOG_INFO("Cutoff radius is infinite, halo cells will only be as large as the domain size");
+        num_cells = {3U, 3U, 3U};
+        cell_length = domain_size;
+    } else {
+        for (size_t dim = 0; dim < 3; ++dim) {
+            size_t inner_cells = 0U;
+            if (cutoff_radius > 0.0) {
+                inner_cells = static_cast<size_t>(std::floor(domain_size[dim] / cutoff_radius));
+            }
+            if (inner_cells == 0U) {
+                inner_cells = 1U;
+            }
+            cell_length[dim] = domain_size[dim] / static_cast<double>(inner_cells);
+            num_cells[dim] = inner_cells + 2U;
         }
     }
 }

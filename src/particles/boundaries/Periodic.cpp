@@ -1,10 +1,11 @@
 #include "particles/boundaries/Periodic.h"
+#include "particles/ParticleContainer.h"
 
 namespace mol_sim {
 std::array<short, 6> Periodic::corners;
 
-Periodic::Periodic(BoundaryLocation location, R3 domain_size, R3 cell_size) noexcept
-    : Boundary(location, BoundaryType::PERIODIC, domain_size), cell_size(cell_size) 
+Periodic::Periodic(BoundaryLocation location, R3 domain_size, double cutoff) noexcept
+    : Boundary(location, BoundaryType::PERIODIC, domain_size)
 {
         std::array<short, 4> corners_to_mirror = {0};
         switch (location) {
@@ -33,6 +34,11 @@ Periodic::Periodic(BoundaryLocation location, R3 domain_size, R3 cell_size) noex
         for (size_t i = 0; i < 4; i++) {
             corners[corners_to_mirror[i]] = 1;
         }
+
+        //Doing it this way may introduce additional performance overhead 
+        //if used with a SimpleContainer (not a lot in general, but it's there)
+        std::array<size_t, 3> unused;
+        LinkedCellContainer::computeCellsOrCorners(unused, corner_dimension, domain_size, cutoff);   
 }
 
 std::optional<std::vector<Particle>> Periodic::applyBoundary(Particle& p, [[maybe_unused]] const ForceSource& force) noexcept {
@@ -49,12 +55,12 @@ std::optional<std::vector<Particle>> Periodic::applyBoundary(Particle& p, [[mayb
 
     // 2) mirror the boundary particles (make sure to give them type 1)
     // 2.1) mirror the boundaries
-    if (sign < 0 && p.getX()[axis] <= cell_size[axis] && p.getX()[axis] > 0) {
+    if (sign < 0 && p.getX()[axis] <= corner_dimension[axis] && p.getX()[axis] > 0) {
         Particle p_prime(p);
         p_prime.getX() = p.getX()[axis] + domain_size[axis];
         p_prime.getType() = 1;
         mirrored_particles.push_back(p_prime);   
-    } else if (sign > 0 && p.getX()[axis] >= domain_size[axis] - cell_size[axis] 
+    } else if (sign > 0 && p.getX()[axis] >= domain_size[axis] - corner_dimension[axis] 
                 && p.getX()[axis] < domain_size[axis]) {
         Particle p_prime(p);
         p_prime.getX() = p.getX()[axis] - domain_size[axis];
@@ -82,10 +88,9 @@ std::optional<std::vector<Particle>> Periodic::applyBoundary(Particle& p, [[mayb
 bool Periodic::isInCorner(Particle& p) const noexcept {
     R3 x = p.getX();
     return 
-        ((x[0] >= 0 && x[0] <= cell_size[0]) || (x[0] <= domain_size[0] && x[0] >= domain_size[0] - cell_size[0])) && 
-        ((x[1] >= 0 && x[1] <= cell_size[1]) || (x[1] <= domain_size[1] && x[1] >= domain_size[1] - cell_size[1])) && 
-        ((x[2] >= 0 && x[2] <= cell_size[2]) || (x[2] <= domain_size[2] && x[2] >= domain_size[2] - cell_size[2])); 
-
+        ((x[0] >= 0 && x[0] <= corner_dimension[0]) || (x[0] <= domain_size[0] && x[0] >= domain_size[0] - corner_dimension[0])) && 
+        ((x[1] >= 0 && x[1] <= corner_dimension[1]) || (x[1] <= domain_size[1] && x[1] >= domain_size[1] - corner_dimension[1])) && 
+        ((x[2] >= 0 && x[2] <= corner_dimension[2]) || (x[2] <= domain_size[2] && x[2] >= domain_size[2] - corner_dimension[2])); 
 }
 
 R3 Periodic::getShift(size_t corner_idx) const noexcept {

@@ -2,6 +2,7 @@
 #define PERIODIC_H
 
 #include "particles/boundaries/Boundary.h"
+#include "particles/container/LinkedCellContainer.h"
 
 namespace mol_sim {
 
@@ -33,14 +34,12 @@ class Periodic : public Boundary {
     short mark = -1;
     
     /**
-     * @brief The size of the cells used in the domain. If this boundary condition is used
-     * with a SimpleContainer (which doesn't have cells) this vector needs to provide the 
-     * width of the boundaries in (x, y, z).
+     * @brief The size of the corners in the domain. This is needed so the corners are copied correctly
      *
      * IMPORTANT: With this we assume that all boundaries on the same axis have the same width.
      * I.e. LEFT and RIGHT = width1, UPPER and LOWER = width2, FRONT and BACK = width3.
      */
-    R3 cell_size;
+    std::array<double, 3> corner_dimension;
 
     /**
      * @brief Returns true if the particle is in a corner of the simulation domain, false otherwise.
@@ -61,7 +60,7 @@ class Periodic : public Boundary {
     [[nodiscard]] R3 getShift(size_t corner_idx) const noexcept;
 
    public:
-    Periodic(BoundaryLocation location, R3 domain_size, R3 cell_size) noexcept;
+    Periodic(BoundaryLocation location, R3 domain_size, double cutoff) noexcept;
     ~Periodic() override = default;
 
     /**
