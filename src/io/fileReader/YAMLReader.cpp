@@ -351,6 +351,10 @@ void YAMLReader::readDisc(ContainerRef particles, const SettingsParam& settings,
 void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
     try {
         R3 dimension = {node["x"].as<double>(), node["y"].as<double>(), node["z"].as<double>()};
+        const YAML::Node& g_grav_node = node["g_grav"];
+        if (g_grav_node) {
+            settings.g_grav = g_grav_node.as<double>();
+        }
 
         // Define boundary locations and their YAML keys
         static const std::array<std::pair<BoundaryLocation, std::string>, 6> boundary_mappings = {{
@@ -407,6 +411,5 @@ void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
         throw YAMLReaderException(e.what());
     }
 }
-
 
 }  // namespace mol_sim
