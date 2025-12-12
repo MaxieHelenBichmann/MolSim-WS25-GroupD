@@ -5,9 +5,13 @@ settings:
     start_time: 0.0
     base_name: "MD"
     force: "Lennard Jones"
+    container: "SIMPLE"
     frequency: 10
     checkpoint: 100
     cutoff: 1.
+    target_temp: 10.
+    n_thermostat: 5
+    delta_temp: 0.2
     domain:
       x: 10.
       y: 10.
@@ -24,9 +28,9 @@ settings:
         right:
           type: REFLECTING
         front:
-          type: REFLECTING
+          type: PERIODIC
         back:
-          type: REFLECTING
+          type: PERIODIC
 
 xvm_data:
     format: XVM

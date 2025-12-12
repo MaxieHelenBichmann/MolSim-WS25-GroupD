@@ -158,7 +158,8 @@ class Simulation {
         SPDLOG_DEBUG("Container has currently {} particles before erase", particles.size());
         std::vector<size_t> to_remove;
         for (auto it = particles.haloBegin(); it != particles.haloEnd(); ++it) {
-            if (!removeMirrorParticles && (*it).getType() == 1) { //don't remove mirrored particles (relevant for periodic boundaries)
+            if (!removeMirrorParticles &&
+                (*it).getType() == 1) {  // don't remove mirrored particles (relevant for periodic boundaries)
                 continue;
             }
             size_t idx = &(*it) - &particles[0];
@@ -191,7 +192,8 @@ class Simulation {
             // TODO: bit of an ugly workaround for now.
             R3 new_position = (*it).getX();
             (*it).getX() = (*it).getOldX();
-            it = particles.updateParticlePosition(it, new_position); //for now SimpleContainer + Periodic (and also Reflecting) needs this here
+            it = particles.updateParticlePosition(
+                it, new_position);  // for now SimpleContainer + Periodic (and also Reflecting) needs this here
         }
     }
 
@@ -302,8 +304,9 @@ class Simulation {
 #ifdef ENABLE_CHECKPOINTING
             if (iteration % frequency_checkpoint == 0) {
                 try {
-                    cp_writer.createCheckpoint(domain, particles, iteration, force, delta_t, start_time, end_time,
+                    cp_writer.createCheckpoint(domain, particles, iteration, force, delta_t, current_time, end_time,
                                                frequency_output, frequency_checkpoint, base_name, cutoff_radius,
+                                               target_temp, delta_temp, thermostat_freq,
                                                static_cast<size_t>(std::ceil((end_time - start_time) / delta_t)));
                 } catch (const std::runtime_error& e) {
                     SPDLOG_ERROR("Failed to create a checkpoint at iteration {}: {}", iteration, e.what());

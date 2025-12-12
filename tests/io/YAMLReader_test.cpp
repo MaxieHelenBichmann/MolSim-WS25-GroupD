@@ -411,7 +411,9 @@ TEST_F(YAMLReaderTest, ReadCheckpointFile) {
     EXPECT_EQ(settings.force, LENNARDJONES);
     EXPECT_EQ(settings.frequency_output, 10);
     EXPECT_EQ(settings.frequency_checkpoint, 100);
-    EXPECT_DOUBLE_EQ(settings.cutoff, 1.);
+    EXPECT_DOUBLE_EQ(settings.target_temp, 10.);
+    EXPECT_EQ(settings.thermostat_freq, 5);
+    EXPECT_DOUBLE_EQ(settings.delta_temp, 0.2);
 
     R3 expected_domain = {10., 10., 10.};
     const Boundary& upper = settings.domain.getBoundary(BoundaryLocation::UPPER);
@@ -426,8 +428,8 @@ TEST_F(YAMLReaderTest, ReadCheckpointFile) {
     EXPECT_EQ(lower.getType(), BoundaryType::REFLECTING);
     EXPECT_EQ(left.getType(), BoundaryType::REFLECTING);
     EXPECT_EQ(right.getType(), BoundaryType::REFLECTING);
-    EXPECT_EQ(front.getType(), BoundaryType::REFLECTING);
-    EXPECT_EQ(back.getType(), BoundaryType::REFLECTING);
+    EXPECT_EQ(front.getType(), BoundaryType::PERIODIC);
+    EXPECT_EQ(back.getType(), BoundaryType::PERIODIC);
 
     const auto* lower_reflecting = dynamic_cast<const Reflecting*>(&lower);
     ASSERT_NE(lower_reflecting, nullptr);
