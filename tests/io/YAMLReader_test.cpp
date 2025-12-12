@@ -400,7 +400,7 @@ TEST_F(YAMLReaderTest, ReadDomainAndBoundaries) {
 TEST_F(YAMLReaderTest, ReadCheckpointFile) {
     YAMLReader reader;
     reader.readSettings(settings, test_data_dir + "/checkpoint.yaml");
-    reader.readParticles(particles, test_data_dir + "/checkpoint.yaml");
+    reader.readParticles(particles, settings, test_data_dir + "/checkpoint.yaml");
     std::string output = log_stream->str();
 
     // Verify settings

@@ -63,6 +63,8 @@ void YAMLWriterCP::createCheckpoint(const Domain& domain, ContainerRef particles
                 return "REFLECTING";
             case BoundaryType::VELOCITYREFLECT:
                 return "VELOCITYREFLECT";
+            case BoundaryType::PERIODIC:
+                return "PERIODIC";
         }
         return "OUTFLOW";
     };
