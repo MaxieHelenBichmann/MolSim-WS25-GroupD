@@ -100,6 +100,13 @@ class Simulation {
      * @brief Frequency with which the thermostat is applied.
      */
     size_t thermostat_freq;
+    /**
+     * @brief Graviational constant to be used for simulating gravity in the simulation.
+     * Will be used to apply a force m * g_grav (y-axis) to each particle.
+     * Make sure it's 0 if you do NOT want to simulate gravitational pull along y-axis.
+     * Make sure it's NEGATIVE if you want the particle to be pulled DOWN the y-axis.
+     */
+    double g_grav;
 
    public:
     /**
@@ -124,7 +131,8 @@ class Simulation {
           cutoff_radius(settings.cutoff),
           target_temp(settings.target_temp),
           delta_temp(settings.delta_temp),
-          thermostat_freq(settings.thermostat_freq) {
+          thermostat_freq(settings.thermostat_freq),
+          g_grav(settings.g_grav) {
         for (const Particle& p : particles) {
             total_energy += p.getM() * R3::scalarProduct(p.getV(), p.getV());
         }
@@ -185,6 +193,7 @@ class Simulation {
         size_t idx = 0;
         for (auto it = particles.begin(); it != particles.end(); ++it, idx++) {
             Particle& p1 = *it;
+            p1.getF()[1] += p1.getM() * g_grav; //add gravitational pull along y-axis
             for (auto it_prox = particles.proximityBegin(p1.getX(), idx); it_prox != particles.proximityEnd(p1.getX());
                  ++it_prox) {
                 Particle& p2 = *it_prox;

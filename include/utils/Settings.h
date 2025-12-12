@@ -66,6 +66,10 @@ class SettingsParam {
      */
     static constexpr size_t DIMENSIONS_DEFAULT = 3;
     /**
+     * @brief Default value for g_grav used to simulate gravitational pull in simulation.
+     */
+    static constexpr double G_GRAV_DEFAULT = 0.0;
+    /**
      * @brief delta_t of the simulation.
      */
     double delta_t = DELTA_T_DEFAULT;
@@ -134,6 +138,10 @@ class SettingsParam {
      * @brief Maximum allowed temperature change of the system with one thermostat application.
      */
     double delta_temp = DELTA_TEMP_DEFAULT;
+    /**
+     * @brief Used to simulate of gravitational pull in simulation.
+     */
+    double g_grav = G_GRAV_DEFAULT;
 
     /**
      * @brief Construct new SettingsParam with default values.
