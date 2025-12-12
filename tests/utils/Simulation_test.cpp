@@ -48,7 +48,8 @@ class CheckpointWriterMock : public CheckpointWriter {
     MOCK_METHOD(void, createCheckpoint,
                 (const Domain& domain, ContainerRef particles, int iteration, Force force, double delta_t,
                  double start_time, double end_time, size_t frequency_output, size_t frequency_checkpoint,
-                 const std::string& base_name, double cutoff_radius, size_t N),
+                 const std::string& base_name, double cutoff_radius, double target_temp, double delta_temp,
+                 size_t thermostat_freq, size_t N),
                 (const, override));
 };
 
@@ -85,10 +86,6 @@ class SimulationTestBase : public testing::Test {
         settings.cutoff = std::numeric_limits<double>::infinity();
         settings.thermostat_freq = std::numeric_limits<size_t>::max();
         particles.clear();
-    }
-
-    Simulation<Container> createSimulation(const ForceSource& force, const OutputWriter& writer) {
-        return Simulation<Container>(particles, force, settings, writer);
     }
 };
 

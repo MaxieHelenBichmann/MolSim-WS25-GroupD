@@ -20,9 +20,9 @@ YAMLWriterCP::YAMLWriterCP() = default;
 YAMLWriterCP::~YAMLWriterCP() = default;
 
 void YAMLWriterCP::createCheckpoint(const Domain& domain, ContainerRef particles, int iteration, Force force,
-                                    double delta_t, double start_time, double end_time, size_t frequency_output,
+                                    double delta_t, double current_time, double end_time, size_t frequency_output,
                                     size_t frequency_checkpoint, const std::string& base_name, double cutoff_radius,
-                                    size_t N) const {
+                                    double target_temp, double delta_temp, size_t thermostat_freq, size_t N) const {
     int decimal_places = 0;
     while (N >= 10) {
         N /= 10;
@@ -43,12 +43,15 @@ void YAMLWriterCP::createCheckpoint(const Domain& domain, ContainerRef particles
     out << YAML::Key << "format" << YAML::Value << "Settings";
     out << YAML::Key << "delta_t" << YAML::Value << delta_t;
     out << YAML::Key << "end_time" << YAML::Value << end_time;
-    out << YAML::Key << "start_time" << YAML::Value << start_time;
+    out << YAML::Key << "start_time" << YAML::Value << current_time;
     out << YAML::Key << "base_name" << YAML::Value << base_name;
     out << YAML::Key << "force" << YAML::Value << (force == LENNARDJONES ? "Lennard Jones" : "Gravitational");
     out << YAML::Key << "frequency" << YAML::Value << frequency_output;
     out << YAML::Key << "checkpoint" << YAML::Value << frequency_checkpoint;
     out << YAML::Key << "cutoff" << YAML::Value << cutoff_radius;
+    out << YAML::Key << "target_temp" << YAML::Value << target_temp;
+    out << YAML::Key << "n_thermostat" << YAML::Value << thermostat_freq;
+    out << YAML::Key << "delta_temp" << YAML::Value << delta_temp;
 
     out << YAML::Key << "domain" << YAML::Value << YAML::BeginMap;  // open domain
     out << YAML::Key << "x" << YAML::Value << domain.getDimension()[0];

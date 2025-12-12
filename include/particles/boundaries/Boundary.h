@@ -4,8 +4,8 @@
 #include <spdlog/spdlog.h>
 
 #include <cstdint>
-#include <string>
 #include <optional>
+#include <string>
 
 #include "particles/Particle.h"
 #include "physics/ForceSource.h"
@@ -61,7 +61,7 @@ class Boundary {
      * Computes a ghost particle if this boundary requires one for the given particle.
      * @param p The particle to check.
      * @param force The force source to use for ghost particle interactions.
-     * @return Newly generated particles that need further processing beyond the scope of 
+     * @return Newly generated particles that need further processing beyond the scope of
      * this / an implementing class.
      */
     virtual std::optional<std::vector<Particle>> applyBoundary(Particle& p, const ForceSource& force) noexcept = 0;
@@ -151,6 +151,9 @@ inline BoundaryType parseBoundaryType(const std::string& type_str) {
     }
     if (type_str == "VELOCITYREFLECT" || type_str == "velocityreflect" || type_str == "VelocityReflect") {
         return BoundaryType::VELOCITYREFLECT;
+    }
+    if (type_str == "PERIODIC" || type_str == "periodic" || type_str == "Periodic") {
+        return BoundaryType::PERIODIC;
     }
     return BoundaryType::OUTFLOW;
 }

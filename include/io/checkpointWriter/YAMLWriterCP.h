@@ -17,8 +17,9 @@ class YAMLWriterCP : public CheckpointWriter {
 
     ~YAMLWriterCP() override;
     void createCheckpoint(const Domain& domain, ContainerRef particles, int iteration, Force force, double delta_t,
-                          double start_time, double end_time, size_t frequency_output, size_t frequency_checkpoint,
-                          const std::string& base_name, double cutoff_radius, size_t N) const override;
+                          double current_time, double end_time, size_t frequency_output, size_t frequency_checkpoint,
+                          const std::string& base_name, double cutoff_radius, double target_temp, double delta_temp,
+                          size_t thermostat_freq, size_t N) const override;
 };
 
 }  // namespace mol_sim
