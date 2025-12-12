@@ -171,10 +171,10 @@ class Simulation {
             for (auto& p : domain.applyBoundary(*it, force_source)) {
                 particles.addParticle(p);
             }
-            // TODO: bit of an ugly workaround for now.sx
+            // TODO: bit of an ugly workaround for now.
             R3 new_position = (*it).getX();
             (*it).getX() = (*it).getOldX();
-            it = particles.updateParticlePosition(it, new_position);
+            it = particles.updateParticlePosition(it, new_position); //for now SimpleContainer + Periodic (and also Reflecting) needs this here
         }
     }
 

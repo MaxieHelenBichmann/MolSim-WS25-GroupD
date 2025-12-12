@@ -130,6 +130,33 @@ class LinkedCellContainer {
     LinkedCellContainer(R3 domain_size, double cutoff_radius);
 
     // retrieve data
+    /**
+     * @brief Parses the number of cells (for LinkedCellContainer) and the cell_length / corner_length for
+     * LinkedCellContainer and Periodic respectively based on the provided domain_size and cutoff_radius
+     *
+     * @param num_cells Where the computed number of cells in each dimension will be stored
+     * @param cell_length Where the computed length of the cells / corners in each dimension will be stored
+     * @param domain_size The size of the domain
+     * @param cutoff_radius The cutoff radius
+     * 
+     * @note (remove this in final product) 
+     * We need this code inside Periodic.cpp aswell because of the edge cases that arise when the domain_size
+     * isn't divisible (in at least 1 dimension) by the cutoff radius for LCC.
+     * Factoring out this code block to here avoids code dupcliation in LCC.cpp and Periodic.cpp.
+     * Other ideas for this refactoring would've been:
+     *  1) Putting this code into YAMLReader.cpp (and removing it from LCC.cpp) and then adjusting LCC.cpp constructor
+     *  2) Just copy-pasting this code into Periodic.h (w/ minor changes)
+     *  3) Making a new header file just for this (and other things?) seems overkill
+     *  4) Make corner_dimension a field in SimpleContainer aswell and then use a getter (plus pass a ContainerRef to 
+     *     Periodic) -> entanglement
+     *  5) Additional check in MolSim.cpp or Simulation.h (or YAMLReader.cpp) *after* parsing domain type about
+     *     whether it is a LCC. If it is then do something like x_boundary.setCornerDimension(cell_length) 
+     *     -> more random checks
+     * This is the best refactoring I could come up with (except maybe option 1 but I didn't want to 
+     * mess with LCC like that for now). If you can think of a nicer one please feel free to change it to that.
+     */
+    static void computeCellsOrCorners(std::array<size_t, 3>& num_cells, std::array<double, 3>& cell_length, 
+        R3 domain_size, double cutoff_radius);
 
     /**
      * @brief Check whether a (potential) Particle fits into the domain.

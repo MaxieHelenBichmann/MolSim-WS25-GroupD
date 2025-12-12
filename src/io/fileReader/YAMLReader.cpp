@@ -348,30 +348,6 @@ void YAMLReader::readDisc(ContainerRef particles, const SettingsParam& settings,
     }
 }
 
-//--------------------------------------------------------------------------------------------------
-/** TODO: This code until next comment is copy-pasted from LCC.cpp. Make this prettier.
- * Also make sure this works for SimpleContainer.
- */
-R3 getCellSize(SettingsParam& settings, R3 dimension) {
-    R3 cell_length = dimension;
-    if (settings.cutoff == std::numeric_limits<double>::infinity()) {
-        SPDLOG_INFO("Cutoff radius is infinite, halo cells will only be as large as the domain size");
-    } else {
-        for (size_t dim = 0; dim < 3; ++dim) {
-            size_t inner_cells = 0U;
-            if (settings.cutoff > 0.0) {
-                inner_cells = static_cast<size_t>(std::floor(dimension[dim] / settings.cutoff));
-            }
-            if (inner_cells == 0U) {
-                inner_cells = 1U;
-            }
-            cell_length[dim] = dimension[dim] / static_cast<double>(inner_cells);
-        }
-    }
-    return cell_length;
-}
-//------------------------------------------------------------------------------------------------- 
-
 void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
     try {
         R3 dimension = {node["x"].as<double>(), node["y"].as<double>(), node["z"].as<double>()};
@@ -413,7 +389,7 @@ void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
                         boundary = std::make_unique<VelocityReflect>(location, dimension);
                         break;
                     case BoundaryType::PERIODIC: {
-                        boundary = std::make_unique<Periodic>(location, dimension, getCellSize(settings, dimension));
+                        boundary = std::make_unique<Periodic>(location, dimension, settings.cutoff);
                         break;
                     } 
                     case BoundaryType::OUTFLOW:
