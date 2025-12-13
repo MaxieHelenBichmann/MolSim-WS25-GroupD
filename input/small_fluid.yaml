@@ -9,12 +9,12 @@ settings:
   container: LINKED
   initial_temp: 40
   n_thermostat: 1000
-  grav: -12.44
 
   domain:
     x: 63
     y: 36
     z: 1
+    g_grav: -12.44
     boundaries:
       left:
         type: Periodic
