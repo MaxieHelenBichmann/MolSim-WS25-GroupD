@@ -30,7 +30,7 @@ liquid_1:
   coordinates:
       x: 0.6
       y: 2.0
-      z: 1.0
+      z: 0.0
   velocity:
       vx: 0.0
       vy: 0.0
@@ -42,24 +42,24 @@ liquid_1:
   mass: 1.0
   distance: 1.2
   epsilon: 1.0
-  sigma: 1.2
+  sigma: 1.0
 
 liquid_2:
-format: Cuboid
-coordinates:
-    x: 0.6
-    y: 27
-    z: 1.0
-velocity:
-    vx: 0.0
-    vy: 0.0
-    vz: 0.0
-particleNum:
-    nx: 50
-    ny: 14
-    nz: 1
-mass: 2.0
-distance: 1.2
-epsilon: 1.0
-sigma: 1.1
+  format: Cuboid
+  coordinates:
+      x: 0.6
+      y: 19
+      z: 0.0
+  velocity:
+      vx: 0.0
+      vy: 0.0
+      vz: 0.0
+  particleNum:
+      nx: 50
+      ny: 14
+      nz: 1
+  mass: 2.0
+  distance: 1.2
+  epsilon: 1.0
+  sigma: 0.9412
 
