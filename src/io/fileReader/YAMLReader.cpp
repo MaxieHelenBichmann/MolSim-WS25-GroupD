@@ -304,7 +304,9 @@ std::vector<YAMLReader::CuboidData> YAMLReader::parseCuboids(const YAML::Node& n
 
         data.mass = node["mass"].as<double>();
         data.distance = node["distance"].as<double>();
-        data.avg_velo = node["mean_velo"].as<double>();
+        if (node["mean_velo"]) {
+            data.avg_velo = node["mean_velo"].as<double>();
+        }
         data.epsilon = node["epsilon"].as<double>();
         data.sigma = node["sigma"].as<double>();
 
@@ -345,7 +347,9 @@ std::vector<YAMLReader::DiscData> YAMLReader::parseDiscs(const YAML::Node& node)
         data.radius = node["radius"].as<size_t>();
         data.mass = node["mass"].as<double>();
         data.distance = node["distance"].as<double>();
-        data.avg_velo = node["mean_velo"].as<double>();
+        if (node["mean_velo"]) {
+            data.avg_velo = node["mean_velo"].as<double>();
+        }
         data.epsilon = node["epsilon"].as<double>();
         data.sigma = node["sigma"].as<double>();
 
