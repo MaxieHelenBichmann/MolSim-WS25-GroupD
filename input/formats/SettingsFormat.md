@@ -23,8 +23,9 @@ The settings block has the following keys, with every key except format being op
 - `end_time`: A floating-point number specifying the end time of the simulation.
 - `start_time`: A floating-point number specifying the start time of the simulation.
 - `base_name`: A string specifying the base name of the output files of the simulation.
-- `force`: A string specifying the force type, either "Lennard Jones" or "Gravitational" (default:`"Lennard Jones"`),  of the simulation.
+- `force`: A string specifying the force type, either "Lennard Jones" or "Gravitational" (default:`"Lennard Jones"`), of the simulation.
 - `frequency`: A whole number specifying the frequency of the output files of the simulation.
+- `checkpoint`: A whole number specifying the frequency of the checkpoint files of the simulation.
 - `cutoff`: A floating-point number specifying the cutoff radius of the Linked Cells of the simulation.
 - `container`: Container type, either `"SIMPLE"` or `"LINKED"` (default: `"LINKED"`).
 - `initial_temp`: A floating-point number specifying the initial target temperature of the simulation.
