@@ -377,7 +377,7 @@ class LinkedCellContainer {
         using reference = P&;
 
         proximity_iterator() noexcept : radius(0.0) {}
-        proximity_iterator(R3 center, double radius, std::set<size_t>::iterator cur, std::vector<C*> cells,
+        proximity_iterator(R3 center, double radius, std::set<size_t>::iterator cur, std::vector<C*>&& cells,
                            std::span<P> data, size_t center_idx)
             : cur(cur),
               end(cells.back()->particles().end()),
