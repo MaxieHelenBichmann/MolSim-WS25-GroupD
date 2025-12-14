@@ -13,7 +13,7 @@ using namespace mol_sim;
 LinkedCellContainer::LinkedCellContainer(R3 domain_size, double cutoff_radius)  // NOLINT
     : cutoff_radius(cutoff_radius), domain_size(domain_size) {
     computeCellsOrCorners(num_cells, cell_length, domain_size, cutoff_radius);
-    
+
     SPDLOG_INFO("Created LinkedCellContainer: {}x{}x{} cells, cell size: ({}, {}, {})", num_cells[0], num_cells[1],
                 num_cells[2], cell_length[0], cell_length[1], cell_length[2]);
 
@@ -47,8 +47,8 @@ LinkedCellContainer::LinkedCellContainer(R3 domain_size, double cutoff_radius)  
     }
 }
 
-void LinkedCellContainer::computeCellsOrCorners(std::array<size_t, 3>& num_cells, std::array<double, 3>& cell_length, 
-    R3 domain_size, double cutoff_radius) {
+void LinkedCellContainer::computeCellsOrCorners(std::array<size_t, 3>& num_cells, std::array<double, 3>& cell_length,
+                                                R3 domain_size, double cutoff_radius) {
     if (cutoff_radius == std::numeric_limits<double>::infinity()) {
         SPDLOG_INFO("Cutoff radius is infinite, halo cells will only be as large as the domain size");
         num_cells = {3U, 3U, 3U};
@@ -95,8 +95,7 @@ size_t LinkedCellContainer::findCellIndex(R3 vec) const {
     return (z_idx * num_cells[1] * num_cells[0]) + (y_idx * num_cells[0]) + x_idx;
 }
 
-std::vector<Cell*> LinkedCellContainer::findAdjacentCellsN3L(size_t cell_idx) {
-    std::vector<Cell*> adjacent_cells;
+void LinkedCellContainer::findNonEmptyAdjacentCellsN3L(size_t cell_idx, std::vector<Cell*>& adjacent_cells) {
     size_t z_idx = cell_idx / (num_cells[0] * num_cells[1]);
     size_t y_idx = (cell_idx / num_cells[0]) % num_cells[1];
     size_t x_idx = cell_idx % num_cells[0];
@@ -104,7 +103,9 @@ std::vector<Cell*> LinkedCellContainer::findAdjacentCellsN3L(size_t cell_idx) {
     auto try_add_neighbor = [this, &adjacent_cells](size_t nx, size_t ny, size_t nz) {
         if (nx < num_cells[0] && ny < num_cells[1] && nz < num_cells[2]) {
             size_t neighbor_idx = (nz * num_cells[1] * num_cells[0]) + (ny * num_cells[0]) + nx;
-            adjacent_cells.push_back(&cells[neighbor_idx]);
+            if (!cells[neighbor_idx].particles().empty()) {
+                adjacent_cells.push_back(&cells[neighbor_idx]);
+            }
         }
     };
 
@@ -125,11 +126,9 @@ std::vector<Cell*> LinkedCellContainer::findAdjacentCellsN3L(size_t cell_idx) {
 
     // middle cell of middle layer (self) (dz = 0, dy = 0, dx = 0)
     try_add_neighbor(x_idx, y_idx, z_idx);
-
-    return adjacent_cells;
 }
-std::vector<const Cell*> LinkedCellContainer::findAdjacentCellsN3L(size_t cell_idx) const {
-    std::vector<const Cell*> adjacent_cells;
+void LinkedCellContainer::findNonEmptyAdjacentCellsN3L(size_t cell_idx,
+                                                       std::vector<const Cell*>& adjacent_cells) const {
     size_t z_idx = cell_idx / (num_cells[0] * num_cells[1]);
     size_t y_idx = (cell_idx / num_cells[0]) % num_cells[1];
     size_t x_idx = cell_idx % num_cells[0];
@@ -137,7 +136,9 @@ std::vector<const Cell*> LinkedCellContainer::findAdjacentCellsN3L(size_t cell_i
     auto try_add_neighbor = [this, &adjacent_cells](size_t nx, size_t ny, size_t nz) {
         if (nx < num_cells[0] && ny < num_cells[1] && nz < num_cells[2]) {
             size_t neighbor_idx = (nz * num_cells[1] * num_cells[0]) + (ny * num_cells[0]) + nx;
-            adjacent_cells.push_back(&cells[neighbor_idx]);
+            if (!cells[neighbor_idx].particles().empty()) {
+                adjacent_cells.push_back(&cells[neighbor_idx]);
+            }
         }
     };
 
@@ -158,12 +159,10 @@ std::vector<const Cell*> LinkedCellContainer::findAdjacentCellsN3L(size_t cell_i
 
     // middle cell of middle layer (self) (dz = 0, dy = 0, dx = 0)
     try_add_neighbor(x_idx, y_idx, z_idx);
-
-    return adjacent_cells;
 }
 
 void LinkedCellContainer::findBoundaryCells(const BoundaryLocation type,  // NOLINT
-                                            std::vector<const Cell*>& boundary_cells, size_t offset) const {
+                                            std::vector<Cell*>& boundary_cells, size_t offset) {
     switch (type) {
         case BoundaryLocation::UPPER: {
             for (size_t y = offset; y < num_cells[1] - offset; ++y) {
@@ -198,6 +197,7 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryLocation type,  // NOL
                 for (size_t y = offset; y < num_cells[1] - offset; ++y) {
                     size_t idx =
                         (z * num_cells[1] * num_cells[0]) + (y * num_cells[0]) + (num_cells[0] - (1U + offset));
+
                     boundary_cells.push_back(&cells[idx]);
                 }
             }
@@ -224,8 +224,9 @@ void LinkedCellContainer::findBoundaryCells(const BoundaryLocation type,  // NOL
         }
     }
 }
-void LinkedCellContainer::findBoundaryCells(const BoundaryLocation type, std::vector<Cell*>& boundary_cells,  // NOLINT
-                                            size_t offset) {
+
+void LinkedCellContainer::findBoundaryCells(const BoundaryLocation type,  // NOLINT
+                                            std::vector<const Cell*>& boundary_cells, size_t offset) const {
     switch (type) {
         case BoundaryLocation::UPPER: {
             for (size_t y = offset; y < num_cells[1] - offset; ++y) {
@@ -425,15 +426,9 @@ std::vector<Particle>::const_iterator LinkedCellContainer::cend() const noexcept
 
 // proximity iterators
 LinkedCellContainer::proximity_iterator<Particle, Cell> LinkedCellContainer::proximityBegin(R3 center, size_t offset) {
-    std::vector<Cell*> adjacent_cells = findAdjacentCellsN3L(findCellIndex(center));
     std::vector<Cell*> nonempty_adjacent_cells;
-
-    nonempty_adjacent_cells.reserve(cells.size());
-    for (Cell* c : adjacent_cells) {
-        if (!c->particles().empty()) {
-            nonempty_adjacent_cells.push_back(c);
-        }
-    }
+    nonempty_adjacent_cells.reserve(14);  // max 14 adjacent cells in N3L
+    findNonEmptyAdjacentCellsN3L(findCellIndex(center), nonempty_adjacent_cells);
 
     if (nonempty_adjacent_cells.empty()) {
         return proximity_iterator<Particle, Cell>{};
@@ -447,15 +442,9 @@ LinkedCellContainer::proximity_iterator<Particle, Cell> LinkedCellContainer::pro
 }
 
 LinkedCellContainer::proximity_iterator<Particle, Cell> LinkedCellContainer::proximityEnd(R3 center) {
-    std::vector<Cell*> adjacent_cells = findAdjacentCellsN3L(findCellIndex(center));
     std::vector<Cell*> nonempty_adjacent_cells;
-
-    nonempty_adjacent_cells.reserve(cells.size());
-    for (Cell* c : adjacent_cells) {
-        if (!c->particles().empty()) {
-            nonempty_adjacent_cells.push_back(c);
-        }
-    }
+    nonempty_adjacent_cells.reserve(14);  // max 14 adjacent cells in N3L
+    findNonEmptyAdjacentCellsN3L(findCellIndex(center), nonempty_adjacent_cells);
 
     if (nonempty_adjacent_cells.empty()) {
         return proximity_iterator<Particle, Cell>{};
@@ -470,15 +459,9 @@ LinkedCellContainer::proximity_iterator<Particle, Cell> LinkedCellContainer::pro
 
 LinkedCellContainer::proximity_iterator<const Particle, const Cell> LinkedCellContainer::proximityBegin(
     R3 center, size_t offset) const {
-    std::vector<const Cell*> adjacent_cells = findAdjacentCellsN3L(findCellIndex(center));
     std::vector<const Cell*> nonempty_adjacent_cells;
-
-    nonempty_adjacent_cells.reserve(cells.size());
-    for (const Cell* c : adjacent_cells) {
-        if (!c->particles().empty()) {
-            nonempty_adjacent_cells.push_back(c);
-        }
-    }
+    nonempty_adjacent_cells.reserve(14);  // max 14 adjacent cells in N3L
+    findNonEmptyAdjacentCellsN3L(findCellIndex(center), nonempty_adjacent_cells);
 
     if (nonempty_adjacent_cells.empty()) {
         return proximity_iterator<const Particle, const Cell>{};
@@ -491,15 +474,9 @@ LinkedCellContainer::proximity_iterator<const Particle, const Cell> LinkedCellCo
                                                           offset};
 }
 LinkedCellContainer::proximity_iterator<const Particle, const Cell> LinkedCellContainer::proximityEnd(R3 center) const {
-    std::vector<const Cell*> adjacent_cells = findAdjacentCellsN3L(findCellIndex(center));
     std::vector<const Cell*> nonempty_adjacent_cells;
-
-    nonempty_adjacent_cells.reserve(cells.size());
-    for (const Cell* c : adjacent_cells) {
-        if (!c->particles().empty()) {
-            nonempty_adjacent_cells.push_back(c);
-        }
-    }
+    nonempty_adjacent_cells.reserve(14);  // max 14 adjacent cells in N3L
+    findNonEmptyAdjacentCellsN3L(findCellIndex(center), nonempty_adjacent_cells);
 
     if (nonempty_adjacent_cells.empty()) {
         return proximity_iterator<const Particle, const Cell>{};
