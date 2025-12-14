@@ -147,7 +147,7 @@ class LinkedCellContainer {
      *  1) Putting this code into YAMLReader.cpp (and removing it from LCC.cpp) and then adjusting LCC.cpp constructor
      *  2) Just copy-pasting this code into Periodic.h (w/ minor changes)
      *  3) Making a new header file just for this (and other things?) seems overkill
-     *  4) Make corner_dimension a field in SimpleContainer aswell and then use a getter (plus pass a ContainerRef to 
+     *  4) Make haloDimension a field in SimpleContainer aswell and then use a getter (plus pass a ContainerRef to 
      *     Periodic) -> entanglement
      *  5) Additional check in MolSim.cpp or Simulation.h (or YAMLReader.cpp) *after* parsing domain type about
      *     whether it is a LCC. If it is then do something like x_boundary.setCornerDimension(cell_length) 

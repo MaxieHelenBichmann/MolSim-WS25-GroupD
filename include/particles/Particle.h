@@ -9,6 +9,7 @@
 #define PARTICLE_H
 
 #include <string>
+#include <cstdint>
 
 #include "utils/Vector.h"
 
@@ -21,31 +22,31 @@ namespace mol_sim {
 class Particle {
    private:
     /**
-     * Position of the particle
+     * @brief Position of the particle
      */
     R3 x;
     /**
-     * New position of the particle
+     * @brief New position of the particle
      */
     R3 old_x;
 
     /**
-     * Velocity of the particle
+     * @brief Velocity of the particle
      */
     R3 v;
 
     /**
-     * Force effective on this particle
+     * @brief Force effective on this particle
      */
     R3 f;
 
     /**
-     * Force which was effective on this particle
+     * @brief Force which was effective on this particle
      */
     R3 old_f;
 
     /**
-     * Mass of this particle
+     * @brief Mass of this particle
      */
     double m;
     /**
@@ -59,12 +60,27 @@ class Particle {
      */
     double sigma;
     /**
-     * Type of the particle.
+     * @brief Type of the particle. 
+     * A particle with a negative type should be created and destroyed within the same 
+     * simulation iteration. Positive particle types may also exist beyond one iteration.
      * -1 if particle is GHOST particle
      *  0 default
      *  1 if particle is a mirrored particle (in periodic boundaries)
      */
     int type;
+    /**
+     * @brief A bitmap indicating the locations the particle has been mirrored to.
+     * This is relevant for Periodic boundaries.
+     * 
+     * nth bit = 1 means the particle has been mirrored to the nth mirror domain.
+     * -------------------------------------------------------------------------- 
+     * nth bit          Location
+     * -------------------------------------------------------------------------- 
+     * 0                (0,0,0)
+     * ... TODO: finish writing this.
+     * 26               (max,max,max)
+     */
+    uint32_t mirror_locations = 0;
 
    public:
     explicit Particle(int type = 0);
@@ -201,6 +217,20 @@ class Particle {
      * @return Reference to the double of the epsilon of the Particle
      */
     double& getEpsilon() noexcept;
+
+    /**
+     * @brief Get the Mirror Locations bitmap of the particle
+     * 
+     * @return uint32_t& A reference to the bitmap indicating where the particle has already been mirrored
+     */
+    uint32_t& getMirrorLocations() noexcept;
+    
+    /**
+     * @brief Get the Mirror Locations bitmap of the particle
+     * 
+     * @return uint32_t& A const reference to the bitmap indicating where the particle has already been mirrored
+     */
+    [[nodiscard]] const uint32_t& getMirrorLocations() const noexcept;
 
     bool operator==(const Particle& other) const noexcept;
 
