@@ -190,18 +190,23 @@ class Simulation {
      * @brief Applies the necessary boundary conditions to the particles.
      */
     void applyBoundaries() {
+        std::vector<Particle> new_particles;
         for (auto it = particles.begin(); it != particles.end();) {
             (*it).getOldF() = (*it).getF();
             (*it).getF() = Vector<double, 3>();
             // TODO: Optimization to only call this for relevant particles
             for (auto& p : domain.applyBoundary(*it, force_source)) {
-                particles.addParticle(p);
+                new_particles.push_back(p);
             }
+            (*it).getMirrorLocations() = 0;
             // TODO: bit of an ugly workaround for now.
             R3 new_position = (*it).getX();
             (*it).getX() = (*it).getOldX();
             it = particles.updateParticlePosition(
                 it, new_position);  // for now SimpleContainer + Periodic (and also Reflecting) needs this here
+        }
+        for (const auto& p : new_particles) {
+            particles.addParticle(p);
         }
     }
 

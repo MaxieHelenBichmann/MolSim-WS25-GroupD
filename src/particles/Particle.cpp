@@ -121,6 +121,10 @@ double Particle::getEpsilon() const noexcept { return epsilon; }
 
 double& Particle::getEpsilon() noexcept { return epsilon; }
 
+uint32_t& Particle::getMirrorLocations() noexcept { return mirror_locations; }
+
+const uint32_t& Particle::getMirrorLocations() const noexcept { return mirror_locations; }
+
 std::string Particle::toString() const {
     std::stringstream stream;
     stream << "Particle: x:" << x << " old_x:" << old_x << " v: " << v << " f: " << f << " old_f: " << old_f

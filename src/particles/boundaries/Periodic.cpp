@@ -3,46 +3,40 @@
 #include "particles/ParticleContainer.h"
 
 namespace mol_sim {
-std::array<short, 6> Periodic::corners;
 
 Periodic::Periodic(BoundaryLocation location, R3 domain_size, double cutoff) noexcept
-    : Boundary(location, BoundaryType::PERIODIC, domain_size) {
-    std::array<short, 4> corners_to_mirror = {0};
-    switch (location) {
-        case BoundaryLocation::LEFT:
-            corners_to_mirror = {0, 2, 4, 6};
-            break;
-        case BoundaryLocation::RIGHT:
-            corners_to_mirror = {1, 3, 5, 7};
-            break;
-        case BoundaryLocation::UPPER:
-            corners_to_mirror = {4, 5, 6, 7};
-            break;
-        case BoundaryLocation::LOWER:
-            corners_to_mirror = {0, 1, 2, 3};
-            break;
-        case BoundaryLocation::FRONT:
-            corners_to_mirror = {0, 1, 4, 5};
-            break;
-        case BoundaryLocation::BACK:
-            corners_to_mirror = {2, 3, 6, 7};
-            break;
-        default:
-            SPDLOG_ERROR("Unrecognized boundary location!");
-            break;
-    }
-    for (size_t i = 0; i < 4; i++) {
-        corners[corners_to_mirror[i]] = 1;
-    }
-
-    // Doing it this way may introduce additional performance overhead
-    // if used with a SimpleContainer (not a lot in general, but it's there)
+    : Boundary(location, BoundaryType::PERIODIC, domain_size), cutoff(cutoff) {
+    /**
+     * TODO: Optimization possible
+     * 
+     * Doing it this way introduces additional performance overhead
+     * if used with a SimpleContainer if the domain_size is not divisible 
+     * by the cutoff radius in at least one dimension.
+     */
     std::array<size_t, 3> unused;
-    LinkedCellContainer::computeCellsOrCorners(unused, corner_dimension, domain_size, cutoff);
+    LinkedCellContainer::computeCellsOrCorners(unused, halo_dimension, domain_size, cutoff);
+}
+
+bool Periodic::isInHalo(R3 x) const noexcept {
+    LinkedCellContainer checker(domain_size, cutoff);
+    return checker.fitsContainer(x) && !checker.fitsDomain(x);
+}
+
+bool Periodic::isOnBoundary(R3 x) const noexcept {
+    size_t axis = getAxis();
+    return ((x[axis] >= 0 && x[axis] <= halo_dimension[0]) ||
+            (x[axis] <= domain_size[axis] && x[axis] >= domain_size[axis] - halo_dimension[axis])) &&
+           (x[(axis + 1) % 3] >= 0 && x[(axis + 1) % 3] <= domain_size[(axis + 1) % 3]) &&
+           (x[(axis + 2) % 3] >= 0 && x[(axis + 2) % 3] <= domain_size[(axis + 2) % 3]);
 }
 
 std::optional<std::vector<Particle>> Periodic::applyBoundary(  // NOLINT
     Particle& p, [[maybe_unused]] const ForceSource& force) noexcept {
+    
+    if (!isOnBoundary(p.getX())) { //only mirror particles in boundary (-> see task description)
+        return std::nullopt;
+    }
+
     size_t axis = getAxis();
     int sign = getSign();
     std::vector<Particle> mirrored_particles;
@@ -55,79 +49,36 @@ std::optional<std::vector<Particle>> Periodic::applyBoundary(  // NOLINT
     }
 
     // 2) mirror the boundary particles (make sure to give them type 1)
-    // 2.1) mirror the boundaries
-    if (sign < 0 && p.getX()[axis] <= corner_dimension[axis] && p.getX()[axis] > 0) {
-        Particle p_prime(p);
-        p_prime.getX() = p.getX()[axis] + domain_size[axis];
-        p_prime.getType() = 1;
-        mirrored_particles.push_back(p_prime);
-    } else if (sign > 0 && p.getX()[axis] >= domain_size[axis] - corner_dimension[axis] &&
-               p.getX()[axis] < domain_size[axis]) {
-        Particle p_prime(p);
-        p_prime.getX() = p.getX()[axis] - domain_size[axis];
-        p_prime.getType() = 1;
-        mirrored_particles.push_back(p_prime);
-    }
-
-    // 2.2) mirror the corners
-    for (size_t i = 0; i < 6; i++) {
-        if (corners[i] == -1 * mark) {
-            if (isInCorner(p)) {
-                Particle p_prime(p);
-                p_prime.getType() = 1;
-                p_prime.getX() = p.getX() + getShift(i);
-                mirrored_particles.push_back(p_prime);
-                corners[i] = mark;
-            }
+    /**
+     * TODO: Optimization possible
+     * e.g. via checking if domain_size > haloDimension (rules out half 
+     * of the possible locations)
+     */
+    R3 offset = -1 * domain_size;
+    for (size_t i = 0; i < 27; i++) {
+        if (i == 13) {
+            continue; //this is where p is right now.
         }
-    }
-    mark *= -1;
+        if (i % 3 == 0 && i > 0) {
+            offset[0] = offset[0] == 3 * domain_size[0] ? -domain_size[0] : offset[0] + domain_size[0];
+            offset[2] = -domain_size[2];
+        }
+        if (i % 9 == 0 && i > 0) {
+            offset[1] = -domain_size[1];
+        }
 
+        if (isInHalo(p.getX() + offset) && (p.getMirrorLocations() & 1 << i) == 0) {
+            Particle p_prime(p);
+            p_prime.getX() = p.getX() + offset;
+            p_prime.getType() = 1;
+            mirrored_particles.push_back(p_prime);
+        }
+
+        p.getMirrorLocations() |= 1 << i;
+        offset[2] = offset[2] == 3 * domain_size[2] ? -domain_size[2] : offset[2] + domain_size[2];
+    }  
+    
     return mirrored_particles;
-}
-
-bool Periodic::isInCorner(Particle& p) const noexcept {
-    R3 x = p.getX();
-    return ((x[0] >= 0 && x[0] <= corner_dimension[0]) ||
-            (x[0] <= domain_size[0] && x[0] >= domain_size[0] - corner_dimension[0])) &&
-           ((x[1] >= 0 && x[1] <= corner_dimension[1]) ||
-            (x[1] <= domain_size[1] && x[1] >= domain_size[1] - corner_dimension[1])) &&
-           ((x[2] >= 0 && x[2] <= corner_dimension[2]) ||
-            (x[2] <= domain_size[2] && x[2] >= domain_size[2] - corner_dimension[2]));
-}
-
-R3 Periodic::getShift(size_t corner_idx) const noexcept {
-    R3 shift = {0., 0., 0.};
-    switch (corners[corner_idx]) {
-        case 0:
-            shift = domain_size;
-            break;
-        case 1:
-            shift = {-domain_size[0], domain_size[1], domain_size[2]};
-            break;
-        case 2:
-            shift = {domain_size[0], -domain_size[1], domain_size[2]};
-            break;
-        case 3:
-            shift = {-domain_size[0], -domain_size[1], domain_size[2]};
-            break;
-        case 4:
-            shift = {domain_size[0], domain_size[1], -domain_size[2]};
-            break;
-        case 5:
-            shift = {-domain_size[0], domain_size[1], -domain_size[2]};
-            break;
-        case 6:
-            shift = {domain_size[0], -domain_size[1], -domain_size[2]};
-            break;
-        case 7:
-            shift = -1 * domain_size;
-            break;
-        default:
-            SPDLOG_ERROR("Unrecognized corner index!");
-            break;
-    }
-    return shift;
 }
 
 }  // namespace mol_sim

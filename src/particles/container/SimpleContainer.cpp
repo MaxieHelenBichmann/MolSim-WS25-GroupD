@@ -7,17 +7,42 @@ using namespace mol_sim;
 SimpleContainer::SimpleContainer(R3 domain_size_arg, double cutoff_radius_arg)
     : domain_size(domain_size_arg), cutoff_radius(cutoff_radius_arg) {}
 
-void SimpleContainer::addParticle(Particle&& value) { push_back(std::move(value)); }
-void SimpleContainer::addParticle(const Particle& value) { push_back(value); }
+bool SimpleContainer::fitsContainer(R3 v) {
+    return (v[0] >= -cutoff_radius && v[0] <= domain_size[0] + cutoff_radius) &&
+           (v[1] >= -cutoff_radius && v[1] <= domain_size[1] + cutoff_radius) &&
+           (v[2] >= -cutoff_radius && v[2] <= domain_size[2] + cutoff_radius);
+}
+
+void SimpleContainer::addParticle(Particle&& value) { 
+    if (!fitsContainer(value.getX())) {
+        return;
+    }
+    push_back(std::move(value)); 
+}
+void SimpleContainer::addParticle(const Particle& value) { 
+    if (!fitsContainer(value.getX())) {
+        return;
+    }
+    push_back(value); 
+}
 
 void SimpleContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg) {
+    if (!fitsContainer(x_arg)) {
+        return;
+    }
     emplace_back(x_arg, v_arg, m_arg, epsilon_arg, sigma_arg);
 };
 void SimpleContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type) {
+    if (!fitsContainer(x_arg)) {
+        return;
+    }
     emplace_back(x_arg, v_arg, m_arg, epsilon_arg, sigma_arg, type);
 };
 void SimpleContainer::addParticle(R3 x_arg, R3 old_x_arg, R3 v_arg, R3 f_arg, R3 old_f_arg, double m_arg,
                                   double epsilon_arg, double sigma_arg, int type) {
+    if (!fitsContainer(x_arg)) {
+        return;
+    }
     emplace_back(x_arg, old_x_arg, v_arg, f_arg, old_f_arg, m_arg, epsilon_arg, sigma_arg, type);
 };
 

@@ -32,6 +32,16 @@ class SimpleContainer : public std::vector<Particle> {
     SimpleContainer(R3 domain_size_arg, double cutoff_radius_arg);
 
     /**
+     * @brief Checks that a given position fits within the domain + the halo region (1 cutoff radius)
+     * around the domain.
+     * 
+     * @param v The position to be checked.
+     * @return true if the position lies within the domain + halo region
+     * @return false else
+     */
+    bool fitsContainer(R3 v);
+
+    /**
      * @brief Adding an already existing Particle to the container by copying it.
      *
      * @param value Already constructed Particle.
