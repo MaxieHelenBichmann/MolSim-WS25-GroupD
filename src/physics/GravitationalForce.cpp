@@ -10,6 +10,6 @@ Vector<double, 3> GravitationalForce::applyForce(const Particle& p1, const Parti
     if (distance == 0) {
         return {0.0, 0.0, 0.0};
     }
-    const auto grav_force = p1.getM() * p2.getM() / std::pow(distance, 3) * difference;
+    const auto grav_force = p1.getM() * p2.getM() / (distance * distance * distance) * difference;
     return grav_force;
 }

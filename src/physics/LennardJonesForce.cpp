@@ -16,8 +16,12 @@ Vector<double, 3> LennardJonesForce::applyForce(const Particle& p1, const Partic
         return {0.0, 0.0, 0.0};
     }
 
+    const double sigma_div_distance = sigma / distance;
+    const double sigma_div_distance_pow_6 = sigma_div_distance * sigma_div_distance * sigma_div_distance *
+                                            sigma_div_distance * sigma_div_distance * sigma_div_distance;
+
     const auto llj_force = (((-24.0 * epsilon) / (distance * distance)) *
-                            (std::pow(sigma / distance, 6.0) - (2.0 * std::pow(sigma / distance, 12.0)))) *
+                            (sigma_div_distance_pow_6 - (2.0 * sigma_div_distance_pow_6 * sigma_div_distance_pow_6))) *
                            difference;
     return llj_force;
 }
