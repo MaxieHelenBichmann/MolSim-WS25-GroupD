@@ -436,7 +436,7 @@ LinkedCellContainer::proximity_iterator<Particle, Cell> LinkedCellContainer::pro
     return proximity_iterator<Particle, Cell>{center,
                                               cutoff_radius,
                                               nonempty_adjacent_cells.front()->particles().begin(),
-                                              nonempty_adjacent_cells,
+                                              std::move(nonempty_adjacent_cells),
                                               {data.data(), data.size()},
                                               offset};
 }
@@ -452,7 +452,7 @@ LinkedCellContainer::proximity_iterator<Particle, Cell> LinkedCellContainer::pro
     return proximity_iterator<Particle, Cell>{center,
                                               cutoff_radius,
                                               nonempty_adjacent_cells.back()->particles().end(),
-                                              nonempty_adjacent_cells,
+                                              std::move(nonempty_adjacent_cells),
                                               {data.data(), data.size()},
                                               data.size()};
 }
@@ -469,7 +469,7 @@ LinkedCellContainer::proximity_iterator<const Particle, const Cell> LinkedCellCo
     return proximity_iterator<const Particle, const Cell>{center,
                                                           cutoff_radius,
                                                           nonempty_adjacent_cells.front()->particles().begin(),
-                                                          nonempty_adjacent_cells,
+                                                          std::move(nonempty_adjacent_cells),
                                                           {static_cast<const Particle*>(data.data()), data.size()},
                                                           offset};
 }
@@ -484,7 +484,7 @@ LinkedCellContainer::proximity_iterator<const Particle, const Cell> LinkedCellCo
     return proximity_iterator<const Particle, const Cell>{center,
                                                           cutoff_radius,
                                                           nonempty_adjacent_cells.back()->particles().end(),
-                                                          nonempty_adjacent_cells,
+                                                          std::move(nonempty_adjacent_cells),
                                                           {static_cast<const Particle*>(data.data()), data.size()},
                                                           data.size()};
 }
@@ -514,7 +514,7 @@ LinkedCellContainer::proximity_iterator<Particle, Cell> LinkedCellContainer::hal
     return proximity_iterator<Particle, Cell>{R3{},
                                               std::numeric_limits<double>::infinity(),
                                               unique_and_nonempty_cells.front()->particles().begin(),
-                                              unique_and_nonempty_cells,
+                                              std::move(unique_and_nonempty_cells),
                                               {data.data(), data.size()},
                                               data.size()};
 }
@@ -542,7 +542,7 @@ LinkedCellContainer::proximity_iterator<const Particle, const Cell> LinkedCellCo
     return proximity_iterator<const Particle, const Cell>{R3{},
                                                           std::numeric_limits<double>::infinity(),
                                                           unique_and_nonempty_cells.front()->particles().begin(),
-                                                          unique_and_nonempty_cells,
+                                                          std::move(unique_and_nonempty_cells),
                                                           {static_cast<const Particle*>(data.data()), data.size()},
                                                           data.size()};
 }
@@ -570,7 +570,7 @@ LinkedCellContainer::proximity_iterator<Particle, Cell> LinkedCellContainer::hal
     return proximity_iterator<Particle, Cell>{R3{},
                                               std::numeric_limits<double>::infinity(),
                                               unique_and_nonempty_cells.back()->particles().end(),
-                                              unique_and_nonempty_cells,
+                                              std::move(unique_and_nonempty_cells),
                                               {data.data(), data.size()},
                                               data.size()};
 }
@@ -598,7 +598,7 @@ LinkedCellContainer::proximity_iterator<const Particle, const Cell> LinkedCellCo
     return proximity_iterator<const Particle, const Cell>{R3{},
                                                           std::numeric_limits<double>::infinity(),
                                                           unique_and_nonempty_cells.back()->particles().end(),
-                                                          unique_and_nonempty_cells,
+                                                          std::move(unique_and_nonempty_cells),
                                                           {static_cast<const Particle*>(data.data()), data.size()},
                                                           data.size()};
 }
@@ -627,7 +627,7 @@ LinkedCellContainer::proximity_iterator<Particle, Cell> LinkedCellContainer::bou
     return proximity_iterator<Particle, Cell>{R3{},
                                               std::numeric_limits<double>::infinity(),
                                               unique_and_nonempty_cells.front()->particles().begin(),
-                                              unique_and_nonempty_cells,
+                                              std::move(unique_and_nonempty_cells),
                                               {data.data(), data.size()},
                                               data.size()};
 }
@@ -655,7 +655,7 @@ LinkedCellContainer::proximity_iterator<const Particle, const Cell> LinkedCellCo
     return proximity_iterator<const Particle, const Cell>{R3{},
                                                           std::numeric_limits<double>::infinity(),
                                                           unique_and_nonempty_cells.front()->particles().begin(),
-                                                          unique_and_nonempty_cells,
+                                                          std::move(unique_and_nonempty_cells),
                                                           {static_cast<const Particle*>(data.data()), data.size()},
                                                           data.size()};
 }
@@ -683,7 +683,7 @@ LinkedCellContainer::proximity_iterator<Particle, Cell> LinkedCellContainer::bou
     return proximity_iterator<Particle, Cell>{R3{},
                                               std::numeric_limits<double>::infinity(),
                                               unique_and_nonempty_cells.back()->particles().end(),
-                                              unique_and_nonempty_cells,
+                                              std::move(unique_and_nonempty_cells),
                                               {data.data(), data.size()},
                                               data.size()};
 }
@@ -711,7 +711,7 @@ LinkedCellContainer::proximity_iterator<const Particle, const Cell> LinkedCellCo
     return proximity_iterator<const Particle, const Cell>{R3{},
                                                           std::numeric_limits<double>::infinity(),
                                                           unique_and_nonempty_cells.back()->particles().end(),
-                                                          unique_and_nonempty_cells,
+                                                          std::move(unique_and_nonempty_cells),
                                                           {static_cast<const Particle*>(data.data()), data.size()},
                                                           data.size()};
 }
