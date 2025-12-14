@@ -35,11 +35,16 @@ class Vector {
     Vector() { data_.fill(T(0)); };
 
     /**
+     * @brief Constructor fills Vector with given element
+     */
+    Vector(T elem) { data_.fill(elem); };
+
+    /**
      * @brief Constructor copies given array into the components of a Vector
      *
      * @param init array of fitting type and size, copied to the data of the Vector
      */
-    Vector(std::array<T, N> init) : data_(init){};
+    Vector(std::array<T, N> init) : data_(init) {};
 
     /**
      * @brief Constructor copies N given values into the components of a Vector
