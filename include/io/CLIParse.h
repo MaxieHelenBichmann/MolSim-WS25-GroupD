@@ -9,6 +9,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "exceptions/CLIException.h"
 #include "io/FileReader.h"
@@ -24,10 +25,11 @@ namespace mol_sim {
  * @param argsv Array of arguments
  * @throws CLIException if CLI parsing or file reading fails
  */
-std::string cliParse(int argc, char** argv) {
+std::vector<std::string> cliParse(int argc, char** argv) {
     SPDLOG_INFO("Hello from MolSim for PSE!");
     CLI::App app{"MolSim - Molecular Dynamics Simulator"};
     argv = app.ensure_utf8(argv);
+    std::vector<std::string> files;
 
     // Customize help formatting
     app.get_formatter()->column_width(40);
@@ -47,10 +49,18 @@ std::string cliParse(int argc, char** argv) {
         return "";
     };
 
+    // Add files with least settings priority
+
     app.add_option("filepath,-f,--file", filepath, "Input file path (.txt or .yaml)")
         ->required()
         ->check(CLI::ExistingFile.description(""))
         ->check(CLI::Validator(file_ext_validator, ""));
+    files.insert(files.begin(), filepath);
+
+    app.add_option("checkpoint,-c,--checkpoint", filepath, "Input file path for checkpoint file (.txt or .yaml)")
+        ->check(CLI::ExistingFile.description(""))
+        ->check(CLI::Validator(file_ext_validator, ""));
+    files.insert(files.begin(), filepath);
 
 #if SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_TRACE
     app.add_option("-l,--log_level", log_level, "Logging verbosity level")
@@ -88,7 +98,7 @@ std::string cliParse(int argc, char** argv) {
     logInit(log_level);
 #endif
 
-    return filepath;
+    return files;
 }
 }  // namespace mol_sim
 
