@@ -56,7 +56,6 @@ std::vector<std::string> cliParse(int argc, char** argv) {
         ->required()
         ->check(CLI::ExistingFile.description(""))
         ->check(CLI::Validator(file_ext_validator, ""));
-    files.insert(files.begin(), filepath);
 
     app.add_option("checkpoint,-c,--checkpoint", checkpoint_filepath,
                    "Input file path for checkpoint file (.txt or .yaml)")
@@ -98,7 +97,7 @@ std::vector<std::string> cliParse(int argc, char** argv) {
 #if SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_TRACE
     logInit(log_level);
 #endif
-
+    files.push_back(filepath);
     // Only add checkpoint file if it was provided
     if (!checkpoint_filepath.empty()) {
         files.push_back(checkpoint_filepath);

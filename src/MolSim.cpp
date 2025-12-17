@@ -36,10 +36,8 @@ int main(int argc, char* argsv[]) {
 
     try {
         files = cliParse(argc, argsv);
+
         for (const auto& file_name : files) {
-            if (file_name.empty()) {
-                continue;
-            }
             std::filesystem::path path = file_name;
             if (path.extension() == ".txt") {
                 file_reader = std::make_unique<XVMReader>();
