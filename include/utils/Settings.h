@@ -74,6 +74,10 @@ class SettingsParam {
      */
     static constexpr double G_GRAV_DEFAULT = 0.0;
     /**
+     * @brief Default value for is2D.
+     */
+    static constexpr bool IS2D_DEFAULT = false; //NOLINT
+    /**
      * @brief delta_t of the simulation.
      */
     double delta_t = DELTA_T_DEFAULT;
@@ -151,6 +155,10 @@ class SettingsParam {
      * @brief Used to simulate of gravitational pull in simulation.
      */
     double g_grav = G_GRAV_DEFAULT;
+    /**
+     * @brief Used to indicate whether the domain is 2D or 3D.
+     */
+    bool is2D = IS2D_DEFAULT; //NOLINT
 
     /**
      * @brief Construct new SettingsParam with default values.
