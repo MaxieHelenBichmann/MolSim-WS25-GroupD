@@ -34,7 +34,7 @@ class SimpleContainer : public std::vector<Particle> {
     /**
      * @brief Checks that a given position fits within the domain + the halo region (1 cutoff radius)
      * around the domain.
-     * 
+     *
      * @param v The position to be checked.
      * @return true if the position lies within the domain + halo region
      * @return false else
@@ -275,13 +275,13 @@ class SimpleContainer : public std::vector<Particle> {
 
         proximity_iterator() noexcept : cur(nullptr), end(nullptr), radius(0.0), prox(true) {}
         proximity_iterator(R3 center_or_domain, double radius, P* cur, P* end, size_t offset, bool prox = true,
-                           std::set<BoundaryLocation> locations = {})
+                           const std::set<BoundaryLocation>& locations = {})
             : cur(cur + offset),
               end(end),
               radius(radius),
               center_or_domain(center_or_domain),
               prox(prox),
-              locations(std::move(locations)) {
+              locations(locations) {
             satisfy();
         }
 

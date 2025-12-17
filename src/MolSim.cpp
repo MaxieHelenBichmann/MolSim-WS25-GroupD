@@ -30,24 +30,27 @@ int main(int argc, char* argsv[]) {
     SettingsParam settings;
     std::unique_ptr<FileReader> file_reader;
     std::unique_ptr<CheckpointWriter> cp_writer;
-    std::string file_name;
+    std::vector<std::string> files;
 
     // Phase 1: Parse CLI and read settings
+
     try {
-        file_name = cliParse(argc, argsv);
-        std::filesystem::path path = file_name;
-        if (path.extension() == ".txt") {
-            file_reader = std::make_unique<XVMReader>();
-            cp_writer = std::make_unique<XVMWriterCP>();
-        } else if (path.extension() == ".yaml") {
-            file_reader = std::make_unique<YAMLReader>();
-            cp_writer = std::make_unique<YAMLWriterCP>();
-        } else {
-            SPDLOG_ERROR("Unsupported file extension: {}", path.extension().string());
-            return EXIT_FAILURE;
+        files = cliParse(argc, argsv);
+        for (const auto& file_name : files) {
+            std::filesystem::path path = file_name;
+            if (path.extension() == ".txt") {
+                file_reader = std::make_unique<XVMReader>();
+                cp_writer = std::make_unique<XVMWriterCP>();
+            } else if (path.extension() == ".yaml") {
+                file_reader = std::make_unique<YAMLReader>();
+                cp_writer = std::make_unique<YAMLWriterCP>();
+            } else {
+                SPDLOG_ERROR("Unsupported file extension: {}", path.extension().string());
+                return EXIT_FAILURE;
+            }
+            file_reader->readSettings(settings, file_name);
+            SPDLOG_INFO("Loaded settings from {}", file_name);
         }
-        file_reader->readSettings(settings, file_name);
-        SPDLOG_INFO("Loaded settings from {}", file_name);
     } catch (const InputException&) {
         return EXIT_FAILURE;
     }
@@ -78,20 +81,22 @@ int main(int argc, char* argsv[]) {
     try {
         if (settings.container_type == "SIMPLE") {
             SimpleContainer particle_container(settings.domain.getDimension(), settings.cutoff);
-            file_reader->readParticles(particle_container, settings, file_name);
-            SPDLOG_INFO("Loaded {} particles from {}", particle_container.size(), file_name);
-            SPDLOG_INFO("Simulation configured: {} particles, delta_t={}, t=[{}, {}]", particle_container.size(),
-                        settings.delta_t, settings.start_time, settings.end_time);
-
+            for (const auto& file_name : files) {
+                file_reader->readParticles(particle_container, settings, file_name);
+                SPDLOG_INFO("Loaded {} particles from {}", particle_container.size(), file_name);
+                SPDLOG_INFO("Simulation configured: {} particles, delta_t={}, t=[{}, {}]", particle_container.size(),
+                            settings.delta_t, settings.start_time, settings.end_time);
+            }
             Simulation<SimpleContainer> simulation(particle_container, *force, settings, *writer, *cp_writer);
             simulation.run();
         } else if (settings.container_type == "LINKED") {
             LinkedCellContainer particle_container{settings.domain.getDimension(), settings.cutoff};
-            file_reader->readParticles(particle_container, settings, file_name);
-            SPDLOG_INFO("Loaded {} particles from {}", particle_container.size(), file_name);
-            SPDLOG_INFO("Simulation configured: {} particles, delta_t={}, t=[{}, {}]", particle_container.size(),
-                        settings.delta_t, settings.start_time, settings.end_time);
-
+            for (const auto& file_name : files) {
+                file_reader->readParticles(particle_container, settings, file_name);
+                SPDLOG_INFO("Loaded {} particles from {}", particle_container.size(), file_name);
+                SPDLOG_INFO("Simulation configured: {} particles, delta_t={}, t=[{}, {}]", particle_container.size(),
+                            settings.delta_t, settings.start_time, settings.end_time);
+            }
             Simulation<LinkedCellContainer> simulation(particle_container, *force, settings, *writer, *cp_writer);
             simulation.run();
         } else {

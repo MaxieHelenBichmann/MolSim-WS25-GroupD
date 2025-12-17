@@ -217,9 +217,11 @@ class Simulation {
         size_t idx = 0;
         for (auto it = particles.begin(); it != particles.end(); ++it, idx++) {
             Particle& p1 = *it;
-            p1.getF()[1] += p1.getM() * g_grav; //add gravitational pull along y-axis
-            for (auto it_prox = particles.proximityBegin(p1.getX(), idx); it_prox != particles.proximityEnd(p1.getX());
-                 ++it_prox) {
+            p1.getF()[1] += p1.getM() * g_grav;  // add gravitational pull along y-axis
+
+            auto it_prox = particles.proximityBegin(p1.getX(), idx);
+            auto it_prox_end = particles.proximityEnd(p1.getX());
+            for (; it_prox != it_prox_end; ++it_prox) {
                 Particle& p2 = *it_prox;
                 Vector<double, 3> force = force_source.applyForce(p1, p2);
                 // Apply force directly (Newton's 3rd law: equal and opposite)

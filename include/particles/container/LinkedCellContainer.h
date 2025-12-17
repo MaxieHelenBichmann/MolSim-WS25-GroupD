@@ -44,22 +44,22 @@ class LinkedCellContainer {
     [[nodiscard]] size_t findCellIndex(R3 vec) const;
 
     /**
-     * @brief Find the adjacent cells of a cell. [HELPER FUNCTION]
+     * @brief Find the non-empty adjacent cells of a cell. [HELPER FUNCTION]
      *
      * @param cell_idx Index of the cell.
-     *
-     * @return Vector of pointers to the adjacent cells, including the cell itself.
+     * @param adjacent_cells Vector in which to store pointers to the non-empty adjacent cells, including the cell
+     * itself.
      */
-    std::vector<Cell*> findAdjacentCellsN3L(size_t cell_idx);
+    void findNonEmptyAdjacentCellsN3L(size_t cell_idx, std::vector<Cell*>& adjacent_cells);
 
     /**
-     * @brief Find the adjacent cells of a cell. [HELPER FUNCTION]
+     * @brief Find the non-empty adjacent cells of a cell. [HELPER FUNCTION]
      *
      * @param cell_idx Index of the cell.
-     *
-     * @return Vector of const pointers to the adjacent cells, including the cell itself.
+     * @param adjacent_cells Vector in which to store pointers to the non-empty adjacent cells, including the cell
+     * itself.
      */
-    [[nodiscard]] std::vector<const Cell*> findAdjacentCellsN3L(size_t cell_idx) const;
+    void findNonEmptyAdjacentCellsN3L(size_t cell_idx, std::vector<const Cell*>& adjacent_cells) const;
 
     /**
      * @brief Find the boundary or halo cells. [HELPER FUNCTION]
@@ -138,8 +138,8 @@ class LinkedCellContainer {
      * @param cell_length Where the computed length of the cells / corners in each dimension will be stored
      * @param domain_size The size of the domain
      * @param cutoff_radius The cutoff radius
-     * 
-     * @note (remove this in final product) 
+     *
+     * @note (remove this in final product)
      * We need this code inside Periodic.cpp aswell because of the edge cases that arise when the domain_size
      * isn't divisible (in at least 1 dimension) by the cutoff radius for LCC.
      * Factoring out this code block to here avoids code dupcliation in LCC.cpp and Periodic.cpp.
@@ -147,16 +147,16 @@ class LinkedCellContainer {
      *  1) Putting this code into YAMLReader.cpp (and removing it from LCC.cpp) and then adjusting LCC.cpp constructor
      *  2) Just copy-pasting this code into Periodic.h (w/ minor changes)
      *  3) Making a new header file just for this (and other things?) seems overkill
-     *  4) Make haloDimension a field in SimpleContainer aswell and then use a getter (plus pass a ContainerRef to 
+     *  4) Make haloDimension a field in SimpleContainer aswell and then use a getter (plus pass a ContainerRef to
      *     Periodic) -> entanglement
      *  5) Additional check in MolSim.cpp or Simulation.h (or YAMLReader.cpp) *after* parsing domain type about
-     *     whether it is a LCC. If it is then do something like x_boundary.setCornerDimension(cell_length) 
+     *     whether it is a LCC. If it is then do something like x_boundary.setCornerDimension(cell_length)
      *     -> more random checks
-     * This is the best refactoring I could come up with (except maybe option 1 but I didn't want to 
+     * This is the best refactoring I could come up with (except maybe option 1 but I didn't want to
      * mess with LCC like that for now). If you can think of a nicer one please feel free to change it to that.
      */
-    static void computeCellsOrCorners(std::array<size_t, 3>& num_cells, std::array<double, 3>& cell_length, 
-        R3 domain_size, double cutoff_radius);
+    static void computeCellsOrCorners(std::array<size_t, 3>& num_cells, std::array<double, 3>& cell_length,
+                                      R3 domain_size, double cutoff_radius);
 
     /**
      * @brief Check whether a (potential) Particle fits into the domain.
@@ -377,12 +377,12 @@ class LinkedCellContainer {
         using reference = P&;
 
         proximity_iterator() noexcept : radius(0.0) {}
-        proximity_iterator(R3 center, double radius, std::set<size_t>::iterator cur, std::vector<C*> cells,
+        proximity_iterator(R3 center, double radius, std::set<size_t>::iterator cur, std::vector<C*>&& cells,
                            std::span<P> data, size_t center_idx)
             : cur(cur),
               end(cells.back()->particles().end()),
               cell_end(cells.front()->particles().end()),
-              cells(cells),
+              cells(std::move(cells)),
               container_data(data),
               radius(radius),
               center(center),
