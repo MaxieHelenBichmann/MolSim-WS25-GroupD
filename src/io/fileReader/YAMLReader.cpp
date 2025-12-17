@@ -396,6 +396,10 @@ void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
         if (g_grav_node) {
             settings.g_grav = g_grav_node.as<double>();
         }
+        const YAML::Node& is2D_node = node["is2D"]; //NOLINT
+        if (is2D_node) {
+            settings.is2D = is2D_node.as<bool>(); //NOLINT
+        }
 
         // Define boundary locations and their YAML keys
         static const std::array<std::pair<BoundaryLocation, std::string>, 6> boundary_mappings = {{
@@ -434,7 +438,7 @@ void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
                         boundary = std::make_unique<VelocityReflect>(location, dimension);
                         break;
                     case BoundaryType::PERIODIC: {
-                        boundary = std::make_unique<Periodic>(location, dimension, settings.cutoff);
+                        boundary = std::make_unique<Periodic>(location, dimension, settings.cutoff, settings.is2D);
                         break;
                     }
                     case BoundaryType::OUTFLOW:
