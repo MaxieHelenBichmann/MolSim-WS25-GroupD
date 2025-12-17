@@ -360,9 +360,9 @@ TEST_F(YAMLReaderTest, ReadDomainAndBoundaries) {
     const auto* left_reflecting = dynamic_cast<const Reflecting*>(&left);
     ASSERT_NE(left_reflecting, nullptr);
     ASSERT_TRUE(left_reflecting->getBoundarySigma().has_value());
-    EXPECT_DOUBLE_EQ(left_reflecting->getBoundarySigma().value(), 1.2);
+    EXPECT_DOUBLE_EQ(left_reflecting->getBoundarySigma().value(), 1.2); //NOLINT
     ASSERT_TRUE(left_reflecting->getBoundaryEpsilon().has_value());
-    EXPECT_DOUBLE_EQ(left_reflecting->getBoundaryEpsilon().value(), 5.0);
+    EXPECT_DOUBLE_EQ(left_reflecting->getBoundaryEpsilon().value(), 5.0); //NOLINT
 
     // Verify RIGHT boundary (REFLECTING without custom sigma/epsilon)
     const Boundary& right = settings.domain.getBoundary(BoundaryLocation::RIGHT);
@@ -382,9 +382,9 @@ TEST_F(YAMLReaderTest, ReadDomainAndBoundaries) {
     const auto* upper_reflecting = dynamic_cast<const Reflecting*>(&upper);
     ASSERT_NE(upper_reflecting, nullptr);
     ASSERT_TRUE(upper_reflecting->getBoundarySigma().has_value());
-    EXPECT_DOUBLE_EQ(upper_reflecting->getBoundarySigma().value(), 2.0);
+    EXPECT_DOUBLE_EQ(upper_reflecting->getBoundarySigma().value(), 2.0); //NOLINT
     ASSERT_TRUE(upper_reflecting->getBoundaryEpsilon().has_value());
-    EXPECT_DOUBLE_EQ(upper_reflecting->getBoundaryEpsilon().value(), 10.0);
+    EXPECT_DOUBLE_EQ(upper_reflecting->getBoundaryEpsilon().value(), 10.0); //NOLINT
 
     // Verify LOWER boundary (OUTFLOW)
     const Boundary& lower = settings.domain.getBoundary(BoundaryLocation::LOWER);
@@ -434,9 +434,9 @@ TEST_F(YAMLReaderTest, ReadCheckpointFile) {
     const auto* lower_reflecting = dynamic_cast<const Reflecting*>(&lower);
     ASSERT_NE(lower_reflecting, nullptr);
     ASSERT_TRUE(lower_reflecting->getBoundarySigma().has_value());
-    EXPECT_DOUBLE_EQ(lower_reflecting->getBoundarySigma().value(), 1.2);
+    EXPECT_DOUBLE_EQ(lower_reflecting->getBoundarySigma().value(), 1.2); //NOLINT
     ASSERT_TRUE(lower_reflecting->getBoundaryEpsilon().has_value());
-    EXPECT_DOUBLE_EQ(lower_reflecting->getBoundaryEpsilon().value(), 5.0);
+    EXPECT_DOUBLE_EQ(lower_reflecting->getBoundaryEpsilon().value(), 5.0); //NOLINT
 
     // Verify particle data
     EXPECT_EQ(particles.size(), 1);
