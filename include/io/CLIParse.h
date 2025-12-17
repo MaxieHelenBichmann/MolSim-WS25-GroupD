@@ -37,6 +37,7 @@ std::vector<std::string> cliParse(int argc, char** argv) {
     app.get_formatter()->label("TEXT", "");
     std::unique_ptr<FileReader> file_reader;
     std::filesystem::path filepath;
+    std::filesystem::path checkpoint_filepath;
     std::string log_level = "Default";  // NOLINT
 
     // Define custom validator for file extensions
@@ -57,10 +58,10 @@ std::vector<std::string> cliParse(int argc, char** argv) {
         ->check(CLI::Validator(file_ext_validator, ""));
     files.insert(files.begin(), filepath);
 
-    app.add_option("checkpoint,-c,--checkpoint", filepath, "Input file path for checkpoint file (.txt or .yaml)")
+    app.add_option("checkpoint,-c,--checkpoint", checkpoint_filepath,
+                   "Input file path for checkpoint file (.txt or .yaml)")
         ->check(CLI::ExistingFile.description(""))
         ->check(CLI::Validator(file_ext_validator, ""));
-    files.insert(files.begin(), filepath);
 
 #if SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_TRACE
     app.add_option("-l,--log_level", log_level, "Logging verbosity level")
@@ -97,6 +98,11 @@ std::vector<std::string> cliParse(int argc, char** argv) {
 #if SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_TRACE
     logInit(log_level);
 #endif
+
+    // Only add checkpoint file if it was provided
+    if (!checkpoint_filepath.empty()) {
+        files.push_back(checkpoint_filepath);
+    }
 
     return files;
 }
