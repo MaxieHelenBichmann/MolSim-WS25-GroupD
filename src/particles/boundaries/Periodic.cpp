@@ -10,9 +10,9 @@ Periodic::Periodic(BoundaryLocation location, R3 domain_size, double cutoff, boo
     : Boundary(location, BoundaryType::PERIODIC, domain_size), is2D(is2D) {
     /**
      * TODO: Optimization possible
-     * 
+     *
      * Doing it this way introduces additional performance overhead
-     * if used with a SimpleContainer if the domain_size is not divisible 
+     * if used with a SimpleContainer if the domain_size is not divisible
      * by the cutoff radius in at least one dimension.
      */
     if (checker == nullptr) {
@@ -23,27 +23,27 @@ Periodic::Periodic(BoundaryLocation location, R3 domain_size, double cutoff, boo
 }
 
 /**
-* TODO: Edge case: 
-* Imagine a situation where we have say a 2D simulation where LEFT and RIGHT are periodic
-* and the other boundaries aren't. Inside the iteration in Domain.cpp:applyBoundary either the left
-* boundary or the right boundary will execute their applyBoundary() before the other. I.e. either 
-* its left->applyBoundary then right->applyBoundary or vice versa. Let's say the order is LEFT->RIGHT.
-* Particles that are teleported from the left halo to the right boundary will be mirrored (if necessary)
-* by the right boundary in the subsequent call to right->applyBoundary in Domain.cpp:applyBoundary.
-* However, the same does NOT hold for the right boundary. That is: in general particles that are teleported
-* from the right halo to the left boundary will NOT be mirrored in that same timestep (unless the particle
-* is in an edge or a corner). They will be mirrored (if necessary) in the next timestep.
-* This *could* lead to instabilitiees in the simulation. Assuming reasonably sized simulation parameters
-* in particular delta_t, sigma and epsilon of the relevant particles, the missing of these mirror particles
-* in the one timestep may not be critical. In th interest of not entangling this code even more
-* (we would need to pass in a SettingsParam& to the constructor here + have to check for the 
-* types of the other boundaries) and not overcomplicating this code (unless really necessary) 
-* I will leave this behavior in for now.
-*/
+ * TODO: Edge case:
+ * Imagine a situation where we have say a 2D simulation where LEFT and RIGHT are periodic
+ * and the other boundaries aren't. Inside the iteration in Domain.cpp:applyBoundary either the left
+ * boundary or the right boundary will execute their applyBoundary() before the other. I.e. either
+ * its left->applyBoundary then right->applyBoundary or vice versa. Let's say the order is LEFT->RIGHT.
+ * Particles that are teleported from the left halo to the right boundary will be mirrored (if necessary)
+ * by the right boundary in the subsequent call to right->applyBoundary in Domain.cpp:applyBoundary.
+ * However, the same does NOT hold for the right boundary. That is: in general particles that are teleported
+ * from the right halo to the left boundary will NOT be mirrored in that same timestep (unless the particle
+ * is in an edge or a corner). They will be mirrored (if necessary) in the next timestep.
+ * This *could* lead to instabilitiees in the simulation. Assuming reasonably sized simulation parameters
+ * in particular delta_t, sigma and epsilon of the relevant particles, the missing of these mirror particles
+ * in the one timestep may not be critical. In th interest of not entangling this code even more
+ * (we would need to pass in a SettingsParam& to the constructor here + have to check for the
+ * types of the other boundaries) and not overcomplicating this code (unless really necessary)
+ * I will leave this behavior in for now.
+ */
 std::optional<std::vector<Particle>> Periodic::applyBoundary(  // NOLINT
     Particle& p, [[maybe_unused]] const ForceSource& force) noexcept {
     teleportParticleIfOOB(p);
-    if (!isOnBoundary(p.getX(), getAxis(), getSign())) { //only mirror particles in correct boundary region
+    if (!isOnBoundary(p.getX(), getAxis(), getSign())) {  // only mirror particles in correct boundary region
         return std::nullopt;
     }
     auto mirrored_particles = mirrorParticle(p);
@@ -64,17 +64,18 @@ void Periodic::teleportParticleIfOOB(Particle& p) {
             position_shift[axis] = -domain_size[axis];
         }
         if (i == 0 && position_shift[axis] == 0) {
-            break; //if the particle is not in halo region of the periodic boundary, definitely DONT shift!
+            break;  // if the particle is not in halo region of the periodic boundary, definitely DONT shift!
         }
     }
     p.getX() = p.getX() + position_shift;
 }
 
 /**
-* TODO: Optimization possible
-* e.g. via checking if domain_size > haloDimension (rules out half 
-* of the possible locations)
-*/
+ * TODO: Optimization possible
+ * e.g. via checking if domain_size > haloDimension (rules out half
+ * of the possible locations)
+ * Could also reserve vector or not use a vector for memory efficiency
+ */
 std::vector<Particle> Periodic::mirrorParticle(Particle& p) {
     std::vector<Particle> mirrored_particles;
     size_t stride = is2D ? 3 : 1;
@@ -84,7 +85,7 @@ std::vector<Particle> Periodic::mirrorParticle(Particle& p) {
         offset[2] = 0;
     }
     for (; i < 27; i += stride) {
-        //add mirror particle if necessary
+        // add mirror particle if necessary
         if (i != 13 && isInHalo(p.getX() + offset) && (p.getMirrorLocations() & (1 << i)) == 0) {
             Particle p_prime(p);
             p_prime.getX() = p.getX() + offset;
@@ -93,9 +94,9 @@ std::vector<Particle> Periodic::mirrorParticle(Particle& p) {
             p.getMirrorLocations() |= (1 << i);
         }
 
-        //update offset
+        // update offset
         updateOffset(offset, i);
-    }  
+    }
     return mirrored_particles;
 }
 
@@ -103,9 +104,9 @@ bool Periodic::isOnBoundary(R3 x, size_t axis, int sign) const noexcept {
     bool result = true;
     for (size_t i = 0; is2D ? i < 2 : i < 3; i++, axis = (axis + 1) % 3) {
         if (i == 0) {
-            result &= (sign < 0) 
-                ? (x[axis] >= 0 && x[axis] <= halo_dimension[axis])
-                : (x[axis] <= domain_size[axis] && x[axis] >= domain_size[axis] - halo_dimension[axis]);
+            result &= (sign < 0)
+                          ? (x[axis] >= 0 && x[axis] <= halo_dimension[axis])
+                          : (x[axis] <= domain_size[axis] && x[axis] >= domain_size[axis] - halo_dimension[axis]);
         } else {
             result &= (x[axis] >= 0 && x[axis] <= domain_size[axis]);
         }
@@ -126,12 +127,15 @@ bool Periodic::isInHalo(R3 x) const noexcept {
             axis = i;
             sign = 1;
             break;
-        }            
+        }
     }
-    return (checker->fitsContainer(x) && (!checker->fitsDomain(x)))  //halo around container OR
-        || (sign != 0 && isOnBoundary(x, axis, sign));               //the boundary itself
+    return (checker->fitsContainer(x) && (!checker->fitsDomain(x)))  // halo around container OR
+           || (sign != 0 && isOnBoundary(x, axis, sign));            // the boundary itself
 }
-
+/**
+ * TODO: Does this need to be recalculated or could we store a static array of all possible offsets to optimize this a
+ * bit?
+ */
 void Periodic::updateOffset(R3& offset, size_t i) {
     if (is2D) {
         if (offset[0] == domain_size[0]) {
@@ -140,19 +144,18 @@ void Periodic::updateOffset(R3& offset, size_t i) {
         } else {
             offset[0] += domain_size[0];
         }
-        } else {
-            if ((i + 1) % 3 == 0) {
-                offset[0] = offset[0] == domain_size[0] ? -domain_size[0] : offset[0] + domain_size[0];
-                offset[2] = -domain_size[2];
-            }
-            if ((i + 1) % 9 == 0) {
-                offset[1] += domain_size[1];
-            }
-            if ((i + 1) % 3 != 0) {
-                offset[2] += domain_size[2];
-            }
+    } else {
+        if ((i + 1) % 3 == 0) {
+            offset[0] = offset[0] == domain_size[0] ? -domain_size[0] : offset[0] + domain_size[0];
+            offset[2] = -domain_size[2];
         }
-
+        if ((i + 1) % 9 == 0) {
+            offset[1] += domain_size[1];
+        }
+        if ((i + 1) % 3 != 0) {
+            offset[2] += domain_size[2];
+        }
+    }
 }
 
 }  // namespace mol_sim
