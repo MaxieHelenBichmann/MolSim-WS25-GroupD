@@ -48,16 +48,6 @@ void SimpleContainer::addParticle(R3 x_arg, R3 old_x_arg, R3 v_arg, R3 f_arg, R3
 
 std::vector<Particle>::iterator SimpleContainer::eraseParticle(std::vector<Particle>::iterator p) { return erase(p); };
 
-SimpleContainer::proximity_iterator<Particle> SimpleContainer::eraseParticle(
-    const SimpleContainer::proximity_iterator<Particle>& p) {
-    R3 center = p.getCenter();
-    double radius = p.getRadius();
-    bool prox = p.isProximity();
-    std::set<BoundaryLocation> locations = p.getLocations();
-    size_t idx = erase(begin() + (&(*p) - data())) - begin();
-    return proximity_iterator<Particle>{center, radius, data(), data() + idx, 0, prox, locations};
-};
-
 std::vector<Particle>::iterator SimpleContainer::updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x) {
     p->getX() = new_x;
     return ++p;

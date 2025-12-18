@@ -315,16 +315,6 @@ class SimpleContainer : public std::vector<Particle> {
     static_assert(std::forward_iterator<proximity_iterator<const Particle>>);
 
     /**
-     * @brief Removes a given particle from the container. Used when iterating with proximity_iterator, not used yet
-     * (thus not tested), but could be useful.
-     *
-     * @param p Proximity iterator to the Particle to be removed.
-     *
-     * @return Proximity iterator to the next Particle after the removed one.
-     */
-    proximity_iterator<Particle> eraseParticle(const proximity_iterator<Particle>& p);
-
-    /**
      * @brief Mutable Iterator over particles in proximity.
      *
      * @param center Center point to check proximity from (position of the particle).
