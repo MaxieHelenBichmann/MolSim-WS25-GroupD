@@ -116,11 +116,11 @@ class Vector {
      * @return New Vector representing the sum of the two Vectors
      */
     Vector<T, N> operator+(const Vector<T, N>& other) const {
-        std::array<T, N> new_array;
+        Vector<T, N> result;
         for (size_t i = 0; i < N; i++) {
-            new_array[i] = data_[i] + other.data_[i];
+            result[i] = data_[i] + other.data_[i];
         }
-        return Vector<T, N>(new_array);
+        return result;
     };
 
     /**
@@ -131,11 +131,11 @@ class Vector {
      * @return New Vector representing the difference of the two Vectors
      */
     Vector<T, N> operator-(const Vector<T, N>& other) const {
-        std::array<T, N> new_array;
+        Vector<T, N> result;
         for (size_t i = 0; i < N; i++) {
-            new_array[i] = data_[i] - other.data_[i];
+            result[i] = data_[i] - other.data_[i];
         }
-        return Vector<T, N>(new_array);
+        return result;
     };
 
     /**
@@ -146,11 +146,11 @@ class Vector {
      * @return New Vector with the component-wise product of the two Vectors
      */
     Vector<T, N> operator*(const Vector<T, N>& other) const {
-        std::array<T, N> new_array;
+        Vector<T, N> result;
         for (size_t i = 0; i < N; i++) {
-            new_array[i] = data_[i] * other.data_[i];
+            result[i] = data_[i] * other.data_[i];
         }
-        return Vector<T, N>(new_array);
+        return result;
     };
 
     /**
@@ -161,12 +161,40 @@ class Vector {
      * @return New Vector representing the quotient of the two Vectors
      */
     Vector<T, N> operator/(const Vector<T, N>& other) const {
-        std::array<T, N> new_array;
+        Vector<T, N> result;
         for (size_t i = 0; i < N; i++) {
-            new_array[i] = data_[i] / other.data_[i];
+            result[i] = data_[i] / other.data_[i];
         }
-        return Vector<T, N>(new_array);
+        return result;
     };
+
+    /**
+     * @brief Compound point-wise Addition of a Vector to this Vector
+     *
+     * @param other Vector of same type and dimension to add
+     *
+     * @return This Vector representing the sum of the two Vectors
+     */
+    Vector<T, N>& operator+=(const Vector<T, N>& other) {
+        for (size_t i = 0; i < N; i++) {
+            data_[i] += other.data_[i];
+        }
+        return *this;
+    }
+
+    /**
+     * @brief Compound point-wise Subtraction of a Vector from this Vector
+     *
+     * @param other Vector of same type and dimension to subtract
+     *
+     * @return This Vector representing the difference of the two Vectors
+     */
+    Vector<T, N>& operator-=(const Vector<T, N>& other) {
+        for (size_t i = 0; i < N; i++) {
+            data_[i] -= other.data_[i];
+        }
+        return *this;
+    }
 
     // other arithmetic operations
 
@@ -194,6 +222,20 @@ class Vector {
      * @return New Vector representing the scaled Vector
      */
     friend Vector<T, N> operator*(const T& s, const Vector<T, N>& v) { return v * s; }
+
+    /**
+     * @brief Compound Scalar Multiplication (Vector *= Scalar)
+     *
+     * @param scalar Scalar value of same type
+     *
+     * @return This Vector representing the scaled Vector
+     */
+    Vector<T, N>& operator*=(const T scalar) {
+        for (size_t i = 0; i < N; i++) {
+            data_[i] *= scalar;
+        }
+        return *this;
+    }
 
     /**
      * @brief Inner product of two Vectors < a | b >

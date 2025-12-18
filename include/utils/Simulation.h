@@ -226,8 +226,8 @@ class Simulation {
                 Particle& p2 = *it_prox;
                 Vector<double, 3> force = force_source.applyForce(p1, p2);
                 // Apply force directly (Newton's 3rd law: equal and opposite)
-                p1.getF() = p1.getF() + force;
-                p2.getF() = p2.getF() - force;
+                p1.getF() += force;
+                p2.getF() -= force;
             }
         }
         // Calculate forces from mirrored/ghost particles
@@ -269,7 +269,7 @@ class Simulation {
     void calculateX() {
         for (auto& p : particles) {
             p.getOldX() = p.getX();
-            p.getX() = p.getX() + (delta_t * p.getV()) + ((0.5 * delta_t * delta_t / p.getM()) * p.getF());
+            p.getX() += (delta_t * p.getV()) + ((0.5 * delta_t * delta_t / p.getM()) * p.getF());
         }
     }
 
