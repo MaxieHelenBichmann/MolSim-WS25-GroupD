@@ -4,7 +4,6 @@
 
 #include <limits>
 #include <memory>
-#include <numbers>
 
 #include "io/checkpointWriter/XVMWriterCP.h"
 #include "io/outputWriter/XYZWriter.h"
@@ -12,7 +11,6 @@
 #include "particles/boundaries/Boundary.h"
 #include "particles/container/domain/Domain.h"
 #include "physics/LennardJonesForce.h"
-#include "testingUtils.h"
 #include "utils/Settings.h"
 #include "utils/Simulation.h"
 
