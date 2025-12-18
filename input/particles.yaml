@@ -3,42 +3,44 @@ settings:
   delta_t: 0.0002
   end_time: 5.0
   start_time: 0.0
+  force: Lennard Jones
 
-cube:
+lower_cube:
   format: Cuboid
-  num_cuboids: 2
-  cuboids:
-    - coordinates:
-        x: 0.0
-        y: 0.0
-        z: 0.0
-      velocity:
-        vx: 0.0
-        vy: 0.0
-        vz: 0.0
-      particleNum:
-        nx: 40
-        ny: 8
-        nz: 1
-      mass: 1.0
-      distance: 1.1225
-      mean_velo: 0.1
-      epsilon: 5.0
-      sigma: 1.0
-    - coordinates:
-        x: 15.0
-        y: 15.0
-        z: 0.0
-      velocity:
-        vx: 0.0
-        vy: -10.0
-        vz: 0.0
-      particleNum:
-        nx: 8
-        ny: 8
-        nz: 1
-      mass: 1.0
-      distance: 1.1225
-      mean_velo: 0.1
-      epsilon: 5.0
-      sigma: 1.0
+  coordinates:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+  velocity:
+    vx: 0.0
+    vy: 0.0
+    vz: 0.0
+  particleNum:
+    nx: 40
+    ny: 8
+    nz: 1
+  mass: 1.0
+  distance: 1.1225
+  mean_velo: 0.1
+  epsilon: 5.0
+  sigma: 1.0
+  
+upper_cube:
+  format: Cuboid
+  coordinates:
+    x: 15.0
+    y: 15.0
+    z: 0.0
+  velocity:
+    vx: 0.0
+    vy: -10.0
+    vz: 0.0
+  particleNum:
+    nx: 8
+    ny: 8
+    nz: 1
+  mass: 1.0
+  distance: 1.1225
+  mean_velo: 0.1
+  epsilon: 5.0
+  sigma: 1.0

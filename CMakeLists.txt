@@ -45,7 +45,9 @@ include(clang-format)
 include(yaml-cpp)
 include(spdlog)
 include(benchmark)
+include(cli11)
 include(clang-tidy)
+
 
 option(COVERAGE "Enable generation of LLVM coverage artifacts" OFF)
 

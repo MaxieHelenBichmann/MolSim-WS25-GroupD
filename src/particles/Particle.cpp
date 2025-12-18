@@ -11,6 +11,8 @@
 
 #include <iostream>
 
+#include "utils/Vector.h"
+
 using namespace mol_sim;
 
 Particle::Particle(int type_arg) {
@@ -26,6 +28,7 @@ Particle::Particle(const Particle& other) {
     f = other.f;
     epsilon = other.epsilon;
     sigma = other.sigma;
+    old_x = other.old_x;
     old_f = other.old_f;
     m = other.m;
     type = other.type;
@@ -41,6 +44,7 @@ Particle& Particle::operator=(const Particle& other) {
     f = other.f;
     epsilon = other.epsilon;
     sigma = other.sigma;
+    old_x = other.old_x;
     old_f = other.old_f;
     m = other.m;
     type = other.type;
@@ -48,67 +52,70 @@ Particle& Particle::operator=(const Particle& other) {
     return *this;
 }
 
-// TODO: maybe use initializater list instead of copy?
-
-Particle::Particle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg) {
-    x = x_arg;
-    v = v_arg;
-    m = m_arg;
-    epsilon = epsilon_arg;
-    sigma = sigma_arg;
-    type = type_arg;
-    f = {0., 0., 0.};
-    old_f = {0., 0., 0.};
+Particle::Particle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg)
+    : x(x_arg),
+      old_x(R3{0., 0., 0.}),
+      v(v_arg),
+      f(R3(0., 0., 0.)),
+      old_f(R3{0., 0., 0.}),
+      m(m_arg),
+      epsilon(epsilon_arg),
+      sigma(sigma_arg),
+      type(type_arg) {
     SPDLOG_DEBUG("Particle generated!");
 }
-Particle::Particle(R3 x_arg, R3 v_arg, R3 f_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg) {
-    x = x_arg;
-    v = v_arg;
-    f = f_arg;
-    m = m_arg;
-    epsilon = epsilon_arg;
-    sigma = sigma_arg;
-    type = type_arg;
-    old_f = {0., 0., 0.};
+Particle::Particle(R3 x_arg, R3 v_arg, R3 f_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg)
+    : x(x_arg),
+      old_x(R3{0., 0., 0.}),
+      v(v_arg),
+      f(f_arg),
+      old_f(R3{0., 0., 0.}),
+      m(m_arg),
+      epsilon(epsilon_arg),
+      sigma(sigma_arg),
+      type(type_arg) {
     SPDLOG_DEBUG("Particle generated!");
 }
 
 Particle::~Particle() { SPDLOG_DEBUG("Particle destructed!"); }
 
-const R3& Particle::getX() const { return x; }
-R3& Particle::getX() { return x; }
+const R3& Particle::getX() const noexcept { return x; }
+R3& Particle::getX() noexcept { return x; }
 
-const R3& Particle::getV() const { return v; }
-R3& Particle::getV() { return v; }
+const R3& Particle::getOldX() const noexcept { return old_x; }
+R3& Particle::getOldX() noexcept { return old_x; }
 
-const R3& Particle::getF() const { return f; }
-R3& Particle::getF() { return f; }
+const R3& Particle::getV() const noexcept { return v; }
+R3& Particle::getV() noexcept { return v; }
 
-const R3& Particle::getOldF() const { return old_f; }
-R3& Particle::getOldF() { return old_f; }
+const R3& Particle::getF() const noexcept { return f; }
+R3& Particle::getF() noexcept { return f; }
 
-double Particle::getM() const { return m; }
+const R3& Particle::getOldF() const noexcept { return old_f; }
+R3& Particle::getOldF() noexcept { return old_f; }
 
-int Particle::getType() const { return type; }
+double Particle::getM() const noexcept { return m; }
 
-double Particle::getSigma() const { return sigma; }
+int Particle::getType() const noexcept { return type; }
 
-double& Particle::getSigma() { return sigma; }
+double Particle::getSigma() const noexcept { return sigma; }
 
-double Particle::getEpsilon() const { return epsilon; }
+double& Particle::getSigma() noexcept { return sigma; }
 
-double& Particle::getEpsilon() { return epsilon; }
+double Particle::getEpsilon() const noexcept { return epsilon; }
+
+double& Particle::getEpsilon() noexcept { return epsilon; }
 
 std::string Particle::toString() const {
     std::stringstream stream;
-    stream << "Particle: X:" << x << " v: " << v << " f: " << f << " old_f: " << old_f << "epsilon: " << epsilon
-           << "sigma:" << sigma << " type: " << type;
+    stream << "Particle: x:" << x << " old_x:" << old_x << " v: " << v << " f: " << f << " old_f: " << old_f
+           << "epsilon: " << epsilon << "sigma:" << sigma << " type: " << type;
     return stream.str();
 }
 
-bool Particle::operator==(const Particle& other) const {
-    return (x == other.x) and (v == other.v) and (f == other.f) and (type == other.type) and (m == other.m) and
-           (old_f == other.old_f) and (epsilon == other.epsilon) and (sigma == other.sigma);
+bool Particle::operator==(const Particle& other) const noexcept {
+    return (x == other.x) and (old_x == other.old_x) and (v == other.v) and (f == other.f) and (type == other.type) and
+           (m == other.m) and (old_f == other.old_f) and (epsilon == other.epsilon) and (sigma == other.sigma);
 }
 
 std::ostream& operator<<(std::ostream& stream, Particle& p) {

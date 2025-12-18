@@ -1,7 +1,19 @@
 #include <spdlog/spdlog.h>
 
+#include <cstdlib>
+#include <memory>
+
+#include "exceptions/InputException.h"
+#include "exceptions/MolSimException.h"
+#include "exceptions/SimulationException.h"
 #include "io/CLIParse.h"
-#include "io/fileReader/YAMLReaderException.h"
+#include "io/FileReader.h"
+#include "io/fileReader/XVMReader.h"
+#include "io/fileReader/YAMLReader.h"
+#include "io/outputWriter/VTKWriter.h"
+#include "io/outputWriter/XYZWriter.h"
+#include "particles/container/ContainerRef.h"
+#include "particles/container/LinkedCellContainer.h"
 #include "particles/container/SimpleContainer.h"
 #include "physics/GravitationalForce.h"
 #include "physics/LennardJonesForce.h"
@@ -9,35 +21,90 @@
 #include "utils/Simulation.h"
 
 using namespace mol_sim;
+
 // NOLINTNEXTLINE(bugprone-exception-escape)
 int main(int argc, char* argsv[]) {
-    SimpleContainer particles;
     SettingsParam settings;
-    Force force = LENNARDJONES;
-    try {
-        cliParse(argc, argsv, particles, force, settings);
-    } catch (YAMLReaderException& e) {
-        SPDLOG_ERROR("YAML Reader failed with: {}", e.what());
-        exit(-1);
-    }
-    settings.setDefaults();
-    SPDLOG_INFO("Simulation configured with {} particles, delta_t={} end_time={}", particles.size(),
-                settings.delta_t.value(), settings.end_time.value());  // NOLINT(bugprone-unchecked-optional-access)
+    std::unique_ptr<FileReader> file_reader;
+    std::string file_name;
 
-    switch (force) {
+    // Phase 1: Parse CLI and read settings
+    try {
+        file_name = cliParse(argc, argsv);
+        std::filesystem::path path = file_name;
+        if (path.extension() == ".txt") {
+            file_reader = std::make_unique<XVMReader>();
+        } else if (path.extension() == ".yaml") {
+            file_reader = std::make_unique<YAMLReader>();
+        } else {
+            SPDLOG_ERROR("Unsupported file extension: {}", path.extension().string());
+            return EXIT_FAILURE;
+        }
+        file_reader->readSettings(settings, file_name);
+        SPDLOG_INFO("Loaded settings from {}", file_name);
+    } catch (const InputException&) {
+        return EXIT_FAILURE;
+    }
+
+    std::unique_ptr<OutputWriter> writer;
+#ifdef ENABLE_VTK_OUTPUT
+    writer = std::make_unique<VTKWriter>();
+#else
+    writer = std::make_unique<XYZWriter>();
+#endif
+
+    std::unique_ptr<ForceSource> force;
+
+    switch (settings.force) {
         case GRAVITATIONAL: {
-            GravitationalForce grav_force;
-            Simulation<SimpleContainer, GravitationalForce> simulation(particles, grav_force, settings);
-            simulation.run();
-            return 0;
+            force = std::make_unique<GravitationalForce>();
+            SPDLOG_DEBUG("Using gravitational force model");
+            break;
         }
         case LENNARDJONES: {
-            LennardJonesForce lj_force;
-            Simulation<SimpleContainer, LennardJonesForce> simulation(particles, lj_force, settings);
-            simulation.run();
-            return 0;
+            force = std::make_unique<LennardJonesForce>();
+            SPDLOG_DEBUG("Using Lennard-Jones force model");
+            break;
         }
-        default:
-            return 0;
     }
+
+    // Phase 2: Read particles and run simulation
+    try {
+        if (settings.container_type == "SIMPLE") {
+            SimpleContainer particle_container(settings.domain.getDimension(), settings.cutoff);
+            file_reader->readParticles(particle_container, file_name);
+            SPDLOG_INFO("Loaded {} particles from {}", particle_container.size(), file_name);
+            SPDLOG_INFO("Simulation configured: {} particles, delta_t={}, t=[{}, {}]", particle_container.size(),
+                        settings.delta_t, settings.start_time, settings.end_time);
+
+            Simulation<SimpleContainer> simulation(particle_container, *force, settings, *writer);
+            simulation.run();
+        } else if (settings.container_type == "LINKED") {
+            LinkedCellContainer particle_container{settings.domain.getDimension(), settings.cutoff};
+            file_reader->readParticles(particle_container, file_name);
+            SPDLOG_INFO("Loaded {} particles from {}", particle_container.size(), file_name);
+            SPDLOG_INFO("Simulation configured: {} particles, delta_t={}, t=[{}, {}]", particle_container.size(),
+                        settings.delta_t, settings.start_time, settings.end_time);
+
+            Simulation<LinkedCellContainer> simulation(particle_container, *force, settings, *writer);
+            simulation.run();
+        } else {
+            SPDLOG_ERROR("Unknown container type: {}", settings.container_type);
+            return EXIT_FAILURE;
+        }
+    } catch (const InputException&) {
+        SPDLOG_ERROR("Caught Input Exception, Exiting now!");
+        return EXIT_FAILURE;
+    } catch (const SimulationException&) {
+        SPDLOG_ERROR("Caught Simulation Exception, Exiting now!");
+        return EXIT_FAILURE;
+    } catch (const MolSimException& e) {
+        SPDLOG_ERROR("Unexpected MolSim error: {}, Exiting now!", e.what());
+        return EXIT_FAILURE;
+    } catch (const std::exception& e) {
+        SPDLOG_ERROR("Unexpected error: {}, Exiting now!", e.what());
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
 }

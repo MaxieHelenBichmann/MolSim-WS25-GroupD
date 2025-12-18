@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: mini-arc-runner-set # ubuntu-latest 
+    runs-on: ubuntu-latest
     container:
       image: mbichmann/molsim-vtk
     env:
@@ -48,7 +48,7 @@ jobs:
         if-no-files-found: ignore
 
   sanitizer:
-    runs-on: mini-arc-runner-set # ubuntu-latest
+    runs-on: ubuntu-latest
     container:
       image: mbichmann/molsim-vtk
     env:
@@ -65,12 +65,12 @@ jobs:
       run: cmake --build "$BUILD_DIR" --config "${BUILD_TYPE}"
 
     - name: Run MolSim with ASan
-      run: ./"$BUILD_DIR"/project/MolSim ./input/particles.yaml -d 0.02 -t 1 # don't run for too long or create too many files
+      run: ./"$BUILD_DIR"/project/MolSim ./input/particles.yaml # don't run for too long or create too many files
       env:
         ASAN_OPTIONS: halt_on_error=1
 
   documentation:
-    runs-on: mini-arc-runner-set # ubuntu-latest
+    runs-on: ubuntu-latest
     container:
       image: mbichmann/molsim-vtk
 
@@ -96,8 +96,7 @@ jobs:
       uses: actions/deploy-pages@v4
 
   upload-codecov:
-    runs-on: mini-arc-runner-set # ubuntu-latest
-    needs: build
+    runs-on: ubuntu-latest
     container:
       image: mbichmann/molsim-vtk
     # disable conditional execution until workflow is merged into main, so that gh actually renders the button

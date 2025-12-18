@@ -1,8 +1,11 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-#include <optional>
+#include <cstddef>
+#include <limits>
+#include <string>
 
+#include "particles/container/domain/Domain.h"
 #include "physics/ForceSource.h"
 
 namespace mol_sim {
@@ -14,93 +17,92 @@ class SettingsParam {
    public:
     /**
      * @brief Default value for the delta_t parameter of the simulation.
-     *
      */
-    constexpr static double DELTA_T_DEFAULT = 0.014;
+    static constexpr double DELTA_T_DEFAULT = 0.014;
     /**
      * @brief Default value for the end_time parameter of the simulation.
-     *
      */
-    constexpr static double END_TIME_DEFAULT = 1000;
+    static constexpr double END_TIME_DEFAULT = 1000;
     /**
      * @brief Default value for the start_time parameter of the simulation.
-     *
      */
-    constexpr static double START_TIME_DEFAULT = 0;
+    static constexpr double START_TIME_DEFAULT = 0;
     /**
      * @brief Default value for the epsilon parameter of the simulation if
      * the force_type is LJ (Lennard-Jones).
-     *
      */
-    constexpr static double EPSILON_DEFAULT = 5;
+    static constexpr double EPSILON_DEFAULT = 5;
     /**
      * @brief Default value for the sigma parameter of the simulation if
      * the force_type is LJ (Lennard-Jones).
-     *
      */
-    constexpr static double SIGMA_DEFAULT = 1;
+    static constexpr double SIGMA_DEFAULT = 1;
+    /**
+     * @brief Default force type of the simulation.
+     */
+    static constexpr Force FORCE_DEFAULT = LENNARDJONES;
+    /**
+     * @brief Default write frequency of the simulation.
+     */
+    static constexpr size_t FREQUENCY_DEFAULT = 10;
+    /**
+     * @brief Default cutoff radius for the linked cells.
+     */
+    static constexpr double CUTOFF_DEFAULT = std::numeric_limits<double>::infinity();
+
     /**
      * @brief delta_t of the simulation.
-     *
      */
-    std::optional<double> delta_t;
+    double delta_t = DELTA_T_DEFAULT;
     /**
      * @brief Start time of the simulation.
-     *
      */
-    std::optional<double> start_time;
+    double start_time = START_TIME_DEFAULT;
     /**
      * @brief End time of the simulation.
-     *
      */
-    std::optional<double> end_time;
+    double end_time = END_TIME_DEFAULT;
     /**
-     * @brief Force type used in the simulation.
-     *
+     * @brief Epsilon parameter for Lennard-Jones force.
      */
-    std::optional<double> epsilon;
+    double epsilon = EPSILON_DEFAULT;
     /**
-     * @brief Force type used in the simulation.
-     *
+     * @brief Sigma parameter for Lennard-Jones force.
      */
-    std::optional<double> sigma;
+    double sigma = SIGMA_DEFAULT;
     /**
-     * @brief Construct new SettingsParam.
-     * All values will be set to null_opt if not specified otherwise.
-     * Default Values will be set in MolSim.cpp
-     * @param delta_t
-     * @param start_time
-     * @param end_time
-     * @param epsilon
-     * @param sigma
+     * @brief Base name of the output files.
      */
-    SettingsParam(std::optional<double> delta_t = std::nullopt, std::optional<double> start_time = std::nullopt,
-                  std::optional<double> end_time = std::nullopt, std::optional<double> epsilon = std::nullopt,
-                  std::optional<double> sigma = std::nullopt)
-        : delta_t(delta_t), start_time(start_time), end_time(end_time), epsilon(epsilon), sigma(sigma) {}
+    std::string base_name = "MD";
+    /**
+     * @brief Type of force used in the simulation.
+     */
+    Force force = FORCE_DEFAULT;
+    /**
+     * @brief Frequency of output files being written.
+     * Output is written every *frequency* iterations.
+     */
+    size_t frequency = FREQUENCY_DEFAULT;
+    /**
+     * @brief Cutoff radius for the linked cells algorithm.
+     */
+    double cutoff = CUTOFF_DEFAULT;
+    /**
+     * @brief The type in string format of the particle container.
+     *
+     * SIMPLE = SimpleContainer
+     * LINKED = LinkedCellContainer
+     */
+    std::string container_type = "SIMPLE";
+    /**
+     * @brief The domain of the simulation.
+     */
+    Domain domain;
 
     /**
-     * @brief Provide default values for settings that have not been set.
-     *
-     * */
-
-    void setDefaults() {
-        if (!delta_t.has_value()) {
-            delta_t = DELTA_T_DEFAULT;
-        }
-        if (!end_time.has_value()) {
-            end_time = END_TIME_DEFAULT;
-        }
-        if (!start_time.has_value()) {
-            start_time = START_TIME_DEFAULT;
-        }
-        if (!epsilon.has_value()) {
-            epsilon = EPSILON_DEFAULT;
-        }
-        if (!sigma.has_value()) {
-            sigma = SIGMA_DEFAULT;
-        }
-    }
+     * @brief Construct new SettingsParam with default values.
+     */
+    SettingsParam() = default;
 };
 }  // namespace mol_sim
 #endif

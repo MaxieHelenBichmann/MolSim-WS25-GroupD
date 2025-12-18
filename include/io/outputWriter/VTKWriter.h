@@ -43,7 +43,7 @@ class VTKWriter : public OutputWriter {
      * @param filename Output filename
      * @param iteration Current iteration number
      */
-    void plotParticles(ContainerRef particles, const std::string& filename, int iteration) override;
+    void plotParticles(ContainerRef particles, const std::string& filename, int iteration) const override;
 };
 
 }  // namespace mol_sim

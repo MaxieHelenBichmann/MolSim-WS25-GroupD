@@ -16,7 +16,7 @@ using N3 = Vector<size_t, 3>;
 class CuboidGenerator : public Generator {
    private:
     /**
-     * @brief Postion of the lower left corner of the cube of particles.
+     * @brief Position of the lower left corner of the cube of particles.
      *
      */
     R3 position;
@@ -84,7 +84,7 @@ class CuboidGenerator : public Generator {
           distance(distance),
           avg_velo(avg_velo),
           epsilon(epsilon),
-          sigma(sigma) {};
+          sigma(sigma){};
 };
 }  // namespace mol_sim
 

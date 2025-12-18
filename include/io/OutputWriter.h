@@ -14,7 +14,7 @@ namespace mol_sim {
 class OutputWriter {
    public:
     virtual ~OutputWriter() = default;
-    virtual void plotParticles(ContainerRef particles, const std::string& filename, int iteration) = 0;
+    virtual void plotParticles(ContainerRef particles, const std::string& filename, int iteration) const = 0;
 };
 
 }  // namespace mol_sim

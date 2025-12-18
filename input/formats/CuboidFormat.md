@@ -1,22 +1,15 @@
 \page cuboid_format Cuboid Data Format
 # Cuboid Data Format
 
-This document describes the YAML format for defining one or more cuboids of particles.
+This document describes the YAML format for defining one cuboid of particles.
 
-To define a cuboid, you create a top-level block with the `format` key set to `"Cuboid"`.
+To define a cuboid, you create an object with the `format` key set to `"Cuboid"`.
 
-## Cuboid Block
+## Cuboid Object
 
 The cuboid block has the following keys:
 
 - `format`: A string describing the format, in this case `"Cuboid"`.
-- `num_cuboids`: An integer specifying the number of cuboid objects defined in this block.
-- `cuboids`: A list of cuboid objects.
-
-## Cuboid Object
-
-Each object in the `cuboids` list defines a single cuboid and has the following keys:
-
 - `coordinates`: A map defining the starting coordinates of the cuboid.
   - `x`: The x-coordinate of the corner of the cuboid.
   - `y`: The y-coordinate of the corner of the cuboid.
@@ -32,30 +25,28 @@ Each object in the `cuboids` list defines a single cuboid and has the following 
 - `mass`: The mass of each particle in the cuboid.
 - `distance`: The spacing between adjacent particles in the cuboid.
 - `mean_velo`: The mean velocity used for the Maxwell-Boltzmann distribution of the particles' velocities.
-- `epsilon`: The Epsilon value of all particles in this cuboid
-- `sigma`: The Sigma value of all particles in this cuboid
+- `epsilon`: The Epsilon value of all particles in this cuboid.
+- `sigma`: The Sigma value of all particles in this cuboid.
 ## Example
 
 ```yaml
 my_cuboid:
     format: Cuboid
-    num_cuboids: 1
-    cuboids:
-      - coordinates:
-          x: 0.0
-          y: 0.0
-          z: 0.0
-        velocity:
-          vx: 0.0
-          vy: 0.0
-          vz: 0.0
-        particleNum:
-          nx: 40
-          ny: 8
-          nz: 1
-        mass: 1.0
-        distance: 1.1225
-        mean_velo: 0.1
-        epsilon: 5.0
-        sigma: 1.0
+    coordinates:
+        x: 0.0
+        y: 0.0
+        z: 0.0
+    velocity:
+        vx: 0.0
+        vy: 0.0
+        vz: 0.0
+    particleNum:
+        nx: 40
+        ny: 8
+        nz: 1
+    mass: 1.0
+    distance: 1.1225
+    mean_velo: 0.1
+    epsilon: 5.0
+    sigma: 1.0
 ```

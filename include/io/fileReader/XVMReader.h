@@ -25,7 +25,22 @@ class XVMReader : public FileReader {
    public:
     XVMReader();
     ~XVMReader() override;
-    void readFile(ContainerRef particles, SettingsParam& settings, const std::string& filename) override;
+
+    /**
+     * @brief Phase 1: XVM files have no settings, just sets defaults.
+     * @param settings SettingsParam to populate (unchanged for XVM files).
+     * @param filename Path to input file (unused).
+     */
+    void readSettings(SettingsParam& settings, const std::string& filename) override;
+
+    /**
+     * @brief Phase 2: Reads particles from the XVM file.
+     * @param particles Container to place particles in.
+     * @param filename Path to input file.
+     * @throws XVMReaderException if file cannot be opened or is malformed.
+     * @throws ValidationException if particle mass is invalid.
+     */
+    void readParticles(ContainerRef particles, const std::string& filename) override;
 };
 
 }  // namespace mol_sim

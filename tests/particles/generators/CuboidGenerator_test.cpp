@@ -2,6 +2,8 @@
 
 #include <gtest/gtest.h>
 
+#include <vector>
+
 #include "particles/container/ContainerRef.h"
 #include "particles/container/SimpleContainer.h"
 
@@ -50,24 +52,21 @@ TEST_F(CuboidGeneratorTest, testParticleCount) { EXPECT_EQ(particles.size(), 8);
  *
  */
 TEST_F(CuboidGeneratorTest, testParticlePositions) {
-    // Check particle positions
-    for (size_t i = 0; i < num_particles[2]; i++) {
-        for (size_t j = 0; j < num_particles[1]; j++) {
-            for (size_t k = 0; k < num_particles[0]; k++) {
-                R3 expected_pos = {static_cast<double>(k) * distance, static_cast<double>(j) * distance,
-                                   static_cast<double>(i) * distance};
-                bool found = false;
-                for (auto& p : particles) {
-                    if (p.getX() == expected_pos) {
-                        found = true;
-                        break;
-                    }
-                }
-                EXPECT_TRUE(found) << "Particle at position " << expected_pos << " not found.";
+    std::vector<R3> expected_positions = {{0., 0., 0.}, {0., 0., 1.}, {0., 1., 0.}, {0., 1., 1.},
+                                          {1., 0., 0.}, {1., 0., 1.}, {1., 1., 0.}, {1., 1., 1.}};
+
+    for (R3 pos : expected_positions) {
+        bool found = false;
+        for (auto& p : particles) {
+            if (p.getX() == pos) {
+                found = true;
+                break;
             }
         }
+        EXPECT_TRUE(found) << "Particle at position " << pos << " not found.";
     }
 }
+
 /**
  * @brief Tests that the Particles have the correct mass.
  *
