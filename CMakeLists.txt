@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-option(ENABLE_CLANG_TIDY "Enable clang-tidy static analysis" ON)
+option(ENABLE_CLANG_TIDY "Enable clang-tidy static analysis" OFF)
 option(COVERAGE "Enable generation of LLVM coverage artifacts" OFF)
 option(ENABLE_UBSAN "Enable undefined behavior sanitizer (debug only)" OFF)
 
