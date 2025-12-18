@@ -39,7 +39,7 @@ class Vector {
      *
      * @param init array of fitting type and size, copied to the data of the Vector
      */
-    Vector(std::array<T, N> init) : data_(init){};
+    Vector(std::array<T, N> init) : data_(init) {};
 
     /**
      * @brief Constructor copies N given values into the components of a Vector
@@ -214,6 +214,15 @@ class Vector {
      */
     [[nodiscard]] T euclidNorm() const {
         return std::sqrt(std::accumulate(data_.begin(), data_.end(), T(0), [](auto a, auto b) { return a + (b * b); }));
+    }
+
+    /**
+     * @brief Squared Euclidean Norm of the Vector
+     *
+     * @return Scalar number of type T
+     */
+    [[nodiscard]] T sqrEuclidNorm() const {
+        return std::accumulate(data_.begin(), data_.end(), T(0), [](auto a, auto b) { return a + (b * b); });
     }
 
     // conversions to arrays
