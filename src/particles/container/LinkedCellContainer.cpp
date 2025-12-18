@@ -398,16 +398,32 @@ std::vector<Particle>::iterator LinkedCellContainer::eraseParticle(std::vector<P
 
 LinkedCellContainer::proximity_iterator<Particle, Cell> LinkedCellContainer::eraseParticle(
     LinkedCellContainer::proximity_iterator<Particle, Cell> p) {
-    size_t idx = &(*p) - data.data();
-    size_t cell_idx = findCellIndex(data[idx].getX());
+    // DO NOT CALL!!! (maybe even delete this function for all containers ngl)
+    size_t cell_to_remove_idx = findCellIndex(p->getX());
 
-    proximity_iterator next_it = ++p;
+    if (cell_to_remove_idx < cells.size()) {
+        size_t idx_to_remove = &(*p) - data.data();
+        size_t idx_to_swap = data.size() - 1;
+        if (idx_to_remove == idx_to_swap) {  // Particle to remove is already the last one
+            cells[cell_to_remove_idx].removeParticle(idx_to_remove);
+            return p;
+        }
 
-    cells[cell_idx].removeParticle(idx);
-    data.erase(data.begin() + static_cast<std::ptrdiff_t>(idx));  // NOLINT
-    decreaseCellIndices(idx);
+        // swap particle to remove with last particle, so no shifting of all particles (thanks Jonas Schuhmacher!)
+        size_t cell_to_swap_idx = findCellIndex(data[idx_to_swap].getX());
+        if (cell_to_swap_idx != cell_to_remove_idx) {
+            cells[cell_to_remove_idx].removeParticle(idx_to_remove);
+            cells[cell_to_swap_idx].updateParticleIndex(idx_to_swap, idx_to_remove);
+        } else {
+            cells[cell_to_remove_idx].removeParticle(idx_to_swap);
+        }
 
-    return next_it;
+        std::swap(data[idx_to_remove], data[idx_to_swap]);
+        data.pop_back();
+
+        return p;  // NOLINT
+    }
+    return p;
 }
 
 std::vector<Particle>::iterator LinkedCellContainer::updateParticlePosition(std::vector<Particle>::iterator p,

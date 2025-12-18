@@ -342,8 +342,6 @@ class LinkedCellContainer {
                  (std::is_same_v<P, const Particle> && std::is_same_v<C, const Cell>))
     class proximity_iterator {
         std::set<size_t>::iterator cur;
-        std::set<size_t>::iterator end;
-        std::set<size_t>::iterator cell_end;
         std::vector<C*> cells;
         std::span<P> container_data;
         double radius;
@@ -352,19 +350,20 @@ class LinkedCellContainer {
 
         void inc() {
             SPDLOG_DEBUG("Incrementing proximity iterator");
-            if (cur != cell_end) {
+            if (cur != cells.front()->particles().end()) {
                 ++cur;
             }
-            while (cur == cell_end && cells.size() > 1) {  // reached end of current cell
+            while (cur == cells.front()->particles().end() && cells.size() > 1) {  // reached end of current cell
                 cells.erase(cells.begin());
                 cur = cells.front()->particles().begin();
-                cell_end = cells.front()->particles().end();
             }
         }
 
         void satisfy() {
-            while (cur != end && (cur == cell_end || !((center - container_data[*cur].getX()).euclidNorm() <= radius) ||
-                                  (cells.size() == 1 && *cur <= center_idx && center_idx != container_data.size()))) {
+            while (cur != cells.back()->particles().end() &&
+                   (cur == cells.front()->particles().end() ||
+                    !((center - container_data[*cur].getX()).euclidNorm() <= radius) ||
+                    (cells.size() == 1 && *cur <= center_idx && center_idx != container_data.size()))) {
                 inc();
             }
         }
@@ -380,8 +379,6 @@ class LinkedCellContainer {
         proximity_iterator(R3 center, double radius, std::set<size_t>::iterator cur, std::vector<C*>&& cells,
                            std::span<P> data, size_t center_idx)
             : cur(cur),
-              end(cells.back()->particles().end()),
-              cell_end(cells.front()->particles().end()),
               cells(std::move(cells)),
               container_data(data),
               radius(radius),
