@@ -419,16 +419,6 @@ class LinkedCellContainer {
     static_assert(std::forward_iterator<proximity_iterator<const Particle, const Cell>>);
 
     /**
-     * @brief Remove a Particle. Used when iterating with proximity_iterator, not used yet (thus not tested), but could
-     * be useful.
-     *
-     * @param p Iterator to to the Particle to remove.
-     *
-     * @return Iterator to the next Particle after the removed one.
-     */
-    proximity_iterator<Particle, Cell> eraseParticle(proximity_iterator<Particle, Cell> p);
-
-    /**
      * @brief Mutable Iterator over particles in proximity.
      *
      * @param center Center point to check proximity from (position of the particle).
