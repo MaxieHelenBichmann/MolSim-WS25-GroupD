@@ -8,20 +8,20 @@ Vector<double, 3> LennardJonesForce::applyForce(const Particle& p1, const Partic
     const double sigma = (p1.getSigma() + p2.getSigma()) / 2;
     const double epsilon = std::sqrt(p1.getEpsilon() * p2.getEpsilon());
     const auto difference = p1.getX() - p2.getX();
-    const double distance = difference.euclidNorm();
+    const double sqr_distance = difference.sqrEuclidNorm();
 
-    // Guard against very small distances that would cause overflow
-    constexpr double min_distance = 1e-10;
-    if (distance < min_distance) {
+    // Guard against very small distances that would cause overflow (TODO still correct with squared distance?)
+    constexpr double sqr_min_distance = 1e-20;
+    if (sqr_distance < sqr_min_distance) {
         return {0.0, 0.0, 0.0};
     }
 
-    const double sigma_div_distance = sigma / distance;
-    const double sigma_div_distance_pow_6 = sigma_div_distance * sigma_div_distance * sigma_div_distance *
-                                            sigma_div_distance * sigma_div_distance * sigma_div_distance;
+    const double inv_dist_sq = 1.0 / sqr_distance;
+    const double sigma_div_distance_pow_2 = sigma * sigma * inv_dist_sq;
+    const double sigma_div_distance_pow_6 =
+        sigma_div_distance_pow_2 * sigma_div_distance_pow_2 * sigma_div_distance_pow_2;
 
-    const auto llj_force = (((-24.0 * epsilon) / (distance * distance)) *
-                            (sigma_div_distance_pow_6 - (2.0 * sigma_div_distance_pow_6 * sigma_div_distance_pow_6))) *
-                           difference;
-    return llj_force;
+    return ((-24.0 * epsilon * inv_dist_sq) *
+            (sigma_div_distance_pow_6 - (2.0 * sigma_div_distance_pow_6 * sigma_div_distance_pow_6))) *
+           difference;
 }
