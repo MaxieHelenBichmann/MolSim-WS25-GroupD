@@ -2,8 +2,6 @@
 
 #include <spdlog/spdlog.h>
 
-#include <stdexcept>
-
 #include "exceptions/BoundaryException.h"
 #include "particles/boundaries/Outflow.h"
 

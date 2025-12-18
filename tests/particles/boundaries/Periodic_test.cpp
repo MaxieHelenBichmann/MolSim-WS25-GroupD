@@ -2,18 +2,12 @@
 
 #include <gtest/gtest.h>
 
-#include <limits>
-#include <memory>
+#include <algorithm>
 
-#include "io/checkpointWriter/XVMWriterCP.h"
-#include "io/outputWriter/XYZWriter.h"
 #include "particles/Particle.h"
 #include "particles/boundaries/Boundary.h"
 #include "physics/LennardJonesForce.h"
 #include "utils/Vector.h"
-#include "utils/Settings.h"
-#include "utils/Simulation.h"
-#include "particles/boundaries/Reflecting.h"
 
 namespace mol_sim {
 /**
@@ -33,8 +27,7 @@ class PeriodicTest : public testing::Test {
     R3 dimension;
     Periodic boundary;
 
-    PeriodicTest() 
-    : dimension{10.0, 10.0, 10.0}, boundary{BoundaryLocation::LEFT, dimension, 1.0, false} {};
+    PeriodicTest() : dimension{10.0, 10.0, 10.0}, boundary{BoundaryLocation::LEFT, dimension, 1.0, false} {};
 };
 
 TEST_F(PeriodicTest, ParticleExactlyOnBoundaryCopyTestLimitedCutoff) {
@@ -44,7 +37,7 @@ TEST_F(PeriodicTest, ParticleExactlyOnBoundaryCopyTestLimitedCutoff) {
     Particle p = Particle(x, v, 1.0, 1.0, 1.0, 0);
     const ForceSource& force_source = LennardJonesForce();
     auto new_particles = boundary.applyBoundary(p, force_source);
-   
+
     Particle p1(p);
     p1.getX() = {10.0, 5.0, 5.0};
     p1.getType() = 1;
@@ -60,7 +53,7 @@ TEST_F(PeriodicTest, ParticleExactlyOnBorderInnerBoundaryCopyTestLimitedCutoff) 
     Particle p = Particle(x, v, 1.0, 1.0, 1.0, 0);
     const ForceSource& force_source = LennardJonesForce();
     auto new_particles = boundary.applyBoundary(p, force_source);
-   
+
     Particle p1(p);
     p1.getX() = {11.0, 5.0, 5.0};
     p1.getType() = 1;
@@ -76,7 +69,7 @@ TEST_F(PeriodicTest, ParticleInInnerCellNoCopyTestLimitedCutoff) {
     Particle p = Particle(x, v, 1.0, 1.0, 1.0, 0);
     const ForceSource& force_source = LennardJonesForce();
     auto new_particles = boundary.applyBoundary(p, force_source);
-   
+
     EXPECT_TRUE(new_particles == std::nullopt);
 }
 
@@ -87,7 +80,7 @@ TEST_F(PeriodicTest, ParticleOnLeftBoundaryCopyTestLimitedCutoff) {
     Particle p = Particle(x, v, 1.0, 1.0, 1.0, 0);
     const ForceSource& force_source = LennardJonesForce();
     auto new_particles = boundary.applyBoundary(p, force_source);
-   
+
     Particle p1(p);
     p1.getX() = {10.5, 5.0, 5.0};
     p1.getType() = 1;
@@ -103,7 +96,7 @@ TEST_F(PeriodicTest, ParticleOnEdgeCopyTestLimitedCutoff) {
     Particle p = Particle(x, v, 1.0, 1.0, 1.0, 0);
     const ForceSource& force_source = LennardJonesForce();
     auto new_particles = boundary.applyBoundary(p, force_source);
-   
+
     Particle p1(p);
     Particle p2(p);
     Particle p3(p);
@@ -115,9 +108,9 @@ TEST_F(PeriodicTest, ParticleOnEdgeCopyTestLimitedCutoff) {
     p3.getType() = 1;
     auto np = new_particles.value_or(std::vector<Particle>());
     EXPECT_TRUE(np.size() == 3);
-    EXPECT_TRUE(std::find(np.begin(), np.end(), p1) != np.end());
-    EXPECT_TRUE(std::find(np.begin(), np.end(), p2) != np.end());
-    EXPECT_TRUE(std::find(np.begin(), np.end(), p3) != np.end());
+    EXPECT_TRUE(std::ranges::find(np.begin(), np.end(), p1) != np.end());
+    EXPECT_TRUE(std::ranges::find(np.begin(), np.end(), p2) != np.end());
+    EXPECT_TRUE(std::ranges::find(np.begin(), np.end(), p3) != np.end());
 }
 
 TEST_F(PeriodicTest, ParticleOnCornerCopyTestLimitedCutoff) {
@@ -127,7 +120,7 @@ TEST_F(PeriodicTest, ParticleOnCornerCopyTestLimitedCutoff) {
     Particle p = Particle(x, v, 1.0, 1.0, 1.0, 0);
     const ForceSource& force_source = LennardJonesForce();
     auto new_particles = boundary.applyBoundary(p, force_source);
-   
+
     Particle p1(p);
     Particle p2(p);
     Particle p3(p);
@@ -151,13 +144,13 @@ TEST_F(PeriodicTest, ParticleOnCornerCopyTestLimitedCutoff) {
     p7.getType() = 1;
     auto np = new_particles.value_or(std::vector<Particle>());
     EXPECT_TRUE(np.size() == 7);
-    EXPECT_TRUE(std::find(np.begin(), np.end(), p1) != np.end());
-    EXPECT_TRUE(std::find(np.begin(), np.end(), p2) != np.end());
-    EXPECT_TRUE(std::find(np.begin(), np.end(), p3) != np.end());
-    EXPECT_TRUE(std::find(np.begin(), np.end(), p4) != np.end());
-    EXPECT_TRUE(std::find(np.begin(), np.end(), p5) != np.end());
-    EXPECT_TRUE(std::find(np.begin(), np.end(), p6) != np.end());
-    EXPECT_TRUE(std::find(np.begin(), np.end(), p7) != np.end());
+    EXPECT_TRUE(std::ranges::find(np.begin(), np.end(), p1) != np.end());
+    EXPECT_TRUE(std::ranges::find(np.begin(), np.end(), p2) != np.end());
+    EXPECT_TRUE(std::ranges::find(np.begin(), np.end(), p3) != np.end());
+    EXPECT_TRUE(std::ranges::find(np.begin(), np.end(), p4) != np.end());
+    EXPECT_TRUE(std::ranges::find(np.begin(), np.end(), p5) != np.end());
+    EXPECT_TRUE(std::ranges::find(np.begin(), np.end(), p6) != np.end());
+    EXPECT_TRUE(std::ranges::find(np.begin(), np.end(), p7) != np.end());
 }
 
 TEST_F(PeriodicTest, ParticleMoveTestLimitedCutoff) {
