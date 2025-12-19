@@ -246,7 +246,17 @@ class Vector {
      * @return Scalar number of type T
      */
     static T scalarProduct(const Vector& a, const Vector<T, N>& b) {
-        return std::inner_product(a.data_.begin(), a.data_.end(), b.data_.begin(), T(0));
+        if constexpr (N == 3) {
+            return (a.data_[0] * b.data_[0]) + (a.data_[1] * b.data_[1]) + (a.data_[2] * b.data_[2]);
+        } else if constexpr (N == 2) {
+            return (a.data_[0] * b.data_[0]) + (a.data_[1] * b.data_[1]);
+        } else {
+            T sum = T(0);
+            for (size_t i = 0; i < N; ++i) {
+                sum += a.data_[i] * b.data_[i];
+            }
+            return sum;
+        }
     }
 
     /**
@@ -254,9 +264,7 @@ class Vector {
      *
      * @return Scalar number of type T
      */
-    [[nodiscard]] T euclidNorm() const {
-        return std::sqrt(std::accumulate(data_.begin(), data_.end(), T(0), [](auto a, auto b) { return a + (b * b); }));
-    }
+    [[nodiscard]] T euclidNorm() const { return std::sqrt(sqrEuclidNorm()); }
 
     /**
      * @brief Squared Euclidean Norm of the Vector
@@ -264,7 +272,17 @@ class Vector {
      * @return Scalar number of type T
      */
     [[nodiscard]] T sqrEuclidNorm() const {
-        return std::accumulate(data_.begin(), data_.end(), T(0), [](auto a, auto b) { return a + (b * b); });
+        if constexpr (N == 3) {
+            return (data_[0] * data_[0]) + (data_[1] * data_[1]) + (data_[2] * data_[2]);
+        } else if constexpr (N == 2) {
+            return (data_[0] * data_[0]) + (data_[1] * data_[1]);
+        } else {
+            T sum = T(0);
+            for (size_t i = 0; i < N; ++i) {
+                sum += data_[i] * data_[i];
+            }
+            return sum;
+        }
     }
 
     // conversions to arrays
