@@ -343,6 +343,7 @@ class LinkedCellContainer {
     class proximity_iterator {
         std::set<size_t>::iterator cur;
         std::vector<C*> cells;
+        size_t curr_cell_idx = 0;
         std::span<P> container_data;
         double radius;
         R3 center;
@@ -350,20 +351,21 @@ class LinkedCellContainer {
 
         void inc() {
             SPDLOG_DEBUG("Incrementing proximity iterator");
-            if (cur != cells.front()->particles().end()) {
+            if (cur != cells[curr_cell_idx]->particles().end()) {
                 ++cur;
             }
-            while (cur == cells.front()->particles().end() && cells.size() > 1) {  // reached end of current cell
-                cells.erase(cells.begin());
-                cur = cells.front()->particles().begin();
+            while (cur == cells[curr_cell_idx]->particles().end() &&
+                   curr_cell_idx < cells.size() - 1) {  // reached end of current cell
+                curr_cell_idx++;
+                cur = cells[curr_cell_idx]->particles().begin();
             }
         }
 
         void satisfy() {
             while (cur != cells.back()->particles().end() &&
-                   (cur == cells.front()->particles().end() ||
+                   (cur == cells[curr_cell_idx]->particles().end() ||
                     !((center - container_data[*cur].getX()).euclidNorm() <= radius) ||
-                    (cells.size() == 1 && *cur <= center_idx && center_idx != container_data.size()))) {
+                    (curr_cell_idx == cells.size() - 1 && *cur <= center_idx && center_idx != container_data.size()))) {
                 inc();
             }
         }
