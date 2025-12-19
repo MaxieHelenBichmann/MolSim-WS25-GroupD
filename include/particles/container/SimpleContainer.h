@@ -38,7 +38,7 @@ class SimpleContainer : public std::vector<Particle> {
      * @return true if the position lies within the domain + halo region
      * @return false else
      */
-    bool fitsContainer(R3 v);
+    inline bool fitsContainer(R3 v);
 
     /**
      * @brief Adding an already existing Particle to the container by copying it.

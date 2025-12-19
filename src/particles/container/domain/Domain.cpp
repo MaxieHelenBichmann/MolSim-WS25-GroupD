@@ -50,8 +50,6 @@ Domain::Domain(Domain&& other) noexcept : dimension(other.dimension), boundaries
 Domain::Domain(R3 dimension, std::array<std::unique_ptr<Boundary>, 6> boundaries)
     : dimension(dimension), boundaries(std::move(boundaries)) {}
 
-R3 Domain::getDimension() const noexcept { return dimension; }
-
 Boundary& Domain::getBoundary(BoundaryLocation location) {
     auto& boundary = boundaries[locationToIndex(location)];
     if (!boundary) {
