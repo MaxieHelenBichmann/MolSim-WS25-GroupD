@@ -17,12 +17,9 @@ void Cell::updateParticleIndex(size_t old_idx, size_t new_idx) {
     }
 }
 void Cell::clear() noexcept { indices.clear(); }
-std::set<size_t>& Cell::particles() noexcept { return indices; }
-const std::set<size_t>& Cell::particles() const noexcept { return indices; }
 bool Cell::fits(R3 x) const noexcept {
     return bounds[0] <= x[0] && x[0] <= bounds[1] && bounds[2] <= x[1] && x[1] <= bounds[3] && bounds[4] <= x[2] &&
            x[2] <= bounds[5];
 }
 
 size_t Cell::size() const noexcept { return indices.size(); }
-CellType Cell::getType() const noexcept { return type; }

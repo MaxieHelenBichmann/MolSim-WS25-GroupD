@@ -69,14 +69,14 @@ class Cell {
      *
      * @return Reference to the set of Particle indices.
      */
-    std::set<size_t>& particles() noexcept;
+    std::set<size_t>& particles() noexcept { return indices; };
 
     /**
      * @brief Access the const set of Particle indices in the cell.
      *
      * @return Reference to the set of Particle indices.
      */
-    [[nodiscard]] const std::set<size_t>& particles() const noexcept;
+    [[nodiscard]] const std::set<size_t>& particles() const noexcept { return indices; };
 
     /**
      * @brief Check whether a Particle fits into the cell boundaries.
@@ -97,7 +97,7 @@ class Cell {
      *
      * @return CellType the type of the cell.
      */
-    [[nodiscard]] CellType getType() const noexcept;
+    [[nodiscard]] CellType getType() const noexcept { return type; };
 };
 
 }  // namespace mol_sim

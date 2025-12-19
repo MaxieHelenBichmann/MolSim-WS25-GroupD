@@ -65,7 +65,7 @@ class Domain {
      *
      * @return R3 The dimensions of the domain.
      */
-    [[nodiscard]] R3 getDimension() const noexcept;
+    [[nodiscard]] R3 getDimension() const noexcept { return dimension; };
 
     /**
      * @brief Applies boundary conditions to a particle. Also (if needed) computes ghost particles
