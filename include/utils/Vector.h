@@ -116,11 +116,17 @@ class Vector {
      * @return New Vector representing the sum of the two Vectors
      */
     Vector<T, N> operator+(const Vector<T, N>& other) const {
-        Vector<T, N> result;
-        for (size_t i = 0; i < N; i++) {
-            result[i] = data_[i] + other.data_[i];
+        if constexpr (N == 3) {
+            return Vector<T, N>{data_[0] + other.data_[0], data_[1] + other.data_[1], data_[2] + other.data_[2]};
+        } else if constexpr (N == 2) {
+            return Vector<T, N>{data_[0] + other.data_[0], data_[1] + other.data_[1]};
+        } else {
+            Vector<T, N> result;
+            for (size_t i = 0; i < N; i++) {
+                result[i] = data_[i] + other.data_[i];
+            }
+            return result;
         }
-        return result;
     };
 
     /**
@@ -131,11 +137,17 @@ class Vector {
      * @return New Vector representing the difference of the two Vectors
      */
     Vector<T, N> operator-(const Vector<T, N>& other) const {
-        Vector<T, N> result;
-        for (size_t i = 0; i < N; i++) {
-            result[i] = data_[i] - other.data_[i];
+        if constexpr (N == 3) {
+            return Vector<T, N>{data_[0] - other.data_[0], data_[1] - other.data_[1], data_[2] - other.data_[2]};
+        } else if constexpr (N == 2) {
+            return Vector<T, N>{data_[0] - other.data_[0], data_[1] - other.data_[1]};
+        } else {
+            Vector<T, N> result;
+            for (size_t i = 0; i < N; i++) {
+                result[i] = data_[i] - other.data_[i];
+            }
+            return result;
         }
-        return result;
     };
 
     /**
@@ -146,11 +158,17 @@ class Vector {
      * @return New Vector with the component-wise product of the two Vectors
      */
     Vector<T, N> operator*(const Vector<T, N>& other) const {
-        Vector<T, N> result;
-        for (size_t i = 0; i < N; i++) {
-            result[i] = data_[i] * other.data_[i];
+        if constexpr (N == 3) {
+            return Vector<T, N>{data_[0] * other.data_[0], data_[1] * other.data_[1], data_[2] * other.data_[2]};
+        } else if constexpr (N == 2) {
+            return Vector<T, N>{data_[0] * other.data_[0], data_[1] * other.data_[1]};
+        } else {
+            Vector<T, N> result;
+            for (size_t i = 0; i < N; i++) {
+                result[i] = data_[i] * other.data_[i];
+            }
+            return result;
         }
-        return result;
     };
 
     /**
@@ -161,11 +179,17 @@ class Vector {
      * @return New Vector representing the quotient of the two Vectors
      */
     Vector<T, N> operator/(const Vector<T, N>& other) const {
-        Vector<T, N> result;
-        for (size_t i = 0; i < N; i++) {
-            result[i] = data_[i] / other.data_[i];
+        if constexpr (N == 3) {
+            return Vector<T, N>{data_[0] / other.data_[0], data_[1] / other.data_[1], data_[2] / other.data_[2]};
+        } else if constexpr (N == 2) {
+            return Vector<T, N>{data_[0] / other.data_[0], data_[1] / other.data_[1]};
+        } else {
+            Vector<T, N> result;
+            for (size_t i = 0; i < N; i++) {
+                result[i] = data_[i] / other.data_[i];
+            }
+            return result;
         }
-        return result;
     };
 
     /**
@@ -176,10 +200,21 @@ class Vector {
      * @return This Vector representing the sum of the two Vectors
      */
     Vector<T, N>& operator+=(const Vector<T, N>& other) {
-        for (size_t i = 0; i < N; i++) {
-            data_[i] += other.data_[i];
+        if constexpr (N == 3) {
+            data_[0] += other.data_[0];
+            data_[1] += other.data_[1];
+            data_[2] += other.data_[2];
+            return *this;
+        } else if constexpr (N == 2) {
+            data_[0] += other.data_[0];
+            data_[1] += other.data_[1];
+            return *this;
+        } else {
+            for (size_t i = 0; i < N; i++) {
+                data_[i] += other.data_[i];
+            }
+            return *this;
         }
-        return *this;
     }
 
     /**
@@ -190,10 +225,22 @@ class Vector {
      * @return This Vector representing the difference of the two Vectors
      */
     Vector<T, N>& operator-=(const Vector<T, N>& other) {
-        for (size_t i = 0; i < N; i++) {
-            data_[i] -= other.data_[i];
+        if constexpr (N == 3) {
+            data_[0] -= other.data_[0];
+            data_[1] -= other.data_[1];
+            data_[2] -= other.data_[2];
+            return *this;
+        } else if constexpr (N == 2) {
+            data_[0] -= other.data_[0];
+            data_[1] -= other.data_[1];
+            return *this;
+
+        } else {
+            for (size_t i = 0; i < N; i++) {
+                data_[i] -= other.data_[i];
+            }
+            return *this;
         }
-        return *this;
     }
 
     // other arithmetic operations
@@ -206,11 +253,17 @@ class Vector {
      * @return New Vector representing the scaled Vector
      */
     Vector<T, N> operator*(const T scalar) const {
-        std::array<T, N> new_array;
-        for (size_t i = 0; i < N; i++) {
-            new_array[i] = scalar * data_[i];
+        if constexpr (N == 3) {
+            return Vector<T, N>{scalar * data_[0], scalar * data_[1], scalar * data_[2]};
+        } else if constexpr (N == 2) {
+            return Vector<T, N>{scalar * data_[0], scalar * data_[1]};
+        } else {
+            Vector<T, N> result;
+            for (size_t i = 0; i < N; i++) {
+                result[i] = scalar * data_[i];
+            }
+            return result;
         }
-        return Vector<T, N>(new_array);
     }
 
     /**
@@ -231,10 +284,22 @@ class Vector {
      * @return This Vector representing the scaled Vector
      */
     Vector<T, N>& operator*=(const T scalar) {
-        for (size_t i = 0; i < N; i++) {
-            data_[i] *= scalar;
+        if constexpr (N == 3) {
+            data_[0] *= scalar;
+            data_[1] *= scalar;
+            data_[2] *= scalar;
+            return *this;
+        } else if constexpr (N == 2) {
+            data_[0] *= scalar;
+            data_[1] *= scalar;
+            return *this;
+
+        } else {
+            for (size_t i = 0; i < N; i++) {
+                data_[i] *= scalar;
+            }
+            return *this;
         }
-        return *this;
     }
 
     /**
