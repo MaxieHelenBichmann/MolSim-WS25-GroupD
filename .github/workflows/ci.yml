@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: mini-arc-runner-set # ubuntu-latest
     container:
       image: mbichmann/molsim-vtk
     env:
@@ -48,7 +48,7 @@ jobs:
         if-no-files-found: ignore
 
   sanitizer:
-    runs-on: ubuntu-latest
+    runs-on: mini-arc-runner-set # ubuntu-latest
     container:
       image: mbichmann/molsim-vtk
     env:
@@ -70,7 +70,7 @@ jobs:
         ASAN_OPTIONS: halt_on_error=1
 
   documentation:
-    runs-on: ubuntu-latest
+    runs-on: mini-arc-runner-set # ubuntu-latest
     container:
       image: mbichmann/molsim-vtk
 
@@ -96,7 +96,7 @@ jobs:
       uses: actions/deploy-pages@v4
 
   upload-codecov:
-    runs-on: ubuntu-latest
+    runs-on: mini-arc-runner-set # ubuntu-latest
     container:
       image: mbichmann/molsim-vtk
     # disable conditional execution until workflow is merged into main, so that gh actually renders the button
