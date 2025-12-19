@@ -56,25 +56,25 @@ Particle& Particle::operator=(const Particle& other) {
 
 Particle::Particle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg)
     : x(x_arg),
-      old_x(R3{0., 0., 0.}),
-      v(v_arg),
       f(R3(0., 0., 0.)),
-      old_f(R3{0., 0., 0.}),
-      m(m_arg),
       epsilon(epsilon_arg),
       sigma(sigma_arg),
+      v(v_arg),
+      m(m_arg),
+      old_x(R3{0., 0., 0.}),
+      old_f(R3{0., 0., 0.}),
       type(type_arg) {
     SPDLOG_DEBUG("Particle generated!");
 }
 Particle::Particle(R3 x_arg, R3 v_arg, R3 f_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg)
     : x(x_arg),
-      old_x(R3{0., 0., 0.}),
-      v(v_arg),
       f(f_arg),
-      old_f(R3{0., 0., 0.}),
-      m(m_arg),
       epsilon(epsilon_arg),
       sigma(sigma_arg),
+      v(v_arg),
+      m(m_arg),
+      old_x(R3{0., 0., 0.}),
+      old_f(R3{0., 0., 0.}),
       type(type_arg) {
     SPDLOG_DEBUG("Particle generated!");
 }
@@ -82,13 +82,13 @@ Particle::Particle(R3 x_arg, R3 v_arg, R3 f_arg, double m_arg, double epsilon_ar
 Particle::Particle(R3 x_arg, R3 old_x_arg, R3 v_arg, R3 f_arg, R3 old_f_arg, double m_arg, double epsilon_arg,
                    double sigma_arg, int type_arg)
     : x(x_arg),
-      old_x(old_x_arg),
-      v(v_arg),
       f(f_arg),
-      old_f(old_f_arg),
-      m(m_arg),
       epsilon(epsilon_arg),
       sigma(sigma_arg),
+      v(v_arg),
+      m(m_arg),
+      old_x(old_x_arg),
+      old_f(old_f_arg),
       type(type_arg) {
     SPDLOG_DEBUG("Particle generated!");
 }

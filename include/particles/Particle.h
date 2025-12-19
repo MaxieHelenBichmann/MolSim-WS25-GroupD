@@ -21,34 +21,18 @@ namespace mol_sim {
  */
 class Particle {
    private:
+    // ========== HOT DATA ==========
+
     /**
      * @brief Position of the particle
      */
     R3 x;
-    /**
-     * @brief New position of the particle
-     */
-    R3 old_x;
-
-    /**
-     * @brief Velocity of the particle
-     */
-    R3 v;
 
     /**
      * @brief Force effective on this particle
      */
     R3 f;
 
-    /**
-     * @brief Force which was effective on this particle
-     */
-    R3 old_f;
-
-    /**
-     * @brief Mass of this particle
-     */
-    double m;
     /**
      * @brief Epsilon of this particle.
      *
@@ -59,6 +43,31 @@ class Particle {
      *
      */
     double sigma;
+
+    // ========== WARM DATA ==========
+
+    /**
+     * @brief Velocity of the particle
+     */
+    R3 v;
+
+    /**
+     * @brief Mass of this particle
+     */
+    double m;
+
+    // ========== COLD DATA ==========
+
+    /**
+     * @brief New position of the particle
+     */
+    R3 old_x;
+
+    /**
+     * @brief Force which was effective on this particle
+     */
+    R3 old_f;
+
     /**
      * @brief Type of the particle.
      * A particle with a negative type should be created and destroyed within the same
@@ -68,6 +77,7 @@ class Particle {
      *  1 if particle is a mirrored particle (in periodic boundaries)
      */
     int type;
+
     /**
      * @brief A bitmap indicating the locations the particle has been mirrored to.
      * This is relevant for Periodic boundaries.
