@@ -134,6 +134,27 @@ class Boundary {
         int sign = getSign();
         return (sign < 0) ? 0.0 : domain_size[axis];
     }
+
+    /**
+    * @brief Returns the index of a BoundaryLocation.
+    * 
+    * @return Index of the boundary location.
+    * LEFT = 0, RIGHT = 1, FRONT = 2, BACK = 3, UPPER = 4, LOWER = 5
+    * 
+    * @note This is needed in Periodic. Do not change this order.
+    * We could also make BoundaryLocation into a non-class enum but that's bad practice (I think).
+    */
+    inline size_t getBoundaryLocationIdx() const noexcept {
+        switch(location) { //could also make BoundaryLocation a non class enum but that's bad practice
+            case BoundaryLocation::LEFT:  return 0;
+            case BoundaryLocation::RIGHT: return 1; 
+            case BoundaryLocation::FRONT: return 2;
+            case BoundaryLocation::BACK:  return 3; 
+            case BoundaryLocation::UPPER: return 4; 
+            case BoundaryLocation::LOWER: return 5; 
+            default: SPDLOG_ERROR("Unrecognized boundary location!");
+        }
+    }
 };
 
 /**
