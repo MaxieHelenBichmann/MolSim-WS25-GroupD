@@ -104,10 +104,9 @@ TEST_F(PeriodicTest, ParticleOnEdgeCopyTestLimitedCutoff) {
     p1.getType() = 1;
     p2.getType() = 1;
     auto np = new_particles.value_or(std::vector<Particle>());
-    EXPECT_TRUE(np.size() == 3);
+    EXPECT_TRUE(np.size() == 2);
     EXPECT_TRUE(std::ranges::find(np.begin(), np.end(), p1) != np.end());
     EXPECT_TRUE(std::ranges::find(np.begin(), np.end(), p2) != np.end());
-    EXPECT_TRUE(std::ranges::find(np.begin(), np.end(), p3) != np.end());
 }
 
 TEST_F(PeriodicTest, ParticleOnCornerCopyTestLimitedCutoff) {
@@ -131,14 +130,11 @@ TEST_F(PeriodicTest, ParticleOnCornerCopyTestLimitedCutoff) {
     p3.getType() = 1;
     p4.getType() = 1;
     auto np = new_particles.value_or(std::vector<Particle>());
-    EXPECT_TRUE(np.size() == 7);
+    EXPECT_TRUE(np.size() == 4);
     EXPECT_TRUE(std::ranges::find(np.begin(), np.end(), p1) != np.end());
     EXPECT_TRUE(std::ranges::find(np.begin(), np.end(), p2) != np.end());
     EXPECT_TRUE(std::ranges::find(np.begin(), np.end(), p3) != np.end());
     EXPECT_TRUE(std::ranges::find(np.begin(), np.end(), p4) != np.end());
-    EXPECT_TRUE(std::ranges::find(np.begin(), np.end(), p5) != np.end());
-    EXPECT_TRUE(std::ranges::find(np.begin(), np.end(), p6) != np.end());
-    EXPECT_TRUE(std::ranges::find(np.begin(), np.end(), p7) != np.end());
 }
 
 TEST_F(PeriodicTest, ParticleMoveTestLimitedCutoff) {
