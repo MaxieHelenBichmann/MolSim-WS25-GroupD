@@ -9,5 +9,6 @@ if(ENABLE_BENCHMARK)
     benchmark::benchmark_main
     )   
     target_compile_options(MolSimBench PRIVATE -Wextra -Wall)
+    add_clang_tidy_support(MolSimBench)
     message(STATUS "Benchmarking enabled and executable MolSimBench available")
 endif()
