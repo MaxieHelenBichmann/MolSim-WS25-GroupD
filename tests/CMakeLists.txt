@@ -19,6 +19,7 @@ if(ENABLE_TESTING)
 
         target_compile_definitions(tests PRIVATE -DTEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
         target_compile_options(tests PRIVATE -Wall -Wextra -Werror)
+        add_clang_tidy_support(tests)
 
         target_link_libraries(
                 tests

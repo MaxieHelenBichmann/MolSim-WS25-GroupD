@@ -1,32 +1,31 @@
-message(STATUS "clang-tidy checks enabled")
+option(ENABLE_CLANG_TIDY "Enable clang-tidy static analysis during build" OFF)
+option(ENABLE_CLANG_TIDY_FIXES "Apply clang-tidy fixes automatically" OFF)
 
-find_program(CLANG_TIDY_EXE clang-tidy)
-if(CLANG_TIDY_EXE)
-    #For other options like automatic fixes add --fix at the end
-    set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_EXE} -p ${CMAKE_BINARY_DIR})
-    message(STATUS "clang-tidy found and enabled: ${CLANG_TIDY_EXE}")
+if(ENABLE_CLANG_TIDY)
+    find_program(CLANG_TIDY_EXE clang-tidy)
 
-    file(GLOB_RECURSE ALL_CXX_SOURCES CONFIGURE_DEPENDS
-        "${CMAKE_SOURCE_DIR}/src/*.cpp"
-        "${CMAKE_SOURCE_DIR}/include/*.h"
-        "${CMAKE_SOURCE_DIR}/tests/*.cpp"
-        "${CMAKE_SOURCE_DIR}/benchmarks/*.cpp"
-        "${CMAKE_SOURCE_DIR}/benchmarks/*.h)"
+    if(CLANG_TIDY_EXE)
+        set(CLANG_TIDY_COMMAND
+            "${CLANG_TIDY_EXE}"
+            "--config-file=${CMAKE_SOURCE_DIR}/.clang-tidy"
+            "--header-filter=${CMAKE_SOURCE_DIR}/include/.*"
+        )
 
-    )
+        if(ENABLE_CLANG_TIDY_FIXES)
+            list(APPEND CLANG_TIDY_COMMAND "--fix" "--format-style=file")
+            message(STATUS "clang-tidy fixes enabled")
+        endif()
 
-    add_custom_target(
-        fix
-        COMMAND ${CLANG_TIDY_EXE}
-        --fix
-        --fix-errors
-        --fix-notes
-        -p=${CMAKE_BINARY_DIR}
-        --config-file=${CMAKE_SOURCE_DIR}/.clang-tidy
-        ${ALL_CXX_SOURCES}
-        COMMENT "Running clang-tidy with fixes"
-    )
-    message(STATUS "clang-tidy fix target created. Build it with 'make fix'.")
-else ()
-    message(WARNING "clang-tidy not found, no static analysis")
-endif ()
+        message(STATUS "clang-tidy enabled: ${CLANG_TIDY_EXE}")
+    else()
+        message(FATAL_ERROR "ENABLE_CLANG_TIDY is ON but clang-tidy was not found")
+    endif()
+endif()
+
+function(add_clang_tidy_support target)
+    if(ENABLE_CLANG_TIDY AND CLANG_TIDY_EXE)
+        set_target_properties(${target} PROPERTIES
+            CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}"
+        )
+    endif()
+endfunction()

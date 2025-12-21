@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
 
-option(ENABLE_CLANG_TIDY "Enable clang-tidy static analysis" OFF)
 option(COVERAGE "Enable generation of LLVM coverage artifacts" OFF)
 option(ENABLE_UBSAN "Enable undefined behavior sanitizer (debug only)" OFF)
 
@@ -53,15 +52,13 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
 include(CTest)
 include(doxygen)
-include(gtest)
+include(clang-tidy)
 include(clang-format)
+include(gtest)
 include(yaml-cpp)
 include(spdlog)
 include(benchmark)
 include(cli11)
-if(ENABLE_CLANG_TIDY)
-    include(clang-tidy)
-endif()
 
 
 option(COVERAGE "Enable generation of LLVM coverage artifacts" OFF)
