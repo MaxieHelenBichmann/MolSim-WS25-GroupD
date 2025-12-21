@@ -91,7 +91,7 @@ class YAMLReader : public FileReader {
      * @throws YAMLReaderException if parsing fails.
      * @throws ValidationException if cuboid parameters are invalid.
      */
-    std::vector<CuboidData> parseCuboids(const YAML::Node& node);
+    static std::vector<CuboidData> parseCuboids(const YAML::Node& node);
     /**
      * @brief      Helper function to parse Disc Format
      *
@@ -101,7 +101,7 @@ class YAMLReader : public FileReader {
      * @throws YAMLReaderException if parsing fails.
      * @throws ValidationException if disc parameters are invalid.
      */
-    std::vector<DiscData> parseDiscs(const YAML::Node& node);
+    static std::vector<DiscData> parseDiscs(const YAML::Node& node);
 
    private:
     /**
@@ -109,13 +109,13 @@ class YAMLReader : public FileReader {
      *
      * @param[in]  node YAML::Node of the start of the domain block
      */
-    void parseDomain(SettingsParam& settings, const YAML::Node& node);
+    static void parseDomain(SettingsParam& settings, const YAML::Node& node);
     /**
      * @brief      Helper function to create XVM particles
      *
      * @param[in]  node YAML::Node of the start of the particles block
      */
-    void readXVM(ContainerRef particles, const YAML::Node& node);
+    static void readXVM(ContainerRef particles, const YAML::Node& node);
     /**
      * @brief      Helper function to create cuboid particles
      *

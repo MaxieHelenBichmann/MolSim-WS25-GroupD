@@ -214,8 +214,8 @@ TEST_F(PeriodicTest, _2DParticleOnCorner0CopyTestLimitedCutoff) {
     p2.getType() = 1;
     auto np = new_particles.value_or(std::vector<Particle>());
     EXPECT_TRUE(np.size() == 4);
-    EXPECT_TRUE(std::find(np.begin(), np.end(), p1) != np.end());
-    EXPECT_TRUE(std::find(np.begin(), np.end(), p2) != np.end());
+    EXPECT_TRUE(std::ranges::find(np, p1) != np.end());
+    EXPECT_TRUE(std::ranges::find(np, p2) != np.end());
 }
 
 TEST_F(PeriodicTest, _2DParticleOnCorner1CopyTestLimitedCutoff) {
@@ -234,8 +234,8 @@ TEST_F(PeriodicTest, _2DParticleOnCorner1CopyTestLimitedCutoff) {
     p2.getType() = 1;
     auto np = new_particles.value_or(std::vector<Particle>());
     EXPECT_TRUE(np.size() == 4);
-    EXPECT_TRUE(std::find(np.begin(), np.end(), p1) != np.end());
-    EXPECT_TRUE(std::find(np.begin(), np.end(), p2) != np.end());
+    EXPECT_TRUE(std::ranges::find(np, p1) != np.end());
+    EXPECT_TRUE(std::ranges::find(np, p2) != np.end());
 }
 
 TEST_F(PeriodicTest, _2DParticleOnCorner2CopyTestLimitedCutoff) {
@@ -254,8 +254,8 @@ TEST_F(PeriodicTest, _2DParticleOnCorner2CopyTestLimitedCutoff) {
     p2.getType() = 1;
     auto np = new_particles.value_or(std::vector<Particle>());
     EXPECT_TRUE(np.size() == 4);
-    EXPECT_TRUE(std::find(np.begin(), np.end(), p1) != np.end());
-    EXPECT_TRUE(std::find(np.begin(), np.end(), p2) != np.end());
+    EXPECT_TRUE(std::ranges::find(np, p1) != np.end());
+    EXPECT_TRUE(std::ranges::find(np, p2) != np.end());
 }
 
 TEST_F(PeriodicTest, _2DParticleOnCorner3CopyTestLimitedCutoff) {
@@ -274,7 +274,7 @@ TEST_F(PeriodicTest, _2DParticleOnCorner3CopyTestLimitedCutoff) {
     p2.getType() = 1;
     auto np = new_particles.value_or(std::vector<Particle>());
     EXPECT_TRUE(np.size() == 4);
-    EXPECT_TRUE(std::find(np.begin(), np.end(), p1) != np.end());
-    EXPECT_TRUE(std::find(np.begin(), np.end(), p2) != np.end());
+    EXPECT_TRUE(std::ranges::find(np, p1) != np.end());
+    EXPECT_TRUE(std::ranges::find(np, p2) != np.end());
 }
 }  // namespace mol_sim

@@ -91,7 +91,7 @@ TEST_F(YAMLReaderTest, ReadSimpleXVM) {
 TEST_F(YAMLReaderTest, ReadSimpleCuboid) {
     YAMLReader reader;
     YAML::Node root = YAML::LoadFile(test_data_dir + "/simple_cuboid.yaml");
-    auto cuboids = reader.parseCuboids(root["simple_cuboid"]);
+    auto cuboids = mol_sim::YAMLReader::parseCuboids(root["simple_cuboid"]);
     ASSERT_EQ(cuboids.size(), 1);
     R3 expected_pos = {0., 0., 0.};
     R3 expected_velo = {0., 0., 0.};
@@ -114,7 +114,7 @@ TEST_F(YAMLReaderTest, ReadSimpleCuboid) {
 TEST_F(YAMLReaderTest, ReadSimpleDisc) {
     YAMLReader reader;
     YAML::Node root = YAML::LoadFile(test_data_dir + "/simple_disc.yaml");
-    auto discs = reader.parseDiscs(root["simple_disc"]);
+    auto discs = mol_sim::YAMLReader::parseDiscs(root["simple_disc"]);
     ASSERT_EQ(discs.size(), 1);
     R3 expected_pos = {0., 0., 0.};
     R3 expected_velo = {0., 0., 0.};

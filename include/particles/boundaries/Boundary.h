@@ -144,7 +144,7 @@ class Boundary {
     * @note This is needed in Periodic. Do not change this order.
     * We could also make BoundaryLocation into a non-class enum but that's bad practice (I think).
     */
-    inline size_t getBoundaryLocationIdx() const noexcept {
+    [[nodiscard]] inline size_t getBoundaryLocationIdx() const noexcept {
         switch(location) { //could also make BoundaryLocation a non class enum but that's bad practice
             case BoundaryLocation::LEFT:  return 0;
             case BoundaryLocation::RIGHT: return 1; 
