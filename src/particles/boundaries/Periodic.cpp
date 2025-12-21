@@ -143,6 +143,7 @@ void Periodic::addMirrorParticle(const R3& mirrorLocation, size_t mirrorIdx, Par
     }
 }
 
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 size_t Periodic::getIdx(Particle& p) {
     size_t axis = getAxis();
     bool axis1_small = p.getX()[(axis + 1) % 3] <= halo_dimension[(axis + 1) % 3];
