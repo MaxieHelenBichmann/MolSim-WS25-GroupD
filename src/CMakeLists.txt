@@ -9,11 +9,13 @@ list(FILTER SRCS EXCLUDE REGEX ".*\/MolSim\.cpp")
 add_library(LibMolSim STATIC ${SRCS})
 target_link_libraries(LibMolSim PUBLIC yaml-cpp::yaml-cpp spdlog::spdlog CLI11::CLI11)
 target_compile_options(LibMolSim PRIVATE -Wextra -Wall -Werror)
+add_clang_tidy_support(LibMolSim)
 include(vtk)
 
 add_executable(MolSim MolSim.cpp)
 
 target_link_libraries(MolSim PRIVATE LibMolSim)
+add_clang_tidy_support(MolSim)
 
 
 target_compile_options(MolSim
