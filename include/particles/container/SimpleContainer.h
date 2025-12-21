@@ -103,6 +103,7 @@ class SimpleContainer : public std::vector<Particle> {
      *
      * @return Iterator to the next Particle.
      */
+    // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
     std::vector<Particle>::iterator updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x);
 
     /**
