@@ -91,7 +91,7 @@ void validateParticleParams(double mass, double epsilon, double sigma, const std
 YAMLReader::YAMLReader() = default;
 
 YAMLReader::~YAMLReader() = default;
-
+// NOLINTNEXTLINE
 void YAMLReader::readSettings(SettingsParam& settings, const std::string& filename) {
     try {
         YAML::Node root = YAML::LoadFile(filename);
@@ -146,18 +146,25 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
         if (node["cutoff"]) {
             settings.cutoff = node["cutoff"].as<double>();
         }
-        if (node["initial_temp"]) {
-            settings.init_temp = node["initial_temp"].as<double>();
+        if (node["thermostat"]) {
+            settings.thermo = true;
+            YAML::Node t_node = node["thermostat"];
+            if (t_node["initial_temp"]) {
+                settings.init_temp = t_node["initial_temp"].as<double>();
+            }
+            if (t_node["target_temp"]) {
+                settings.target_temp = t_node["target_temp"].as<double>();
+            } else {
+                settings.target_temp = settings.init_temp;
+            }
+            if (t_node["n_thermostat"]) {
+                settings.thermostat_freq = t_node["n_thermostat"].as<size_t>();
+            }
+            if (t_node["delta_temp"]) {
+                settings.delta_temp = t_node["delta_temp"].as<double>();
+            }
         }
-        if (node["target_temp"]) {
-            settings.target_temp = node["target_temp"].as<double>();
-        }
-        if (node["n_thermostat"]) {
-            settings.thermostat_freq = node["n_thermostat"].as<size_t>();
-        }
-        if (node["delta_temp"]) {
-            settings.delta_temp = node["delta_temp"].as<double>();
-        }
+
         if (node["domain"]) {
             parseDomain(settings, node["domain"]);
         }
@@ -396,9 +403,9 @@ void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
         if (g_grav_node) {
             settings.g_grav = g_grav_node.as<double>();
         }
-        const YAML::Node& is2D_node = node["is2D"]; //NOLINT
+        const YAML::Node& is2D_node = node["is2D"];  // NOLINT
         if (is2D_node) {
-            settings.is2D = is2D_node.as<bool>(); //NOLINT
+            settings.is2D = is2D_node.as<bool>();  // NOLINT
         }
 
         // Define boundary locations and their YAML keys

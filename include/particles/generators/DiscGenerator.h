@@ -64,7 +64,7 @@ class DiscGenerator : public Generator {
      *
      * @param      particles  Container to place Particles in.
      */
-    void generateParticles(ContainerRef particles) override;
+    void generateParticles(ContainerRef particles, bool use_init_temp = false) override;
     /**
      * @brief Construct a new Cuboid Generator object, setting all necessary parameters for generation.
      *

@@ -4,7 +4,7 @@
 
 namespace mol_sim {
 
-void DiscGenerator::generateParticles(ContainerRef particles) {
+void DiscGenerator::generateParticles(ContainerRef particles, bool use_init_temp) {
     if (radius == 0) {
         return;
     }
@@ -18,7 +18,9 @@ void DiscGenerator::generateParticles(ContainerRef particles) {
                 R3 curr_pos = {position[0] + (static_cast<double>(i) * distance),
                                position[1] + (static_cast<double>(j) * distance), position[2]};
                 // TODO: Look at this more carefully, what do they mean with optional brownian.
-                avg_velo = sqrt(init_temp / mass);
+                if (use_init_temp) {
+                    avg_velo = sqrt(init_temp / mass);
+                }
                 R3 velo = maxwellBoltzmannDistributedVelocity(avg_velo, 2);
                 particles.addParticle(curr_pos, velocity + velo, mass, epsilon, sigma);
             }

@@ -7,8 +7,10 @@ settings:
   frequency: 10
   cutoff: 2.5
   container: LINKED
-  initial_temp: 40
-  n_thermostat: 1000
+
+  thermostat: 
+    initial_temp: 40
+    n_thermostat: 1000
 
   domain:
     x: 63

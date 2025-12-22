@@ -121,6 +121,7 @@ class Simulation {
      * Make sure it's NEGATIVE if you want the particle to be pulled DOWN the y-axis.
      */
     double g_grav;
+    bool thermo;
 
    public:
     /**
@@ -149,7 +150,8 @@ class Simulation {
           target_temp(settings.target_temp),
           delta_temp(settings.delta_temp),
           thermostat_freq(settings.thermostat_freq),
-          g_grav(settings.g_grav) {
+          g_grav(settings.g_grav),
+          thermo(settings.thermo) {
         for (const Particle& p : particles) {
             total_energy += p.getM() * R3::scalarProduct(p.getV(), p.getV());
         }
@@ -299,7 +301,7 @@ class Simulation {
             // 5. Calculate thermostat factor
             double thermo_factor = 1.0;
             // TODO: Iteration > 0 is a fix for the tests, discussion needed.
-            if (iteration > 0 && iteration % thermostat_freq == 0) {
+            if (thermo && iteration > 0 && iteration % thermostat_freq == 0) {
                 thermo_factor = calculateThermostatFactor();
             }
             // 6. Calculate new velocities

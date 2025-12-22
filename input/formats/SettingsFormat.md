@@ -28,11 +28,15 @@ The settings block has the following keys, with every key except format being op
 - `checkpoint`: A whole number specifying the frequency of the checkpoint files of the simulation.
 - `cutoff`: A floating-point number specifying the cutoff radius of the Linked Cells of the simulation.
 - `container`: Container type, either `"SIMPLE"` or `"LINKED"` (default: `"LINKED"`).
+- `domain`: A map defining the domain of the simulation (see Domain Configuration below).
+- `thermostat`: A map defining the thermostat of the simulation
+
+## Thermostat Configuration
+The thermostat is only activated when the `thermostat` key is provided. It can contain the following subkeys:  
 - `initial_temp`: A floating-point number specifying the initial target temperature of the simulation.
 - `target_temp`: A floating-point number specifying the normal target temperature of the simulation.
 - `n_thermostat`: A whole point number specifying the frequency with which the thermostat gets applied.
 - `delta_temp`: A floating-point number specifying the maximum allowed change of temperature with one application of the thermostat.
-- `domain`: A map defining the domain of the simulation (see Domain Configuration below).
 
 ## Domain Configuration
 
