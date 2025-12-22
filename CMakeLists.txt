@@ -35,6 +35,12 @@ add_compile_options(
     $<$<CONFIG:MinSizeRel>:-flto>
 )
 
+# Add corresponding linker flags for LTO
+add_link_options(
+    $<$<CONFIG:Release>:-flto>
+    $<$<CONFIG:MinSizeRel>:-flto>
+)
+
 if(ENABLE_UBSAN)
     add_compile_options($<$<CONFIG:Debug>:-fsanitize=undefined>)
     add_link_options($<$<CONFIG:Debug>:-fsanitize=undefined>)
