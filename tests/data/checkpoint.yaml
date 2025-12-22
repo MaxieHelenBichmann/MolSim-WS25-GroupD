@@ -9,9 +9,10 @@ settings:
     frequency: 10
     checkpoint: 100
     cutoff: 1.
-    target_temp: 10.
-    n_thermostat: 5
-    delta_temp: 0.2
+    thermostat:
+      target_temp: 10.
+      n_thermostat: 5
+      delta_temp: 0.2
     domain:
       x: 10.
       y: 10.

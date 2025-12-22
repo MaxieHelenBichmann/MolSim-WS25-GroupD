@@ -103,9 +103,13 @@ TEST_F(YAMLWriterCPTest, testWritesSimpleSettingsAndParticleData) {  // NOLINT
     EXPECT_EQ(frequency_output, settings_node["frequency"].as<size_t>());
     EXPECT_EQ(frequency_checkpoint, settings_node["checkpoint"].as<size_t>());
     EXPECT_DOUBLE_EQ(cutoff_radius, settings_node["cutoff"].as<double>());
-    EXPECT_DOUBLE_EQ(target_temp, settings_node["target_temp"].as<double>());
-    EXPECT_DOUBLE_EQ(delta_temp, settings_node["delta_temp"].as<double>());
-    EXPECT_EQ(thermostat_freq, settings_node["n_thermostat"].as<size_t>());
+    
+    // Check thermostat settings (now nested)
+    ASSERT_TRUE(settings_node["thermostat"]);
+    const YAML::Node thermostat_node = settings_node["thermostat"];
+    EXPECT_DOUBLE_EQ(target_temp, thermostat_node["target_temp"].as<double>());
+    EXPECT_DOUBLE_EQ(delta_temp, thermostat_node["delta_temp"].as<double>());
+    EXPECT_EQ(thermostat_freq, thermostat_node["n_thermostat"].as<size_t>());
 
     const YAML::Node domain_node = settings_node["domain"];
     ASSERT_TRUE(domain_node);
