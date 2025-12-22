@@ -76,7 +76,7 @@ class SettingsParam {
     /**
      * @brief Default value for is2D.
      */
-    static constexpr bool IS2D_DEFAULT = false; //NOLINT
+    static constexpr bool IS2D_DEFAULT = false;  // NOLINT
     /**
      * @brief delta_t of the simulation.
      */
@@ -135,6 +135,13 @@ class SettingsParam {
      * @brief The domain of the simulation.
      */
     Domain domain;
+
+    /**
+     * @brief Toggles if thermostat is enabled for this simulation.
+     *
+     */
+    bool thermo = false;
+
     /**
      * @brief Target initial temperature of the system.
      */
@@ -158,7 +165,7 @@ class SettingsParam {
     /**
      * @brief Used to indicate whether the domain is 2D or 3D.
      */
-    bool is2D = IS2D_DEFAULT; //NOLINT
+    bool is2D = IS2D_DEFAULT;  // NOLINT
 
     /**
      * @brief Construct new SettingsParam with default values.

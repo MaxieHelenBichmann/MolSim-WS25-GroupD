@@ -14,7 +14,7 @@ class Generator {
      *
      * @param particles Container to place the generated particles in.
      */
-    virtual void generateParticles(ContainerRef particles) = 0;
+    virtual void generateParticles(ContainerRef particles, bool use_init_temp = false) = 0;
 };
 }  // namespace mol_sim
 
