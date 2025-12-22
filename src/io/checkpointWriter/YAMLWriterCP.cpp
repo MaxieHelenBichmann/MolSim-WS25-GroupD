@@ -49,9 +49,13 @@ void YAMLWriterCP::createCheckpoint(const Domain& domain, ContainerRef particles
     out << YAML::Key << "frequency" << YAML::Value << frequency_output;
     out << YAML::Key << "checkpoint" << YAML::Value << frequency_checkpoint;
     out << YAML::Key << "cutoff" << YAML::Value << cutoff_radius;
+    
+    // Write thermostat settings in nested format
+    out << YAML::Key << "thermostat" << YAML::Value << YAML::BeginMap;
     out << YAML::Key << "target_temp" << YAML::Value << target_temp;
     out << YAML::Key << "n_thermostat" << YAML::Value << thermostat_freq;
     out << YAML::Key << "delta_temp" << YAML::Value << delta_temp;
+    out << YAML::EndMap;  // close thermostat
 
     out << YAML::Key << "domain" << YAML::Value << YAML::BeginMap;  // open domain
     out << YAML::Key << "x" << YAML::Value << domain.getDimension()[0];
