@@ -7,7 +7,6 @@ settings:
   frequency: 10
   cutoff: 2.5
   container: LINKED
-  checkpoint: 
 
   thermostat: 
     initial_temp: 0.5
@@ -28,7 +27,7 @@ settings:
       back:
         type: Reflecting
 
-liquid_1:
+liquid:
   format: Cuboid
   coordinates:
       x: 1.5
