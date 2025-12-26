@@ -8,8 +8,8 @@ namespace mol_sim {
 // last 6 entries: direct shifts
 constexpr const std::array<uint8_t, 62> Periodic::mirrorIdx_lookup;
 
-Periodic::Periodic(BoundaryLocation location, R3 domain_size, double cutoff, bool is2D) noexcept
-    : Boundary(location, BoundaryType::PERIODIC, domain_size), is2D(is2D) {
+Periodic::Periodic(BoundaryLocation location, R3 domain_size, double cutoff, size_t dimensions) noexcept
+    : Boundary(location, BoundaryType::PERIODIC, domain_size), dimensions(dimensions) {
     /**
      * TODO: Optimization possible
      *
@@ -91,7 +91,7 @@ void Periodic::teleportParticleIfOOB(Particle& p) {
     R3 position_shift = {.0, .0, .0};
     size_t axis = getAxis();
     int sign = getSign();
-    for (size_t i = 0; is2D ? i < 2 : i < 3; i++, axis = (axis + 1) % 3) {
+    for (size_t i = 0; i < dimensions; i++, axis = (axis + 1) % 3) {
         if ((i == 0 ? sign < 0 : true) && p.getX()[axis] < 0) {
             position_shift[axis] = domain_size[axis];
         } else if ((i == 0 ? sign > 0 : true) && p.getX()[axis] > domain_size[axis]) {
@@ -115,14 +115,14 @@ std::vector<Particle> Periodic::mirrorParticle(Particle& p) {
     R3 shift = {.0, .0, .0};
     size_t axis = getAxis();
     shift[axis] = -getSign() * domain_size[axis];
-    addMirrorParticle(p.getX() + shift, mirrorIdx_lookup[(is2D ? 58 : 48) + locationIdx], p, mirrored_particles);
+    addMirrorParticle(p.getX() + shift, mirrorIdx_lookup[(dimensions == 2 ? 58 : 48) + locationIdx], p, mirrored_particles);
 
     // 2 handle edges and corners
     size_t idx = getIdx(p);
     if (0 <= idx && idx <= 3) {  // if p in some 3D edge = 2D corner
-        uint8_t mirrorIdx = mirrorIdx_lookup[idx + (is2D ? 54 : 8 * locationIdx)];
+        uint8_t mirrorIdx = mirrorIdx_lookup[idx + (dimensions == 2 ? 54 : 8 * locationIdx)];
         addMirrorParticle(p.getX() + shift_lookup[mirrorIdx], mirrorIdx, p, mirrored_particles);
-    } else if (!is2D && 4 <= idx && idx <= 7) {  // if p in some 3D corner
+    } else if (dimensions == 3 && 4 <= idx && idx <= 7) {  // if p in some 3D corner
         uint8_t mirrorIdx1 = mirrorIdx_lookup[8 * locationIdx + (idx % 4)];
         uint8_t mirrorIdx2 = mirrorIdx_lookup[8 * locationIdx + ((idx + 1) % 4)];
         uint8_t mirrorIdx = mirrorIdx_lookup[idx + 8 * locationIdx];
@@ -148,7 +148,7 @@ size_t Periodic::getIdx(Particle& p) {
     size_t axis = getAxis();
     bool axis1_small = p.getX()[(axis + 1) % 3] <= halo_dimension[(axis + 1) % 3];
     bool axis1_big = p.getX()[(axis + 1) % 3] >= domain_size[(axis + 1) % 3] - halo_dimension[(axis + 1) % 3];
-    if (!is2D) {  // handle 3D corner and edge indicies
+    if (dimensions == 3) {  // handle 3D corner and edge indicies
         bool axis2_small = p.getX()[(axis + 2) % 3] <= halo_dimension[(axis + 2) % 3];
         bool axis2_big = p.getX()[(axis + 2) % 3] >= domain_size[(axis + 2) % 3] - halo_dimension[(axis + 2) % 3];
         if (axis1_small && axis2_small) return 4;
@@ -159,7 +159,7 @@ size_t Periodic::getIdx(Particle& p) {
         if (axis1_big) return 1;
         if (axis2_small) return 2;
         if (axis2_big) return 3;
-    } else {  // handle 2D corner indicies
+    } else if (dimensions == 2) {  // handle 2D corner indicies
         int sign = getSign();
         if (axis1_small && sign < 0) return 0;
         if (axis1_small && sign > 0) return 1;
@@ -171,7 +171,7 @@ size_t Periodic::getIdx(Particle& p) {
 
 bool Periodic::isOnBoundary(R3 x, size_t axis, int sign) const noexcept {
     bool result = true;
-    for (size_t i = 0; is2D ? i < 2 : i < 3; i++, axis = (axis + 1) % 3) {
+    for (size_t i = 0; i < dimensions; i++, axis = (axis + 1) % 3) {
         if (i == 0) {
             result &= (sign < 0)
                           ? (x[axis] >= 0 && x[axis] <= halo_dimension[axis])

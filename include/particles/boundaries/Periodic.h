@@ -39,7 +39,7 @@ class Periodic : public Boundary {
     // z inc -> x inc -> y inc
     std::array<R3, 27> shift_lookup;
 
-    bool is2D = false;  // NOLINT
+    size_t dimensions;
 
     void teleportParticleIfOOB(Particle& p);
 
@@ -55,7 +55,7 @@ class Periodic : public Boundary {
     void setShiftLookup(R3 domain_size);
 
    public:
-    Periodic(BoundaryLocation location, R3 domain_size, double cutoff, bool is2D) noexcept;
+    Periodic(BoundaryLocation location, R3 domain_size, double cutoff, size_t dimensions) noexcept;
     ~Periodic() override = default;
 
     /**
