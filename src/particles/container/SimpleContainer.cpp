@@ -13,17 +13,17 @@ bool SimpleContainer::fitsContainer(R3 v) {
            (v[2] >= -cutoff_radius && v[2] <= domain_size[2] + cutoff_radius);
 }
 
-void SimpleContainer::addParticle(Particle&& value) { 
+void SimpleContainer::addParticle(Particle&& value) {
     if (!fitsContainer(value.getX())) {
         return;
     }
-    push_back(std::move(value)); 
+    push_back(std::move(value));
 }
-void SimpleContainer::addParticle(const Particle& value) { 
+void SimpleContainer::addParticle(const Particle& value) {
     if (!fitsContainer(value.getX())) {
         return;
     }
-    push_back(value); 
+    push_back(value);
 }
 
 void SimpleContainer::addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg) {

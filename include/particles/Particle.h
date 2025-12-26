@@ -8,8 +8,8 @@
 #ifndef PARTICLE_H
 #define PARTICLE_H
 
-#include <string>
 #include <cstdint>
+#include <string>
 
 #include "utils/Vector.h"
 
@@ -60,8 +60,8 @@ class Particle {
      */
     double sigma;
     /**
-     * @brief Type of the particle. 
-     * A particle with a negative type should be created and destroyed within the same 
+     * @brief Type of the particle.
+     * A particle with a negative type should be created and destroyed within the same
      * simulation iteration. Positive particle types may also exist beyond one iteration.
      * -1 if particle is GHOST particle
      *  0 default
@@ -71,11 +71,11 @@ class Particle {
     /**
      * @brief A bitmap indicating the locations the particle has been mirrored to.
      * This is relevant for Periodic boundaries.
-     * 
+     *
      * nth bit = 1 means the particle has been mirrored to the nth mirror domain.
-     * -------------------------------------------------------------------------- 
+     * --------------------------------------------------------------------------
      * nth bit          Location
-     * -------------------------------------------------------------------------- 
+     * --------------------------------------------------------------------------
      * 0                (0,0,0)
      * ... TODO: finish writing this.
      * 26               (max,max,max)
@@ -220,14 +220,14 @@ class Particle {
 
     /**
      * @brief Get the Mirror Locations bitmap of the particle
-     * 
+     *
      * @return uint32_t& A reference to the bitmap indicating where the particle has already been mirrored
      */
     uint32_t& getMirrorLocations() noexcept;
-    
+
     /**
      * @brief Get the Mirror Locations bitmap of the particle
-     * 
+     *
      * @return uint32_t& A const reference to the bitmap indicating where the particle has already been mirrored
      */
     [[nodiscard]] const uint32_t& getMirrorLocations() const noexcept;

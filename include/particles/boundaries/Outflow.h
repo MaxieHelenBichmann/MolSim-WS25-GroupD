@@ -20,7 +20,9 @@ class Outflow : public Boundary {
      * @return std::nullopt always, since no new particles are generated here.
      */
     std::optional<std::vector<Particle>> applyBoundary([[maybe_unused]] Particle& p,
-                       [[maybe_unused]] const ForceSource& force) noexcept override { return std::nullopt; }
+                                                       [[maybe_unused]] const ForceSource& force) noexcept override {
+        return std::nullopt;
+    }
 };
 
 }  // namespace mol_sim
