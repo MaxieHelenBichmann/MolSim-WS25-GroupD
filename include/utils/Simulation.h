@@ -122,6 +122,7 @@ class Simulation {
      */
     double g_grav;
     bool thermo;
+    std::vector<Particle> new_particles;
 
    public:
     /**
@@ -192,7 +193,6 @@ class Simulation {
      * @brief Applies the necessary boundary conditions to the particles.
      */
     void applyBoundaries() {
-        std::vector<Particle> new_particles;
         for (auto it = particles.begin(); it != particles.end();) {
             (*it).getOldF() = (*it).getF();
             (*it).getF() = Vector<double, 3>();
@@ -206,9 +206,6 @@ class Simulation {
             (*it).getX() = (*it).getOldX();
             it = particles.updateParticlePosition(
                 it, new_position);  // for now SimpleContainer + Periodic (and also Reflecting) needs this here
-        }
-        for (const auto& p : new_particles) {
-            particles.addParticle(p);
         }
     }
 
@@ -231,6 +228,37 @@ class Simulation {
                 p2.getF() = p2.getF() - force;
             }
         }
+        // Calculate forces from mirrored/ghost particles
+        for (const Particle& p1 : new_particles) {
+            R3 lookup_pos = p1.getX();
+
+            // For mirrored particles from periodic boundaries (type==1), their position is slightly
+            // outside the domain. We need to clamp it to just inside the boundary region to find
+            // the correct neighbors while preserving the actual position for force calculation.
+            if (p1.getType() == 1) {  // Mirrored particle from periodic boundary
+                R3 domain_size = domain.getDimension();
+                constexpr double epsilon = 1e-6;  // Small offset to stay inside domain
+                for (size_t dim = 0; dim < 3; ++dim) {
+                    // Mirror slightly left of domain (x < 0) → clamp to just inside left boundary
+                    if (lookup_pos[dim] < 0) {
+                        lookup_pos[dim] = epsilon;
+                    }
+                    // Mirror slightly right of domain (x > domain) → clamp to just inside right boundary
+                    else if (lookup_pos[dim] > domain_size[dim]) {
+                        lookup_pos[dim] = domain_size[dim] - epsilon;
+                    }
+                }
+            }
+
+            auto it_prox = particles.proximityBegin(lookup_pos, 0);
+            auto it_prox_end = particles.proximityEnd(lookup_pos);
+            for (; it_prox != it_prox_end; ++it_prox) {
+                Particle& p2 = *it_prox;
+                Vector<double, 3> force = force_source.applyForce(p2, p1);
+                p2.getF() = p2.getF() + force;
+            }
+        }
+        new_particles.clear();
     }
 
     /**
