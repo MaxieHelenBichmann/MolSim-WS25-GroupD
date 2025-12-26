@@ -6,7 +6,6 @@ namespace mol_sim {
 
 //(x,x,x,x) = EDGES (x,x,x,x) = missing CORNERS
 // last 6 entries: direct shifts
-constexpr const std::array<uint8_t, 62> Periodic::mirrorIdx_lookup;
 
 Periodic::Periodic(BoundaryLocation location, R3 domain_size, double cutoff, size_t dimensions) noexcept
     : Boundary(location, BoundaryType::PERIODIC, domain_size), dimensions(dimensions) {
@@ -109,26 +108,27 @@ void Periodic::teleportParticleIfOOB(Particle& p) {
  */
 std::vector<Particle> Periodic::mirrorParticle(Particle& p) {
     std::vector<Particle> mirrored_particles;
-    size_t locationIdx = getBoundaryLocationIdx();
+    size_t location_idx = getBoundaryLocationIdx();
 
     // 1) definitely mirror particle to other side once
     R3 shift = {.0, .0, .0};
     size_t axis = getAxis();
     shift[axis] = -getSign() * domain_size[axis];
-    addMirrorParticle(p.getX() + shift, mirrorIdx_lookup[(dimensions == 2 ? 58 : 48) + locationIdx], p, mirrored_particles);
+    addMirrorParticle(p.getX() + shift, MIRROR_IDX_LOOKUP[(dimensions == 2 ? 58 : 48) + location_idx], p,
+                      mirrored_particles);
 
     // 2 handle edges and corners
     size_t idx = getIdx(p);
     if (idx <= 3) {  // if p in some 3D edge = 2D corner
-        uint8_t mirrorIdx = mirrorIdx_lookup[idx + (dimensions == 2 ? 54 : 8 * locationIdx)];
-        addMirrorParticle(p.getX() + shift_lookup[mirrorIdx], mirrorIdx, p, mirrored_particles);
+        uint8_t mirror_idx = MIRROR_IDX_LOOKUP[idx + (dimensions == 2 ? 54 : 8 * location_idx)];
+        addMirrorParticle(p.getX() + shift_lookup[mirror_idx], mirror_idx, p, mirrored_particles);
     } else if (dimensions == 3 && 4 <= idx && idx <= 7) {  // if p in some 3D corner
-        uint8_t mirrorIdx1 = mirrorIdx_lookup[8 * locationIdx + (idx % 4)];
-        uint8_t mirrorIdx2 = mirrorIdx_lookup[8 * locationIdx + ((idx + 1) % 4)];
-        uint8_t mirrorIdx = mirrorIdx_lookup[idx + 8 * locationIdx];
-        addMirrorParticle(p.getX() + shift_lookup[mirrorIdx1], mirrorIdx1, p, mirrored_particles);
-        addMirrorParticle(p.getX() + shift_lookup[mirrorIdx2], mirrorIdx2, p, mirrored_particles);
-        addMirrorParticle(p.getX() + shift_lookup[mirrorIdx], mirrorIdx, p, mirrored_particles);
+        uint8_t mirror_idx1 = MIRROR_IDX_LOOKUP[(8 * location_idx) + (idx % 4)];
+        uint8_t mirror_idx2 = MIRROR_IDX_LOOKUP[(8 * location_idx) + ((idx + 1) % 4)];
+        uint8_t mirror_idx = MIRROR_IDX_LOOKUP[idx + (8 * location_idx)];
+        addMirrorParticle(p.getX() + shift_lookup[mirror_idx1], mirror_idx1, p, mirrored_particles);
+        addMirrorParticle(p.getX() + shift_lookup[mirror_idx2], mirror_idx2, p, mirrored_particles);
+        addMirrorParticle(p.getX() + shift_lookup[mirror_idx], mirror_idx, p, mirrored_particles);
     }
     return mirrored_particles;
 }
@@ -136,14 +136,15 @@ std::vector<Particle> Periodic::mirrorParticle(Particle& p) {
 void Periodic::addMirrorParticle(const R3& mirrorLocation, size_t mirrorIdx, Particle& p,
                                  std::vector<Particle>& mirrored_particles) {
     if ((p.getMirrorLocations() & (1 << mirrorIdx)) == 0) {
-        Particle mirrorParticle(p);
-        mirrorParticle.getX() = mirrorLocation;
-        mirrorParticle.getType() = 1;
+        Particle mirror_particle(p);
+        mirror_particle.getX() = mirrorLocation;
+        mirror_particle.getType() = 1;
         p.getMirrorLocations() |= (1 << mirrorIdx);
-        mirrored_particles.push_back(mirrorParticle);
+        mirrored_particles.push_back(mirror_particle);
     }
 }
 
+//NOLINTBEGIN
 size_t Periodic::getIdx(Particle& p) {
     size_t axis = getAxis();
     bool axis1_small = p.getX()[(axis + 1) % 3] <= halo_dimension[(axis + 1) % 3];
@@ -151,23 +152,24 @@ size_t Periodic::getIdx(Particle& p) {
     if (dimensions == 3) {  // handle 3D corner and edge indicies
         bool axis2_small = p.getX()[(axis + 2) % 3] <= halo_dimension[(axis + 2) % 3];
         bool axis2_big = p.getX()[(axis + 2) % 3] >= domain_size[(axis + 2) % 3] - halo_dimension[(axis + 2) % 3];
-        if (axis1_small && axis2_small) return 4;
-        if (axis1_small && axis2_big) return 5;
-        if (axis1_big && axis2_small) return 6;
-        if (axis1_big && axis2_big) return 7;
-        if (axis1_small) return 0;
-        if (axis1_big) return 1;
-        if (axis2_small) return 2;
-        if (axis2_big) return 3;
+        if (axis1_small && axis2_small)    return 4;
+        if (axis1_small && axis2_big)      return 5;
+        if (axis1_big && axis2_small)      return 6;
+        if (axis1_big && axis2_big)        return 7; 
+        if (axis1_small)                   return 0;
+        if (axis1_big)                     return 1; 
+        if (axis2_small)                   return 2;
+        if (axis2_big)                     return 3; 
     } else if (dimensions == 2) {  // handle 2D corner indicies
         int sign = getSign();
         if (axis1_small && sign < 0) return 0;
-        if (axis1_small && sign > 0) return 1;
-        if (axis1_big && sign > 0) return 2;
-        if (axis1_big && sign < 0) return 3;
+        if (axis1_small && sign > 0) return 1; 
+        if (axis1_big && sign > 0)   return 2;
+        if (axis1_big && sign < 0)   return 3; 
     }
     return 8;
 }
+//NOLINTEND
 
 bool Periodic::isOnBoundary(R3 x, size_t axis, int sign) const noexcept {
     bool result = true;

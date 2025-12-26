@@ -18,7 +18,7 @@ class Periodic : public Boundary {
      */
     std::array<double, 3> halo_dimension;
 
-    static constexpr const std::array<uint8_t, 62> mirrorIdx_lookup = {
+    static constexpr const std::array<uint8_t, 62> MIRROR_IDX_LOOKUP = {
         //-----------------------------3D--------------------------------
         25, 17, 7, 15, 26, 8, 6, 24,     // LEFT
         19, 11, 1, 9, 20, 2, 0, 18,      // RIGHT
