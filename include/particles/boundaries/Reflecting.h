@@ -52,7 +52,7 @@ class Reflecting : public Boundary {
      * @param p The particle which the boundary should be applied to.
      * @param force The force source to be used for the inter-force calculation between ghost and normal particle.
      * For now only supports Lennard-Jones-Force.
-     * @return std::nullopt always, since ghost particles are created, applied (in terms of force calculation) and 
+     * @return std::nullopt always, since ghost particles are created, applied (in terms of force calculation) and
      * destroyed entirely within this method.
      */
     std::optional<std::vector<Particle>> applyBoundary(Particle& p, const ForceSource& force) noexcept override;
