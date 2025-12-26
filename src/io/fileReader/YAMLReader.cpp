@@ -39,7 +39,7 @@ void validateSettings(const SettingsParam& settings) {
         SPDLOG_ERROR("delta_t must be positive, got: " + std::to_string(settings.delta_t));
         throw ValidationException("delta_t must be positive, got: " + std::to_string(settings.delta_t));
     }
-    if (settings.end_time <= settings.start_time) {
+    if (settings.end_time < settings.start_time) {
         SPDLOG_ERROR("end_time must be greater than start_time");
         throw ValidationException("end_time must be greater than start_time");
     }
@@ -445,7 +445,8 @@ void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
                         boundary = std::make_unique<VelocityReflect>(location, dimension);
                         break;
                     case BoundaryType::PERIODIC: {
-                        boundary = std::make_unique<Periodic>(location, dimension, settings.cutoff, settings.dimensions);
+                        boundary =
+                            std::make_unique<Periodic>(location, dimension, settings.cutoff, settings.dimensions);
                         break;
                     }
                     case BoundaryType::OUTFLOW:

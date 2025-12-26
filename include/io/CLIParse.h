@@ -97,11 +97,12 @@ std::vector<std::string> cliParse(int argc, char** argv) {
 #if SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_TRACE
     logInit(log_level);
 #endif
-    files.push_back(filepath);
     // Only add checkpoint file if it was provided
     if (!checkpoint_filepath.empty()) {
         files.push_back(checkpoint_filepath);
     }
+
+    files.push_back(filepath);
 
     return files;
 }
