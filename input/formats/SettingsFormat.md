@@ -45,7 +45,7 @@ The `domain` key contains the following sub-keys:
 - `y`: The y-dimension of the domain (default: 1.0).
 - `z`: The z-dimension of the domain (default: 1.0).
 - `g_grav`: The gravitational force present in the simulation domain (default: 0.0).
-- `is2D`: Boolean flag indicating whether the simulation is 2D or 3D.
+- `dimensions`: The number of dimensions the domain has. Supported values: 2, 3.
 - `boundaries`: A map defining boundary conditions for each of the 6 domain faces.
 
 ### Boundary Conditions

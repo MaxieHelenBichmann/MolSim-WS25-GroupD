@@ -31,7 +31,7 @@ class PeriodicTest : public testing::Test {
 };
 
 TEST_F(PeriodicTest, ParticleExactlyOnBoundaryCopyTestLimitedCutoff) {
-    boundary = Periodic(BoundaryLocation::LEFT, dimension, 1.0, false);
+    boundary = Periodic(BoundaryLocation::LEFT, dimension, 1.0, 3);
     R3 x = {.0, 5.0, 5.0};
     R3 v = {.0, .0, .0};
     Particle p = Particle(x, v, 1.0, 1.0, 1.0, 0);
@@ -47,7 +47,7 @@ TEST_F(PeriodicTest, ParticleExactlyOnBoundaryCopyTestLimitedCutoff) {
 }
 
 TEST_F(PeriodicTest, ParticleExactlyOnBorderInnerBoundaryCopyTestLimitedCutoff) {
-    boundary = Periodic(BoundaryLocation::LEFT, dimension, 1.0, false);
+    boundary = Periodic(BoundaryLocation::LEFT, dimension, 1.0, 3);
     R3 x = {1.0, 5.0, 5.0};
     R3 v = {.0, .0, .0};
     Particle p = Particle(x, v, 1.0, 1.0, 1.0, 0);
@@ -63,7 +63,7 @@ TEST_F(PeriodicTest, ParticleExactlyOnBorderInnerBoundaryCopyTestLimitedCutoff) 
 }
 
 TEST_F(PeriodicTest, ParticleInInnerCellNoCopyTestLimitedCutoff) {
-    boundary = Periodic(BoundaryLocation::LEFT, dimension, 1.0, false);
+    boundary = Periodic(BoundaryLocation::LEFT, dimension, 1.0, 3);
     R3 x = {5.0, 5.0, 5.0};
     R3 v = {.0, .0, .0};
     Particle p = Particle(x, v, 1.0, 1.0, 1.0, 0);
@@ -74,7 +74,7 @@ TEST_F(PeriodicTest, ParticleInInnerCellNoCopyTestLimitedCutoff) {
 }
 
 TEST_F(PeriodicTest, ParticleOnLeftBoundaryCopyTestLimitedCutoff) {
-    boundary = Periodic(BoundaryLocation::LEFT, dimension, 1.0, false);
+    boundary = Periodic(BoundaryLocation::LEFT, dimension, 1.0, 3);
     R3 x = {.5, 5.0, 5.0};
     R3 v = {.0, .0, .0};
     Particle p = Particle(x, v, 1.0, 1.0, 1.0, 0);
@@ -90,7 +90,7 @@ TEST_F(PeriodicTest, ParticleOnLeftBoundaryCopyTestLimitedCutoff) {
 }
 
 TEST_F(PeriodicTest, ParticleOnEdgeCopyTestLimitedCutoff) {
-    boundary = Periodic(BoundaryLocation::LEFT, dimension, 1.0, false);
+    boundary = Periodic(BoundaryLocation::LEFT, dimension, 1.0, 3);
     R3 x = {.0, .0, 5.0};
     R3 v = {.0, .0, .0};
     Particle p = Particle(x, v, 1.0, 1.0, 1.0, 0);
@@ -110,7 +110,7 @@ TEST_F(PeriodicTest, ParticleOnEdgeCopyTestLimitedCutoff) {
 }
 
 TEST_F(PeriodicTest, ParticleOnCornerCopyTestLimitedCutoff) {
-    boundary = Periodic(BoundaryLocation::LEFT, dimension, 1.0, false);
+    boundary = Periodic(BoundaryLocation::LEFT, dimension, 1.0, 3);
     R3 x = {.0, .0, .0};
     R3 v = {.0, .0, .0};
     Particle p = Particle(x, v, 1.0, 1.0, 1.0, 0);
@@ -138,7 +138,7 @@ TEST_F(PeriodicTest, ParticleOnCornerCopyTestLimitedCutoff) {
 }
 
 TEST_F(PeriodicTest, ParticleMoveTestLimitedCutoff) {
-    boundary = Periodic(BoundaryLocation::LEFT, dimension, 1.0, false);
+    boundary = Periodic(BoundaryLocation::LEFT, dimension, 1.0, 3);
     R3 x = {-.5, 5.0, 5.0};
     R3 v = {.0, .0, .0};
     Particle p = Particle(x, v, 1.0, 1.0, 1.0, 0);
@@ -152,7 +152,7 @@ TEST_F(PeriodicTest, ParticleMoveTestLimitedCutoff) {
 
 //--------------------------------------------2D--------------------------------------------------
 TEST_F(PeriodicTest, _2DtestTeleport) {
-    boundary = Periodic(BoundaryLocation::LEFT, dimension, 1.0, true);
+    boundary = Periodic(BoundaryLocation::LEFT, dimension, 1.0, 2);
     R3 x = {-.5, 5.0, 0.0};
     R3 v = {.0, .0, .0};
     Particle p = Particle(x, v, 1.0, 1.0, 1.0, 0);
@@ -166,7 +166,7 @@ TEST_F(PeriodicTest, _2DtestTeleport) {
 
 TEST_F(PeriodicTest, _2DtestMirrorSimple) {
     dimension = {10.0, 20.0, 1.0};
-    boundary = Periodic(BoundaryLocation::LEFT, dimension, 1.0, true);
+    boundary = Periodic(BoundaryLocation::LEFT, dimension, 1.0, 2);
     R3 x = {.5, 5.0, 0.0};
     R3 v = {.0, .0, .0};
     Particle p = Particle(x, v, 1.0, 1.0, 1.0, 0);
@@ -183,7 +183,7 @@ TEST_F(PeriodicTest, _2DtestMirrorSimple) {
 
 TEST_F(PeriodicTest, _2DtestMirrorOnBoundary) {
     dimension = {10.0, 20.0, 1.0};
-    boundary = Periodic(BoundaryLocation::LEFT, dimension, 1.0, true);
+    boundary = Periodic(BoundaryLocation::LEFT, dimension, 1.0, 2);
     R3 x = {.0, 5.0, 0.0};
     R3 v = {.0, .0, .0};
     Particle p = Particle(x, v, 1.0, 1.0, 1.0, 0);
@@ -199,7 +199,7 @@ TEST_F(PeriodicTest, _2DtestMirrorOnBoundary) {
 }
 
 TEST_F(PeriodicTest, _2DParticleOnCorner0CopyTestLimitedCutoff) {
-    boundary = Periodic(BoundaryLocation::LEFT, dimension, 1.0, false);
+    boundary = Periodic(BoundaryLocation::LEFT, dimension, 1.0, 2);
     R3 x = {.0, .0, .0};
     R3 v = {.0, .0, .0};
     Particle p = Particle(x, v, 1.0, 1.0, 1.0, 0);
@@ -213,13 +213,13 @@ TEST_F(PeriodicTest, _2DParticleOnCorner0CopyTestLimitedCutoff) {
     p1.getType() = 1;
     p2.getType() = 1;
     auto np = new_particles.value_or(std::vector<Particle>());
-    EXPECT_TRUE(np.size() == 4);
+    EXPECT_TRUE(np.size() == 2);
     EXPECT_TRUE(std::find(np.begin(), np.end(), p1) != np.end());
     EXPECT_TRUE(std::find(np.begin(), np.end(), p2) != np.end());
 }
 
 TEST_F(PeriodicTest, _2DParticleOnCorner1CopyTestLimitedCutoff) {
-    boundary = Periodic(BoundaryLocation::RIGHT, dimension, 1.0, false);
+    boundary = Periodic(BoundaryLocation::RIGHT, dimension, 1.0, 2);
     R3 x = {9.5, .5, .0};
     R3 v = {.0, .0, .0};
     Particle p = Particle(x, v, 1.0, 1.0, 1.0, 0);
@@ -233,13 +233,13 @@ TEST_F(PeriodicTest, _2DParticleOnCorner1CopyTestLimitedCutoff) {
     p1.getType() = 1;
     p2.getType() = 1;
     auto np = new_particles.value_or(std::vector<Particle>());
-    EXPECT_TRUE(np.size() == 4);
+    EXPECT_TRUE(np.size() == 2);
     EXPECT_TRUE(std::find(np.begin(), np.end(), p1) != np.end());
     EXPECT_TRUE(std::find(np.begin(), np.end(), p2) != np.end());
 }
 
 TEST_F(PeriodicTest, _2DParticleOnCorner2CopyTestLimitedCutoff) {
-    boundary = Periodic(BoundaryLocation::RIGHT, dimension, 1.0, false);
+    boundary = Periodic(BoundaryLocation::RIGHT, dimension, 1.0, 2);
     R3 x = {9.0, 9.0, .0};
     R3 v = {.0, .0, .0};
     Particle p = Particle(x, v, 1.0, 1.0, 1.0, 0);
@@ -253,13 +253,13 @@ TEST_F(PeriodicTest, _2DParticleOnCorner2CopyTestLimitedCutoff) {
     p1.getType() = 1;
     p2.getType() = 1;
     auto np = new_particles.value_or(std::vector<Particle>());
-    EXPECT_TRUE(np.size() == 4);
+    EXPECT_TRUE(np.size() == 2);
     EXPECT_TRUE(std::find(np.begin(), np.end(), p1) != np.end());
     EXPECT_TRUE(std::find(np.begin(), np.end(), p2) != np.end());
 }
 
 TEST_F(PeriodicTest, _2DParticleOnCorner3CopyTestLimitedCutoff) {
-    boundary = Periodic(BoundaryLocation::LEFT, dimension, 1.0, false);
+    boundary = Periodic(BoundaryLocation::LEFT, dimension, 1.0, 2);
     R3 x = {.0, 9.5, .0};
     R3 v = {.0, .0, .0};
     Particle p = Particle(x, v, 1.0, 1.0, 1.0, 0);
@@ -273,7 +273,7 @@ TEST_F(PeriodicTest, _2DParticleOnCorner3CopyTestLimitedCutoff) {
     p1.getType() = 1;
     p2.getType() = 1;
     auto np = new_particles.value_or(std::vector<Particle>());
-    EXPECT_TRUE(np.size() == 4);
+    EXPECT_TRUE(np.size() == 2);
     EXPECT_TRUE(std::find(np.begin(), np.end(), p1) != np.end());
     EXPECT_TRUE(std::find(np.begin(), np.end(), p2) != np.end());
 }
