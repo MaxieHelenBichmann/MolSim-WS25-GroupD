@@ -1,0 +1,40 @@
+settings:
+  format: Settings
+  delta_t: 0.0005
+  end_time: 40
+  start_time: 0.0
+  force: "Lennard Jones"
+  frequency: 10
+  cutoff: 2.5
+  container: LINKED
+
+  domain:
+    x: 303
+    y: 180
+    z: 1
+    g_grav: -12.44
+    boundaries:
+      left:
+        type: Reflecting
+      right:
+        type: Reflecting
+      front:
+        type: Reflecting
+      back:
+        type: Reflecting
+
+drop:
+  format: Disc
+  coordinates:
+      x: 150
+      y: 150
+      z: 0.0
+  velocity:
+      vx: 0.0
+      vy: 0.0
+      vz: 0.0
+  radius: 20.
+  mass: 1.0
+  distance: 1.2
+  epsilon: 1.0
+  sigma: 1.2
