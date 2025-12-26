@@ -365,6 +365,17 @@ class Simulation {
             current_time += delta_t;
         }
         SPDLOG_INFO("Simulation completed: {} iterations, {} particles remaining", iteration, particles.size());
+#ifdef ENABLE_CHECKPOINTING
+        try {
+            cp_writer.createCheckpoint(domain, particles, iteration, force, delta_t, current_time, end_time,
+                                       frequency_output, frequency_checkpoint, base_name, cutoff_radius, target_temp,
+                                       delta_temp, thermostat_freq,
+                                       static_cast<size_t>(std::ceil((end_time - start_time) / delta_t)));
+        } catch (const std::runtime_error& e) {
+            SPDLOG_ERROR("Failed to create a checkpoint at iteration {}: {}", iteration, e.what());
+            throw SimulationException("Error while creating checkpoint: " + std::string(e.what()));
+        }
+#endif
     }
 };
 
