@@ -119,7 +119,7 @@ std::vector<Particle> Periodic::mirrorParticle(Particle& p) {
 
     // 2 handle edges and corners
     size_t idx = getIdx(p);
-    if (0 <= idx && idx <= 3) {  // if p in some 3D edge = 2D corner
+    if (idx <= 3) {  // if p in some 3D edge = 2D corner
         uint8_t mirrorIdx = mirrorIdx_lookup[idx + (dimensions == 2 ? 54 : 8 * locationIdx)];
         addMirrorParticle(p.getX() + shift_lookup[mirrorIdx], mirrorIdx, p, mirrored_particles);
     } else if (dimensions == 3 && 4 <= idx && idx <= 7) {  // if p in some 3D corner
