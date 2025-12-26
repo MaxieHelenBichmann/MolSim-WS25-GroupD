@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <functional>
 #include <vector>
+#include <memory>
 
 #include "exceptions/SimulationException.h"
 #include "io/CheckpointWriter.h"
@@ -122,6 +123,12 @@ class Simulation {
      */
     double g_grav;
     bool thermo;
+    /**
+     * @brief Vector of particle indicies that should be removed the next time we call 'removeParticles'
+     */
+    std::vector<size_t> to_remove;
+
+    std::unique_ptr<LinkedCellContainer> checker;
 
    public:
     /**
@@ -156,27 +163,153 @@ class Simulation {
             total_energy += p.getM() * R3::scalarProduct(p.getV(), p.getV());
         }
         total_energy *= 0.5;
+        checker = std::make_unique<LinkedCellContainer>(domain.getDimension(), cutoff_radius);
     }
 
     double& getTotalEnergy() { return total_energy; }
 
     /**
+     * @brief Calculates the positions of every particle for the next time step.
+     */
+    void calculateX() {
+        for (auto& p : particles) {
+            if (p.getType() == 1) { // mirror particles will be handled in applyBoundaries
+                p.getOldX() = p.getX();
+                Particle parent = particles[p.getParent()];
+                R3 delta_x = parent.getX() - parent.getOldX();
+                p.getX() = p.getX() + delta_x;
+            } else {
+                p.getOldX() = p.getX();
+                p.getX() = p.getX() + (delta_t * p.getV()) + ((0.5 * delta_t * delta_t / p.getM()) * p.getF());
+            }
+        }
+    }
+
+    bool isInHalo(Particle& p) {
+        //TODO: Optimization possible. If p is exactly on boundary this function
+        //will return false, even though it should return true. Since this function (so far)
+        //is only used for updating mirror particles, this will lead to mirror particles that are exactly
+        //on a boundary being unnecessarily deleted and recreated.
+        return checker->fitsContainer(p.getX()) && !checker->fitsDomain(p.getX());
+    }
+
+    void updateMirrorParticles(Particle& p, const R3& delta_x) { 
+        auto begin = p.getMirrorParticles().begin();
+        auto end = p.getMirrorParticles().end();
+        for (auto mirror_idx = begin; mirror_idx != end;) {
+            Particle mirrorParticle = particles[*mirror_idx];
+            mirrorParticle.getX() = mirrorParticle.getX() + delta_x;
+            if (!isInHalo(mirrorParticle)) {
+                to_remove.push_back(*mirror_idx);
+                mirror_idx = p.getMirrorParticles().erase(mirror_idx);
+            } else {
+                ++mirror_idx;
+            }
+        }
+    }
+
+    /**
+     * @brief Applies the necessary boundary conditions to the particles.
+     */
+    void applyBoundaries() {
+        for (auto it = particles.begin(); it != particles.end();) {
+            if ((*it).getType() == 1) { // don't do any of this for mirror particles
+                break; //fine assuming after we read first mirror particle there are only other mirror particles that follow
+            }
+            (*it).getOldF() = (*it).getF();
+            (*it).getF() = Vector<double, 3>();
+            // TODO: Optimization to only call this for relevant particles
+            std::vector<Particle> new_particles;
+            R3 positionBeforeBoundary = (*it).getX();
+            for (auto& p : domain.applyBoundary(*it, force_source)) {
+                new_particles.push_back(p);
+                if (p.getType() == 1) {
+                    p.getParent() = (&(*it) - &particles[0]);
+                }
+            }
+            if (!checker->fitsContainer((*it).getX())) { // if new position OOB remove this particle and its mirrors
+                to_remove.push_back(&(*it) - &particles[0]); 
+                auto begin = (*it).getMirrorParticles().begin();
+                auto end = (*it).getMirrorParticles().end();
+                for (auto mirror_idx = begin; mirror_idx != end; ++mirror_idx) {
+                    to_remove.push_back(*mirror_idx);
+                }
+                continue;
+            } else {
+                //1) update positions of already existing mirror particles
+                updateMirrorParticles((*it), (*it).getX() - positionBeforeBoundary);
+                //2) add the newly generated mirror particles (they're already in the correct position)
+                for (const auto& p : new_particles) {
+                    particles.addParticle(p);
+                    particles[p.getParent()].getMirrorParticles().push_back(particles.size()-1);
+                }
+            }
+            // TODO: bit of an ugly workaround for now.
+            R3 new_position = (*it).getX();
+            (*it).getX() = (*it).getOldX();
+            it = particles.updateParticlePosition(
+                it, new_position);  // for now SimpleContainer + Periodic (and also Reflecting) needs this here
+        }
+    }
+
+    /**
      * @brief Removes all particles in the Halo from the container.
      */
-    void removeParticles(bool removeMirrorParticles) {
+    void removeParticles() {
         // Collect indices of particles to remove using halo iterator
         SPDLOG_DEBUG("Container has currently {} particles before erase", particles.size());
-        std::vector<size_t> to_remove;
         for (auto it = particles.haloBegin(); it != particles.haloEnd(); ++it) {
-            if (!removeMirrorParticles &&
-                (*it).getType() == 1) {  // don't remove mirrored particles (relevant for periodic boundaries)
+            //0) don't remove mirror particles if parent isn't also going to be removed here.
+            //lone mirror particles that should be removed because they are no longer in the halo, 
+            //are added to to_remove in calculateX
+            if ((*it).getType() == 1) {
                 continue;
             }
+            //1) remove normal particle
             size_t idx = &(*it) - &particles[0];
             to_remove.push_back(idx);
+            //2) remove its mirror particles
+            auto begin = (*it).getMirrorParticles().begin();
+            auto end = (*it).getMirrorParticles().end();
+            for (auto mirror_idx = begin; mirror_idx != end; ++mirror_idx) {
+                to_remove.push_back(*mirror_idx);
+            }
         }
 
         SPDLOG_DEBUG("Added {} (ghost) particles to remove", to_remove.size());
+
+        // Sort in ascending order so shifting mirror particle indicies works as intended
+        std::sort(to_remove.begin(), to_remove.end(), std::less<size_t>());  // NOLINT
+        
+        // Shift mirror particle indicies
+        // The following code assumes:
+        // 1) that to_remove contains the indicies of *all* particles we'd like to remove
+        //    including mirror particles, sorted in ascending order.
+        // 2) that the normal particles (of type 0) are all at the start of the particles collection, 
+        //    and the mirror particles (particles of type 1) are then all at the end of the particles collection.
+        //    Meaning once we read the first type 0 particle, no particles of another type should follow until we read a particle
+        //    of type 1 for the first time, in which case, no particles of a type other than 1 should follow.
+        size_t shift = 0;
+        size_t to_remove_idx = 0;
+        for (auto it = particles.begin(); it != particles.end(); ++it) {
+            size_t idx = &(*it) - &particles[0];
+            if (to_remove_idx < to_remove.size() && idx == to_remove[to_remove_idx]) {
+                shift++;
+                to_remove_idx++;
+                continue;
+            }
+            if (shift > 0) {
+                if ((*it).getType() == 0) { //tell mirror particles how parent shifted
+                    auto begin = (*it).getMirrorParticles().begin();
+                    auto end = (*it).getMirrorParticles().end();
+                    for (auto mirror_it = begin; mirror_it != end; ++mirror_it) {
+                        particles[*mirror_it].getParent() -= shift;
+                    }
+                } else if ((*it).getType() == 1) { //tell parent how mirror particles shifted
+                    particles[(*it).getParent()].getMirrorParticles()[(*it).getMirrorIdx()] -= shift;
+                }
+            }
+        }
 
         // Sort in descending order to remove from end first (avoids index shifting issues)
         std::sort(to_remove.begin(), to_remove.end(), std::greater<size_t>());  // NOLINT
@@ -185,31 +318,9 @@ class Simulation {
         for (size_t idx : to_remove) {
             particles.eraseParticle(particles.begin() + static_cast<std::ptrdiff_t>(idx));
         }
-        SPDLOG_DEBUG("Container has currently {} particles after erase", particles.size());
-    }
 
-    /**
-     * @brief Applies the necessary boundary conditions to the particles.
-     */
-    void applyBoundaries() {
-        std::vector<Particle> new_particles;
-        for (auto it = particles.begin(); it != particles.end();) {
-            (*it).getOldF() = (*it).getF();
-            (*it).getF() = Vector<double, 3>();
-            // TODO: Optimization to only call this for relevant particles
-            for (auto& p : domain.applyBoundary(*it, force_source)) {
-                new_particles.push_back(p);
-            }
-            (*it).getMirrorLocations() = 0;
-            // TODO: bit of an ugly workaround for now.
-            R3 new_position = (*it).getX();
-            (*it).getX() = (*it).getOldX();
-            it = particles.updateParticlePosition(
-                it, new_position);  // for now SimpleContainer + Periodic (and also Reflecting) needs this here
-        }
-        for (const auto& p : new_particles) {
-            particles.addParticle(p);
-        }
+        to_remove.clear();
+        SPDLOG_DEBUG("Container has currently {} particles after erase", particles.size());
     }
 
     /**
@@ -219,8 +330,10 @@ class Simulation {
         size_t idx = 0;
         for (auto it = particles.begin(); it != particles.end(); ++it, idx++) {
             Particle& p1 = *it;
+            if (p1.getType() == 1) {
+                break; //fine assuming after we read first mirror particle there are only other mirror particles that follow
+            }
             p1.getF()[1] += p1.getM() * g_grav;  // add gravitational pull along y-axis
-
             auto it_prox = particles.proximityBegin(p1.getX(), idx);
             auto it_prox_end = particles.proximityEnd(p1.getX());
             for (; it_prox != it_prox_end; ++it_prox) {
@@ -228,19 +341,26 @@ class Simulation {
                 Vector<double, 3> force = force_source.applyForce(p1, p2);
                 // Apply force directly (Newton's 3rd law: equal and opposite)
                 p1.getF() = p1.getF() + force;
+                if (p2.getType() == 1) {
+                    continue; //don't touch mirror particles
+                }
                 p2.getF() = p2.getF() - force;
             }
         }
     }
 
     /**
-     * @brief Calculates the positions of every particle for the next time step.
+     * @brief      Calculates the thermostat factor used to modulate velocity.
+     *
+     * @return     The thermostat factor.
      */
-    void calculateX() {
-        for (auto& p : particles) {
-            p.getOldX() = p.getX();
-            p.getX() = p.getX() + (delta_t * p.getV()) + ((0.5 * delta_t * delta_t / p.getM()) * p.getF());
+    double calculateThermostatFactor() {
+        double curr_temp = (2.0 * total_energy) / (dimensions * particles.size());
+        if (curr_temp == 0) {
+            return 1;
         }
+        double clamped_target = curr_temp + std::clamp((target_temp - curr_temp), -delta_temp, delta_temp);
+        return sqrt(clamped_target / curr_temp);
     }
 
     /**
@@ -254,19 +374,6 @@ class Simulation {
             curr_energy += p.getM() * R3::scalarProduct(new_v, new_v);
         }
         total_energy = 0.5 * curr_energy;
-    }
-    /**
-     * @brief      Calculates the thermostat factor used to modulate velocity.
-     *
-     * @return     The thermostat factor.
-     */
-    double calculateThermostatFactor() {
-        double curr_temp = (2.0 * total_energy) / (dimensions * particles.size());
-        if (curr_temp == 0) {
-            return 1;
-        }
-        double clamped_target = curr_temp + std::clamp((target_temp - curr_temp), -delta_temp, delta_temp);
-        return sqrt(clamped_target / curr_temp);
     }
 
     /**
@@ -290,13 +397,11 @@ class Simulation {
             applyBoundaries();
 
             // 3. Remove OOB particles
-            removeParticles(false);
+            removeParticles();
 
             // 4. Calculate forces (including ghost interactions)
             SPDLOG_DEBUG("Iteration {}: Calculating forces for {} particles", iteration + 1, particles.size());
             calculateF();
-
-            removeParticles(true);
 
             // 5. Calculate thermostat factor
             double thermo_factor = 1.0;

@@ -68,6 +68,8 @@ class Particle {
      *  1 if particle is a mirrored particle (in periodic boundaries)
      */
     int type;
+
+    //-----------------------Relevant for periodic boundaries-------------------------
     /**
      * @brief A bitmap indicating the locations the particle has been mirrored to.
      * This is relevant for Periodic boundaries.
@@ -81,6 +83,22 @@ class Particle {
      * 26               (max,max,max)
      */
     uint32_t mirror_locations = 0;
+    /**
+     * @brief Vector containing the indicies of all mirror particles of this particle.
+     * Will always be empty if the particle is a mirror particle itself (i.e. type = 1)
+     */
+    std::vector<size_t> mirrorParticles;
+    /**
+     * @brief Index of the parent, that this particle is mirroring.
+     * Only relevant if this particle is a mirror particle (i.e. type = 1)
+     */
+    size_t parent;
+    /**
+     * @brief Index of the mirror particle (0, ..., 26)
+     * Only relevant if this particle is a mirror particle (i.e. type = 1)
+     */
+    size_t mirrorIdx;
+    //---------------------------------------------------------------------------------
 
    public:
     explicit Particle(int type = 0);
@@ -105,6 +123,13 @@ class Particle {
         int type_arg);
 
     ~Particle();
+
+    std::vector<size_t>& getMirrorParticles() noexcept { return mirrorParticles; }
+    const std::vector<size_t>& getMirrorParticles() const noexcept { return mirrorParticles; }
+    size_t& getParent() noexcept { return parent; }
+    const size_t& getParent() const noexcept { return parent; }
+    size_t& getMirrorIdx() noexcept { return mirrorIdx; }
+    const size_t& getMirrorIdx() const noexcept { return mirrorIdx; }
 
     /**
      * @brief Access the current coordinates of a Particle.

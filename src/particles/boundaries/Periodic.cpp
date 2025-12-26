@@ -139,6 +139,7 @@ void Periodic::addMirrorParticle(const R3& mirrorLocation, size_t mirrorIdx, Par
         Particle mirrorParticle(p);
         mirrorParticle.getX() = mirrorLocation;
         mirrorParticle.getType() = 1;
+        mirrorParticle.getMirrorIdx() = mirrorIdx;
         p.getMirrorLocations() |= (1 << mirrorIdx);
         mirrored_particles.push_back(mirrorParticle);
     }
