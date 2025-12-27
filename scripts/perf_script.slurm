@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH -J perf_run
-#SBATCH -D ./MolSim-WS25-GroupD/
-#SBATCH -o ./%x.%j.%N.out
-#SBATCH -e ./%x.%j.%N.err
+#SBATCH -D ./
+#SBATCH -o ./results/perf/%j.out
+#SBATCH -e ./results/perf/%j.err
 #SBATCH --get-user-env
 #SBATCH --export=NONE
 #SBATCH --clusters=serial
@@ -13,4 +13,4 @@
  
 module load slurm_setup
 
-perf record --call-graph=dwarf -F 997 -o perf.data ./build/project/MolSim ./input/benchmark_10k.yaml
+perf record --call-graph=dwarf -F 997 -o perf.data ./MolSim-WS25-GroupD/build/project/MolSim ./input/benchmark_10k.yaml

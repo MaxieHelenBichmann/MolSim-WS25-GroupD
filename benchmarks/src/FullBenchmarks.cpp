@@ -100,7 +100,7 @@ static void bmSimulationFull(benchmark::State& state) {
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<YAMLWriterCP>();
 
-    for (auto _ : state) {
+    for ([[maybe_unused]] auto _ : state) {
         state.PauseTiming();
         LinkedCellContainer container(domain_size, cutoff);
         SettingsParam settings = createBenchmarkSettings(domain_size, cutoff, delta_t, end_time);
