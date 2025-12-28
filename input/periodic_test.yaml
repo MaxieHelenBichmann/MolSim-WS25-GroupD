@@ -1,0 +1,68 @@
+# Test file for periodic boundary conditions
+# Two particles positioned near opposite boundaries to test periodic force interactions
+# Purpose: Verify that particles on each side of the periodic boundary
+#          influence each other correctly (as if domain wraps around)
+
+settings:
+  format: Settings
+  delta_t: 0.001
+  end_time: 2.0
+  start_time: 0.0
+  force: "Lennard Jones"
+  frequency: 10
+  cutoff: 3.0
+  container: LINKED
+  domain:
+    x: 20.0
+    y: 10.0
+    z: 1.0
+    boundaries:
+      left:
+        type: PERIODIC
+      right:
+        type: PERIODIC
+      top:
+        type: REFLECTING
+      bottom:
+        type: REFLECTING
+      upper:
+        type: OUTFLOW
+      lower:
+        type: OUTFLOW
+
+# Two particles near periodic boundaries
+# They should interact as if the domain wraps around
+periodic_particles:
+  format: XVM
+  num_particles: 2
+  particles:
+    # Particle 1: Near left boundary (x=0)
+    # Distance from left edge: 0.8 units
+    - coordinates:
+        x: 0.8
+        y: 5.0
+        z: 0.5
+      velocity:
+        vx: -0.5
+        vy: 0.0
+        vz: 0.0
+      mass: 1.0
+      epsilon: 1.0
+      sigma: 1.0
+
+    # Particle 2: Near right boundary (x=20)
+    # Distance from right edge: 0.8 units (at x=19.2)
+    # Total distance across periodic boundary: 0.8 + 0.8 = 1.6 units
+    # This is within cutoff (3.0) so they should interact
+    # Slightly heavier mass for easy visualization in ParaView
+    - coordinates:
+        x: 19.2
+        y: 5.0
+        z: 0.5
+      velocity:
+        vx: 0.5
+        vy: 0.0
+        vz: 0.0
+      mass: 1.5
+      epsilon: 1.0
+      sigma: 1.0
