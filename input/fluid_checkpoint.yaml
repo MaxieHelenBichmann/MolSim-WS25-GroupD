@@ -17,6 +17,7 @@ settings:
     y: 180
     z: 1
     g_grav: -12.44
+    dimensions: 2
     boundaries:
       left:
         type: Reflecting

@@ -60,16 +60,14 @@ SettingsParam createBenchmarkSettings(R3 domain_size, double cutoff, double delt
     settings.sigma = 1.0;
     settings.cutoff = cutoff;
     settings.dimensions = 2;
-    settings.frequency_output = 1000000;
-    settings.frequency_checkpoint = 1000000;
     settings.base_name = "benchmark";
     settings.force = Force::LENNARDJONES;
     settings.thermo = true;
-    settings.init_temp = 0.5;
-    settings.target_temp = 10.;
+    settings.init_temp = 20;
+    settings.target_temp = 40.;
     settings.delta_temp = 0.1;
     settings.thermostat_freq = 1000;
-    settings.g_grav = 8.1;
+    settings.g_grav = -12.44;
 
     std::array<std::unique_ptr<Boundary>, 6> boundaries;
     boundaries[0] = std::make_unique<Periodic>(BoundaryLocation::LEFT, domain_size, cutoff, 2);
@@ -94,7 +92,7 @@ static void bmSimulationFull(benchmark::State& state) {
     const R3 domain_size = {150.0, 150.0, 1.0};
     const double cutoff = 3.0;
     const double delta_t = 0.0005;
-    const double end_time = 1.0;
+    const double end_time = 5.0;
 
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
@@ -105,7 +103,7 @@ static void bmSimulationFull(benchmark::State& state) {
         LinkedCellContainer container(domain_size, cutoff);
         SettingsParam settings = createBenchmarkSettings(domain_size, cutoff, delta_t, end_time);
 
-        generateCuboid(container, {5.0, 5.0, 0.0}, {0.0, 0.0, 0.0}, {100U, 100U, 1U}, 1.0, 1.2, 0.1, 1.0, 1.0);
+        generateCuboid(container, {5.0, .5, 0.0}, {0.0, 0.0, 0.0}, {100U, 100U, 1U}, 1.0, 1.2, 0.1, 1.0, 1.0);
 
         const size_t num_particles = container.size();
         const auto num_iterations = static_cast<size_t>((end_time - settings.start_time) / delta_t);
