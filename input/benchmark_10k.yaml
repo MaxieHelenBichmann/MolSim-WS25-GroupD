@@ -7,13 +7,13 @@ settings:
   format: Settings
   delta_t: 0.0005
   start_time: 0.0
-  end_time: 1.0
+  end_time: 5.0
   force: "Lennard Jones"
-  frequency: 1000000
+  frequency: 10
   cutoff: 3.0
   container: LINKED
-  initial_temp: .5
-  target_temp: 10.
+  initial_temp: 20.
+  target_temp: 40. 
   max_delta_temp: 0.1
   n_thermostat: 1000
   
@@ -21,7 +21,8 @@ settings:
     x: 150.0
     y: 150.0
     z: 1.0
-    g_grav: 8.1
+    g_grav: -12.44
+    dimensions: 2
     boundaries:
       left:
         type: Periodic
@@ -32,11 +33,11 @@ settings:
       back:
         type: Reflecting
 
-particles_10k:
+particles_lower:
   format: Cuboid
   coordinates:
     x: 5.0
-    y: 5.0
+    y: 0.5
     z: 0.0
   velocity:
     vx: 0.0
@@ -51,3 +52,4 @@ particles_10k:
   mean_velo: 0.1
   epsilon: 1.0
   sigma: 1.0
+
