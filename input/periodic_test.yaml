@@ -13,6 +13,7 @@ settings:
   cutoff: 3.0
   container: LINKED
   domain:
+    dimensions: 2
     x: 20.0
     y: 10.0
     z: 1.0
