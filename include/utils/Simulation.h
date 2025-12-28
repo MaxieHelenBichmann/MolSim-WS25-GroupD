@@ -164,15 +164,11 @@ class Simulation {
     /**
      * @brief Removes all particles in the Halo from the container.
      */
-    void removeParticles(bool removeMirrorParticles) {
+    void removeParticles() {
         // Collect indices of particles to remove using halo iterator
         SPDLOG_DEBUG("Container has currently {} particles before erase", particles.size());
         std::vector<size_t> to_remove;
         for (auto it = particles.haloBegin(); it != particles.haloEnd(); ++it) {
-            if (!removeMirrorParticles &&
-                (*it).getType() == 1) {  // don't remove mirrored particles (relevant for periodic boundaries)
-                continue;
-            }
             size_t idx = &(*it) - &particles[0];
             to_remove.push_back(idx);
         }
@@ -318,13 +314,11 @@ class Simulation {
             applyBoundaries();
 
             // 3. Remove OOB particles
-            removeParticles(false);
+            removeParticles();
 
             // 4. Calculate forces (including ghost interactions)
             SPDLOG_DEBUG("Iteration {}: Calculating forces for {} particles", iteration + 1, particles.size());
             calculateF();
-
-            removeParticles(true);
 
             // 5. Calculate thermostat factor
             double thermo_factor = 1.0;
