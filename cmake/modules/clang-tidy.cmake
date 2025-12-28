@@ -1,4 +1,5 @@
 option(ENABLE_CLANG_TIDY "Enable clang-tidy static analysis during build" OFF)
+option(CLANG_TIDY_WARNINGS_AS_ERRORS "Treat clang-tidy warnings as errors (applies to clang-tidy and run-clang-tidy)" OFF)
 
 if(ENABLE_CLANG_TIDY)
     find_program(CLANG_TIDY_EXE clang-tidy REQUIRED)
@@ -15,11 +16,15 @@ if(ENABLE_CLANG_TIDY)
         -clang-tidy-binary=${CLANG_TIDY_EXE}
         -p=${CMAKE_BINARY_DIR}
         -quiet
-        -warnings-as-errors=*
         -config-file=${CMAKE_SOURCE_DIR}/.clang-tidy
         -header-filter=${CMAKE_SOURCE_DIR}/include/.*
         -source-filter=${CMAKE_SOURCE_DIR}/src/.*
     )
+
+    if (CLANG_TIDY_WARNINGS_AS_ERRORS)
+        list(APPEND CLANG_TIDY_COMMAND "--warnings-as-errors=*")
+        list(APPEND RUN_CLANG_TIDY_CMD "-warnings-as-errors=*")
+    endif()
 
     # add fix and lint targets that runs run-clang-tidy
     add_custom_target(lint COMMAND ${RUN_CLANG_TIDY_CMD} 

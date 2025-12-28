@@ -245,6 +245,8 @@ Output location: `doxys_documentation/`
 
 When enabled, clang-tidy automatically runs checks from `.clang-tidy` during build.
 
+You can enable treating clang-tidy warnings as errors by configuring CMake with `-DCLANG_TIDY_WARNINGS_AS_ERRORS=ON` (default: `OFF`). The CI `lint` job enables this option.
+
 **Apply automatic fixes:**
 ```bash
 make fix
