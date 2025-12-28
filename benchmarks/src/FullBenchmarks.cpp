@@ -92,7 +92,7 @@ static void bmSimulationFull(benchmark::State& state) {
     const R3 domain_size = {150.0, 150.0, 1.0};
     const double cutoff = 3.0;
     const double delta_t = 0.0005;
-    const double end_time = 5.0;
+    const double end_time = 3.0;
 
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
@@ -103,7 +103,7 @@ static void bmSimulationFull(benchmark::State& state) {
         LinkedCellContainer container(domain_size, cutoff);
         SettingsParam settings = createBenchmarkSettings(domain_size, cutoff, delta_t, end_time);
 
-        generateCuboid(container, {5.0, .5, 0.0}, {0.0, 0.0, 0.0}, {100U, 100U, 1U}, 1.0, 1.2, 0.1, 1.0, 1.0);
+        generateCuboid(container, {5.0, .5, 0.0}, {0.0, -25.0, 0.0}, {100U, 100U, 1U}, 1.0, 1.2, 0.1, 1.0, 1.0);
 
         const size_t num_particles = container.size();
         const auto num_iterations = static_cast<size_t>((end_time - settings.start_time) / delta_t);
