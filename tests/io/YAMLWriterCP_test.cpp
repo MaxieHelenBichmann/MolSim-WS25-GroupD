@@ -47,11 +47,24 @@ class YAMLWriterCPTest : public testing::Test {
                                           double delta_t, double current_time, double end_time, size_t frequency_output,
                                           size_t frequency_checkpoint, const std::string& base_name,
                                           double cutoff_radius, double target_temp, double delta_temp,
-                                          size_t thermostat_freq, size_t N) {
+                                          size_t thermostat_freq, double g_grav, size_t dimensions, size_t N) {
         ContainerRef particles(container);
-        writer.createCheckpoint(domain, particles, iteration, force, delta_t, current_time, end_time, frequency_output,
-                                frequency_checkpoint, base_name, cutoff_radius, target_temp, delta_temp,
-                                thermostat_freq, N);
+        SettingsParam settings;
+        settings.delta_t = delta_t;
+        settings.end_time = end_time;
+        settings.start_time = current_time;
+        settings.base_name = base_name;
+        settings.force = force;
+        settings.frequency_output = frequency_output;
+        settings.frequency_checkpoint = frequency_checkpoint;
+        settings.cutoff = cutoff_radius;
+        settings.target_temp = target_temp;
+        settings.delta_temp = delta_temp;
+        settings.thermostat_freq = thermostat_freq;
+        settings.dimensions = dimensions;
+        settings.g_grav = g_grav;
+        settings.thermo = true;
+        writer.createCheckpoint(settings, domain, particles, iteration, N);
 
         int decimal_places = 0;
         while (N >= 10) {
@@ -81,11 +94,13 @@ TEST_F(YAMLWriterCPTest, testWritesSimpleSettingsAndParticleData) {  // NOLINT
     constexpr double target_temp = 300.0;
     constexpr double delta_temp = 0.5;
     constexpr size_t thermostat_freq = 10;
+    constexpr double g_grav = 9.81;
+    constexpr size_t dimensions = 3;
     const Domain domain{R3{10.0, 10.0, 10.0}};
 
     auto file_path = writeCheckpoint(domain, container, iteration, Force::LENNARDJONES, delta_t, start_time, end_time,
                                      frequency_output, frequency_checkpoint, base_name, cutoff_radius, target_temp,
-                                     delta_temp, thermostat_freq, iteration_cap);
+                                     delta_temp, thermostat_freq, g_grav, dimensions, iteration_cap);
 
     ASSERT_TRUE(std::filesystem::exists(file_path));
 
@@ -103,7 +118,7 @@ TEST_F(YAMLWriterCPTest, testWritesSimpleSettingsAndParticleData) {  // NOLINT
     EXPECT_EQ(frequency_output, settings_node["frequency"].as<size_t>());
     EXPECT_EQ(frequency_checkpoint, settings_node["checkpoint"].as<size_t>());
     EXPECT_DOUBLE_EQ(cutoff_radius, settings_node["cutoff"].as<double>());
-    
+
     // Check thermostat settings (now nested)
     ASSERT_TRUE(settings_node["thermostat"]);
     const YAML::Node thermostat_node = settings_node["thermostat"];
@@ -116,6 +131,8 @@ TEST_F(YAMLWriterCPTest, testWritesSimpleSettingsAndParticleData) {  // NOLINT
     EXPECT_DOUBLE_EQ(domain.getDimension()[0], domain_node["x"].as<double>());
     EXPECT_DOUBLE_EQ(domain.getDimension()[1], domain_node["y"].as<double>());
     EXPECT_DOUBLE_EQ(domain.getDimension()[2], domain_node["z"].as<double>());
+    EXPECT_DOUBLE_EQ(g_grav, domain_node["g_grav"].as<double>());
+    EXPECT_EQ(dimensions, domain_node["dimensions"].as<size_t>());
 
     const YAML::Node boundaries = domain_node["boundaries"];
     ASSERT_TRUE(boundaries);
@@ -166,7 +183,7 @@ TEST_F(YAMLWriterCPTest, testEmptyContainer) {  // NOLINT
     constexpr size_t iteration_cap = 1;
     const Domain domain{R3{10.0, 10.0, 10.0}};
     auto file_path = writeCheckpoint(domain, empty, iteration, Force::GRAVITATIONAL, 0.01, 0.0, 1.0, 1, 1, "test_base",
-                                     1.0, 1.0, 1.0, 10, iteration_cap);
+                                     1.0, 1.0, 1.0, 10, 1., 3, iteration_cap);
 
     ASSERT_TRUE(std::filesystem::exists(file_path));
     YAML::Node root = YAML::LoadFile(file_path.string());
@@ -192,7 +209,7 @@ TEST_F(YAMLWriterCPTest, testWritesReflectingBoundaryMetadata) {  // NOLINT
     constexpr int iteration = 5;
     constexpr size_t iteration_cap = 10;
     auto file_path = writeCheckpoint(reflecting_domain, container, iteration, Force::GRAVITATIONAL, 0.02, 0.0, 2.0, 2,
-                                     4, "test_reflect", 2.0, 1.0, 1.0, 10, iteration_cap);
+                                     4, "test_reflect", 2.0, 1.0, 1.0, 10, 1., 3, iteration_cap);
 
     YAML::Node root = YAML::LoadFile(file_path.string());
     const YAML::Node boundaries = root["settings"]["domain"]["boundaries"];
@@ -230,11 +247,13 @@ TEST_F(YAMLWriterCPTest, testReadBackCheckpointWithYAMLReader) {  // NOLINT
     constexpr double target_temp = 300.0;
     constexpr double delta_temp = 0.5;
     constexpr size_t thermostat_freq = 10;
+    constexpr double g_grav = 9.81;
+    constexpr size_t dimensions = 3;
     const Domain domain{R3{10.0, 10.0, 10.0}};
 
     auto file_path = writeCheckpoint(domain, container, iteration, Force::LENNARDJONES, delta_t, start_time, end_time,
                                      frequency_output, frequency_checkpoint, base_name, cutoff_radius, target_temp,
-                                     delta_temp, thermostat_freq, iteration_cap);
+                                     delta_temp, thermostat_freq, g_grav, dimensions, iteration_cap);
 
     // Settings
     SettingsParam settings;

@@ -17,6 +17,8 @@ settings:
       x: 10.
       y: 10.
       z: 10.
+      g_grav: -9.81
+      dimensions: 3
       boundaries:
         upper:
           type: OUTFLOW

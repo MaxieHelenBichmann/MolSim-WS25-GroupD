@@ -19,10 +19,8 @@ using namespace mol_sim;
 YAMLWriterCP::YAMLWriterCP() = default;
 YAMLWriterCP::~YAMLWriterCP() = default;
 
-void YAMLWriterCP::createCheckpoint(const Domain& domain, ContainerRef particles, int iteration, Force force,
-                                    double delta_t, double current_time, double end_time, size_t frequency_output,
-                                    size_t frequency_checkpoint, const std::string& base_name, double cutoff_radius,
-                                    double target_temp, double delta_temp, size_t thermostat_freq, size_t N) const {
+void YAMLWriterCP::createCheckpoint(SettingsParam& settings, const Domain& domain, ContainerRef particles,
+                                    int iteration, size_t N) const {
     int decimal_places = 0;
     while (N >= 10) {
         N /= 10;
@@ -41,26 +39,32 @@ void YAMLWriterCP::createCheckpoint(const Domain& domain, ContainerRef particles
     out << YAML::Key << "settings" << YAML::Value << YAML::BeginMap;
 
     out << YAML::Key << "format" << YAML::Value << "Settings";
-    out << YAML::Key << "delta_t" << YAML::Value << delta_t;
-    out << YAML::Key << "end_time" << YAML::Value << end_time;
-    out << YAML::Key << "start_time" << YAML::Value << current_time;
-    out << YAML::Key << "base_name" << YAML::Value << base_name;
-    out << YAML::Key << "force" << YAML::Value << (force == LENNARDJONES ? "Lennard Jones" : "Gravitational");
-    out << YAML::Key << "frequency" << YAML::Value << frequency_output;
-    out << YAML::Key << "checkpoint" << YAML::Value << frequency_checkpoint;
-    out << YAML::Key << "cutoff" << YAML::Value << cutoff_radius;
+    out << YAML::Key << "delta_t" << YAML::Value << settings.delta_t;
+    out << YAML::Key << "end_time" << YAML::Value << settings.end_time;
+    out << YAML::Key << "start_time" << YAML::Value
+        << (settings.start_time > settings.end_time ? settings.end_time : settings.start_time);
+    ;
+    out << YAML::Key << "base_name" << YAML::Value << settings.base_name;
+    out << YAML::Key << "force" << YAML::Value << (settings.force == LENNARDJONES ? "Lennard Jones" : "Gravitational");
+    out << YAML::Key << "frequency" << YAML::Value << settings.frequency_output;
+    out << YAML::Key << "checkpoint" << YAML::Value << settings.frequency_checkpoint;
+    out << YAML::Key << "cutoff" << YAML::Value << settings.cutoff;
 
     // Write thermostat settings in nested format
-    out << YAML::Key << "thermostat" << YAML::Value << YAML::BeginMap;
-    out << YAML::Key << "target_temp" << YAML::Value << target_temp;
-    out << YAML::Key << "n_thermostat" << YAML::Value << thermostat_freq;
-    out << YAML::Key << "delta_temp" << YAML::Value << delta_temp;
-    out << YAML::EndMap;  // close thermostat
+    if (settings.thermo) {
+        out << YAML::Key << "thermostat" << YAML::Value << YAML::BeginMap;
+        out << YAML::Key << "target_temp" << YAML::Value << settings.target_temp;
+        out << YAML::Key << "n_thermostat" << YAML::Value << settings.thermostat_freq;
+        out << YAML::Key << "delta_temp" << YAML::Value << settings.delta_temp;
+        out << YAML::EndMap;  // close thermostat
+    }
 
     out << YAML::Key << "domain" << YAML::Value << YAML::BeginMap;  // open domain
     out << YAML::Key << "x" << YAML::Value << domain.getDimension()[0];
     out << YAML::Key << "y" << YAML::Value << domain.getDimension()[1];
     out << YAML::Key << "z" << YAML::Value << domain.getDimension()[2];
+    out << YAML::Key << "g_grav" << YAML::Value << settings.g_grav;
+    out << YAML::Key << "dimensions" << YAML::Value << settings.dimensions;
 
     const auto boundary_type_string = [](BoundaryType type) -> std::string {
         switch (type) {
