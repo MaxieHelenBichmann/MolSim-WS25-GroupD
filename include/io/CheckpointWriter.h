@@ -3,7 +3,7 @@
 
 #include "particles/container/ContainerRef.h"
 #include "particles/container/domain/Domain.h"
-#include "physics/ForceSource.h"
+#include "utils/Settings.h"
 
 namespace mol_sim {
 
@@ -16,10 +16,8 @@ namespace mol_sim {
 class CheckpointWriter {
    public:
     virtual ~CheckpointWriter() = default;
-    virtual void createCheckpoint(const Domain& domain, ContainerRef particles, int iteration, Force force,
-                                  double delta_t, double current_time, double end_time, size_t frequency_output,
-                                  size_t frequency_checkpoint, const std::string& base_name, double cutoff_radius,
-                                  double target_temp, double delta_temp, size_t thermostat_freq, size_t N) const = 0;
+    virtual void createCheckpoint(SettingsParam& settings, const Domain& domain, ContainerRef particles, int iteration,
+                                  size_t N) const = 0;
 };
 
 }  // namespace mol_sim

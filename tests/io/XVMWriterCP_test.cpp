@@ -44,8 +44,8 @@ class XVMWriterCPTest : public testing::Test {
      */
     std::filesystem::path writeCheckpoint(SimpleContainer& container, int iteration, size_t N) {
         ContainerRef particles(container);
-        writer.createCheckpoint(domain, particles, iteration, Force::GRAVITATIONAL, 0.01, 0.0, 1.0, 1, 1, "test_xvm",
-                                1.0, 1.0, 1.0, 1, N);
+        SettingsParam settings;
+        writer.createCheckpoint(settings, domain, particles, iteration, N);
 
         int decimal_places = 0;
         while (N >= 10) {

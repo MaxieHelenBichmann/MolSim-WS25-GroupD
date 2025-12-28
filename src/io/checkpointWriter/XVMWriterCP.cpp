@@ -11,14 +11,8 @@ XVMWriterCP::XVMWriterCP() = default;
 
 XVMWriterCP::~XVMWriterCP() = default;
 
-void XVMWriterCP::createCheckpoint([[maybe_unused]] const Domain& domain, ContainerRef particles, int iteration,
-                                   [[maybe_unused]] Force force, [[maybe_unused]] double delta_t,
-                                   [[maybe_unused]] double current_time, [[maybe_unused]] double end_time,
-                                   [[maybe_unused]] size_t frequency_output,
-                                   [[maybe_unused]] size_t frequency_checkpoint,
-                                   [[maybe_unused]] const std::string& base_name, [[maybe_unused]] double cutoff_radius,
-                                   [[maybe_unused]] double target_temp, [[maybe_unused]] double delta_temp,
-                                   [[maybe_unused]] size_t thermostat_freq, size_t N) const {
+void XVMWriterCP::createCheckpoint([[maybe_unused]] SettingsParam& settings, [[maybe_unused]] const Domain& domain,
+                                   ContainerRef particles, int iteration, size_t N) const {
     int decimal_places = 0;
     while (N >= 10) {
         N /= 10;
