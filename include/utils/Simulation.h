@@ -93,6 +93,9 @@ class Simulation {
      */
     std::string base_name;
 
+    /**
+     * @brief Number of dimensions in the simulation.
+     */
     size_t dimensions;
     /**
      * @brief Cutoff radius for particles in proximity.
@@ -121,7 +124,13 @@ class Simulation {
      * Make sure it's NEGATIVE if you want the particle to be pulled DOWN the y-axis.
      */
     double g_grav;
+    /**
+     * @brief Flag if thermostat is enabled for this simulation.
+     */
     bool thermo;
+    /**
+     * @brief Temporary storage for new particles created during boundary application.
+     */
     std::vector<Particle> new_particles;
 
    public:
