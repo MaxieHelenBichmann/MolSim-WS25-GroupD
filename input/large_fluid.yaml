@@ -1,11 +1,11 @@
 settings:
   format: Settings
   delta_t: 0.0005
-  end_time: 25
+  end_time: 50
   start_time: 0.0
   force: "Lennard Jones"
   frequency: 10
-  cutoff: 2.5
+  cutoff: 3.
   container: LINKED
   initial_temp: 40
   n_thermostat: 1000
