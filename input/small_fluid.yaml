@@ -17,6 +17,7 @@ settings:
     y: 36
     z: 1
     g_grav: -12.44
+    dimensions: 2
     boundaries:
       left:
         type: Periodic
