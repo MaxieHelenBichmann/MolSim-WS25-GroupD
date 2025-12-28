@@ -7,7 +7,7 @@ settings:
   format: Settings
   delta_t: 0.0005
   start_time: 0.0
-  end_time: 5.0
+  end_time: 3.0
   force: "Lennard Jones"
   frequency: 10
   cutoff: 3.0
@@ -41,7 +41,7 @@ particles_lower:
     z: 0.0
   velocity:
     vx: 0.0
-    vy: 0.0
+    vy: -25.0
     vz: 0.0
   particleNum:
     nx: 100
