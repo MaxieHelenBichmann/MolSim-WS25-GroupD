@@ -255,7 +255,7 @@ class Simulation {
                 }
             }
 
-            auto it_prox = particles.proximityBegin(lookup_pos, 0);
+            auto it_prox = particles.proximityBegin(lookup_pos, particles.size());
             auto it_prox_end = particles.proximityEnd(lookup_pos);
             for (; it_prox != it_prox_end; ++it_prox) {
                 Particle& p2 = *it_prox;
