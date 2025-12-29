@@ -39,7 +39,7 @@ class Vector {
      *
      * @param init array of fitting type and size, copied to the data of the Vector
      */
-    Vector(std::array<T, N> init) : data_(init){};
+    Vector(std::array<T, N> init) : data_(init) {};
 
     /**
      * @brief Constructor copies N given values into the components of a Vector
@@ -116,11 +116,17 @@ class Vector {
      * @return New Vector representing the sum of the two Vectors
      */
     Vector<T, N> operator+(const Vector<T, N>& other) const {
-        std::array<T, N> new_array;
-        for (size_t i = 0; i < N; i++) {
-            new_array[i] = data_[i] + other.data_[i];
+        if constexpr (N == 3) {
+            return Vector<T, N>{data_[0] + other.data_[0], data_[1] + other.data_[1], data_[2] + other.data_[2]};
+        } else if constexpr (N == 2) {
+            return Vector<T, N>{data_[0] + other.data_[0], data_[1] + other.data_[1]};
+        } else {
+            Vector<T, N> result;
+            for (size_t i = 0; i < N; i++) {
+                result[i] = data_[i] + other.data_[i];
+            }
+            return result;
         }
-        return Vector<T, N>(new_array);
     };
 
     /**
@@ -131,11 +137,17 @@ class Vector {
      * @return New Vector representing the difference of the two Vectors
      */
     Vector<T, N> operator-(const Vector<T, N>& other) const {
-        std::array<T, N> new_array;
-        for (size_t i = 0; i < N; i++) {
-            new_array[i] = data_[i] - other.data_[i];
+        if constexpr (N == 3) {
+            return Vector<T, N>{data_[0] - other.data_[0], data_[1] - other.data_[1], data_[2] - other.data_[2]};
+        } else if constexpr (N == 2) {
+            return Vector<T, N>{data_[0] - other.data_[0], data_[1] - other.data_[1]};
+        } else {
+            Vector<T, N> result;
+            for (size_t i = 0; i < N; i++) {
+                result[i] = data_[i] - other.data_[i];
+            }
+            return result;
         }
-        return Vector<T, N>(new_array);
     };
 
     /**
@@ -146,11 +158,17 @@ class Vector {
      * @return New Vector with the component-wise product of the two Vectors
      */
     Vector<T, N> operator*(const Vector<T, N>& other) const {
-        std::array<T, N> new_array;
-        for (size_t i = 0; i < N; i++) {
-            new_array[i] = data_[i] * other.data_[i];
+        if constexpr (N == 3) {
+            return Vector<T, N>{data_[0] * other.data_[0], data_[1] * other.data_[1], data_[2] * other.data_[2]};
+        } else if constexpr (N == 2) {
+            return Vector<T, N>{data_[0] * other.data_[0], data_[1] * other.data_[1]};
+        } else {
+            Vector<T, N> result;
+            for (size_t i = 0; i < N; i++) {
+                result[i] = data_[i] * other.data_[i];
+            }
+            return result;
         }
-        return Vector<T, N>(new_array);
     };
 
     /**
@@ -161,12 +179,69 @@ class Vector {
      * @return New Vector representing the quotient of the two Vectors
      */
     Vector<T, N> operator/(const Vector<T, N>& other) const {
-        std::array<T, N> new_array;
-        for (size_t i = 0; i < N; i++) {
-            new_array[i] = data_[i] / other.data_[i];
+        if constexpr (N == 3) {
+            return Vector<T, N>{data_[0] / other.data_[0], data_[1] / other.data_[1], data_[2] / other.data_[2]};
+        } else if constexpr (N == 2) {
+            return Vector<T, N>{data_[0] / other.data_[0], data_[1] / other.data_[1]};
+        } else {
+            Vector<T, N> result;
+            for (size_t i = 0; i < N; i++) {
+                result[i] = data_[i] / other.data_[i];
+            }
+            return result;
         }
-        return Vector<T, N>(new_array);
     };
+
+    /**
+     * @brief Compound point-wise Addition of a Vector to this Vector
+     *
+     * @param other Vector of same type and dimension to add
+     *
+     * @return This Vector representing the sum of the two Vectors
+     */
+    Vector<T, N>& operator+=(const Vector<T, N>& other) {
+        if constexpr (N == 3) {
+            data_[0] += other.data_[0];
+            data_[1] += other.data_[1];
+            data_[2] += other.data_[2];
+            return *this;
+        } else if constexpr (N == 2) {
+            data_[0] += other.data_[0];
+            data_[1] += other.data_[1];
+            return *this;
+        } else {
+            for (size_t i = 0; i < N; i++) {
+                data_[i] += other.data_[i];
+            }
+            return *this;
+        }
+    }
+
+    /**
+     * @brief Compound point-wise Subtraction of a Vector from this Vector
+     *
+     * @param other Vector of same type and dimension to subtract
+     *
+     * @return This Vector representing the difference of the two Vectors
+     */
+    Vector<T, N>& operator-=(const Vector<T, N>& other) {
+        if constexpr (N == 3) {
+            data_[0] -= other.data_[0];
+            data_[1] -= other.data_[1];
+            data_[2] -= other.data_[2];
+            return *this;
+        } else if constexpr (N == 2) {
+            data_[0] -= other.data_[0];
+            data_[1] -= other.data_[1];
+            return *this;
+
+        } else {
+            for (size_t i = 0; i < N; i++) {
+                data_[i] -= other.data_[i];
+            }
+            return *this;
+        }
+    }
 
     // other arithmetic operations
 
@@ -178,11 +253,17 @@ class Vector {
      * @return New Vector representing the scaled Vector
      */
     Vector<T, N> operator*(const T scalar) const {
-        std::array<T, N> new_array;
-        for (size_t i = 0; i < N; i++) {
-            new_array[i] = scalar * data_[i];
+        if constexpr (N == 3) {
+            return Vector<T, N>{scalar * data_[0], scalar * data_[1], scalar * data_[2]};
+        } else if constexpr (N == 2) {
+            return Vector<T, N>{scalar * data_[0], scalar * data_[1]};
+        } else {
+            Vector<T, N> result;
+            for (size_t i = 0; i < N; i++) {
+                result[i] = scalar * data_[i];
+            }
+            return result;
         }
-        return Vector<T, N>(new_array);
     }
 
     /**
@@ -196,6 +277,32 @@ class Vector {
     friend Vector<T, N> operator*(const T& s, const Vector<T, N>& v) { return v * s; }
 
     /**
+     * @brief Compound Scalar Multiplication (Vector *= Scalar)
+     *
+     * @param scalar Scalar value of same type
+     *
+     * @return This Vector representing the scaled Vector
+     */
+    Vector<T, N>& operator*=(const T scalar) {
+        if constexpr (N == 3) {
+            data_[0] *= scalar;
+            data_[1] *= scalar;
+            data_[2] *= scalar;
+            return *this;
+        } else if constexpr (N == 2) {
+            data_[0] *= scalar;
+            data_[1] *= scalar;
+            return *this;
+
+        } else {
+            for (size_t i = 0; i < N; i++) {
+                data_[i] *= scalar;
+            }
+            return *this;
+        }
+    }
+
+    /**
      * @brief Inner product of two Vectors < a | b >
      *
      * @param a Vector a on left-hand-side
@@ -204,7 +311,17 @@ class Vector {
      * @return Scalar number of type T
      */
     static T scalarProduct(const Vector& a, const Vector<T, N>& b) {
-        return std::inner_product(a.data_.begin(), a.data_.end(), b.data_.begin(), T(0));
+        if constexpr (N == 3) {
+            return (a.data_[0] * b.data_[0]) + (a.data_[1] * b.data_[1]) + (a.data_[2] * b.data_[2]);
+        } else if constexpr (N == 2) {
+            return (a.data_[0] * b.data_[0]) + (a.data_[1] * b.data_[1]);
+        } else {
+            T sum = T(0);
+            for (size_t i = 0; i < N; ++i) {
+                sum += a.data_[i] * b.data_[i];
+            }
+            return sum;
+        }
     }
 
     /**
@@ -212,8 +329,25 @@ class Vector {
      *
      * @return Scalar number of type T
      */
-    [[nodiscard]] T euclidNorm() const {
-        return std::sqrt(std::accumulate(data_.begin(), data_.end(), T(0), [](auto a, auto b) { return a + (b * b); }));
+    [[nodiscard]] T euclidNorm() const { return std::sqrt(sqrEuclidNorm()); }
+
+    /**
+     * @brief Squared Euclidean Norm of the Vector
+     *
+     * @return Scalar number of type T
+     */
+    [[nodiscard]] T sqrEuclidNorm() const {
+        if constexpr (N == 3) {
+            return (data_[0] * data_[0]) + (data_[1] * data_[1]) + (data_[2] * data_[2]);
+        } else if constexpr (N == 2) {
+            return (data_[0] * data_[0]) + (data_[1] * data_[1]);
+        } else {
+            T sum = T(0);
+            for (size_t i = 0; i < N; ++i) {
+                sum += data_[i] * data_[i];
+            }
+            return sum;
+        }
     }
 
     // conversions to arrays

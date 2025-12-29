@@ -25,11 +25,20 @@ if(NOT CMAKE_CONFIGURATION_TYPES)
     endif()
 endif()
 
+# -march=native and -Ofast did not yield better results in benchmarks on Rechnerhalle, try again on Cluster
 add_compile_options(
     $<$<CONFIG:Debug>:-O0>
     $<$<CONFIG:Release>:-O3>
+    $<$<CONFIG:Release>:-flto>
     $<$<CONFIG:RelWithDebInfo>:-O3>
     $<$<CONFIG:MinSizeRel>:-O3>
+    $<$<CONFIG:MinSizeRel>:-flto>
+)
+
+# Add corresponding linker flags for LTO
+add_link_options(
+    $<$<CONFIG:Release>:-flto>
+    $<$<CONFIG:MinSizeRel>:-flto>
 )
 
 if(ENABLE_UBSAN)

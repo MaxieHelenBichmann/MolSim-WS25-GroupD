@@ -21,34 +21,18 @@ namespace mol_sim {
  */
 class Particle {
    private:
+    // ========== HOT DATA ==========
+
     /**
      * @brief Position of the particle
      */
     R3 x;
-    /**
-     * @brief New position of the particle
-     */
-    R3 old_x;
-
-    /**
-     * @brief Velocity of the particle
-     */
-    R3 v;
 
     /**
      * @brief Force effective on this particle
      */
     R3 f;
 
-    /**
-     * @brief Force which was effective on this particle
-     */
-    R3 old_f;
-
-    /**
-     * @brief Mass of this particle
-     */
-    double m;
     /**
      * @brief Epsilon of this particle.
      *
@@ -59,6 +43,31 @@ class Particle {
      *
      */
     double sigma;
+
+    // ========== WARM DATA ==========
+
+    /**
+     * @brief Velocity of the particle
+     */
+    R3 v;
+
+    /**
+     * @brief Mass of this particle
+     */
+    double m;
+
+    // ========== COLD DATA ==========
+
+    /**
+     * @brief New position of the particle
+     */
+    R3 old_x;
+
+    /**
+     * @brief Force which was effective on this particle
+     */
+    R3 old_f;
+
     /**
      * @brief Type of the particle.
      * A particle with a negative type should be created and destroyed within the same
@@ -68,6 +77,7 @@ class Particle {
      *  1 if particle is a mirrored particle (in periodic boundaries)
      */
     int type;
+
     /**
      * @brief A bitmap indicating the locations the particle has been mirrored to.
      * This is relevant for Periodic boundaries.
@@ -111,126 +121,126 @@ class Particle {
      *
      * @return Const reference to the coordinates of the Particle.
      */
-    [[nodiscard]] const R3& getX() const noexcept;
+    [[nodiscard]] const R3& getX() const noexcept { return x; };
     /**
      * @brief Access the current coordinates of a Particle.
      *
      * @return Reference to the coordinates of the Particle.
      */
-    R3& getX() noexcept;
+    R3& getX() noexcept { return x; };
     /**
      * @brief Access the previous coordinates of a Particle.
      *
      * @return Const reference to the previous coordinates of the Particle.
      */
-    [[nodiscard]] const R3& getOldX() const noexcept;
+    [[nodiscard]] const R3& getOldX() const noexcept { return old_x; };
     /**
      * @brief Access the previous coordinates of a Particle.
      *
      * @return Reference to the previous coordinates of the Particle.
      */
-    R3& getOldX() noexcept;
+    R3& getOldX() noexcept { return old_x; };
 
     /**
      * @brief Access the current velocity Vector of a Particle.
      *
      * @return Const reference to the velocity of the Particle.
      */
-    [[nodiscard]] const R3& getV() const noexcept;
+    [[nodiscard]] const R3& getV() const noexcept { return v; };
     /**
      * @brief Access the current velocity Vector of a Particle.
      *
      * @return Reference to the velocity of the Particle.
      */
-    R3& getV() noexcept;
+    R3& getV() noexcept { return v; };
 
     /**
      * @brief Access the current force acting on a Particle.
      *
      * @return Const reference to the force on the Particle.
      */
-    [[nodiscard]] const R3& getF() const noexcept;
+    [[nodiscard]] const R3& getF() const noexcept { return f; };
     /**
      * @brief Access the current force acting on a Particle.
      *
      * @return Reference to the force on the Particle.
      */
-    R3& getF() noexcept;
+    R3& getF() noexcept { return f; };
 
     /**
      * @brief Access the previous force acting on a Particle.
      *
      * @return Const reference to the previous force on the Particle.
      */
-    [[nodiscard]] const R3& getOldF() const noexcept;
+    [[nodiscard]] const R3& getOldF() const noexcept { return old_f; };
     /**
      * @brief Access the previous force acting on a Particle.
      *
      * @return Reference to the previous force on the Particle.
      */
-    R3& getOldF() noexcept;
+    R3& getOldF() noexcept { return old_f; };
 
     /**
      * @brief Access the mass of a Particle.
      *
      * @return Double of the mass of the Particle.
      */
-    [[nodiscard]] double getM() const noexcept;
+    [[nodiscard]] double getM() const noexcept { return m; };
 
     /**
      * @brief Access the type of a Particle.
      *
      * @return Int of the type of the Particle.
      */
-    [[nodiscard]] int& getType() noexcept;
+    [[nodiscard]] int& getType() noexcept { return type; };
     /**
      * @brief Access the type of a Particle.
      *
      * @return Int of the type of the Particle.
      */
-    [[nodiscard]] const int& getType() const noexcept;
+    [[nodiscard]] const int& getType() const noexcept { return type; };
 
     /**
      * @brief Access to the sigma of this Particle
      *
      * @return double of the sigma of the Particle
      */
-    [[nodiscard]] double getSigma() const noexcept;
+    [[nodiscard]] double getSigma() const noexcept { return sigma; };
 
     /**
      * @brief Access to the sigma of this Particle
      *
      * @return Reference to the double of the sigma of the Particle
      */
-    double& getSigma() noexcept;
+    double& getSigma() noexcept { return sigma; };
 
     /**
      * @brief Access to the epsilon of this Particle
      *
      * @return double of the epsilon of the Particle
      */
-    [[nodiscard]] double getEpsilon() const noexcept;
+    [[nodiscard]] double getEpsilon() const noexcept { return epsilon; };
 
     /**
      * @brief Access to the epsilon of this Particle
      *
      * @return Reference to the double of the epsilon of the Particle
      */
-    double& getEpsilon() noexcept;
+    double& getEpsilon() noexcept { return epsilon; };
 
     /**
      * @brief Get the Mirror Locations bitmap of the particle
      *
      * @return uint32_t& A reference to the bitmap indicating where the particle has already been mirrored
      */
-    uint32_t& getMirrorLocations() noexcept;
+    uint32_t& getMirrorLocations() noexcept { return mirror_locations; }
 
     /**
      * @brief Get the Mirror Locations bitmap of the particle
      *
      * @return uint32_t& A const reference to the bitmap indicating where the particle has already been mirrored
      */
-    [[nodiscard]] const uint32_t& getMirrorLocations() const noexcept;
+    [[nodiscard]] const uint32_t& getMirrorLocations() const noexcept { return mirror_locations; }
 
     bool operator==(const Particle& other) const noexcept;
 

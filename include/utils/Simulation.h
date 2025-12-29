@@ -184,9 +184,6 @@ class Simulation {
 
         SPDLOG_DEBUG("Added {} (ghost) particles to remove", to_remove.size());
 
-        // Sort in descending order to remove from end first (avoids index shifting issues)
-        std::sort(to_remove.begin(), to_remove.end(), std::greater<size_t>());  // NOLINT
-
         // Remove particles using the standard vector iterator version
         for (size_t idx : to_remove) {
             particles.eraseParticle(particles.begin() + static_cast<std::ptrdiff_t>(idx));
@@ -229,8 +226,8 @@ class Simulation {
                 Particle& p2 = *it_prox;
                 Vector<double, 3> force = force_source.applyForce(p1, p2);
                 // Apply force directly (Newton's 3rd law: equal and opposite)
-                p1.getF() = p1.getF() + force;
-                p2.getF() = p2.getF() - force;
+                p1.getF() += force;
+                p2.getF() -= force;
             }
         }
         // Calculate forces from mirrored/ghost particles
@@ -272,7 +269,7 @@ class Simulation {
     void calculateX() {
         for (auto& p : particles) {
             p.getOldX() = p.getX();
-            p.getX() = p.getX() + (delta_t * p.getV()) + ((0.5 * delta_t * delta_t / p.getM()) * p.getF());
+            p.getX() += (delta_t * p.getV()) + ((0.5 * delta_t * delta_t / p.getM()) * p.getF());
         }
     }
 

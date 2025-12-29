@@ -369,32 +369,31 @@ void LinkedCellContainer::addParticle(R3 x_arg, R3 old_x_arg, R3 v_arg, R3 f_arg
 };
 
 std::vector<Particle>::iterator LinkedCellContainer::eraseParticle(std::vector<Particle>::iterator p) {
-    size_t cell_idx = findCellIndex(p->getX());
+    size_t cell_to_remove_idx = findCellIndex(p->getX());
 
-    if (cell_idx < cells.size()) {
-        size_t idx = &(*p) - data.data();
-        cells[cell_idx].removeParticle(idx);
-        std::vector<Particle>::iterator it = data.erase(p);  // NOLINT
-        if (it != data.end()) {
-            decreaseCellIndices(idx);
+    if (cell_to_remove_idx < cells.size()) {
+        size_t idx_to_remove = &(*p) - data.data();
+        size_t idx_to_swap = data.size() - 1;
+        if (idx_to_remove == idx_to_swap) {  // Particle to remove is already the last one
+            cells[cell_to_remove_idx].removeParticle(idx_to_remove);
+            return data.erase(p);
         }
-        return it;
+
+        // swap particle to remove with last particle, so no shifting of all particles (thanks Jonas Schuhmacher!)
+        size_t cell_to_swap_idx = findCellIndex(data[idx_to_swap].getX());
+        if (cell_to_swap_idx != cell_to_remove_idx) {
+            cells[cell_to_remove_idx].removeParticle(idx_to_remove);
+            cells[cell_to_swap_idx].updateParticleIndex(idx_to_swap, idx_to_remove);
+        } else {
+            cells[cell_to_remove_idx].removeParticle(idx_to_swap);
+        }
+
+        std::swap(data[idx_to_remove], data[idx_to_swap]);
+        data.pop_back();
+
+        return data.begin() + static_cast<std::ptrdiff_t>(idx_to_remove);  // NOLINT
     }
     return data.end();
-}
-
-LinkedCellContainer::proximity_iterator<Particle, Cell> LinkedCellContainer::eraseParticle(
-    LinkedCellContainer::proximity_iterator<Particle, Cell> p) {
-    size_t idx = &(*p) - data.data();
-    size_t cell_idx = findCellIndex(data[idx].getX());
-
-    proximity_iterator next_it = ++p;
-
-    cells[cell_idx].removeParticle(idx);
-    data.erase(data.begin() + static_cast<std::ptrdiff_t>(idx));  // NOLINT
-    decreaseCellIndices(idx);
-
-    return next_it;
 }
 
 std::vector<Particle>::iterator LinkedCellContainer::updateParticlePosition(std::vector<Particle>::iterator p,

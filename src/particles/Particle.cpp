@@ -56,25 +56,25 @@ Particle& Particle::operator=(const Particle& other) {
 
 Particle::Particle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg)
     : x(x_arg),
-      old_x(R3{0., 0., 0.}),
-      v(v_arg),
       f(R3(0., 0., 0.)),
-      old_f(R3{0., 0., 0.}),
-      m(m_arg),
       epsilon(epsilon_arg),
       sigma(sigma_arg),
+      v(v_arg),
+      m(m_arg),
+      old_x(R3{0., 0., 0.}),
+      old_f(R3{0., 0., 0.}),
       type(type_arg) {
     SPDLOG_DEBUG("Particle generated!");
 }
 Particle::Particle(R3 x_arg, R3 v_arg, R3 f_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg)
     : x(x_arg),
-      old_x(R3{0., 0., 0.}),
-      v(v_arg),
       f(f_arg),
-      old_f(R3{0., 0., 0.}),
-      m(m_arg),
       epsilon(epsilon_arg),
       sigma(sigma_arg),
+      v(v_arg),
+      m(m_arg),
+      old_x(R3{0., 0., 0.}),
+      old_f(R3{0., 0., 0.}),
       type(type_arg) {
     SPDLOG_DEBUG("Particle generated!");
 }
@@ -82,50 +82,18 @@ Particle::Particle(R3 x_arg, R3 v_arg, R3 f_arg, double m_arg, double epsilon_ar
 Particle::Particle(R3 x_arg, R3 old_x_arg, R3 v_arg, R3 f_arg, R3 old_f_arg, double m_arg, double epsilon_arg,
                    double sigma_arg, int type_arg)
     : x(x_arg),
-      old_x(old_x_arg),
-      v(v_arg),
       f(f_arg),
-      old_f(old_f_arg),
-      m(m_arg),
       epsilon(epsilon_arg),
       sigma(sigma_arg),
+      v(v_arg),
+      m(m_arg),
+      old_x(old_x_arg),
+      old_f(old_f_arg),
       type(type_arg) {
     SPDLOG_DEBUG("Particle generated!");
 }
 
 Particle::~Particle() { SPDLOG_DEBUG("Particle destructed!"); }
-
-const R3& Particle::getX() const noexcept { return x; }
-R3& Particle::getX() noexcept { return x; }
-
-const R3& Particle::getOldX() const noexcept { return old_x; }
-R3& Particle::getOldX() noexcept { return old_x; }
-
-const R3& Particle::getV() const noexcept { return v; }
-R3& Particle::getV() noexcept { return v; }
-
-const R3& Particle::getF() const noexcept { return f; }
-R3& Particle::getF() noexcept { return f; }
-
-const R3& Particle::getOldF() const noexcept { return old_f; }
-R3& Particle::getOldF() noexcept { return old_f; }
-
-double Particle::getM() const noexcept { return m; }
-
-const int& Particle::getType() const noexcept { return type; }
-int& Particle::getType() noexcept { return type; }
-
-double Particle::getSigma() const noexcept { return sigma; }
-
-double& Particle::getSigma() noexcept { return sigma; }
-
-double Particle::getEpsilon() const noexcept { return epsilon; }
-
-double& Particle::getEpsilon() noexcept { return epsilon; }
-
-uint32_t& Particle::getMirrorLocations() noexcept { return mirror_locations; }
-
-const uint32_t& Particle::getMirrorLocations() const noexcept { return mirror_locations; }
 
 std::string Particle::toString() const {
     std::stringstream stream;
