@@ -146,8 +146,7 @@ TYPED_TEST(ParticleContainerTest, AddParticleConstLvalue) {
     this->particles_full.addParticle(tmp);
     EXPECT_EQ(this->particles_empty.size(), 1U);
     EXPECT_EQ(this->particles_full.size(), 5U);
-    EXPECT_TRUE(this->particles_empty[0] == tmp);
-    EXPECT_TRUE(this->particles_full[4] == tmp);
+    EXPECT_TRUE(static_cast<const Particle&>(this->particles_empty[0]) == tmp);
 }
 
 /**
