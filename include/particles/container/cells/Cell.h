@@ -4,6 +4,7 @@
 #include <array>
 #include <cstdint>
 #include <unordered_set>
+#include <vector>
 
 #include "utils/Vector.h"
 
