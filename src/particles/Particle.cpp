@@ -15,11 +15,17 @@
 
 using namespace mol_sim;
 
-Particle::Particle(int type_arg) {
-    type = type_arg;
+Particle::Particle(int type_arg)
+    : x(R3{0., 0., 0.}),
+      f(R3{0., 0., 0.}),
+      epsilon(0.0),
+      sigma(0.0),
+      v(R3{0., 0., 0.}),
+      m(0.0),
+      old_x(R3{0., 0., 0.}),
+      old_f(R3{0., 0., 0.}),
+      type(type_arg) {
     SPDLOG_DEBUG("Particle generated!");
-    f = {0., 0., 0.};
-    old_f = {0., 0., 0.};
 }
 
 Particle::Particle(const Particle& other) {
