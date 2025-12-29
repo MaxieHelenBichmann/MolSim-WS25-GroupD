@@ -120,7 +120,7 @@ TEST_F(ContainerRefTest, testAddParticleConstLval) {
     particles_full.addParticle(tmp);
     EXPECT_EQ(particles_empty.size(), static_cast<size_t>(1));
     EXPECT_EQ(particles_full.size(), static_cast<size_t>(5));
-    EXPECT_TRUE(static_cast<const Particle&>(particles_empty[0]) == tmp);
+    EXPECT_TRUE(particles_empty[0] == tmp);
 }
 
 /**
