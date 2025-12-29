@@ -4,18 +4,48 @@
 
 using namespace mol_sim;
 
+void Cell::updateCache() {
+    if (cache_dirty) {
+        sorted_cache.clear();
+        sorted_cache.reserve(indices.size());
+        sorted_cache.insert(sorted_cache.end(), indices.begin(), indices.end());
+        std::sort(sorted_cache.begin(), sorted_cache.end());  // NOLINT
+        cache_dirty = false;
+    }
+}
+
 Cell::Cell(CellType cell_type, std::array<double, 6> bounds) noexcept : type(cell_type), bounds(bounds) {}
 
-void Cell::addParticle(size_t idx) { indices.insert(idx); }
-void Cell::removeParticle(size_t idx) noexcept { indices.erase(idx); }
+void Cell::addParticle(size_t idx) {
+    auto [_, inserted] = indices.insert(idx);
+    cache_dirty = inserted || cache_dirty;
+}
+void Cell::removeParticle(size_t idx) noexcept { cache_dirty = indices.erase(idx) != 0 || cache_dirty; }
 void Cell::updateParticleIndex(size_t old_idx, size_t new_idx) {
     auto it = indices.find(old_idx);
     if (it != indices.end()) {
         indices.erase(it);
         indices.insert(new_idx);
-        return;
+        cache_dirty = true;
     }
 }
+std::vector<size_t>::iterator Cell::stableIteratorBegin() {
+    updateCache();
+    return sorted_cache.begin();
+}
+std::vector<size_t>::iterator Cell::stableIteratorEnd() {
+    updateCache();
+    return sorted_cache.end();
+}
+std::vector<size_t>::const_iterator Cell::stableIteratorBegin() const {
+    const_cast<Cell*>(this)->updateCache();
+    return sorted_cache.begin();
+}
+std::vector<size_t>::const_iterator Cell::stableIteratorEnd() const {
+    const_cast<Cell*>(this)->updateCache();
+    return sorted_cache.end();
+}
+
 void Cell::clear() noexcept { indices.clear(); }
 bool Cell::fits(R3 x) const noexcept {
     return bounds[0] <= x[0] && x[0] <= bounds[1] && bounds[2] <= x[1] && x[1] <= bounds[3] && bounds[4] <= x[2] &&

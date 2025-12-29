@@ -341,7 +341,7 @@ class LinkedCellContainer {
         requires((std::is_same_v<P, Particle> && std::is_same_v<C, Cell>) ||
                  (std::is_same_v<P, const Particle> && std::is_same_v<C, const Cell>))
     class proximity_iterator {
-        std::set<size_t>::iterator cur;
+        std::vector<size_t>::const_iterator cur;
         std::vector<C*> cells;
         size_t curr_cell_idx = 0;
         std::span<P> container_data;
@@ -351,19 +351,19 @@ class LinkedCellContainer {
 
         void inc() {
             SPDLOG_DEBUG("Incrementing proximity iterator");
-            if (cur != cells[curr_cell_idx]->particles().end()) {
+            if (cur != cells[curr_cell_idx]->stableIteratorEnd()) {
                 ++cur;
             }
-            while (cur == cells[curr_cell_idx]->particles().end() &&
+            while (cur == cells[curr_cell_idx]->stableIteratorEnd() &&
                    curr_cell_idx < cells.size() - 1) {  // reached end of current cell
                 curr_cell_idx++;
-                cur = cells[curr_cell_idx]->particles().begin();
+                cur = cells[curr_cell_idx]->stableIteratorBegin();
             }
         }
 
         void satisfy() {
-            while (cur != cells.back()->particles().end() &&
-                   (cur == cells[curr_cell_idx]->particles().end() ||
+            while (cur != cells.back()->stableIteratorEnd() &&
+                   (cur == cells[curr_cell_idx]->stableIteratorEnd() ||
                     !((center - container_data[*cur].getX()).euclidNorm() <= radius) ||
                     (curr_cell_idx == cells.size() - 1 && *cur <= center_idx && center_idx != container_data.size()))) {
                 inc();
@@ -378,7 +378,7 @@ class LinkedCellContainer {
         using reference = P&;
 
         proximity_iterator() noexcept : radius(0.0) {}
-        proximity_iterator(R3 center, double radius, std::set<size_t>::iterator cur, std::vector<C*>&& cells,
+        proximity_iterator(R3 center, double radius, std::vector<size_t>::const_iterator cur, std::vector<C*>&& cells,
                            std::span<P> data, size_t center_idx)
             : cur(cur),
               cells(std::move(cells)),
