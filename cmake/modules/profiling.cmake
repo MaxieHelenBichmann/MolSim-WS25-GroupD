@@ -45,8 +45,10 @@ endif()
 if(ENABLE_INTEL_VTUNE OR ENABLE_INTEL_ADVISOR)
     if(CMAKE_CXX_COMPILER_ID MATCHES "Intel")
         # Intel-specific flags for better profiling
-        set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -g -O2 -qopt-report=5")
-        message(STATUS "Added Intel compiler profiling flags")
+        # -g: debug symbols, -O2: optimization level
+        # Note: -qopt-report is only useful during linking, omitted to avoid warnings
+        set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -g -O2")
+        message(STATUS "Added Intel compiler profiling flags (-g -O2)")
     endif()
 endif()
 
