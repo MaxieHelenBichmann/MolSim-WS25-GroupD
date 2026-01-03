@@ -158,49 +158,38 @@ function(add_vtune_targets TARGET_NAME)
     if(NOT VTUNE_EXECUTABLE)
         return()
     endif()
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        message(WARNING "VTune profiling should be used with RelWithDebInfo for accurate results")
-    endif()
     
     set(VTUNE_INPUT_FILE "${PROJECT_SOURCE_DIR}/input/benchmark_10k.yaml" CACHE STRING "Input file for VTune profiling")
     set(VTUNE_ARGS "" CACHE STRING "Arguments for VTune profiling runs")
     set(VTUNE_OUTPUT_DIR "${PROJECT_BINARY_DIR}/vtune" CACHE STRING "Output directory for VTune results")
     
-    # Hotspots analysis (CPU usage)
     add_custom_target(vtune-hotspots
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${VTUNE_OUTPUT_DIR}
         COMMAND ${VTUNE_EXECUTABLE} -collect hotspots -result-dir ${VTUNE_OUTPUT_DIR}/hotspots
                 -- $<TARGET_FILE:${TARGET_NAME}> ${VTUNE_INPUT_FILE} ${VTUNE_ARGS}
-        COMMAND ${CMAKE_COMMAND} -E echo "Hotspots analysis complete. View with: vtune-gui ${VTUNE_OUTPUT_DIR}/hotspots"
         DEPENDS ${TARGET_NAME}
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         COMMENT "Running VTune hotspots analysis"
         VERBATIM
     )
     
-    # Memory access analysis
     add_custom_target(vtune-memory
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${VTUNE_OUTPUT_DIR}
         COMMAND ${VTUNE_EXECUTABLE} -collect memory-access -result-dir ${VTUNE_OUTPUT_DIR}/memory
                 -- $<TARGET_FILE:${TARGET_NAME}> ${VTUNE_INPUT_FILE} ${VTUNE_ARGS}
-        COMMAND ${CMAKE_COMMAND} -E echo "Memory access analysis complete. View with: vtune-gui ${VTUNE_OUTPUT_DIR}/memory"
         DEPENDS ${TARGET_NAME}
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         COMMENT "Running VTune memory access analysis"
         VERBATIM
     )
     
-    # Microarchitecture exploration
     add_custom_target(vtune-uarch
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${VTUNE_OUTPUT_DIR}
         COMMAND ${VTUNE_EXECUTABLE} -collect uarch-exploration -result-dir ${VTUNE_OUTPUT_DIR}/uarch
                 -- $<TARGET_FILE:${TARGET_NAME}> ${VTUNE_INPUT_FILE} ${VTUNE_ARGS}
-        COMMAND ${CMAKE_COMMAND} -E echo "Microarchitecture analysis complete. View with: vtune-gui ${VTUNE_OUTPUT_DIR}/uarch"
         DEPENDS ${TARGET_NAME}
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         COMMENT "Running VTune microarchitecture exploration"
         VERBATIM
     )
+    
     message(STATUS "Added VTune targets: vtune-hotspots, vtune-memory, vtune-uarch")
 endfunction()
 
@@ -209,64 +198,39 @@ function(add_advisor_targets TARGET_NAME)
     if(NOT ADVISOR_EXECUTABLE)
         return()
     endif()
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        message(WARNING "Advisor analysis should be used with RelWithDebInfo for accurate results")
-    endif()
     
-    set(ADVISOR_INPUT_FILE "${PROJECT_SOURCE_DIR}/input/particles.yaml" CACHE STRING "Input file for Advisor analysis")
+    set(ADVISOR_INPUT_FILE "${PROJECT_SOURCE_DIR}/input/benchmark_10k.yaml" CACHE STRING "Input file for Advisor analysis")
     set(ADVISOR_ARGS "" CACHE STRING "Arguments for Advisor runs")
     set(ADVISOR_OUTPUT_DIR "${PROJECT_BINARY_DIR}/advisor" CACHE STRING "Output directory for Advisor results")
     
-    # Survey analysis (identify optimization opportunities)
     add_custom_target(advisor-survey
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${ADVISOR_OUTPUT_DIR}
         COMMAND ${ADVISOR_EXECUTABLE} --collect=survey --project-dir=${ADVISOR_OUTPUT_DIR}/survey
                 -- $<TARGET_FILE:${TARGET_NAME}> ${ADVISOR_INPUT_FILE} ${ADVISOR_ARGS}
-        COMMAND ${CMAKE_COMMAND} -E echo "Survey complete. View with: advisor-gui ${ADVISOR_OUTPUT_DIR}/survey"
         DEPENDS ${TARGET_NAME}
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         COMMENT "Running Advisor survey analysis"
         VERBATIM
     )
     
-    # Trip counts and FLOPS analysis
     add_custom_target(advisor-tripcounts
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${ADVISOR_OUTPUT_DIR}
         COMMAND ${ADVISOR_EXECUTABLE} --collect=tripcounts --project-dir=${ADVISOR_OUTPUT_DIR}/survey
                 -- $<TARGET_FILE:${TARGET_NAME}> ${ADVISOR_INPUT_FILE} ${ADVISOR_ARGS}
-        COMMAND ${CMAKE_COMMAND} -E echo "Trip counts analysis complete"
         DEPENDS ${TARGET_NAME}
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         COMMENT "Running Advisor trip counts analysis"
         VERBATIM
     )
     
-    # Roofline analysis (performance characterization)
     add_custom_target(advisor-roofline
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${ADVISOR_OUTPUT_DIR}
         COMMAND ${ADVISOR_EXECUTABLE} --collect=roofline --project-dir=${ADVISOR_OUTPUT_DIR}/roofline
                 -- $<TARGET_FILE:${TARGET_NAME}> ${ADVISOR_INPUT_FILE} ${ADVISOR_ARGS}
-        COMMAND ${CMAKE_COMMAND} -E echo "Roofline analysis complete. View with: advisor-gui ${ADVISOR_OUTPUT_DIR}/roofline"
         DEPENDS ${TARGET_NAME}
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         COMMENT "Running Advisor roofline analysis"
         VERBATIM
     )
     
-    # Dependencies analysis (find parallelization opportunities)
-    add_custom_target(advisor-dependencies
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${ADVISOR_OUTPUT_DIR}
-        COMMAND ${ADVISOR_EXECUTABLE} --collect=dependencies --project-dir=${ADVISOR_OUTPUT_DIR}/dependencies
-                -- $<TARGET_FILE:${TARGET_NAME}> ${ADVISOR_INPUT_FILE} ${ADVISOR_ARGS}
-        COMMAND ${CMAKE_COMMAND} -E echo "Dependencies analysis complete. View with: advisor-gui ${ADVISOR_OUTPUT_DIR}/dependencies"
-        DEPENDS ${TARGET_NAME}
-        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-        COMMENT "Running Advisor dependencies analysis"
-        VERBATIM
-    )
-    
-    
-    message(STATUS "Added Advisor targets: advisor-survey, advisor-tripcounts, advisor-roofline, advisor-dependencies")
+    message(STATUS "Added Advisor targets: advisor-survey, advisor-tripcounts, advisor-roofline")
 endfunction()
 
 # Function to add combined profiling targets
@@ -278,42 +242,30 @@ function(add_intel_batch_targets TARGET_NAME)
     set(PROFILING_OUTPUT_DIR "${PROJECT_BINARY_DIR}/profiling-results" CACHE STRING "Output directory for all profiling results")
     
     if(VTUNE_EXECUTABLE)
-        # Run all VTune analyses and create archive
         add_custom_target(vtune-all
-            COMMAND ${CMAKE_COMMAND} -E echo "Running all VTune analyses..."
             COMMAND ${CMAKE_COMMAND} -E make_directory ${PROFILING_OUTPUT_DIR}/vtune
-            COMMAND ${CMAKE_COMMAND} -E echo "[1/3] Running hotspots analysis..."
             COMMAND ${VTUNE_EXECUTABLE} -collect hotspots -result-dir ${PROFILING_OUTPUT_DIR}/vtune/hotspots
                     -- $<TARGET_FILE:${TARGET_NAME}> ${VTUNE_INPUT_FILE} ${VTUNE_ARGS}
-            COMMAND ${CMAKE_COMMAND} -E echo "[2/3] Running memory access analysis..."
             COMMAND ${VTUNE_EXECUTABLE} -collect memory-access -result-dir ${PROFILING_OUTPUT_DIR}/vtune/memory
                     -- $<TARGET_FILE:${TARGET_NAME}> ${VTUNE_INPUT_FILE} ${VTUNE_ARGS}
-            COMMAND ${CMAKE_COMMAND} -E echo "[3/3] Running microarchitecture exploration..."
             COMMAND ${VTUNE_EXECUTABLE} -collect uarch-exploration -result-dir ${PROFILING_OUTPUT_DIR}/vtune/uarch
                     -- $<TARGET_FILE:${TARGET_NAME}> ${VTUNE_INPUT_FILE} ${VTUNE_ARGS}
-            COMMAND ${CMAKE_COMMAND} -E echo "VTune analyses complete in ${PROFILING_OUTPUT_DIR}/vtune"
             DEPENDS ${TARGET_NAME}
             WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-            COMMENT "Running all VTune profiling analyses"
+            COMMENT "Running all VTune analyses"
             VERBATIM
         )
     endif()
     
     if(ADVISOR_EXECUTABLE)
-        # Run all Advisor analyses
         add_custom_target(advisor-all
-            COMMAND ${CMAKE_COMMAND} -E echo "Running all Advisor analyses..."
             COMMAND ${CMAKE_COMMAND} -E make_directory ${PROFILING_OUTPUT_DIR}/advisor
-            COMMAND ${CMAKE_COMMAND} -E echo "[1/3] Running survey analysis..."
             COMMAND ${ADVISOR_EXECUTABLE} --collect=survey --project-dir=${PROFILING_OUTPUT_DIR}/advisor/survey
                     -- $<TARGET_FILE:${TARGET_NAME}> ${ADVISOR_INPUT_FILE} ${ADVISOR_ARGS}
-            COMMAND ${CMAKE_COMMAND} -E echo "[2/3] Running trip counts analysis..."
             COMMAND ${ADVISOR_EXECUTABLE} --collect=tripcounts --project-dir=${PROFILING_OUTPUT_DIR}/advisor/survey
                     -- $<TARGET_FILE:${TARGET_NAME}> ${ADVISOR_INPUT_FILE} ${ADVISOR_ARGS}
-            COMMAND ${CMAKE_COMMAND} -E echo "[3/3] Running roofline analysis..."
             COMMAND ${ADVISOR_EXECUTABLE} --collect=roofline --project-dir=${PROFILING_OUTPUT_DIR}/advisor/roofline
                     -- $<TARGET_FILE:${TARGET_NAME}> ${ADVISOR_INPUT_FILE} ${ADVISOR_ARGS}
-            COMMAND ${CMAKE_COMMAND} -E echo "Advisor analyses complete in ${PROFILING_OUTPUT_DIR}/advisor"
             DEPENDS ${TARGET_NAME}
             WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
             COMMENT "Running all Advisor analyses"
@@ -322,54 +274,35 @@ function(add_intel_batch_targets TARGET_NAME)
     endif()
     
     if(VTUNE_EXECUTABLE AND ADVISOR_EXECUTABLE)
-        # Combined target to run everything
         add_custom_target(intel-profile-all
-            COMMAND ${CMAKE_COMMAND} -E echo "=== Starting complete Intel profiling suite ==="
             COMMAND ${CMAKE_COMMAND} --build ${PROJECT_BINARY_DIR} --target vtune-all
             COMMAND ${CMAKE_COMMAND} --build ${PROJECT_BINARY_DIR} --target advisor-all
-            COMMAND ${CMAKE_COMMAND} -E echo "=== Creating transferable archive ==="
             COMMAND ${CMAKE_COMMAND} -E tar czf ${PROJECT_BINARY_DIR}/profiling-results.tar.gz 
                     --directory=${PROJECT_BINARY_DIR} profiling-results
-            COMMAND ${CMAKE_COMMAND} -E echo ""
-            COMMAND ${CMAKE_COMMAND} -E echo "==================================================================="
-            COMMAND ${CMAKE_COMMAND} -E echo "All profiling complete!"
-            COMMAND ${CMAKE_COMMAND} -E echo "Results location: ${PROFILING_OUTPUT_DIR}"
-            COMMAND ${CMAKE_COMMAND} -E echo "Archive for transfer: ${PROJECT_BINARY_DIR}/profiling-results.tar.gz"
-            COMMAND ${CMAKE_COMMAND} -E echo ""
-            COMMAND ${CMAKE_COMMAND} -E echo "To transfer results to local machine:"
-            COMMAND ${CMAKE_COMMAND} -E echo "  scp <cluster>:${PROJECT_BINARY_DIR}/profiling-results.tar.gz ."
-            COMMAND ${CMAKE_COMMAND} -E echo "  tar xzf profiling-results.tar.gz"
-            COMMAND ${CMAKE_COMMAND} -E echo ""
-            COMMAND ${CMAKE_COMMAND} -E echo "To view results locally:"
-            COMMAND ${CMAKE_COMMAND} -E echo "  vtune-gui profiling-results/vtune/hotspots"
-            COMMAND ${CMAKE_COMMAND} -E echo "  advisor-gui profiling-results/advisor/survey"
-            COMMAND ${CMAKE_COMMAND} -E echo "==================================================================="
             DEPENDS ${TARGET_NAME}
-            WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-            COMMENT "Running complete Intel profiling suite and creating archive"
+            COMMENT "Running Intel profiling and creating archive"
             VERBATIM
         )
-        
-        message(STATUS "Added combined target: intel-profile-all (runs vtune-all + advisor-all + creates archive)")
+        message(STATUS "Added combined target: intel-profile-all")
     elseif(VTUNE_EXECUTABLE)
         add_custom_target(intel-profile-all
             COMMAND ${CMAKE_COMMAND} --build ${PROJECT_BINARY_DIR} --target vtune-all
             COMMAND ${CMAKE_COMMAND} -E tar czf ${PROJECT_BINARY_DIR}/profiling-results.tar.gz 
                     --directory=${PROJECT_BINARY_DIR} profiling-results
-            COMMAND ${CMAKE_COMMAND} -E echo "VTune profiling complete. Archive: ${PROJECT_BINARY_DIR}/profiling-results.tar.gz"
             DEPENDS ${TARGET_NAME}
             COMMENT "Running VTune profiling and creating archive"
+            VERBATIM
         )
-        message(STATUS "Added combined target: intel-profile-all (vtune-all + archive)")
+        message(STATUS "Added combined target: intel-profile-all (VTune only)")
     elseif(ADVISOR_EXECUTABLE)
         add_custom_target(intel-profile-all
             COMMAND ${CMAKE_COMMAND} --build ${PROJECT_BINARY_DIR} --target advisor-all
             COMMAND ${CMAKE_COMMAND} -E tar czf ${PROJECT_BINARY_DIR}/profiling-results.tar.gz 
                     --directory=${PROJECT_BINARY_DIR} profiling-results
-            COMMAND ${CMAKE_COMMAND} -E echo "Advisor profiling complete. Archive: ${PROJECT_BINARY_DIR}/profiling-results.tar.gz"
             DEPENDS ${TARGET_NAME}
             COMMENT "Running Advisor profiling and creating archive"
+            VERBATIM
         )
-        message(STATUS "Added combined target: intel-profile-all (advisor-all + archive)")
+        message(STATUS "Added combined target: intel-profile-all (Advisor only)")
     endif()
 endfunction()
