@@ -45,3 +45,15 @@ if(ENABLE_PROFILING)
     add_perf_targets(MolSim)
     add_valgrind_targets(MolSim)
 endif()
+
+if(ENABLE_INTEL_VTUNE)
+    add_vtune_targets(MolSim)
+endif()
+
+if(ENABLE_INTEL_ADVISOR)
+    add_advisor_targets(MolSim)
+endif()
+
+if(ENABLE_INTEL_VTUNE OR ENABLE_INTEL_ADVISOR)
+    add_intel_batch_targets(MolSim)
+endif()
