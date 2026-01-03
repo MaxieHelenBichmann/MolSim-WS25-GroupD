@@ -275,31 +275,52 @@ function(add_intel_batch_targets TARGET_NAME)
     
     if(VTUNE_EXECUTABLE AND ADVISOR_EXECUTABLE)
         add_custom_target(intel-profile-all
-            COMMAND ${CMAKE_COMMAND} --build ${PROJECT_BINARY_DIR} --target vtune-all
-            COMMAND ${CMAKE_COMMAND} --build ${PROJECT_BINARY_DIR} --target advisor-all
-            COMMAND ${CMAKE_COMMAND} -E tar czf ${PROJECT_BINARY_DIR}/profiling-results.tar.gz 
-                    --directory=${PROJECT_BINARY_DIR} profiling-results
-            DEPENDS ${TARGET_NAME}
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${PROFILING_OUTPUT_DIR}/vtune
+            COMMAND ${VTUNE_EXECUTABLE} -collect hotspots -result-dir ${PROFILING_OUTPUT_DIR}/vtune/hotspots
+                    -- $<TARGET_FILE:${TARGET_NAME}> ${VTUNE_INPUT_FILE} ${VTUNE_ARGS}
+            COMMAND ${VTUNE_EXECUTABLE} -collect memory-access -result-dir ${PROFILING_OUTPUT_DIR}/vtune/memory
+                    -- $<TARGET_FILE:${TARGET_NAME}> ${VTUNE_INPUT_FILE} ${VTUNE_ARGS}
+            COMMAND ${VTUNE_EXECUTABLE} -collect uarch-exploration -result-dir ${PROFILING_OUTPUT_DIR}/vtune/uarch
+                    -- $<TARGET_FILE:${TARGET_NAME}> ${VTUNE_INPUT_FILE} ${VTUNE_ARGS}
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${PROFILING_OUTPUT_DIR}/advisor
+            COMMAND ${ADVISOR_EXECUTABLE} --collect=survey --project-dir=${PROFILING_OUTPUT_DIR}/advisor/survey
+                    -- $<TARGET_FILE:${TARGET_NAME}> ${ADVISOR_INPUT_FILE} ${ADVISOR_ARGS}
+            COMMAND ${ADVISOR_EXECUTABLE} --collect=tripcounts --project-dir=${PROFILING_OUTPUT_DIR}/advisor/survey
+                    -- $<TARGET_FILE:${TARGET_NAME}> ${ADVISOR_INPUT_FILE} ${ADVISOR_ARGS}
+            COMMAND ${ADVISOR_EXECUTABLE} --collect=roofline --project-dir=${PROFILING_OUTPUT_DIR}/advisor/roofline
+                    -- $<TARGET_FILE:${TARGET_NAME}> ${ADVISOR_INPUT_FILE} ${ADVISOR_ARGS}
+            COMMAND ${CMAKE_COMMAND} -E tar czf ${PROJECT_BINARY_DIR}/profiling-results.tar.gz profiling-results
+            WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
             COMMENT "Running Intel profiling and creating archive"
             VERBATIM
         )
         message(STATUS "Added combined target: intel-profile-all")
     elseif(VTUNE_EXECUTABLE)
         add_custom_target(intel-profile-all
-            COMMAND ${CMAKE_COMMAND} --build ${PROJECT_BINARY_DIR} --target vtune-all
-            COMMAND ${CMAKE_COMMAND} -E tar czf ${PROJECT_BINARY_DIR}/profiling-results.tar.gz 
-                    --directory=${PROJECT_BINARY_DIR} profiling-results
-            DEPENDS ${TARGET_NAME}
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${PROFILING_OUTPUT_DIR}/vtune
+            COMMAND ${VTUNE_EXECUTABLE} -collect hotspots -result-dir ${PROFILING_OUTPUT_DIR}/vtune/hotspots
+                    -- $<TARGET_FILE:${TARGET_NAME}> ${VTUNE_INPUT_FILE} ${VTUNE_ARGS}
+            COMMAND ${VTUNE_EXECUTABLE} -collect memory-access -result-dir ${PROFILING_OUTPUT_DIR}/vtune/memory
+                    -- $<TARGET_FILE:${TARGET_NAME}> ${VTUNE_INPUT_FILE} ${VTUNE_ARGS}
+            COMMAND ${VTUNE_EXECUTABLE} -collect uarch-exploration -result-dir ${PROFILING_OUTPUT_DIR}/vtune/uarch
+                    -- $<TARGET_FILE:${TARGET_NAME}> ${VTUNE_INPUT_FILE} ${VTUNE_ARGS}
+            COMMAND ${CMAKE_COMMAND} -E tar czf ${PROJECT_BINARY_DIR}/profiling-results.tar.gz profiling-results
+            WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
             COMMENT "Running VTune profiling and creating archive"
             VERBATIM
         )
         message(STATUS "Added combined target: intel-profile-all (VTune only)")
     elseif(ADVISOR_EXECUTABLE)
         add_custom_target(intel-profile-all
-            COMMAND ${CMAKE_COMMAND} --build ${PROJECT_BINARY_DIR} --target advisor-all
-            COMMAND ${CMAKE_COMMAND} -E tar czf ${PROJECT_BINARY_DIR}/profiling-results.tar.gz 
-                    --directory=${PROJECT_BINARY_DIR} profiling-results
-            DEPENDS ${TARGET_NAME}
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${PROFILING_OUTPUT_DIR}/advisor
+            COMMAND ${ADVISOR_EXECUTABLE} --collect=survey --project-dir=${PROFILING_OUTPUT_DIR}/advisor/survey
+                    -- $<TARGET_FILE:${TARGET_NAME}> ${ADVISOR_INPUT_FILE} ${ADVISOR_ARGS}
+            COMMAND ${ADVISOR_EXECUTABLE} --collect=tripcounts --project-dir=${PROFILING_OUTPUT_DIR}/advisor/survey
+                    -- $<TARGET_FILE:${TARGET_NAME}> ${ADVISOR_INPUT_FILE} ${ADVISOR_ARGS}
+            COMMAND ${ADVISOR_EXECUTABLE} --collect=roofline --project-dir=${PROFILING_OUTPUT_DIR}/advisor/roofline
+                    -- $<TARGET_FILE:${TARGET_NAME}> ${ADVISOR_INPUT_FILE} ${ADVISOR_ARGS}
+            COMMAND ${CMAKE_COMMAND} -E tar czf ${PROJECT_BINARY_DIR}/profiling-results.tar.gz profiling-results
+            WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
             COMMENT "Running Advisor profiling and creating archive"
             VERBATIM
         )
