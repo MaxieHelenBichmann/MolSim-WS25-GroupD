@@ -52,3 +52,14 @@ doxys_documentation/
 
 #data
 benchmark_data/
+
+# Intel Profiling Results
+profiling-results/
+profiling-results.tar.gz
+vtune/
+advisor/
+perf.data
+perf.data.old
+*.vtune
+*.advixeproj
+valgrind/
