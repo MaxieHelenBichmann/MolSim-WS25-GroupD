@@ -55,6 +55,7 @@ class YAMLWriterCPTest : public testing::Test {
         settings.start_time = current_time;
         settings.base_name = base_name;
         settings.force = force;
+        settings.container_type = "SIMPLE";
         settings.frequency_output = frequency_output;
         settings.frequency_checkpoint = frequency_checkpoint;
         settings.cutoff = cutoff_radius;
@@ -115,6 +116,7 @@ TEST_F(YAMLWriterCPTest, testWritesSimpleSettingsAndParticleData) {  // NOLINT
     EXPECT_DOUBLE_EQ(start_time, settings_node["start_time"].as<double>());
     EXPECT_EQ(base_name, settings_node["base_name"].as<std::string>());
     EXPECT_EQ("Lennard Jones", settings_node["force"].as<std::string>());
+    EXPECT_EQ("SIMPLE", settings_node["container"].as<std::string>());
     EXPECT_EQ(frequency_output, settings_node["frequency"].as<size_t>());
     EXPECT_EQ(frequency_checkpoint, settings_node["checkpoint"].as<size_t>());
     EXPECT_DOUBLE_EQ(cutoff_radius, settings_node["cutoff"].as<double>());
@@ -264,6 +266,7 @@ TEST_F(YAMLWriterCPTest, testReadBackCheckpointWithYAMLReader) {  // NOLINT
     EXPECT_DOUBLE_EQ(end_time, settings.end_time);
     EXPECT_EQ(base_name, settings.base_name);
     EXPECT_EQ(Force::LENNARDJONES, settings.force);
+    EXPECT_EQ("SIMPLE", settings.container_type);
     EXPECT_EQ(frequency_output, settings.frequency_output);
     EXPECT_EQ(frequency_checkpoint, settings.frequency_checkpoint);
     EXPECT_DOUBLE_EQ(cutoff_radius, settings.cutoff);

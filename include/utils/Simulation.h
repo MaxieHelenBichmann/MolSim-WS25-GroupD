@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
-#include <functional>
+#include <type_traits>
 #include <vector>
 
 #include "exceptions/SimulationException.h"
@@ -14,6 +14,7 @@
 #include "io/OutputWriter.h"
 #include "particles/Particle.h"
 #include "particles/ParticleContainer.h"
+#include "particles/container/LinkedCellContainer.h"
 #include "particles/container/domain/Domain.h"
 #include "physics/ForceSource.h"
 #include "utils/Settings.h"
@@ -314,6 +315,11 @@ class Simulation {
         cp_settings.start_time = current_time;
         cp_settings.base_name = base_name;
         cp_settings.force = force;
+        if constexpr (std::is_same_v<std::remove_cvref_t<containerType>, LinkedCellContainer>) {
+            cp_settings.container_type = "LINKED";
+        } else {
+            cp_settings.container_type = "SIMPLE";
+        }
         cp_settings.frequency_output = frequency_output;
         cp_settings.frequency_checkpoint = frequency_checkpoint;
         cp_settings.cutoff = cutoff_radius;

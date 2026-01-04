@@ -46,6 +46,7 @@ void YAMLWriterCP::createCheckpoint(SettingsParam& settings, const Domain& domai
     ;
     out << YAML::Key << "base_name" << YAML::Value << settings.base_name;
     out << YAML::Key << "force" << YAML::Value << (settings.force == LENNARDJONES ? "Lennard Jones" : "Gravitational");
+    out << YAML::Key << "container" << YAML::Value << settings.container_type;
     out << YAML::Key << "frequency" << YAML::Value << settings.frequency_output;
     out << YAML::Key << "checkpoint" << YAML::Value << settings.frequency_checkpoint;
     out << YAML::Key << "cutoff" << YAML::Value << settings.cutoff;
