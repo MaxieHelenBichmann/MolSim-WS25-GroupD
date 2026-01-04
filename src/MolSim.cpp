@@ -84,7 +84,8 @@ int main(int argc, char* argsv[]) {
             SimpleContainer particle_container(settings.domain.getDimension(), settings.cutoff);
             for (const auto& file_name : files) {
                 file_reader->readParticles(particle_container, settings, file_name);
-                SPDLOG_INFO("Loaded {} particles from {}", particle_container.size(), file_name);
+                SPDLOG_INFO("Loaded {} particles from {} into a Simple Container.", particle_container.size(),
+                            file_name);
                 SPDLOG_INFO("Simulation configured: {} particles, delta_t={}, t=[{}, {}]", particle_container.size(),
                             settings.delta_t, settings.start_time, settings.end_time);
             }
@@ -94,7 +95,8 @@ int main(int argc, char* argsv[]) {
             LinkedCellContainer particle_container{settings.domain.getDimension(), settings.cutoff};
             for (const auto& file_name : files) {
                 file_reader->readParticles(particle_container, settings, file_name);
-                SPDLOG_INFO("Loaded {} particles from {}", particle_container.size(), file_name);
+                SPDLOG_INFO("Loaded {} particles from {} into a Linked Cell Container.", particle_container.size(),
+                            file_name);
                 SPDLOG_INFO("Simulation configured: {} particles, delta_t={}, t=[{}, {}]", particle_container.size(),
                             settings.delta_t, settings.start_time, settings.end_time);
             }

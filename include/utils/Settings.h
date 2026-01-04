@@ -126,7 +126,7 @@ class SettingsParam {
      * SIMPLE = SimpleContainer
      * LINKED = LinkedCellContainer
      */
-    std::string container_type = "SIMPLE";
+    std::string container_type = "LINKED";
     /**
      * @brief The domain of the simulation.
      */

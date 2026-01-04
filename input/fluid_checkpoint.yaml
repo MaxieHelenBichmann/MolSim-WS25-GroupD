@@ -5,7 +5,7 @@ settings:
   start_time: 0.0
   force: "Lennard Jones"
   frequency: 10
-  cutoff: 2.5
+  cutoff: 3
   container: LINKED
 
   thermostat: 
