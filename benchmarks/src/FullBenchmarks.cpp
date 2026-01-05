@@ -189,9 +189,12 @@ static void bmSimulationFullContest(benchmark::State& state) {
     }
 }
 
-BENCHMARK(bmSimulationFullBenchmark)->Name("Simulation/Full/LinkedCell")->Unit(benchmark::kMillisecond)->Repetitions(5);
+BENCHMARK(bmSimulationFullBenchmark)
+    ->Name("Simulation/Full/Benchmark/LinkedCell")
+    ->Unit(benchmark::kMillisecond)
+    ->Repetitions(5);
 BENCHMARK(bmSimulationFullContest)
-    ->Name("Simulation/Contest/LinkedCell")
+    ->Name("Simulation/Full/Contest/LinkedCell")
     ->Unit(benchmark::kMillisecond)
     ->Repetitions(5);
 
