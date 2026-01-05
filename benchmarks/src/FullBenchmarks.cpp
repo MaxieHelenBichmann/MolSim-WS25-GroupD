@@ -82,11 +82,42 @@ SettingsParam createBenchmarkSettings(R3 domain_size, double cutoff, double delt
 }
 
 /**
+ * @brief Creates simulation settings for large-scale benchmark.
+ * 2D domain with periodic boundaries on left/right and reflecting boundaries on top/bottom.
+ */
+SettingsParam createContestSettings() {
+    SettingsParam settings;
+    settings.delta_t = 0.0005;
+    settings.start_time = 0.0;
+    settings.end_time = 0.5;
+    settings.cutoff = 3;
+    settings.dimensions = 2;
+    settings.base_name = "contest";
+    settings.force = Force::LENNARDJONES;
+    settings.thermo = true;
+    settings.init_temp = 40;
+    settings.target_temp = 40.;
+    settings.thermostat_freq = 1000;
+    settings.g_grav = -12.44;
+    R3 domain_size = {300., 54., 1.};
+    std::array<std::unique_ptr<Boundary>, 6> boundaries;
+    boundaries[0] = std::make_unique<Periodic>(BoundaryLocation::LEFT, domain_size, 3, 2);
+    boundaries[1] = std::make_unique<Periodic>(BoundaryLocation::RIGHT, domain_size, 3, 2);
+    boundaries[2] = std::make_unique<Reflecting>(BoundaryLocation::FRONT, domain_size, false);
+    boundaries[3] = std::make_unique<Reflecting>(BoundaryLocation::BACK, domain_size, false);
+    boundaries[4] = std::make_unique<Outflow>(BoundaryLocation::UPPER, domain_size);
+    boundaries[5] = std::make_unique<Outflow>(BoundaryLocation::LOWER, domain_size);
+
+    settings.domain = Domain(domain_size, std::move(boundaries));
+    return settings;
+}
+
+/**
  * @brief Benchmarks full simulation loop with LinkedCellContainer (10000+ particles).
  * Setup: 100x100x1 particle grid in 2D domain with periodic left/right, reflecting top/bottom.
  * Measures: Total runtime and calculates molecule-updates-per-second.
  */
-static void bmSimulationFull(benchmark::State& state) {
+static void bmSimulationFullBenchmark(benchmark::State& state) {
     spdlog::set_level(spdlog::level::warn);
 
     const R3 domain_size = {150.0, 150.0, 1.0};
@@ -124,6 +155,44 @@ static void bmSimulationFull(benchmark::State& state) {
     }
 }
 
-BENCHMARK(bmSimulationFull)->Name("Simulation/Full/LinkedCell")->Unit(benchmark::kMillisecond)->Repetitions(5);
+static void bmSimulationFullContest(benchmark::State& state) {
+    spdlog::set_level(spdlog::level::warn);
+
+    auto force_source = std::make_unique<LennardJonesForce>();
+    auto writer = std::make_unique<XYZWriter>();
+    auto cp_writer = std::make_unique<YAMLWriterCP>();
+
+    for ([[maybe_unused]] auto _ : state) {
+        SettingsParam settings = createContestSettings();
+        state.PauseTiming();
+        LinkedCellContainer container(settings.domain.getDimension(), settings.cutoff);
+
+        generateCuboid(container, {0.6, 2., 0.0}, {0.0, 0.0, 0.0}, {250U, 20U, 1U}, 1.0, 1.2, 0.1, 1.0, 1.2);
+        generateCuboid(container, {0.6, 27., 0.0}, {0.0, 0.0, 0.0}, {250U, 20U, 1U}, 2.0, 1.2, 0.1, 1.0, 1.1);
+
+        const size_t num_particles = container.size();
+        const auto num_iterations = static_cast<size_t>((settings.end_time - settings.start_time) / settings.delta_t);
+        state.counters["Particles"] = static_cast<double>(num_particles);
+        state.counters["Iterations"] = static_cast<double>(num_iterations);
+
+        Simulation<LinkedCellContainer> simulation(container, *force_source, settings, *writer, *cp_writer);
+        state.ResumeTiming();
+
+        simulation.run();
+
+        state.PauseTiming();
+        const size_t total_updates = num_particles * num_iterations;
+        state.counters["MoleculeUpdates"] = static_cast<double>(total_updates);
+        state.counters["UpdatesPerSec"] =
+            benchmark::Counter(static_cast<double>(total_updates), benchmark::Counter::kIsRate);
+        state.ResumeTiming();
+    }
+}
+
+BENCHMARK(bmSimulationFullBenchmark)->Name("Simulation/Full/LinkedCell")->Unit(benchmark::kMillisecond)->Repetitions(5);
+BENCHMARK(bmSimulationFullContest)
+    ->Name("Simulation/Contest/LinkedCell")
+    ->Unit(benchmark::kMillisecond)
+    ->Repetitions(5);
 
 }  // namespace mol_sim
