@@ -26,7 +26,7 @@ class Periodic : public Boundary {
         7, 5, 1, 3, 8, 2, 0, 6,          // BACK
         15, 21, 9, 3, 24, 18, 0, 6,      // UPPER
         17, 23, 11, 5, 26, 20, 2, 8,     // LOWER
-        16, 10, 22, 4, 12, 15,  // non-corner / edges mirror indicies in order: LEFT, RIGHT, FRONT, BACK, UPPER, LOWER
+        16, 10, 22, 4, 12, 14,  // non-corner / edges mirror indicies in order: LEFT, RIGHT, FRONT, BACK, UPPER, LOWER
 
         //-----------------------------2D--------------------------------
         25, 19, 1, 7,  // 2D corners in order: lower-left, lower-right, upper-right, upper-left
@@ -65,7 +65,7 @@ class Periodic : public Boundary {
      * Particles that are:
      * - in the interior of the domain:        will be ignored
      * - in the boundary region of the domain: will be mirrored
-     * - exactly on a boundary:                will be mirrored (IDK!!!)
+     * - exactly on a boundary:                will be mirrored
      * - in the halo region of the domain:     will be teleported
      * - beyond the halo region of the domain: will be ignored
      *

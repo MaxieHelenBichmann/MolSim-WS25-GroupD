@@ -147,25 +147,50 @@ void Periodic::addMirrorParticle(const R3& mirrorLocation, size_t mirrorIdx, Par
 //NOLINTBEGIN
 size_t Periodic::getIdx(Particle& p) {
     size_t axis = getAxis();
-    bool axis1_small = p.getX()[(axis + 1) % 3] <= halo_dimension[(axis + 1) % 3];
-    bool axis1_big = p.getX()[(axis + 1) % 3] >= domain_size[(axis + 1) % 3] - halo_dimension[(axis + 1) % 3];
     if (dimensions == 3) {  // handle 3D corner and edge indicies
-        bool axis2_small = p.getX()[(axis + 2) % 3] <= halo_dimension[(axis + 2) % 3];
-        bool axis2_big = p.getX()[(axis + 2) % 3] >= domain_size[(axis + 2) % 3] - halo_dimension[(axis + 2) % 3];
+        size_t axis1 = 0;
+        size_t axis2 = 0;
+        switch (axis) {
+            case 0: {
+                axis1 = 1;
+                axis2 = 2;
+                break;
+            }
+            case 1: {
+                axis1 = 0;
+                axis2 = 2;
+                break;
+            }
+            case 2: {
+                axis1 = 0;
+                axis2 = 1;
+                break;
+            }
+            default: {
+                SPDLOG_ERROR("Unknown axis!");
+            }
+        }
+        bool axis1_small = p.getX()[axis1] <= halo_dimension[axis1];
+        bool axis1_big = p.getX()[axis1] >= domain_size[axis1] - halo_dimension[axis1];
+        bool axis2_small = p.getX()[axis2] <= halo_dimension[axis2];
+        bool axis2_big = p.getX()[axis2] >= domain_size[axis2] - halo_dimension[axis2];
         if (axis1_small && axis2_small)    return 4;
-        if (axis1_small && axis2_big)      return 5;
-        if (axis1_big && axis2_small)      return 6;
-        if (axis1_big && axis2_big)        return 7; 
+        if (axis1_big && axis2_small)      return 5;
+        if (axis1_big && axis2_big)        return 6; 
+        if (axis1_small && axis2_big)      return 7;
         if (axis1_small)                   return 0;
-        if (axis1_big)                     return 1; 
-        if (axis2_small)                   return 2;
+        if (axis2_small)                   return 1;
+        if (axis1_big)                     return 2; 
         if (axis2_big)                     return 3; 
     } else if (dimensions == 2) {  // handle 2D corner indicies
-        int sign = getSign();
-        if (axis1_small && sign < 0) return 0;
-        if (axis1_small && sign > 0) return 1; 
-        if (axis1_big && sign > 0)   return 2;
-        if (axis1_big && sign < 0)   return 3; 
+        bool x_small = p.getX()[0] <= halo_dimension[0] && p.getX()[0] >= 0;
+        bool x_big = p.getX()[0] >= domain_size[0] - halo_dimension[0] && p.getX()[0] <= domain_size[0];
+        bool y_small = p.getX()[1] <= halo_dimension[1] && p.getX()[1] >= 0;
+        bool y_big = p.getX()[1] >= domain_size[1] - halo_dimension[1] && p.getX()[1] <= domain_size[1];
+        if (x_small && y_small) return 0;
+        if (x_big && y_small)   return 1; 
+        if (x_big && y_big)     return 2;
+        if (x_small && y_big)   return 3; 
     }
     return 8;
 }
