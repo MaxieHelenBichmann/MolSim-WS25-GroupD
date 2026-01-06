@@ -185,6 +185,9 @@ class Simulation {
 
         SPDLOG_DEBUG("Added {} (ghost) particles to remove", to_remove.size());
 
+        // Sort in descending order to remove from end first (avoids index shifting issues that cause segfaults)
+        std::sort(to_remove.begin(), to_remove.end(), std::greater<size_t>());  // NOLINT
+
         // Remove particles using the standard vector iterator version
         for (size_t idx : to_remove) {
             particles.eraseParticle(particles.begin() + static_cast<std::ptrdiff_t>(idx));
