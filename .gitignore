@@ -39,6 +39,7 @@
 *sublime*
 .gdbinit
 .github/*copilot*
+CMakePresets.json
 
 # Build folders.
 # This rule ignores any folder in the project root that contains "build"
