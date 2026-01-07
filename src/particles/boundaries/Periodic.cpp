@@ -4,9 +4,6 @@
 
 namespace mol_sim {
 
-//(x,x,x,x) = EDGES (x,x,x,x) = missing CORNERS
-// last 6 entries: direct shifts
-
 Periodic::Periodic(BoundaryLocation location, R3 domain_size, double cutoff, size_t dimensions) noexcept
     : Boundary(location, BoundaryType::PERIODIC, domain_size), dimensions(dimensions) {
     /**
@@ -21,6 +18,7 @@ Periodic::Periodic(BoundaryLocation location, R3 domain_size, double cutoff, siz
     setShiftLookup(domain_size);
 }
 
+//NOLINTBEGIN
 void Periodic::setShiftLookup(R3 domain_size) {
     // z inc -> x inc -> y inc
     // first x/z plane-------------------------------------------------------------
@@ -34,15 +32,15 @@ void Periodic::setShiftLookup(R3 domain_size) {
     shift_lookup[7] = {domain_size[0], -domain_size[1], .0};                // 7
     shift_lookup[8] = {domain_size[0], -domain_size[1], domain_size[2]};    // 8
     // second x/z plane-----------------------------------------------------------
-    shift_lookup[9] = {-domain_size[0], .0, -domain_size[2]};  // 9
-    shift_lookup[10] = {-domain_size[0], .0, .0};              // 10
-    shift_lookup[11] = {-domain_size[0], .0, domain_size[2]};  // 11
-    shift_lookup[12] = {.0, .0, -domain_size[2]};              // 12
-    shift_lookup[13] = {.0, .0, .0};                           // 13
-    shift_lookup[14] = {.0, .0, domain_size[2]};               // 14
-    shift_lookup[15] = {domain_size[0], .0, -domain_size[2]};  // 15
-    shift_lookup[16] = {domain_size[0], .0, .0};               // 16
-    shift_lookup[17] = {domain_size[0], .0, domain_size[2]};   // 17
+    shift_lookup[9] = {-domain_size[0], .0, -domain_size[2]};               // 9
+    shift_lookup[10] = {-domain_size[0], .0, .0};                           // 10
+    shift_lookup[11] = {-domain_size[0], .0, domain_size[2]};               // 11
+    shift_lookup[12] = {.0, .0, -domain_size[2]};                           // 12
+    shift_lookup[13] = {.0, .0, .0};                                        // 13
+    shift_lookup[14] = {.0, .0, domain_size[2]};                            // 14
+    shift_lookup[15] = {domain_size[0], .0, -domain_size[2]};               // 15
+    shift_lookup[16] = {domain_size[0], .0, .0};                            // 16
+    shift_lookup[17] = {domain_size[0], .0, domain_size[2]};                // 17
     // third x/z plane------------------------------------------------------------
     shift_lookup[18] = {-domain_size[0], domain_size[1], -domain_size[2]};  // 18
     shift_lookup[19] = {-domain_size[0], domain_size[1], .0};               // 19
@@ -54,6 +52,7 @@ void Periodic::setShiftLookup(R3 domain_size) {
     shift_lookup[25] = {domain_size[0], domain_size[1], .0};                // 25
     shift_lookup[26] = {domain_size[0], domain_size[1], domain_size[2]};    // 26
 }
+//NOLINTEND
 
 /**
  * TODO: Edge case:

@@ -78,19 +78,47 @@ class Particle {
      */
     int type;
 
+    //NOLINTBEGIN
     /**
      * @brief A bitmap indicating the locations the particle has been mirrored to.
-     * This is relevant for Periodic boundaries.
+     * This is relevant for periodic boundaries. See also Assignment4/Periodic slides
+     * for a visualization.
      *
-     * nth bit = 1 means the particle has been mirrored to the nth mirror domain.
+     * n-th bit = n-th mirror location. The coordinates are *relative* to particle.getX()
+     * d0 = domain_size[0], d1 = domain_size[1], d2 = domain_size[2]
      * --------------------------------------------------------------------------
-     * nth bit          Location
+     * n-th bit         Location
      * --------------------------------------------------------------------------
-     * 0                (0,0,0)
-     * ... TODO: finish writing this.
-     * 26               (max,max,max)
+     * 0                (-d0, -d1, -d2)
+     * 1                (-d0, -d1,   0) 
+     * 2                (-d0, -d1,  d2)
+     * 3                (  0, -d0, -d2)
+     * 4                (  0, -d1,   0)
+     * 5                (  0, -d1,  d2)
+     * 6                ( d0, -d1, -d2)
+     * 7                ( d0, -d1,   0)
+     * 8                ( d0, -d1,  d2)
+     * 9                (-d0,   0, -d2)
+     * 10               (-d0,   0,   0)
+     * 11               (-d0,   0,  d2)
+     * 12               (  0,   0, -d2)
+     * 13               (  0,   0,   0)         this is where the particle is
+     * 14               (  0,   0,  d2)
+     * 15               ( d0,   0, -d2)
+     * 16               ( d0,   0,   0)
+     * 17               ( d0,   0,  d2)
+     * 18               (-d0,  d1, -d2)
+     * 19               (-d0,  d1,   0)
+     * 20               (-d0,  d1,  d2)
+     * 21               (  0,  d1, -d2)
+     * 22               (  0,  d1,   0)
+     * 23               (  0,  d1,  d2)
+     * 24               ( d0,  d1, -d2)
+     * 25               ( d0,  d1,   0)
+     * 26               ( d0,  d1,  d2)
      */
     uint32_t mirror_locations = 0;
+    //NOLINTEND
 
    public:
     explicit Particle(int type = 0);
