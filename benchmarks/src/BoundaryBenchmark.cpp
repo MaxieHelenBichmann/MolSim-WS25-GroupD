@@ -12,7 +12,9 @@
 #include <array>
 #include <memory>
 
+#include "../code/boundaryimpl/PeriodicOld.h"
 #include "particles/boundaries/Boundary.h"
+#include "particles/boundaries/Periodic.h"
 #include "particles/boundaries/Reflecting.h"
 #include "particles/boundaries/VelocityReflect.h"
 #include "particles/container/LinkedCellContainer.h"
@@ -131,6 +133,71 @@ void bmBoundaryVelocityReflect(benchmark::State& state) {
         benchmark::ClobberMemory();
     }
 }
+/**
+ * @brief Benchmarks applyBoundary with velocity-inversion VelocityReflect boundaries.
+ * Measures time to apply boundary conditions to N boundary particles.
+ */
+void bmBoundaryPeriodic(benchmark::State& state) {
+    size_t n = state.range(0);
+    R3 domain_size = {100.0, 100.0, 100.0};
+    double cutoff = 3.0;
+    double sigma = 1.0;
+
+    LinkedCellContainer container(domain_size, cutoff);
+    generateBoundaryParticles(container, domain_size, n / 6, sigma);
+
+    std::array<std::unique_ptr<Boundary>, 6> boundaries{
+        std::make_unique<Periodic>(BoundaryLocation::LEFT, domain_size, cutoff, 3),
+        std::make_unique<Periodic>(BoundaryLocation::RIGHT, domain_size, cutoff, 3),
+        std::make_unique<Periodic>(BoundaryLocation::FRONT, domain_size, cutoff, 3),
+        std::make_unique<Periodic>(BoundaryLocation::BACK, domain_size, cutoff, 3),
+        std::make_unique<Periodic>(BoundaryLocation::UPPER, domain_size, cutoff, 3),
+        std::make_unique<Periodic>(BoundaryLocation::LOWER, domain_size, cutoff, 3)};
+
+    LennardJonesForce force;
+
+    for ([[maybe_unused]] auto _ : state) {
+        for (auto it = container.boundaryBegin(); it != container.boundaryEnd(); ++it) {
+            for (const auto& boundary : boundaries) {
+                boundary->applyBoundary(*it, force);
+            }
+        }
+        benchmark::ClobberMemory();
+    }
+}
+
+/**
+ * @brief Benchmarks applyBoundary with velocity-inversion VelocityReflect boundaries.
+ * Measures time to apply boundary conditions to N boundary particles.
+ */
+void bmBoundaryPeriodicOld(benchmark::State& state) {
+    size_t n = state.range(0);
+    R3 domain_size = {100.0, 100.0, 100.0};
+    double cutoff = 3.0;
+    double sigma = 1.0;
+
+    LinkedCellContainer container(domain_size, cutoff);
+    generateBoundaryParticles(container, domain_size, n / 6, sigma);
+
+    std::array<std::unique_ptr<Boundary>, 6> boundaries{
+        std::make_unique<PeriodicOld>(BoundaryLocation::LEFT, domain_size, cutoff, 3),
+        std::make_unique<PeriodicOld>(BoundaryLocation::RIGHT, domain_size, cutoff, 3),
+        std::make_unique<PeriodicOld>(BoundaryLocation::FRONT, domain_size, cutoff, 3),
+        std::make_unique<PeriodicOld>(BoundaryLocation::BACK, domain_size, cutoff, 3),
+        std::make_unique<PeriodicOld>(BoundaryLocation::UPPER, domain_size, cutoff, 3),
+        std::make_unique<PeriodicOld>(BoundaryLocation::LOWER, domain_size, cutoff, 3)};
+
+    LennardJonesForce force;
+
+    for ([[maybe_unused]] auto _ : state) {
+        for (auto it = container.boundaryBegin(); it != container.boundaryEnd(); ++it) {
+            for (const auto& boundary : boundaries) {
+                boundary->applyBoundary(*it, force);
+            }
+        }
+        benchmark::ClobberMemory();
+    }
+}
 
 BENCHMARK(bmBoundaryReflecting)
     ->Name("Boundary/Reflecting")
@@ -148,4 +215,19 @@ BENCHMARK(bmBoundaryVelocityReflect)
     ->Repetitions(5)
     ->DisplayAggregatesOnly(true);
 
+BENCHMARK(bmBoundaryPeriodic)
+    ->Name("Boundary/Periodic/Current")
+    ->RangeMultiplier(2)
+    ->Range(128, 8192)
+    ->Unit(benchmark::kMillisecond)
+    ->Repetitions(5)
+    ->DisplayAggregatesOnly(true);
+
+BENCHMARK(bmBoundaryPeriodicOld)
+    ->Name("Boundary/Periodic/Old")
+    ->RangeMultiplier(2)
+    ->Range(128, 8192)
+    ->Unit(benchmark::kMillisecond)
+    ->Repetitions(5)
+    ->DisplayAggregatesOnly(true);
 }  // namespace mol_sim
