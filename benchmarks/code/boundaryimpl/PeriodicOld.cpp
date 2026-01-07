@@ -1,4 +1,4 @@
-#include "benchmarks/code/boundaryimpl/PeriodicOld.h"
+#include "PeriodicOld.h"
 
 #include "particles/ParticleContainer.h"
 
