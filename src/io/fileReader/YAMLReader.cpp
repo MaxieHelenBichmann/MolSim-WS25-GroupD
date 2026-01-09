@@ -163,6 +163,8 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
             if (t_node["delta_temp"]) {
                 settings.delta_temp = t_node["delta_temp"].as<double>();
             }
+        } else {
+            settings.thermo = false;
         }
 
         if (node["domain"]) {
