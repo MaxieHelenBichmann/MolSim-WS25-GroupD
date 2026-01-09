@@ -20,6 +20,7 @@
 #include "particles/container/SimpleContainer.h"
 #include "physics/GravitationalForce.h"
 #include "physics/LennardJonesForce.h"
+#include "physics/SmoothLennardJonesForce.h"
 #include "utils/Settings.h"
 #include "utils/Simulation.h"
 
@@ -74,6 +75,12 @@ int main(int argc, char* argsv[]) {
         case LENNARDJONES: {
             force = std::make_unique<LennardJonesForce>();
             SPDLOG_DEBUG("Using Lennard-Jones force model");
+            break;
+        }
+        case S_LENNARDJONES: {
+            force = std::make_unique<SmoothLennardJonesForce>();
+            static_cast<SmoothLennardJonesForce*>(force.get())->initForce(settings.cutoff, settings.cutoff);
+            SPDLOG_DEBUG("Using Smooth Lennard-Jones force model");
             break;
         }
     }
