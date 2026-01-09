@@ -20,7 +20,7 @@ class ForceSource {
  * @brief Enum of all available Force Sources.
  *
  */
-enum Force : std::uint8_t { GRAVITATIONAL, LENNARDJONES };
+enum Force : std::uint8_t { GRAVITATIONAL, LENNARDJONES, S_LENNARDJONES };
 
 }  // namespace mol_sim
 
