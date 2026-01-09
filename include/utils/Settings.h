@@ -54,6 +54,10 @@ class SettingsParam {
      */
     static constexpr double CUTOFF_DEFAULT = std::numeric_limits<double>::infinity();
     /**
+     * @brief Default smoothing radius for the linked cells.
+     */
+    static constexpr double SMOOTHING_DEFAULT = std::numeric_limits<double>::infinity();
+    /**
      * @brief Default initial temperature for the system.
      */
     static constexpr double INIT_TEMP_DEFAULT = 40.;
@@ -120,6 +124,10 @@ class SettingsParam {
      * @brief Cutoff radius for the linked cells algorithm.
      */
     double cutoff = CUTOFF_DEFAULT;
+    /**
+     * @brief Smoothing radius for the linked cells algorithm.
+     */
+    double smoothing = SMOOTHING_DEFAULT;
     /**
      * @brief The type in string format of the particle container.
      *

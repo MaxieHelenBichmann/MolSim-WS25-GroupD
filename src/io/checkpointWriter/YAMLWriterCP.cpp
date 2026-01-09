@@ -13,6 +13,7 @@
 
 #include "particles/boundaries/Boundary.h"
 #include "particles/boundaries/Reflecting.h"
+#include "physics/ForceSource.h"
 
 using namespace mol_sim;
 
@@ -45,11 +46,27 @@ void YAMLWriterCP::createCheckpoint(SettingsParam& settings, const Domain& domai
         << (settings.start_time > settings.end_time ? settings.end_time : settings.start_time);
     ;
     out << YAML::Key << "base_name" << YAML::Value << settings.base_name;
-    out << YAML::Key << "force" << YAML::Value << (settings.force == LENNARDJONES ? "Lennard Jones" : "Gravitational");
+    switch (settings.force) {
+        case LENNARDJONES: {
+            out << YAML::Key << "force" << YAML::Value << "Lennard Jones";
+            break;
+        }
+        case S_LENNARDJONES: {
+            out << YAML::Key << "force" << YAML::Value << "Smooth Lennard Jones";
+            break;
+        }
+        case GRAVITATIONAL: {
+            out << YAML::Key << "force" << YAML::Value << "Gravitational";
+            break;
+        }
+    };
     out << YAML::Key << "container" << YAML::Value << settings.container_type;
     out << YAML::Key << "frequency" << YAML::Value << settings.frequency_output;
     out << YAML::Key << "checkpoint" << YAML::Value << settings.frequency_checkpoint;
     out << YAML::Key << "cutoff" << YAML::Value << settings.cutoff;
+    if (settings.force == S_LENNARDJONES) {
+        out << YAML::Key << "smooth" << YAML::Value << settings.smoothing;
+    }
 
     // Write thermostat settings in nested format
     if (settings.thermo) {

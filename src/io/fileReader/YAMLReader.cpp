@@ -124,6 +124,8 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
             auto force_str = node["force"].as<std::string>();
             if (force_str == "Lennard Jones") {
                 settings.force = LENNARDJONES;
+            } else if (force_str == "Smooth Lennard Jones") {
+                settings.force = S_LENNARDJONES;
             } else if (force_str == "Gravitational") {
                 settings.force = GRAVITATIONAL;
             } else {
@@ -145,6 +147,12 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
         }
         if (node["cutoff"]) {
             settings.cutoff = node["cutoff"].as<double>();
+        }
+        if (node["smooth"]) {
+            if (settings.force != S_LENNARDJONES) {
+                throw ValidationException("Smoothing radius can only be set for Smooth Lennard-Jones force");
+            }
+            settings.smoothing = node["smooth"].as<double>();
         }
         if (node["thermostat"]) {
             settings.thermo = true;

@@ -23,10 +23,11 @@ The settings block has the following keys, with every key except format being op
 - `end_time`: A floating-point number specifying the end time of the simulation.
 - `start_time`: A floating-point number specifying the start time of the simulation.
 - `base_name`: A string specifying the base name of the output files of the simulation.
-- `force`: A string specifying the force type, either "Lennard Jones" or "Gravitational" (default:`"Lennard Jones"`), of the simulation.
+- `force`: A string specifying the force type, either "Lennard Jones", "Smooth Lennard Jones" or "Gravitational" (default:`"Lennard Jones"`), of the simulation.
 - `frequency`: A whole number specifying the frequency of the output files of the simulation.
 - `checkpoint`: A whole number specifying the frequency of the checkpoint files of the simulation.
 - `cutoff`: A floating-point number specifying the cutoff radius of the Linked Cells of the simulation.
+- `smooth`: A floating-point number specifying the smoothing radius of the Smooth Lennard-Jones Force.
 - `container`: Container type, either `"SIMPLE"` or `"LINKED"` (default: `"LINKED"`).
 - `domain`: A map defining the domain of the simulation (see Domain Configuration below).
 - `thermostat`: A map defining the thermostat of the simulation
