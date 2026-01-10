@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <fstream>
+#include <numbers>
 
 using namespace mol_sim;
 
@@ -15,7 +16,7 @@ double StatsWriter::computeDiffusion([[maybe_unused]] ContainerRef particles) {
     return result / static_cast<double>(particles.size());
 }
 
-void StatsWriter::computeRDF([[maybe_unused]] ContainerRef particles, std::vector<size_t>& results) const {
+void StatsWriter::computeRDF([[maybe_unused]] ContainerRef particles, std::vector<double>& results) const {
     for (auto& p1 : particles) {
         for (auto& p2 : particles) {
             if (&p1 != &p2) {
@@ -25,6 +26,13 @@ void StatsWriter::computeRDF([[maybe_unused]] ContainerRef particles, std::vecto
                 }
             }
         }
+        // TODO: Periodic Boundary Conditions
+    }
+    for (size_t i = 0; i < results.size(); ++i) {
+        const double end_interval = (static_cast<double>(i) + 1) * sample_radius;
+        const double start_interval = static_cast<double>(i) * sample_radius;
+        double vol = (end_interval * end_interval * end_interval) - (start_interval * start_interval * start_interval);
+        results[i] = 0.75 * results[i] / (vol * std::numbers::pi);
     }
 }
 
@@ -44,7 +52,7 @@ void StatsWriter::plotDiffusion(ContainerRef particles, int iteration) {
 
 void StatsWriter::plotRDF([[maybe_unused]] ContainerRef particles, [[maybe_unused]] int iteration) const {
     if (compute_rdf) {
-        std::vector<size_t> results;
+        std::vector<double> results;
         results.reserve(static_cast<size_t>(std::ceil(window_size / sample_radius)));
 
         computeRDF(particles, results);

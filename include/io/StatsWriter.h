@@ -9,10 +9,7 @@
 namespace mol_sim {
 
 /**
- * @brief Writes the diffusion and RDF of the given set of particles into a .csv file
- *
- * Writes the diffusion of the particles into the file diffusion.csv in the format: <iteration>,<diffusion>
- * Writes the Radial Distribution Function (RDF) into the file rdf.csv in the format: <iteration>,<distance>,<amount>
+ * @brief Writes the diffusion and RDF of the given set of particles into a corresponding .csv file
  */
 class StatsWriter {
     bool compute_rdf = false;
@@ -22,9 +19,6 @@ class StatsWriter {
 
     std::string filename_diffusion = "diffusion.csv";
     std::string filename_rdf = "rdf.csv";
-
-    [[nodiscard]] double computeDiffusion(ContainerRef particles);
-    void computeRDF(ContainerRef particles, std::vector<size_t>& results) const;
 
    public:
     StatsWriter() = default;
@@ -37,7 +31,39 @@ class StatsWriter {
 
     ~StatsWriter();
 
+    /**
+     * @brief Computes the variance of the movement of particles since the last call, using the Particle member
+     * reference_position, which takes care of Periodic Boundary Conditions as well.
+     * Public method so it can be tested.
+     *
+     * @param particles ContainerRef to the particles.
+     * @return double Computed diffusion value.
+     */
+    [[nodiscard]] double computeDiffusion(ContainerRef particles);
+    /**
+     * @brief Computes the local densities of the Radial Distribution Function (RDF) of the given particles and stores
+     * the results in the provided vector.
+     * Public method so it can be tested.
+     *
+     * @param particles ContainerRef to the particles.
+     * @param results Reference to a vector where the results will be stored. The index corresponds to distance /
+     * sample_radius.
+     */
+    void computeRDF(ContainerRef particles, std::vector<double>& results) const;
+
+    /**
+     * @brief Writes the diffusion data into the diffusion.csv file. Each row has the format: <iteration>,<diffusion>
+     *
+     * @param particles ContainerRef to the particles.
+     * @param iteration Current iteration of the simulation.
+     */
     void plotDiffusion(ContainerRef particles, int iteration);
+    /**
+     * @brief Writes the RDF data into the rdf.csv file. Each row has the format: <iteration>,<distance>,<density>
+     *
+     * @param particles ContainerRef to the particles.
+     * @param iteration Current iteration of the simulation.
+     */
     void plotRDF(ContainerRef particles, int iteration) const;
 };
 
