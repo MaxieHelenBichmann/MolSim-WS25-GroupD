@@ -62,6 +62,10 @@ class SettingsParam {
      */
     static constexpr double RDF_DEFAULT = 1.0;
     /**
+     * @brief Default window size for the radial distribution function.
+     */
+    static constexpr double RDF_SIZE_DEFAULT = 10.0;
+    /**
      * @brief Default cutoff radius for the linked cells.
      */
     static constexpr double CUTOFF_DEFAULT = std::numeric_limits<double>::infinity();
@@ -193,6 +197,10 @@ class SettingsParam {
      * @brief Sample width for the radial distribution function.
      */
     double sample_radius = RDF_DEFAULT;
+    /**
+     * @brief Size of the window for the radial distribution function.
+     */
+    double window_size = RDF_SIZE_DEFAULT;
     /**
      * @brief Maximum allowed temperature change of the system with one thermostat application.
      */

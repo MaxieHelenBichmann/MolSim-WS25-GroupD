@@ -45,6 +45,7 @@ The data collection is only activated when the `statistics` key is provided. It 
 - `diffusion`:  A whole number specifying the frequency of the data collection regarding diffusion. If key not provided, data will not be collected.
 - `rdf`: A whole number specifying the frequency of the data collection regarding RDF. If key not provided, data will not be collected.
 - `sample_r`: A floating-point number specifying the sample width of the RDF (default: 1.0).
+- `window_size`: A floating-point number specifying the size of the considered window for the RDF (default: 10.0).
 
 
 ## Domain Configuration

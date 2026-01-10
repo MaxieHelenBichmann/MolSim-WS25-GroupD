@@ -66,7 +66,7 @@ int main(int argc, char* argsv[]) {
 #endif
 
     std::unique_ptr<StatsWriter> stats_writer =
-        std::make_unique<StatsWriter>(settings.rdf, settings.diff, settings.sample_radius);
+        std::make_unique<StatsWriter>(settings.rdf, settings.diff, settings.sample_radius, settings.window_size);
 
     std::unique_ptr<ForceSource> force;
 

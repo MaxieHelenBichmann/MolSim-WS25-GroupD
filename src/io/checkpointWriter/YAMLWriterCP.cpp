@@ -85,6 +85,7 @@ void YAMLWriterCP::createCheckpoint(SettingsParam& settings, const Domain& domai
         if (settings.rdf) {
             out << YAML::Key << "rdf" << YAML::Value << settings.stats_freq_rdf;
             out << YAML::Key << "sample_r" << YAML::Value << settings.sample_radius;
+            out << YAML::Key << "window_size" << YAML::Value << settings.window_size;
         }
         out << YAML::EndMap;  // close statistics
     }
