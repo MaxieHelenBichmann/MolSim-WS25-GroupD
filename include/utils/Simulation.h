@@ -12,6 +12,7 @@
 #include "exceptions/SimulationException.h"
 #include "io/CheckpointWriter.h"
 #include "io/OutputWriter.h"
+#include "io/StatsWriter.h"
 #include "particles/Particle.h"
 #include "particles/ParticleContainer.h"
 #include "particles/container/LinkedCellContainer.h"
@@ -65,6 +66,11 @@ class Simulation {
      */
     const CheckpointWriter& cp_writer;
     /**
+     * @brief Writer used for statistics.
+     */
+    const StatsWriter& stats_writer;
+
+    /**
      * @brief Time step of simulation.
      */
     double delta_t;
@@ -88,6 +94,11 @@ class Simulation {
      * @brief Frequency of checkpoint writing.
      */
     size_t frequency_checkpoint;
+
+    /**
+     * @brief Frequency of statistics writing.
+     */
+    size_t frequency_stats;
 
     /**
      * @brief Base name for output files.
@@ -143,18 +154,20 @@ class Simulation {
      * @param settings Simulation parameters.
      */
     Simulation(containerType& particles, const ForceSource& force_source, SettingsParam& settings,
-               const OutputWriter& writer, const CheckpointWriter& cp_writer)
+               const OutputWriter& writer, const CheckpointWriter& cp_writer, const StatsWriter& stats_writer)
         : domain(std::move(settings.domain)),
           particles(particles),
           force_source(force_source),
           force(settings.force),
           writer(writer),
           cp_writer(cp_writer),
+          stats_writer(stats_writer),
           delta_t(settings.delta_t),
           start_time(settings.start_time),
           end_time(settings.end_time),
           frequency_output(settings.frequency_output),
           frequency_checkpoint(settings.frequency_checkpoint),
+          frequency_stats(settings.stats_freq),
           base_name(settings.base_name),
           dimensions(settings.dimensions),
           cutoff_radius(settings.cutoff),
@@ -367,6 +380,13 @@ class Simulation {
                 } catch (const std::runtime_error& e) {
                     SPDLOG_ERROR("Failed to plot particles at iteration {}: {}", iteration, e.what());
                     throw SimulationException("Error while plotting Particles: " + std::string(e.what()));
+                }
+            }
+            if (iteration % frequency_stats == 0) {
+                try {
+                    stats_writer.plotStatistics(particles, iteration);
+                } catch (const std::runtime_error& e) {
+                    SPDLOG_ERROR("Failed to plot statistics at iteration {}: {}", iteration, e.what());
                 }
             }
 #endif

@@ -174,6 +174,32 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
         } else {
             settings.thermo = false;
         }
+        if (node["statistics"]) {
+            YAML::Node t_node = node["statistics"];
+            if (t_node["stat_freq"]) {
+                settings.stats_freq = t_node["stat_freq"].as<size_t>();
+            }
+            if (t_node["diffusion"]) {
+                settings.diff = t_node["diffusion"].as<bool>();
+            } else {
+                settings.diff = false;
+            }
+            if (t_node["rdf"]) {
+                settings.rdf = t_node["rdf"].as<bool>();
+            } else {
+                settings.rdf = false;
+            }
+            if (t_node["sample_r"]) {
+                if (!settings.rdf) {
+                    throw ValidationException(
+                        "Sample radius can only be set if data collection for the RDF is enabled");
+                }
+                settings.sample_radius = t_node["sample_r"].as<double>();
+            }
+        } else {
+            settings.rdf = false;
+            settings.diff = false;
+        }
 
         if (node["domain"]) {
             parseDomain(settings, node["domain"]);

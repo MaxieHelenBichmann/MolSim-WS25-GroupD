@@ -50,6 +50,14 @@ class SettingsParam {
      */
     static constexpr size_t FREQUENCY_CHECKPOINT_DEFAULT = 5000;
     /**
+     * @brief Default frequency for thermodynamical statistics.
+     */
+    static constexpr size_t FREQUENCY_STATS_DEFAULT = 1000;
+    /**
+     * @brief Default sample width for the radial distribution function.
+     */
+    static constexpr double RDF_DEFAULT = 1.0;
+    /**
      * @brief Default cutoff radius for the linked cells.
      */
     static constexpr double CUTOFF_DEFAULT = std::numeric_limits<double>::infinity();
@@ -158,6 +166,25 @@ class SettingsParam {
      * @brief Frequency with which the thermostat gets applied.
      */
     size_t thermostat_freq = THERMOSTAT_FREQ_DEFAULT;
+
+    /**
+     * @brief Frequency for thermodynamical statistics.
+     */
+    size_t stats_freq = FREQUENCY_STATS_DEFAULT;
+    /**
+     * @brief Toggles if data collection for the radial distribution function is enabled for this simulation.
+     *
+     */
+    bool rdf = false;
+    /**
+     * @brief Toggles if data collection for the diffusion is enabled for this simulation.
+     *
+     */
+    bool diff = false;
+    /**
+     * @brief Sample width for the radial distribution function.
+     */
+    double sample_radius = RDF_DEFAULT;
     /**
      * @brief Maximum allowed temperature change of the system with one thermostat application.
      */

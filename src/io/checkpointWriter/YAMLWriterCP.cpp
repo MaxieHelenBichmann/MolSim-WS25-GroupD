@@ -76,6 +76,15 @@ void YAMLWriterCP::createCheckpoint(SettingsParam& settings, const Domain& domai
         out << YAML::Key << "delta_temp" << YAML::Value << settings.delta_temp;
         out << YAML::EndMap;  // close thermostat
     }
+    // Write statistics settings in nested format
+    if (settings.rdf || settings.diff) {
+        out << YAML::Key << "statistics" << YAML::Value << YAML::BeginMap;
+        out << YAML::Key << "stat_freq" << YAML::Value << settings.stats_freq;
+        out << YAML::Key << "diffusion" << YAML::Value << settings.diff;
+        out << YAML::Key << "rdf" << YAML::Value << settings.rdf;
+        out << YAML::Key << "sample_r" << YAML::Value << settings.sample_radius;
+        out << YAML::EndMap;  // close statistics
+    }
 
     out << YAML::Key << "domain" << YAML::Value << YAML::BeginMap;  // open domain
     out << YAML::Key << "x" << YAML::Value << domain.getDimension()[0];
