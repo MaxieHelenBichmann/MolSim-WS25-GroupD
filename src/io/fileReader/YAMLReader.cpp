@@ -176,16 +176,15 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
         }
         if (node["statistics"]) {
             YAML::Node t_node = node["statistics"];
-            if (t_node["stat_freq"]) {
-                settings.stats_freq = t_node["stat_freq"].as<size_t>();
-            }
             if (t_node["diffusion"]) {
-                settings.diff = t_node["diffusion"].as<bool>();
+                settings.stats_freq_diffusion = t_node["diffusion"].as<size_t>();
+                settings.diff = true;
             } else {
                 settings.diff = false;
             }
             if (t_node["rdf"]) {
-                settings.rdf = t_node["rdf"].as<bool>();
+                settings.stats_freq_rdf = t_node["rdf"].as<size_t>();
+                settings.rdf = true;
             } else {
                 settings.rdf = false;
             }

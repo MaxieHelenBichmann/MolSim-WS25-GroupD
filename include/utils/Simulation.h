@@ -98,7 +98,11 @@ class Simulation {
     /**
      * @brief Frequency of statistics writing.
      */
-    size_t frequency_stats;
+    size_t frequency_stats_diff;
+    /**
+     * @brief Frequency of statistics writing.
+     */
+    size_t frequency_stats_rdf;
 
     /**
      * @brief Base name for output files.
@@ -167,7 +171,8 @@ class Simulation {
           end_time(settings.end_time),
           frequency_output(settings.frequency_output),
           frequency_checkpoint(settings.frequency_checkpoint),
-          frequency_stats(settings.stats_freq),
+          frequency_stats_diff(settings.stats_freq_diffusion),
+          frequency_stats_rdf(settings.stats_freq_rdf),
           base_name(settings.base_name),
           dimensions(settings.dimensions),
           cutoff_radius(settings.cutoff),
@@ -315,6 +320,7 @@ class Simulation {
      * @brief Performs a full simulation run.
      * @throws SimulationException if an error occurs during output writing.
      */
+    // NOLINTNEXTLINE(readability-function-cognitive-complexity)
     void run() {
         double current_time = start_time;
         [[maybe_unused]] int iteration = 0;
@@ -382,13 +388,6 @@ class Simulation {
                     throw SimulationException("Error while plotting Particles: " + std::string(e.what()));
                 }
             }
-            if (iteration % frequency_stats == 0) {
-                try {
-                    stats_writer.plotStatistics(particles, iteration);
-                } catch (const std::runtime_error& e) {
-                    SPDLOG_ERROR("Failed to plot statistics at iteration {}: {}", iteration, e.what());
-                }
-            }
 #endif
 #ifdef ENABLE_CHECKPOINTING
             if (iteration % frequency_checkpoint == 0) {
@@ -398,6 +397,22 @@ class Simulation {
                 } catch (const std::runtime_error& e) {
                     SPDLOG_ERROR("Failed to create a checkpoint at iteration {}: {}", iteration, e.what());
                     throw SimulationException("Error while creating checkpoint: " + std::string(e.what()));
+                }
+            }
+#endif
+#ifdef ENABLE_STATS
+            if (iteration % frequency_stats_diff == 0) {
+                try {
+                    stats_writer.plotDiffusion(particles, iteration);
+                } catch (const std::runtime_error& e) {
+                    SPDLOG_ERROR("Failed to plot diffusion at iteration {}: {}", iteration, e.what());
+                }
+            }
+            if (iteration % frequency_stats_rdf == 0) {
+                try {
+                    stats_writer.plotRDF(particles, iteration);
+                } catch (const std::runtime_error& e) {
+                    SPDLOG_ERROR("Failed to plot RDF at iteration {}: {}", iteration, e.what());
                 }
             }
 #endif
