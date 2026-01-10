@@ -42,9 +42,8 @@ The thermostat is only activated when the `thermostat` key is provided. It can c
 
 ## Statistics Configuration
 The data collection is only activated when the `statistics` key is provided. It can contain the following subkeys:
-- `stat_freq`: A whole number specifying the frequency of the data collection in the simulation.
-- `diffusion`: A flag whether data about the Diffusion should be collected (default: `false`).
-- `rdf`: A flag whether data about the Radial Distribution Function should be collected  (default: `false`).
+- `diffusion`:  A whole number specifying the frequency of the data collection regarding diffusion. If key not provided, data will not be collected.
+- `rdf`: A whole number specifying the frequency of the data collection regarding RDF. If key not provided, data will not be collected.
 - `sample_r`: A floating-point number specifying the sample width of the RDF (default: 1.0).
 
 

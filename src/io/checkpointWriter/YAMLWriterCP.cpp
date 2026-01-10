@@ -79,10 +79,13 @@ void YAMLWriterCP::createCheckpoint(SettingsParam& settings, const Domain& domai
     // Write statistics settings in nested format
     if (settings.rdf || settings.diff) {
         out << YAML::Key << "statistics" << YAML::Value << YAML::BeginMap;
-        out << YAML::Key << "stat_freq" << YAML::Value << settings.stats_freq;
-        out << YAML::Key << "diffusion" << YAML::Value << settings.diff;
-        out << YAML::Key << "rdf" << YAML::Value << settings.rdf;
-        out << YAML::Key << "sample_r" << YAML::Value << settings.sample_radius;
+        if (settings.diff) {
+            out << YAML::Key << "diffusion" << YAML::Value << settings.stats_freq_diffusion;
+        }
+        if (settings.rdf) {
+            out << YAML::Key << "rdf" << YAML::Value << settings.stats_freq_rdf;
+            out << YAML::Key << "sample_r" << YAML::Value << settings.sample_radius;
+        }
         out << YAML::EndMap;  // close statistics
     }
 

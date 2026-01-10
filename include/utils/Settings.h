@@ -50,9 +50,13 @@ class SettingsParam {
      */
     static constexpr size_t FREQUENCY_CHECKPOINT_DEFAULT = 5000;
     /**
-     * @brief Default frequency for thermodynamical statistics.
+     * @brief Default frequency for thermodynamical statistics (Diffusion).
      */
-    static constexpr size_t FREQUENCY_STATS_DEFAULT = 1000;
+    static constexpr size_t FREQUENCY_STATS_DEFAULT_DIFF = 1000;
+    /**
+     * @brief Default frequency for thermodynamical statistics (RDF).
+     */
+    static constexpr size_t FREQUENCY_STATS_DEFAULT_RDF = 7000;
     /**
      * @brief Default sample width for the radial distribution function.
      */
@@ -168,9 +172,13 @@ class SettingsParam {
     size_t thermostat_freq = THERMOSTAT_FREQ_DEFAULT;
 
     /**
-     * @brief Frequency for thermodynamical statistics.
+     * @brief Frequency for thermodynamical statistics (Diffusion).
      */
-    size_t stats_freq = FREQUENCY_STATS_DEFAULT;
+    size_t stats_freq_diffusion = FREQUENCY_STATS_DEFAULT_DIFF;
+    /**
+     * @brief Frequency for thermodynamical statistics (RDF).
+     */
+    size_t stats_freq_rdf = FREQUENCY_STATS_DEFAULT_RDF;
     /**
      * @brief Toggles if data collection for the radial distribution function is enabled for this simulation.
      *

@@ -1,6 +1,8 @@
 #ifndef STATS_WRITER_H
 #define STATS_WRITER_H
 
+#include <string>
+
 #include "particles/container/ContainerRef.h"
 
 namespace mol_sim {
@@ -16,20 +18,22 @@ class StatsWriter {
     bool compute_diffusion = false;
     double sample_radius = 1.0;
 
+    std::string filename_diffusion = "diffusion.csv";
+    std::string filename_rdf = "rdf.csv";
+
     [[nodiscard]] double computeDiffusion(ContainerRef particles) const;
-    [[nodiscard]] double computeRDF(ContainerRef particles, std::vector<double>& rdf_bins, double bin_width,
-                                    size_t n_bins) const;
+    [[nodiscard]] double computeRDF(ContainerRef particles) const;
 
    public:
     StatsWriter() = default;
+
+    StatsWriter(bool compute_rdf, bool compute_diffusion, double sample_radius)
+        : compute_rdf(compute_rdf), compute_diffusion(compute_diffusion), sample_radius(sample_radius) {};
+
     ~StatsWriter();
 
-    void initStats(bool compute_rdf, bool compute_diffusion, double sample_radius) {
-        this->compute_rdf = compute_rdf;
-        this->compute_diffusion = compute_diffusion;
-        this->sample_radius = sample_radius;
-    };
-    void plotStatistics(ContainerRef particles, int iteration) const;
+    void plotDiffusion(ContainerRef particles, int iteration) const;
+    void plotRDF(ContainerRef particles, int iteration) const;
 };
 
 }  // namespace mol_sim
