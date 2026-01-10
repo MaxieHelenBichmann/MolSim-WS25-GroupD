@@ -88,7 +88,7 @@ int main(int argc, char* argsv[]) {
                 single_sources.emplace_back(std::make_unique<GravForce>(settings.g_grav));
                 break;
             case SingleForce::HARMONIC:
-                single_sources.emplace_back(std::make_unique<HarmonicForce>());
+                single_sources.emplace_back(std::make_unique<HarmonicForce>(settings.k, settings.r_0));
                 break;
             default:
                 SPDLOG_ERROR("Unrecognized Force Type!");

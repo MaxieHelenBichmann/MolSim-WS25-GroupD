@@ -76,6 +76,10 @@ class SettingsParam {
      * @brief Default value for g_grav used to simulate gravitational pull in simulation.
      */
     static constexpr double G_GRAV_DEFAULT = 0.0;
+
+    static constexpr double K_DEFAULT = 300.0;
+
+    static constexpr double R_0_DEFAULT = 2.2;
     /**
      * @brief delta_t of the simulation.
      */
@@ -162,6 +166,10 @@ class SettingsParam {
      * @brief Used to simulate of gravitational pull in simulation.
      */
     double g_grav = G_GRAV_DEFAULT;
+
+    double k = K_DEFAULT;
+
+    double r_0 = R_0_DEFAULT;
 
     /**
      * @brief Construct new SettingsParam with default values.

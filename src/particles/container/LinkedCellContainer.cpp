@@ -2,6 +2,7 @@
 
 #include <spdlog/spdlog.h>
 
+#include <array>
 #include <cmath>
 #include <cstddef>
 #include <unordered_set>
@@ -368,7 +369,23 @@ void LinkedCellContainer::addParticle(R3 x_arg, R3 old_x_arg, R3 v_arg, R3 f_arg
     cells[findCellIndex(x_arg)].addParticle(data.size() - 1);
 };
 
+void eraseSelfFromNeighbors(const Particle& p) {
+    /**
+     * Indices Mapping:
+     * 0 <-> 1          left <-> right
+     * 2 <-> 3           top <-> bottom
+     * 4 <-> 7   bottom-left <-> top-right
+     * 5 <-> 6  bottom-right <-> top left
+     */
+    constexpr std::array<size_t, 8> indices_lookup{1, 0, 3, 2, 7, 6, 5, 4};
+    for (size_t i = 0; i < 8; i++) {
+        p.getNeighbors()[i]->getNeighbors()[indices_lookup[i]] = nullptr;
+    }
+}
+
 std::vector<Particle>::iterator LinkedCellContainer::eraseParticle(std::vector<Particle>::iterator p) {
+    eraseSelfFromNeighbors(*p);
+
     size_t cell_to_remove_idx = findCellIndex(p->getX());
 
     if (cell_to_remove_idx < cells.size()) {

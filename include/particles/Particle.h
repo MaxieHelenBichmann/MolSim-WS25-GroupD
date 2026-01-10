@@ -77,6 +77,8 @@ class Particle {
      *  0 default
      *  1 if particle is a mirrored particle (in periodic boundaries)
      *  2 if particle is in a membrane
+     *  3 default particle targetted by target Force
+     *  4 membrane particle targetted by target Force
      */
     int type;
 
