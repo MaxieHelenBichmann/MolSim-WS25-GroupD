@@ -8,6 +8,7 @@
 #ifndef PARTICLE_H
 #define PARTICLE_H
 
+#include <array>
 #include <cstdint>
 #include <string>
 
@@ -75,10 +76,11 @@ class Particle {
      * -1 if particle is GHOST particle
      *  0 default
      *  1 if particle is a mirrored particle (in periodic boundaries)
+     *  2 if particle is in a membrane
      */
     int type;
 
-    //NOLINTBEGIN
+    // NOLINTBEGIN
     /**
      * @brief A bitmap indicating the locations the particle has been mirrored to.
      * This is relevant for periodic boundaries. See also Assignment4/Periodic slides
@@ -90,7 +92,7 @@ class Particle {
      * n-th bit         Location
      * --------------------------------------------------------------------------
      * 0                (-d0, -d1, -d2)
-     * 1                (-d0, -d1,   0) 
+     * 1                (-d0, -d1,   0)
      * 2                (-d0, -d1,  d2)
      * 3                (  0, -d0, -d2)
      * 4                (  0, -d1,   0)
@@ -118,7 +120,28 @@ class Particle {
      * 26               ( d0,  d1,  d2)
      */
     uint32_t mirror_locations = 0;
-    //NOLINTEND
+    // NOLINTEND
+
+    /**
+     * @brief Array storing pointers to neighboring particles in a membrane structure.
+     * Used for membrane simulations to track direct and diagonal neighbors in 2D.
+     * Index mapping for neighbor positions (relative to current particle):
+     * --------------------------------------------------------------------------
+     * Index    Relative Position    Description
+     * --------------------------------------------------------------------------
+     * 0        [-1,  0,  0]         Left neighbor (x-axis)
+     * 1        [ 1,  0,  0]         Right neighbor (x-axis)
+     * 2        [ 0, -1,  0]         Bottom neighbor (y-axis)
+     * 3        [ 0,  1,  0]         Top neighbor (y-axis)
+     * 4        [-1, -1,  0]         Bottom-left diagonal (xy-plane)
+     * 5        [ 1, -1,  0]         Bottom-right diagonal (xy-plane)
+     * 6        [-1,  1,  0]         Top-left diagonal (xy-plane)
+     * 7        [ 1,  1,  0]         Top-right diagonal (xy-plane)
+     *
+     * Null pointers indicate no neighbor at that position (e.g., boundary particles).
+     * TODO: Discuss how neighbor are stored here, currently its Raw pointers
+     */
+    std::array<Particle*, 8> neighbors;
 
    public:
     explicit Particle(int type = 0);
@@ -129,6 +152,7 @@ class Particle {
 
     Particle(
         // for visualization, we need always 3 coordinates
+
         // -> in case of 2d, we use only the first and the second
         R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg = 0);
     Particle(
@@ -270,6 +294,20 @@ class Particle {
      */
     [[nodiscard]] const uint32_t& getMirrorLocations() const noexcept { return mirror_locations; }
 
+    /**
+     * @brief Access the neighbor array for membrane simulations
+     *
+     * @return Reference to the neighbor pointer array
+     */
+    std::array<Particle*, 8>& getNeighbors() noexcept { return neighbors; }
+
+    /**
+     * @brief Access the neighbor array for membrane simulations (const)
+     *
+     * @return Const reference to the neighbor pointer array
+     */
+    [[nodiscard]] const std::array<Particle*, 8>& getNeighbors() const noexcept { return neighbors; }
+
     bool operator==(const Particle& other) const noexcept;
 
     /**
@@ -278,6 +316,23 @@ class Particle {
      * @return String representation of the Particle.
      */
     [[nodiscard]] std::string toString() const;
+
+    /**
+     * @brief Getter for the direct neighbors of this particle
+     *
+     * @return std::array<Particle*, 4>
+     */
+    [[nodiscard]] std::array<Particle*, 4> getDirectNeighbors() noexcept {
+        return {neighbors[0], neighbors[1], neighbors[2], neighbors[3]};
+    }
+    /**
+     * @brief Getter for the diagonal Neighbors of this particle.
+     *
+     * @return std::array<Particle*, 4>
+     */
+    [[nodiscard]] std::array<Particle*, 4> getDiagonalNeighbors() noexcept {
+        return {neighbors[4], neighbors[5], neighbors[6], neighbors[7]};
+    }
 };
 
 std::ostream& operator<<(std::ostream& stream, const Particle& p);
