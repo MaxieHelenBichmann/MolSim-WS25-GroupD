@@ -1,5 +1,5 @@
-#ifndef FORCE_SOURCE_H
-#define FORCE_SOURCE_H
+#ifndef PAIR_FORCE_SOURCE_H
+#define PAIR_FORCE_SOURCE_H
 
 #include <cstdint>
 
@@ -11,16 +11,16 @@ namespace mol_sim {
  * @brief Abstract class of a ForceSource.
  * Each Force must implement this applyForce Method, which calculates the force between two particles.
  */
-class ForceSource {
+class PairwiseForceSource {
    public:
     [[nodiscard]] virtual Vector<double, 3> applyForce(const Particle& p1, const Particle& p2) const noexcept = 0;
-    virtual ~ForceSource() = default;
+    virtual ~PairwiseForceSource() = default;
 };
 /**
  * @brief Enum of all available Force Sources.
  *
  */
-enum Force : std::uint8_t { GRAVITATIONAL, LENNARDJONES };
+enum PairwiseForce : std::uint8_t { GRAVITATIONAL, LENNARDJONES };
 
 }  // namespace mol_sim
 

@@ -1,8 +1,8 @@
-#ifndef GRAV_FORCE_H
-#define GRAV_FORCE_H
+#ifndef HARMONIC_FORCE_H
+#define HARMONIC_FORCE_H
 
 #include "particles/Particle.h"
-#include "physics/ForceSource.h"
+#include "physics/singleforces/SingleForceSource.h"
 #include "utils/Vector.h"
 
 namespace mol_sim {
@@ -13,7 +13,7 @@ namespace mol_sim {
  * Class to calculate gravitational forces between two different objects.
  * Implements the ForceSource concept.
  */
-class GravitationalForce : public ForceSource {
+class HarmonicForce : public SingleForceSource {
    public:
     /**
      * @brief Calculates the gravitational force a particle p2 exerts on a different particle p1.
@@ -24,15 +24,7 @@ class GravitationalForce : public ForceSource {
      *
      * Calculates the gravitational force a particle p2 exerts on a different particle p1.
      */
-    [[nodiscard]] Vector<double, 3> applyForce(const Particle& p1, const Particle& p2) const noexcept override {
-        const auto difference = p2.getX() - p1.getX();
-        const double distance = difference.euclidNorm();
-        if (distance == 0) {
-            return {0.0, 0.0, 0.0};
-        }
-        const auto grav_force = p1.getM() * p2.getM() / (distance * distance * distance) * difference;
-        return grav_force;
-    }
+    [[nodiscard]] Vector<double, 3> applyForce(const Particle& p1) const noexcept override { return {0., 0., 0.}; }
 };
 }  // namespace mol_sim
 

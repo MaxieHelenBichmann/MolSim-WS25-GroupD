@@ -3,7 +3,7 @@
 #include <numbers>
 
 #include "particles/Particle.h"
-#include "physics/LennardJonesForce.h"
+#include "physics/pairwiseforces/LennardJonesForce.h"
 #include "testingUtils.h"
 
 namespace mol_sim {

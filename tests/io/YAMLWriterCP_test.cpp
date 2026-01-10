@@ -43,7 +43,7 @@ class YAMLWriterCPTest : public testing::Test {
      * @brief Writes a checkpoint file using the YAMLWriterCP and returns the path to the created file, as well as
      * tracks the created files for cleanup.
      */
-    std::filesystem::path writeCheckpoint(const Domain& domain, SimpleContainer& container, int iteration, Force force,
+    std::filesystem::path writeCheckpoint(const Domain& domain, SimpleContainer& container, int iteration, PairwiseForce force,
                                           double delta_t, double current_time, double end_time, size_t frequency_output,
                                           size_t frequency_checkpoint, const std::string& base_name,
                                           double cutoff_radius, double target_temp, double delta_temp,
@@ -54,7 +54,7 @@ class YAMLWriterCPTest : public testing::Test {
         settings.end_time = end_time;
         settings.start_time = current_time;
         settings.base_name = base_name;
-        settings.force = force;
+        settings.pairwise_forces = {force};
         settings.container_type = "SIMPLE";
         settings.frequency_output = frequency_output;
         settings.frequency_checkpoint = frequency_checkpoint;
@@ -99,7 +99,7 @@ TEST_F(YAMLWriterCPTest, testWritesSimpleSettingsAndParticleData) {  // NOLINT
     constexpr size_t dimensions = 3;
     const Domain domain{R3{10.0, 10.0, 10.0}};
 
-    auto file_path = writeCheckpoint(domain, container, iteration, Force::LENNARDJONES, delta_t, start_time, end_time,
+    auto file_path = writeCheckpoint(domain, container, iteration, PairwiseForce::LENNARDJONES, delta_t, start_time, end_time,
                                      frequency_output, frequency_checkpoint, base_name, cutoff_radius, target_temp,
                                      delta_temp, thermostat_freq, g_grav, dimensions, iteration_cap);
 
@@ -184,7 +184,7 @@ TEST_F(YAMLWriterCPTest, testEmptyContainer) {  // NOLINT
     constexpr int iteration = 0;
     constexpr size_t iteration_cap = 1;
     const Domain domain{R3{10.0, 10.0, 10.0}};
-    auto file_path = writeCheckpoint(domain, empty, iteration, Force::GRAVITATIONAL, 0.01, 0.0, 1.0, 1, 1, "test_base",
+    auto file_path = writeCheckpoint(domain, empty, iteration, PairwiseForce::GRAVITATIONAL, 0.01, 0.0, 1.0, 1, 1, "test_base",
                                      1.0, 1.0, 1.0, 10, 1., 3, iteration_cap);
 
     ASSERT_TRUE(std::filesystem::exists(file_path));
@@ -210,7 +210,7 @@ TEST_F(YAMLWriterCPTest, testWritesReflectingBoundaryMetadata) {  // NOLINT
 
     constexpr int iteration = 5;
     constexpr size_t iteration_cap = 10;
-    auto file_path = writeCheckpoint(reflecting_domain, container, iteration, Force::GRAVITATIONAL, 0.02, 0.0, 2.0, 2,
+    auto file_path = writeCheckpoint(reflecting_domain, container, iteration, PairwiseForce::GRAVITATIONAL, 0.02, 0.0, 2.0, 2,
                                      4, "test_reflect", 2.0, 1.0, 1.0, 10, 1., 3, iteration_cap);
 
     YAML::Node root = YAML::LoadFile(file_path.string());
@@ -253,7 +253,7 @@ TEST_F(YAMLWriterCPTest, testReadBackCheckpointWithYAMLReader) {  // NOLINT
     constexpr size_t dimensions = 3;
     const Domain domain{R3{10.0, 10.0, 10.0}};
 
-    auto file_path = writeCheckpoint(domain, container, iteration, Force::LENNARDJONES, delta_t, start_time, end_time,
+    auto file_path = writeCheckpoint(domain, container, iteration, PairwiseForce::LENNARDJONES, delta_t, start_time, end_time,
                                      frequency_output, frequency_checkpoint, base_name, cutoff_radius, target_temp,
                                      delta_temp, thermostat_freq, g_grav, dimensions, iteration_cap);
 
@@ -265,7 +265,8 @@ TEST_F(YAMLWriterCPTest, testReadBackCheckpointWithYAMLReader) {  // NOLINT
     EXPECT_DOUBLE_EQ(start_time, settings.start_time);
     EXPECT_DOUBLE_EQ(end_time, settings.end_time);
     EXPECT_EQ(base_name, settings.base_name);
-    EXPECT_EQ(Force::LENNARDJONES, settings.force);
+    EXPECT_EQ(1, settings.pairwise_forces.size());
+    EXPECT_EQ(PairwiseForce::LENNARDJONES, settings.pairwise_forces[0]);
     EXPECT_EQ("SIMPLE", settings.container_type);
     EXPECT_EQ(frequency_output, settings.frequency_output);
     EXPECT_EQ(frequency_checkpoint, settings.frequency_checkpoint);

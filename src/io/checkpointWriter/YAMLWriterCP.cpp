@@ -45,7 +45,29 @@ void YAMLWriterCP::createCheckpoint(SettingsParam& settings, const Domain& domai
         << (settings.start_time > settings.end_time ? settings.end_time : settings.start_time);
     ;
     out << YAML::Key << "base_name" << YAML::Value << settings.base_name;
-    out << YAML::Key << "force" << YAML::Value << (settings.force == LENNARDJONES ? "Lennard Jones" : "Gravitational");
+    
+    // Write pairwise forces
+    out << YAML::Key << "pairwise_forces" << YAML::Value << YAML::BeginSeq;
+    for (const auto& force : settings.pairwise_forces) {
+        if (force == PairwiseForce::GRAVITATIONAL) {
+            out << "GRAVITATIONAL";
+        } else if (force == PairwiseForce::LENNARDJONES) {
+            out << "LENNARDJONES";
+        }
+    }
+    out << YAML::EndSeq;
+    
+    // Write single forces
+    out << YAML::Key << "single_forces" << YAML::Value << YAML::BeginSeq;
+    for (const auto& force : settings.single_forces) {
+        if (force == SingleForce::GRAV) {
+            out << "GRAV";
+        } else if (force == SingleForce::HARMONIC) {
+            out << "HARMONIC";
+        }
+    }
+    out << YAML::EndSeq;
+    
     out << YAML::Key << "container" << YAML::Value << settings.container_type;
     out << YAML::Key << "frequency" << YAML::Value << settings.frequency_output;
     out << YAML::Key << "checkpoint" << YAML::Value << settings.frequency_checkpoint;

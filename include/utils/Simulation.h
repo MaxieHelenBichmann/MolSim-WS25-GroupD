@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
-#include <type_traits>
 #include <vector>
 
 #include "exceptions/SimulationException.h"
@@ -14,9 +13,9 @@
 #include "io/OutputWriter.h"
 #include "particles/Particle.h"
 #include "particles/ParticleContainer.h"
-#include "particles/container/LinkedCellContainer.h"
 #include "particles/container/domain/Domain.h"
-#include "physics/ForceSource.h"
+#include "physics/pairwiseforces/PairwiseForceSource.h"
+#include "physics/singleforces/SingleForceSource.h"
 #include "utils/Settings.h"
 #include "utils/Vector.h"
 
@@ -49,13 +48,14 @@ class Simulation {
     containerType& particles;
 
     /**
-     * @brief Force source for calculating particle interactions.
+     * @brief Force sources for calculating particle interactions.
      */
-    const ForceSource& force_source;
-    /**
-     * @brief Force type, used in checkpointing.
-     */
-    Force force;
+    const std::vector<std::unique_ptr<PairwiseForceSource>>& pairwise_force_sources;
+
+    const std::vector<std::unique_ptr<SingleForceSource>>& single_force_sources;
+
+    std::vector<PairwiseForce> pairwise_forces;
+    std::vector<SingleForce> single_forces;
     /**
      * @brief Writer used for output.
      */
@@ -142,12 +142,16 @@ class Simulation {
      * @param force_source Force source to be used in the simulation.
      * @param settings Simulation parameters.
      */
-    Simulation(containerType& particles, const ForceSource& force_source, SettingsParam& settings,
+    Simulation(containerType& particles,
+               const std::vector<std::unique_ptr<PairwiseForceSource>>& pairwise_force_sources,
+               const std::vector<std::unique_ptr<SingleForceSource>>& single_force_sources, SettingsParam& settings,
                const OutputWriter& writer, const CheckpointWriter& cp_writer)
         : domain(std::move(settings.domain)),
           particles(particles),
-          force_source(force_source),
-          force(settings.force),
+          pairwise_force_sources(pairwise_force_sources),
+          single_force_sources(single_force_sources),
+          pairwise_forces(settings.pairwise_forces),
+          single_forces(settings.single_forces),
           writer(writer),
           cp_writer(cp_writer),
           delta_t(settings.delta_t),
@@ -203,7 +207,7 @@ class Simulation {
             (*it).getOldF() = (*it).getF();
             (*it).getF() = Vector<double, 3>();
             // TODO: Optimization to only call this for relevant particles
-            for (auto& p : domain.applyBoundary(*it, force_source)) {
+            for (auto& p : domain.applyBoundary(*it, *pairwise_force_sources[0])) {
                 new_particles.push_back(p);
             }
             (*it).getMirrorLocations() = 0;
@@ -222,16 +226,20 @@ class Simulation {
         size_t idx = 0;
         for (auto it = particles.begin(); it != particles.end(); ++it, idx++) {
             Particle& p1 = *it;
-            p1.getF()[1] += p1.getM() * g_grav;  // add gravitational pull along y-axis
+            for (const auto& force_source : single_force_sources) {
+                p1.getF() += force_source->applyForce(p1);
+            }
 
             auto it_prox = particles.proximityBegin(p1.getX(), idx);
             auto it_prox_end = particles.proximityEnd(p1.getX());
             for (; it_prox != it_prox_end; ++it_prox) {
                 Particle& p2 = *it_prox;
-                Vector<double, 3> force = force_source.applyForce(p1, p2);
-                // Apply force directly (Newton's 3rd law: equal and opposite)
-                p1.getF() += force;
-                p2.getF() -= force;
+                for (const auto& force_source : pairwise_force_sources) {
+                    Vector<double, 3> force = force_source->applyForce(p1, p2);
+                    // Apply force directly (Newton's 3rd law: equal and opposite)
+                    p1.getF() += force;
+                    p2.getF() -= force;
+                }
             }
         }
         // Calculate forces from mirrored/ghost particles
@@ -260,8 +268,11 @@ class Simulation {
             auto it_prox_end = particles.proximityEnd(lookup_pos);
             for (; it_prox != it_prox_end; ++it_prox) {
                 Particle& p2 = *it_prox;
-                Vector<double, 3> force = force_source.applyForce(p2, p1);
-                p2.getF() = p2.getF() + force;
+                for (const auto& force_source : pairwise_force_sources) {
+                    Vector<double, 3> force = force_source->applyForce(p2, p1);
+                    // Apply force directly (Newton's 3rd law: equal and opposite)
+                    p2.getF() += force;
+                }
             }
         }
         new_particles.clear();
@@ -317,7 +328,8 @@ class Simulation {
         cp_settings.end_time = end_time;
         cp_settings.start_time = current_time;
         cp_settings.base_name = base_name;
-        cp_settings.force = force;
+        cp_settings.pairwise_forces = pairwise_forces;
+        cp_settings.single_forces = single_forces;
         if constexpr (std::is_same_v<std::remove_cvref_t<containerType>, LinkedCellContainer>) {
             cp_settings.container_type = "LINKED";
         } else {

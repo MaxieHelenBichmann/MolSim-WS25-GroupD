@@ -19,8 +19,8 @@ class Outflow : public Boundary {
      * @param force The force source that should be used in the boundary condition (in this case irrelevant).
      * @return std::nullopt always, since no new particles are generated here.
      */
-    std::optional<std::vector<Particle>> applyBoundary([[maybe_unused]] Particle& p,
-                                                       [[maybe_unused]] const ForceSource& force) noexcept override {
+    std::optional<std::vector<Particle>> applyBoundary(
+        [[maybe_unused]] Particle& p, [[maybe_unused]] const PairwiseForceSource& force) noexcept override {
         return std::nullopt;
     }
 };

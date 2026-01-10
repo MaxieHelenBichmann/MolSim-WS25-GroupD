@@ -5,7 +5,7 @@ VelocityReflect::VelocityReflect(BoundaryLocation location, R3 domain_size) noex
     : Boundary(location, BoundaryType::VELOCITYREFLECT, domain_size) {}
 
 std::optional<std::vector<Particle>> VelocityReflect::applyBoundary(
-    Particle& p, [[maybe_unused]] const ForceSource& force) noexcept {
+    Particle& p, [[maybe_unused]] const PairwiseForceSource& force) noexcept {
     size_t axis = getAxis();
     int sign = getSign();
     if (sign < 0 && p.getX()[axis] < 0) {

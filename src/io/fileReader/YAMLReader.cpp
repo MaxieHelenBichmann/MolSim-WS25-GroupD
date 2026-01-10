@@ -21,7 +21,6 @@
 #include "particles/container/domain/Domain.h"
 #include "particles/generators/CuboidGenerator.h"
 #include "particles/generators/DiscGenerator.h"
-#include "physics/ForceSource.h"
 #include "utils/Settings.h"
 #include "utils/Vector.h"
 
@@ -64,6 +63,10 @@ void validateSettings(const SettingsParam& settings) {
         SPDLOG_ERROR("thermostat_freq must be non-negative, got: " + std::to_string(settings.thermostat_freq));
         throw ValidationException("thermostat_freq must be non-negative, got: " +
                                   std::to_string(settings.thermostat_freq));
+    }
+    if (settings.pairwise_forces.empty()) {
+        SPDLOG_ERROR("At least one pairwise force has to be specified");
+        throw ValidationException("At least one pairwise force has to be specified");
     }
 }
 /**
@@ -121,14 +124,17 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
             settings.base_name = node["base_name"].as<std::string>();
         }
         if (node["force"]) {
+            // Backward compatibility: map old "force" field to new pairwise_forces
             auto force_str = node["force"].as<std::string>();
+            settings.pairwise_forces.clear();
             if (force_str == "Lennard Jones") {
-                settings.force = LENNARDJONES;
+                settings.pairwise_forces.push_back(PairwiseForce::LENNARDJONES);
             } else if (force_str == "Gravitational") {
-                settings.force = GRAVITATIONAL;
+                settings.pairwise_forces.push_back(PairwiseForce::GRAVITATIONAL);
             } else {
                 throw ValidationException("Unknown force type: " + force_str);
             }
+            SPDLOG_WARN("Using deprecated 'force' field. Please use 'pairwise_forces' instead.");
         }
         if (node["container"]) {
             auto container_str = node["container"].as<std::string>();
@@ -146,6 +152,47 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
         if (node["cutoff"]) {
             settings.cutoff = node["cutoff"].as<double>();
         }
+        if (node["pairwise_forces"]) {
+            settings.pairwise_forces.clear();
+            YAML::Node pairwise_node = node["pairwise_forces"];
+            if (pairwise_node.IsSequence()) {
+                for (const auto& force_item : pairwise_node) {
+                    auto force_str = force_item.as<std::string>();
+                    if (force_str == "GRAVITATIONAL") {
+                        settings.pairwise_forces.push_back(PairwiseForce::GRAVITATIONAL);
+                    } else if (force_str == "LENNARDJONES") {
+                        settings.pairwise_forces.push_back(PairwiseForce::LENNARDJONES);
+                    } else {
+                        SPDLOG_ERROR("Unknown pairwise force type: " + force_str);
+                        throw ValidationException("Unknown pairwise force type: " + force_str);
+                    }
+                }
+            } else {
+                SPDLOG_ERROR("pairwise_forces must be a sequence");
+                throw ValidationException("pairwise_forces must be a sequence");
+            }
+        }
+        if (node["single_forces"]) {
+            settings.single_forces.clear();
+            YAML::Node single_node = node["single_forces"];
+            if (single_node.IsSequence()) {
+                for (const auto& force_item : single_node) {
+                    auto force_str = force_item.as<std::string>();
+                    if (force_str == "GRAV") {
+                        settings.single_forces.push_back(SingleForce::GRAV);
+                    } else if (force_str == "HARMONIC") {
+                        settings.single_forces.push_back(SingleForce::HARMONIC);
+                    } else {
+                        SPDLOG_ERROR("Unknown single force type: " + force_str);
+                        throw ValidationException("Unknown single force type: " + force_str);
+                    }
+                }
+            } else {
+                SPDLOG_ERROR("single_forces must be a sequence");
+                throw ValidationException("single_forces must be a sequence");
+            }
+        }
+
         if (node["thermostat"]) {
             settings.thermo = true;
             YAML::Node t_node = node["thermostat"];

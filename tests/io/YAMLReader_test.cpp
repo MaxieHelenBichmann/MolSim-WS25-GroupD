@@ -1,7 +1,6 @@
 #include "io/fileReader/YAMLReader.h"
 
 #include <gtest/gtest.h>
-#include <physics/ForceSource.h>
 #include <spdlog/spdlog.h>
 
 #include <mutex>
@@ -225,7 +224,8 @@ TEST_F(YAMLReaderTest, ReadFullConfigFile) {
 
     EXPECT_EQ(settings.base_name, "MD");
 
-    EXPECT_EQ(settings.force, LENNARDJONES);
+    EXPECT_EQ(settings.pairwise_forces.size(), 1);
+    EXPECT_EQ(settings.pairwise_forces[0], LENNARDJONES);
 
     EXPECT_EQ(settings.frequency_output, 10);
 
@@ -360,9 +360,9 @@ TEST_F(YAMLReaderTest, ReadDomainAndBoundaries) {
     const auto* left_reflecting = dynamic_cast<const Reflecting*>(&left);
     ASSERT_NE(left_reflecting, nullptr);
     ASSERT_TRUE(left_reflecting->getBoundarySigma().has_value());
-    EXPECT_DOUBLE_EQ(left_reflecting->getBoundarySigma().value(), 1.2); //NOLINT
+    EXPECT_DOUBLE_EQ(left_reflecting->getBoundarySigma().value(), 1.2);  // NOLINT
     ASSERT_TRUE(left_reflecting->getBoundaryEpsilon().has_value());
-    EXPECT_DOUBLE_EQ(left_reflecting->getBoundaryEpsilon().value(), 5.0); //NOLINT
+    EXPECT_DOUBLE_EQ(left_reflecting->getBoundaryEpsilon().value(), 5.0);  // NOLINT
 
     // Verify RIGHT boundary (REFLECTING without custom sigma/epsilon)
     const Boundary& right = settings.domain.getBoundary(BoundaryLocation::RIGHT);
@@ -382,9 +382,9 @@ TEST_F(YAMLReaderTest, ReadDomainAndBoundaries) {
     const auto* upper_reflecting = dynamic_cast<const Reflecting*>(&upper);
     ASSERT_NE(upper_reflecting, nullptr);
     ASSERT_TRUE(upper_reflecting->getBoundarySigma().has_value());
-    EXPECT_DOUBLE_EQ(upper_reflecting->getBoundarySigma().value(), 2.0); //NOLINT
+    EXPECT_DOUBLE_EQ(upper_reflecting->getBoundarySigma().value(), 2.0);  // NOLINT
     ASSERT_TRUE(upper_reflecting->getBoundaryEpsilon().has_value());
-    EXPECT_DOUBLE_EQ(upper_reflecting->getBoundaryEpsilon().value(), 10.0); //NOLINT
+    EXPECT_DOUBLE_EQ(upper_reflecting->getBoundaryEpsilon().value(), 10.0);  // NOLINT
 
     // Verify LOWER boundary (OUTFLOW)
     const Boundary& lower = settings.domain.getBoundary(BoundaryLocation::LOWER);
@@ -408,7 +408,8 @@ TEST_F(YAMLReaderTest, ReadCheckpointFile) {
     EXPECT_DOUBLE_EQ(settings.end_time, 500.0);
     EXPECT_DOUBLE_EQ(settings.start_time, 0.0);
     EXPECT_EQ(settings.base_name, "MD");
-    EXPECT_EQ(settings.force, LENNARDJONES);
+    EXPECT_EQ(settings.pairwise_forces.size(), 1);
+    EXPECT_EQ(settings.pairwise_forces[0], LENNARDJONES);
     EXPECT_EQ(settings.frequency_output, 10);
     EXPECT_EQ(settings.frequency_checkpoint, 100);
     EXPECT_DOUBLE_EQ(settings.target_temp, 10.);
@@ -434,9 +435,9 @@ TEST_F(YAMLReaderTest, ReadCheckpointFile) {
     const auto* lower_reflecting = dynamic_cast<const Reflecting*>(&lower);
     ASSERT_NE(lower_reflecting, nullptr);
     ASSERT_TRUE(lower_reflecting->getBoundarySigma().has_value());
-    EXPECT_DOUBLE_EQ(lower_reflecting->getBoundarySigma().value(), 1.2); //NOLINT
+    EXPECT_DOUBLE_EQ(lower_reflecting->getBoundarySigma().value(), 1.2);  // NOLINT
     ASSERT_TRUE(lower_reflecting->getBoundaryEpsilon().has_value());
-    EXPECT_DOUBLE_EQ(lower_reflecting->getBoundaryEpsilon().value(), 5.0); //NOLINT
+    EXPECT_DOUBLE_EQ(lower_reflecting->getBoundaryEpsilon().value(), 5.0);  // NOLINT
 
     // Verify particle data
     EXPECT_EQ(particles.size(), 1);

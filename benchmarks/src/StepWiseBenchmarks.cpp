@@ -17,7 +17,7 @@
 #include "particles/container/LinkedCellContainer.h"
 #include "particles/container/SimpleContainer.h"
 #include "particles/generators/CuboidGenerator.h"
-#include "physics/LennardJonesForce.h"
+#include "physics/pairwiseforces/LennardJonesForce.h"
 #include "utils/Settings.h"
 #include "utils/Simulation.h"
 
@@ -49,12 +49,15 @@ void bmSimulationSingleStepLinkedCell(benchmark::State& state) {
         std::make_unique<Outflow>(BoundaryLocation::UPPER, domain_size),
         std::make_unique<Outflow>(BoundaryLocation::LOWER, domain_size)};
     settings.domain = Domain(domain_size, std::move(boundaries));
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
     generator.generateParticles(particles);
 
-    Simulation<LinkedCellContainer> simulation(part_container, *force_source, settings, *writer, *cp_writer);
+    Simulation<LinkedCellContainer> simulation(part_container, pairwise_forces, single_forces, settings, *writer,
+                                               *cp_writer);
     for ([[maybe_unused]] auto _ : state) {
         benchmark::ClobberMemory();
         simulation.run();
@@ -86,11 +89,14 @@ void bmSimulationSingleStepDirectSum(benchmark::State& state) {
         std::make_unique<Outflow>(BoundaryLocation::UPPER, domain_size),
         std::make_unique<Outflow>(BoundaryLocation::LOWER, domain_size)};
     settings.domain = Domain(domain_size, std::move(boundaries));
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
     generator.generateParticles(particles);
-    Simulation<SimpleContainer> simulation(part_container, *force_source, settings, *writer, *cp_writer);
+    Simulation<SimpleContainer> simulation(part_container, pairwise_forces, single_forces, settings, *writer,
+                                           *cp_writer);
     for ([[maybe_unused]] auto _ : state) {
         benchmark::ClobberMemory();
         simulation.run();

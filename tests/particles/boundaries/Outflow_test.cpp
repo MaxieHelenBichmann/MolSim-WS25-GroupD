@@ -1,15 +1,18 @@
 #include "particles/boundaries/Outflow.h"
 
 #include <gtest/gtest.h>
+#include <physics/pairwiseforces/PairwiseForceSource.h>
+#include <physics/singleforces/SingleForceSource.h>
 
 #include <limits>
 #include <memory>
+#include <vector>
 
 #include "io/checkpointWriter/XVMWriterCP.h"
 #include "io/outputWriter/XYZWriter.h"
 #include "particles/Particle.h"
 #include "particles/container/domain/Domain.h"
-#include "physics/LennardJonesForce.h"
+#include "physics/pairwiseforces/LennardJonesForce.h"
 #include "utils/Settings.h"
 #include "utils/Simulation.h"
 
@@ -56,9 +59,12 @@ TEST_F(OutflowTest, X_outflow_linked) {
     LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
     auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
+    Simulation<LinkedCellContainer> simulation(particles, pairwise_forces, single_forces, settings, *writer,
+                                               *cp_writer);
     simulation.run();
     EXPECT_TRUE(particles.empty());
 }
@@ -70,10 +76,12 @@ TEST_F(OutflowTest, X_outflow_simple) {
     settings.container_type = "SIMPLE";
     SimpleContainer particles;
     particles.addParticle(p);
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
+    Simulation<SimpleContainer> simulation(particles, pairwise_forces, single_forces, settings, *writer, *cp_writer);
     simulation.run();
     EXPECT_TRUE(particles.empty());
 }
@@ -85,10 +93,13 @@ TEST_F(OutflowTest, Y_outflow_linked) {
     settings.container_type = "LINKED";
     LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
+    Simulation<LinkedCellContainer> simulation(particles, pairwise_forces, single_forces, settings, *writer,
+                                               *cp_writer);
     simulation.run();
     EXPECT_TRUE(particles.empty());
 }
@@ -100,10 +111,12 @@ TEST_F(OutflowTest, Y_outflow_simple) {
     settings.container_type = "SIMPLE";
     SimpleContainer particles;
     particles.addParticle(p);
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
+    Simulation<SimpleContainer> simulation(particles, pairwise_forces, single_forces, settings, *writer, *cp_writer);
     simulation.run();
     EXPECT_TRUE(particles.empty());
 }
@@ -115,10 +128,13 @@ TEST_F(OutflowTest, Z_outflow_linked) {
     settings.container_type = "LINKED";
     LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
+    Simulation<LinkedCellContainer> simulation(particles, pairwise_forces, single_forces, settings, *writer,
+                                               *cp_writer);
     simulation.run();
     EXPECT_TRUE(particles.empty());
 }
@@ -130,10 +146,12 @@ TEST_F(OutflowTest, Z_outflow_simple) {
     settings.container_type = "SIMPLE";
     SimpleContainer particles;
     particles.addParticle(p);
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
+    Simulation<SimpleContainer> simulation(particles, pairwise_forces, single_forces, settings, *writer, *cp_writer);
     simulation.run();
     EXPECT_TRUE(particles.empty());
 }
@@ -146,10 +164,13 @@ TEST_F(OutflowTest, outflow_linked_no_erase) {
     settings.container_type = "LINKED";
     LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
+    Simulation<LinkedCellContainer> simulation(particles, pairwise_forces, single_forces, settings, *writer,
+                                               *cp_writer);
     simulation.run();
     Particle expected({9.5, 5.0, 5.0}, p.getV(), p.getM(), p.getEpsilon(), p.getSigma(), p.getType());
     expected.getOldX() = p.getX();
@@ -164,10 +185,12 @@ TEST_F(OutflowTest, outflow_simple_no_erase) {
     settings.container_type = "SIMPLE";
     SimpleContainer particles;
     particles.addParticle(p);
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
+    Simulation<SimpleContainer> simulation(particles, pairwise_forces, single_forces, settings, *writer, *cp_writer);
     simulation.run();
     Particle expected({9.5, 5.0, 5.0}, p.getV(), p.getM(), p.getEpsilon(), p.getSigma(), p.getType());
     expected.getOldX() = p.getX();

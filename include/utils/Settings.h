@@ -4,9 +4,11 @@
 #include <cstddef>
 #include <limits>
 #include <string>
+#include <vector>
 
 #include "particles/container/domain/Domain.h"
-#include "physics/ForceSource.h"
+#include "physics/pairwiseforces/PairwiseForceSource.h"
+#include "physics/singleforces/SingleForceSource.h"
 
 namespace mol_sim {
 /**
@@ -40,7 +42,8 @@ class SettingsParam {
     /**
      * @brief Default force type of the simulation.
      */
-    static constexpr Force FORCE_DEFAULT = LENNARDJONES;
+    inline static const std::vector<PairwiseForce> PAIRWISE_FORCE_DEFAULT = {LENNARDJONES};
+    inline static const std::vector<SingleForce> SINGLE_FORCE_DEFAULT = {GRAV};
     /**
      * @brief Default write frequency of the simulation.
      */
@@ -100,7 +103,8 @@ class SettingsParam {
     /**
      * @brief Type of force used in the simulation.
      */
-    Force force = FORCE_DEFAULT;
+    std::vector<PairwiseForce> pairwise_forces = PAIRWISE_FORCE_DEFAULT;
+    std::vector<SingleForce> single_forces = SINGLE_FORCE_DEFAULT;
     /**
      * @brief Frequency of output files being written.
      * Output is written every *frequency* iterations.

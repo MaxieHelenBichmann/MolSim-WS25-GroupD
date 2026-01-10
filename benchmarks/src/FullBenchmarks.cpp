@@ -13,6 +13,7 @@
 
 #include <array>
 #include <memory>
+#include <vector>
 
 #include "io/checkpointWriter/YAMLWriterCP.h"
 #include "io/outputWriter/XYZWriter.h"
@@ -20,7 +21,9 @@
 #include "particles/boundaries/Periodic.h"
 #include "particles/boundaries/Reflecting.h"
 #include "particles/container/LinkedCellContainer.h"
-#include "physics/LennardJonesForce.h"
+#include "physics/pairwiseforces/LennardJonesForce.h"
+#include "physics/pairwiseforces/PairwiseForceSource.h"
+#include "physics/singleforces/SingleForceSource.h"
 #include "utils/MaxwellBoltzmannDistribution.h"
 #include "utils/Settings.h"
 #include "utils/Simulation.h"
@@ -61,7 +64,7 @@ SettingsParam createBenchmarkSettings(R3 domain_size, double cutoff, double delt
     settings.cutoff = cutoff;
     settings.dimensions = 2;
     settings.base_name = "benchmark";
-    settings.force = Force::LENNARDJONES;
+    settings.pairwise_forces = {PairwiseForce::LENNARDJONES};
     settings.thermo = true;
     settings.init_temp = 20;
     settings.target_temp = 40.;
@@ -93,7 +96,7 @@ SettingsParam createContestSettings() {
     settings.cutoff = 3;
     settings.dimensions = 2;
     settings.base_name = "contest";
-    settings.force = Force::LENNARDJONES;
+    settings.pairwise_forces = {PairwiseForce::LENNARDJONES};
     settings.thermo = true;
     settings.init_temp = 40;
     settings.target_temp = 40.;
@@ -125,7 +128,9 @@ static void bmSimulationFullBenchmark(benchmark::State& state) {
     const double delta_t = 0.0005;
     const double end_time = 3.0;
 
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<YAMLWriterCP>();
 
@@ -141,7 +146,8 @@ static void bmSimulationFullBenchmark(benchmark::State& state) {
         state.counters["Particles"] = static_cast<double>(num_particles);
         state.counters["Iterations"] = static_cast<double>(num_iterations);
 
-        Simulation<LinkedCellContainer> simulation(container, *force_source, settings, *writer, *cp_writer);
+        Simulation<LinkedCellContainer> simulation(container, pairwise_forces, single_forces, settings, *writer,
+                                                   *cp_writer);
         state.ResumeTiming();
 
         simulation.run();
@@ -158,7 +164,9 @@ static void bmSimulationFullBenchmark(benchmark::State& state) {
 static void bmSimulationFullContest(benchmark::State& state) {
     spdlog::set_level(spdlog::level::warn);
 
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<YAMLWriterCP>();
 
@@ -175,7 +183,8 @@ static void bmSimulationFullContest(benchmark::State& state) {
         state.counters["Particles"] = static_cast<double>(num_particles);
         state.counters["Iterations"] = static_cast<double>(num_iterations);
 
-        Simulation<LinkedCellContainer> simulation(container, *force_source, settings, *writer, *cp_writer);
+        Simulation<LinkedCellContainer> simulation(container, pairwise_forces, single_forces, settings, *writer,
+                                                   *cp_writer);
         state.ResumeTiming();
 
         simulation.run();
