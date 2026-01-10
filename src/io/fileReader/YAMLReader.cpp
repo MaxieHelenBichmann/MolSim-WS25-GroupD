@@ -195,6 +195,12 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
                 }
                 settings.sample_radius = t_node["sample_r"].as<double>();
             }
+            if (t_node["window_size"]) {
+                if (!settings.rdf) {
+                    throw ValidationException("Window size can only be set if data collection for the RDF is enabled");
+                }
+                settings.window_size = t_node["window_size"].as<double>();
+            }
         } else {
             settings.rdf = false;
             settings.diff = false;

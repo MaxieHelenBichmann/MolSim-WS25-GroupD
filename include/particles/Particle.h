@@ -60,7 +60,7 @@ class Particle {
     // ========== COLD DATA ==========
 
     /**
-     * @brief New position of the particle
+     * @brief Old position of the particle
      */
     R3 old_x;
 
@@ -124,6 +124,11 @@ class Particle {
     std::vector<R3> mirror_positions;
     // NOLINTEND
 
+    /**
+     * @brief Reference position of the particle, which is needed in statistics. Is not included in the checkpoint.
+     */
+    R3 reference_position;
+
    public:
     explicit Particle(int type = 0);
 
@@ -172,6 +177,18 @@ class Particle {
      * @return Reference to the previous coordinates of the Particle.
      */
     R3& getOldX() noexcept { return old_x; };
+    /**
+     * @brief Access the coordinates of the reference position of the Particle (needed in statistics).
+     *
+     * @return Const reference to the reference coordinates of the Particle.
+     */
+    [[nodiscard]] const R3& getRefX() const noexcept { return reference_position; };
+    /**
+     * @brief Access the coordinates of the reference position of the Particle (needed in statistics).
+     *
+     * @return Reference to the reference coordinates of the Particle.
+     */
+    R3& getRefX() noexcept { return reference_position; };
 
     /**
      * @brief Access the current velocity Vector of a Particle.
