@@ -8,7 +8,6 @@ using namespace mol_sim;
 double StatsWriter::computeDiffusion([[maybe_unused]] ContainerRef particles) {
     double result = 0.0;
     for (auto& p : particles) {
-        // TODO: consider periodic boundaries
         result += (p.getX() - p.getRefX()).sqrEuclidNorm();
         p.getRefX() = p.getX();
     }

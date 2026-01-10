@@ -96,6 +96,7 @@ void Periodic::teleportParticleIfOOB(Particle& p) {
         }
     }
     p.getX() = p.getX() + position_shift;
+    p.getRefX() = p.getRefX() + position_shift;
 }
 
 /**
