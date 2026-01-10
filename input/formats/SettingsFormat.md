@@ -31,6 +31,7 @@ The settings block has the following keys, with every key except format being op
 - `container`: Container type, either `"SIMPLE"` or `"LINKED"` (default: `"LINKED"`).
 - `domain`: A map defining the domain of the simulation (see Domain Configuration below).
 - `thermostat`: A map defining the thermostat of the simulation
+- `statistics`: A map defining the collection of thermodynamic statistics
 
 ## Thermostat Configuration
 The thermostat is only activated when the `thermostat` key is provided. It can contain the following subkeys:  
@@ -38,6 +39,14 @@ The thermostat is only activated when the `thermostat` key is provided. It can c
 - `target_temp`: A floating-point number specifying the normal target temperature of the simulation.
 - `n_thermostat`: A whole point number specifying the frequency with which the thermostat gets applied.
 - `delta_temp`: A floating-point number specifying the maximum allowed change of temperature with one application of the thermostat.
+
+## Statistics Configuration
+The data collection is only activated when the `statistics` key is provided. It can contain the following subkeys:
+- `stat_freq`: A whole number specifying the frequency of the data collection in the simulation.
+- `diffusion`: A flag whether data about the Diffusion should be collected (default: `false`).
+- `rdf`: A flag whether data about the Radial Distribution Function should be collected  (default: `false`).
+- `sample_r`: A floating-point number specifying the sample width of the RDF (default: 1.0).
+
 
 ## Domain Configuration
 
