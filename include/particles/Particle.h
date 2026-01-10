@@ -318,23 +318,6 @@ class Particle {
      * @return String representation of the Particle.
      */
     [[nodiscard]] std::string toString() const;
-
-    /**
-     * @brief Getter for the direct neighbors of this particle
-     *
-     * @return std::array<Particle*, 4>
-     */
-    [[nodiscard]] std::array<Particle*, 4> getDirectNeighbors() noexcept {
-        return {neighbors[0], neighbors[1], neighbors[2], neighbors[3]};
-    }
-    /**
-     * @brief Getter for the diagonal Neighbors of this particle.
-     *
-     * @return std::array<Particle*, 4>
-     */
-    [[nodiscard]] std::array<Particle*, 4> getDiagonalNeighbors() noexcept {
-        return {neighbors[4], neighbors[5], neighbors[6], neighbors[7]};
-    }
 };
 
 std::ostream& operator<<(std::ostream& stream, const Particle& p);
