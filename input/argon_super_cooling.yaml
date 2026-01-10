@@ -1,0 +1,9 @@
+settings:
+  format: Settings
+  end_time: 150
+
+  thermostat: 
+    initial_temp: 3.0
+    target_temp: 0.02
+    n_thermostat: 25
+    delta_temp: 0.0025
