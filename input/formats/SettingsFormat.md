@@ -27,10 +27,32 @@ The settings block has the following keys, with every key except format being op
 - `checkpoint`: A whole number specifying the frequency of the checkpoint files of the simulation.
 - `cutoff`: A floating-point number specifying the cutoff radius of the Linked Cells of the simulation.
 - `container`: Container type, either `"SIMPLE"` or `"LINKED"` (default: `"LINKED"`).
-- `pairwise_forces`: A sequence containing all desired pairwise forces. (`"GRAVITATIONAL"`, `"LENNARDJONES"`)
-- `single_forces`: A sequence containg all desired single particle forces. (`"GRAV"`, `"HARMONIC"`)
+- `pairwise_forces`: A sequence containing all desired pairwise forces (forces applied between particle pairs).
+  - Available forces: `"GRAVITATIONAL"`, `"LENNARDJONES"`, `"TRUNCLENNARDJONES"`
+  - Multiple forces can be specified and will all be applied
+  - Default: `["LENNARDJONES"]`
+- `single_forces`: A sequence containing all desired single particle forces (forces applied to individual particles).
+  - Available forces: `"GRAV"` (gravitational pull), `"HARMONIC"` (membrane bonds)
+  - Multiple forces can be specified and will all be applied
+  - Default: `["GRAV"]`
+- `target_force`: A boolean enabling the target force. Which particles are to be targetted have to be specified in the corresponding Generator.
 - `domain`: A map defining the domain of the simulation (see Domain Configuration below).
 - `thermostat`: A map defining the thermostat of the simulation
+
+## Force Types
+
+### Pairwise Forces
+Pairwise forces are applied between pairs of particles within the cutoff radius. Multiple pairwise forces can be active simultaneously.
+
+- **`GRAVITATIONAL`**: Newtonian gravitational attraction between particle pairs. Force magnitude: `F = G * m1 * m2 / r²`
+- **`LENNARDJONES`**: Standard Lennard-Jones potential for molecular interactions. Includes both attractive and repulsive components.
+- **`TRUNCLENNARDJONES`**: Truncated Lennard-Jones potential cut off at `r = 2^(1/6) * σ`. Only the repulsive part is active. Used for preventing self-penetration in membrane simulations. Only applies to particles with type 2.
+
+### Single Forces
+Single forces are applied to individual particles. Multiple single forces can be active simultaneously.
+
+- **`GRAV`**: Uniform gravitational pull in the -y direction. Force magnitude: `F = m * g_grav` (where `g_grav` is specified in the domain configuration).
+- **`HARMONIC`**: Harmonic bonds between neighboring particles in membrane structures. Only applies to particles with type 2 that have neighbors set. Uses harmonic potential: `U = k/2 * (r - r0)²`
 
 ## Thermostat Configuration
 The thermostat is only activated when the `thermostat` key is provided. It can contain the following subkeys:  
@@ -80,13 +102,47 @@ settings:
     start_time: 0.0
     base_name: "MD"
     frequency: 10
-    cutoff: 1.
+    cutoff: 1.0
     pairwise_forces:
-      "LENNARDJONES"
+      - "LENNARDJONES"
+    single_forces:
+      - "GRAV"
     domain:
-      x: 1.
-      y: 1.
-      z: 1.
+      x: 1.0
+      y: 1.0
+      z: 1.0
+```
+
+### Multiple Forces Example
+```yaml
+settings:
+    format: Settings
+    delta_t: 0.0005
+    end_time: 20.0
+    pairwise_forces:
+      - "LENNARDJONES"      # Regular LJ between all particles
+      - "TRUNCLENNARDJONES" # Repulsive-only LJ for membrane particles
+    single_forces:
+      - "GRAV"              # Gravity pull
+      - "HARMONIC"          # Membrane bonds
+    domain:
+      x: 50.0
+      y: 50.0
+      z: 1.0
+      g_grav: -0.981
+```
+
+### Backward Compatible Example (Deprecated)
+```yaml
+settings:
+    format: Settings
+    delta_t: 0.005
+    end_time: 500.0
+    force: "Lennard Jones"  # Deprecated: converted to pairwise_forces: ["LENNARDJONES"]
+    frequency: 10
+    domain:
+      x: 1.0
+      y: 1.0
 ```
 
 ### Full Example with Boundary Conditions
@@ -97,12 +153,12 @@ settings:
     end_time: 20.0
     start_time: 0.0
     base_name: "collision"
-    force: "Lennard Jones"
     frequency: 10
     cutoff: 3.0
     container: LINKED
+    pairwise_forces:
+      - "LENNARDJONES"
     domain:
-
       x: 180.0
       y: 90.0
       z: 1.0
