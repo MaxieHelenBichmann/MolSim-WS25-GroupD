@@ -258,12 +258,15 @@ class SmoothLennardJonesMediumDistanceTest : public SmoothLennardJonesForceTest 
  * Compares against hand computed values.
  */
 TEST_F(SmoothLennardJonesMediumDistanceTest, MediumDistance_Cardinal) {
-    R3 expected_force = {-3.1200000803755144, 0., 0.};
-    p2.getX() = {12.0, 0.0, 0.0};
+    SmoothLennardJonesForce force;
+    force.initForce(cutoff_radius, 3);
+
+    R3 expected_force = {0.018655817750600174, 0., 0.};
+    p2.getX() = {3.5, 0.0, 0.0};
     R3 result = force.applyForce(p1, p2);
     EXPECT_R3_NEAR(result, expected_force, precision);
 
-    p2.getX() = {-12.0, 0.0, 0.0};
+    p2.getX() = {-3.5, 0.0, 0.0};
     result = force.applyForce(p1, p2);
     EXPECT_R3_NEAR(result, -1 * expected_force, precision);
 }
@@ -272,12 +275,15 @@ TEST_F(SmoothLennardJonesMediumDistanceTest, MediumDistance_Cardinal) {
  * @brief Test the Smooth Lennard Jones Force between medium distance particles that are diagonal.
  */
 TEST_F(SmoothLennardJonesMediumDistanceTest, MediumDistance_Diagonal) {
-    R3 expected_force = {38.78099607458476, 11.634298022375428, 9.695248351979523};
-    p2.getX() = {20.0, 6.0, 5.0};
+    SmoothLennardJonesForce force;
+    force.initForce(cutoff_radius, 3);
+
+    R3 expected_force = {0.00026160748585069596, 0.0007848224575520879, 0.0010464299434027838};
+    p2.getX() = {1.0, 3.0, 4.0};
     R3 result = force.applyForce(p1, p2);
     EXPECT_R3_NEAR(result, expected_force, precision);
 
-    p2.getX() = {-20.0, -6.0, -5.0};
+    p2.getX() = {-1.0, -3.0, -4.0};
     result = force.applyForce(p1, p2);
     EXPECT_R3_NEAR(result, -1 * expected_force, precision);
 }
@@ -290,12 +296,12 @@ TEST_F(SmoothLennardJonesMediumDistanceTest, MediumDistance_AllSmoothing) {
     SmoothLennardJonesForce force;
     force.initForce(cutoff_radius, 0);
 
-    R3 expected_force = {115.25888888888889, 0.0, 0.0};
-    p2.getX() = {2.0, 0.0, 0.0};
+    R3 expected_force = {8.327560625865901, 0.0, 0.0};
+    p2.getX() = {1.4, 0.0, 0.0};
     R3 result = force.applyForce(p1, p2);
     EXPECT_R3_NEAR(result, expected_force, precision);
 
-    p2.getX() = {-2.0, 0.0, 0.0};
+    p2.getX() = {-1.4, 0.0, 0.0};
     result = force.applyForce(p1, p2);
     EXPECT_R3_NEAR(result, -1 * expected_force, precision);
 }
@@ -307,7 +313,7 @@ TEST_F(SmoothLennardJonesMediumDistanceTest, MediumDistance_AllSmoothing_ReallyC
     SmoothLennardJonesForce force;
     force.initForce(cutoff_radius, 0);
 
-    R3 expected_force = {-15229.506111111112, 0.0, 0.0};
+    R3 expected_force = {-1949376.7822222223, 0.0, 0.0};
     p2.getX() = {0.5, 0.0, 0.0};
     R3 result = force.applyForce(p1, p2);
     EXPECT_R3_NEAR(result, expected_force, precision);
