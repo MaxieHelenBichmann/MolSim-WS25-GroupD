@@ -102,6 +102,9 @@ std::vector<std::string> splitCsvLine(const std::string& line) {
 
 }  // namespace
 
+/**
+ * @brief Tests computing and writing diffusion data.
+ */
 TEST_F(DiffusionWriterTtest, testComputeNormal) {
     ContainerRef particles(container);
 
@@ -117,6 +120,9 @@ TEST_F(DiffusionWriterTtest, testComputeNormal) {
     EXPECT_DOUBLE_EQ(diffusion2, 0.0);
 }
 
+/**
+ * @brief Tests computing and writing diffusion data with simulated periodic boundary conditions.
+ */
 TEST_F(DiffusionWriterTtest, testComputePeriodic) {
     // This mainly checks that reference positions are honored even if coordinates are negative
     // (the PBC handling is encapsulated in how ref positions are managed elsewhere).
@@ -132,6 +138,9 @@ TEST_F(DiffusionWriterTtest, testComputePeriodic) {
     EXPECT_DOUBLE_EQ(diffusion, 200.0);
 }
 
+/**
+ * @brief Tests writing diffusion data to file.
+ */
 TEST_F(DiffusionWriterTtest, testOutput) {
     // Enable diffusion output.
     writer = StatsWriter(false, true, 1.0, 10.0);
@@ -181,6 +190,9 @@ class RDFWriterTtest : public StatsWriterTest {
     }
 };
 
+/**
+ * @brief Tests computing RDF data.
+ */
 TEST_F(RDFWriterTtest, testComputeNormal) {
     // Enable RDF computation with a known bin width.
     writer = StatsWriter(true, false, 1.0, 10.0);
@@ -200,6 +212,9 @@ TEST_F(RDFWriterTtest, testComputeNormal) {
     EXPECT_NEAR(results[5], expected, 1e-12);
 }
 
+/**
+ * @brief Tests computing and writing RDF data with simulated periodic boundary conditions.
+ */
 TEST_F(RDFWriterTtest, testComputePeriodic) {
     // This checks that mirrored particles contribute to the RDF bins.
     writer = StatsWriter(true, false, 1.0, 10.0);
@@ -220,6 +235,9 @@ TEST_F(RDFWriterTtest, testComputePeriodic) {
     EXPECT_NEAR(results[1], expected, 1e-12);
 }
 
+/**
+ * @brief Tests writing RDF data to file.
+ */
 TEST_F(RDFWriterTtest, testOutput) {
     writer = StatsWriter(true, false, 1.0, 3.0);
     ContainerRef particles(container);
