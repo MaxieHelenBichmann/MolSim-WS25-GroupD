@@ -69,9 +69,9 @@ class SmoothLennardJonesForce : public ForceSource {
         const double sigma_minus_distance = (2 * sigma_pow_6) - distance_pow_6;
         const double inv_rc_rl = 1 / (rc - rl);
 
-        const double poly_term = (rc * (rc * sigma_minus_distance - ((3 * rl) - distance) * sigma_minus_distance)) +
-                                 (distance * (rl * (5 * distance_pow_6 - 2 * distance_pow_6) -
-                                              distance * (3 * sigma_pow_6 + distance_pow_6)));
+        const double poly_term =
+            (rc * (rc * sigma_minus_distance - ((3 * rl) - distance) * sigma_minus_distance)) +
+            (distance * (rl * (5 * sigma_pow_6 - 2 * distance_pow_6) + distance * (-3 * sigma_pow_6 + distance_pow_6)));
 
         return difference * (24.0 * sigma_pow_6 * epsilon * inv_dist_pow_14 * inv_rc_rl * inv_rc_rl * inv_rc_rl *
                              (rc - distance) * poly_term);
