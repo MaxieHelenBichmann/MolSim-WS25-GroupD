@@ -22,7 +22,6 @@ namespace mol_sim {
 class StatsWriterTest : public testing::Test {
    protected:
     StatsWriter writer;
-    Domain domain;
     SimpleContainer container;
     std::vector<std::filesystem::path> created_files;
     Particle p1;
@@ -30,14 +29,24 @@ class StatsWriterTest : public testing::Test {
     Particle p3;
     Particle p4;
     Particle p5;
-    size_t n = 0;
 
     StatsWriterTest() {
         container.reserve(5);
-        container.addParticle(R3{1.0, 2.0, 3.0}, R3{0.1, 0.2, 0.3}, 1.5, SettingsParam::EPSILON_DEFAULT,
-                              SettingsParam::SIGMA_DEFAULT);
-        container.addParticle(R3{-4.0, 5.5, 0.0}, R3{1.0, -0.4, 2.5}, 2.0, SettingsParam::EPSILON_DEFAULT,
-                              SettingsParam::SIGMA_DEFAULT);
+        p1 = Particle(R3{1.0, 2.0, 3.0}, R3{0.1, 0.2, 0.3}, 1.5, SettingsParam::EPSILON_DEFAULT,
+                      SettingsParam::SIGMA_DEFAULT);
+        p2 = Particle(R3{-4.0, 5.5, 0.0}, R3{1.0, -0.4, 2.5}, 2.0, SettingsParam::EPSILON_DEFAULT,
+                      SettingsParam::SIGMA_DEFAULT);
+        p3 = Particle(R3{1.0, 0.0, 0.0}, R3{10.0, 0., 0.}, 1.5, SettingsParam::EPSILON_DEFAULT,
+                      SettingsParam::SIGMA_DEFAULT);
+        p4 = Particle(R3{0.0, 1.0, 0.0}, R3{0.0, -4., 0.0}, 2.0, SettingsParam::EPSILON_DEFAULT,
+                      SettingsParam::SIGMA_DEFAULT);
+        p5 = Particle(R3{0.0, 0.0, 1.0}, R3{0.0, 0.0, 6.0}, 1.0, SettingsParam::EPSILON_DEFAULT,
+                      SettingsParam::SIGMA_DEFAULT);
+        container.push_back(p1);
+        container.push_back(p2);
+        container.push_back(p3);
+        container.push_back(p4);
+        container.push_back(p5);
     }
 
     void TearDown() override {
@@ -62,11 +71,15 @@ class DiffusionWriterTtest : public StatsWriterTest {
      * @brief Writes the data for diffusion file using the StatsWriter and returns the path to the created file, as well
      * as tracks the created files for cleanup.
      */
-    std::filesystem::path writeDiff(SimpleContainer& container, int iteration) {
-        ContainerRef particles(container);
-        writer.plotDiffusion(particles, iteration);
+    std::filesystem::path writeDiff(const StatsWriter& w, SimpleContainer& container, int iteration) {
+        std::filesystem::path path = std::filesystem::current_path() / "diffusion.csv";
+        {
+            std::error_code ec;
+            std::filesystem::remove(path, ec);
+        }
 
-        std::filesystem::path path = std::filesystem::current_path() / "diff.csv";
+        ContainerRef particles(container);
+        w.plotDiffusion(particles, iteration);
         created_files.push_back(path);
 
         return path;
@@ -105,27 +118,23 @@ std::vector<std::string> splitCsvLine(const std::string& line) {
 /**
  * @brief Tests computing and writing diffusion data.
  */
-TEST_F(DiffusionWriterTtest, testComputeNormal) {
+TEST_F(DiffusionWriterTtest, testComputeDisplacement) {
     ContainerRef particles(container);
 
-    // Move particles by known displacements.
     container[0].getX() = container[0].getX() + R3{1.0, 0.0, 0.0};  // sq = 1
     container[1].getX() = container[1].getX() + R3{3.0, 0.0, 0.0};  // sq = 9
 
     const double diffusion = writer.computeDiffusion(particles);
-    EXPECT_DOUBLE_EQ(diffusion, 5.0);
+    EXPECT_DOUBLE_EQ(diffusion, 2.0);
 
-    // Calling again without movement should yield 0 (reference positions updated).
     const double diffusion2 = writer.computeDiffusion(particles);
     EXPECT_DOUBLE_EQ(diffusion2, 0.0);
 }
 
 /**
- * @brief Tests computing and writing diffusion data with simulated periodic boundary conditions.
+ * @brief Tests computing and writing diffusion data with explicit reference positions.
  */
-TEST_F(DiffusionWriterTtest, testComputePeriodic) {
-    // This mainly checks that reference positions are honored even if coordinates are negative
-    // (the PBC handling is encapsulated in how ref positions are managed elsewhere).
+TEST_F(DiffusionWriterTtest, testComputeExplicit) {
     ContainerRef particles(container);
 
     container[0].getRefX() = R3{10.0, 0.0, 0.0};
@@ -134,29 +143,34 @@ TEST_F(DiffusionWriterTtest, testComputePeriodic) {
     container[1].getX() = R3{0.0, 0.0, 0.0};
 
     const double diffusion = writer.computeDiffusion(particles);
-    // ((-20)^2 + 0) / 2 = 200
-    EXPECT_DOUBLE_EQ(diffusion, 200.0);
+    EXPECT_DOUBLE_EQ(diffusion, 80.0);
+}
+
+/**
+ * @brief Tests computing and writing diffusion data with a bigger container.
+ */
+TEST_F(DiffusionWriterTtest, testComputeBigger) {
+    ContainerRef particles(container);
+
+    for (Particle& p : container) {
+        p.getX() += p.getV();
+    }
+
+    const double diffusion = writer.computeDiffusion(particles);
+
+    EXPECT_DOUBLE_EQ(diffusion, 31.91);
 }
 
 /**
  * @brief Tests writing diffusion data to file.
  */
 TEST_F(DiffusionWriterTtest, testOutput) {
-    // Enable diffusion output.
     writer = StatsWriter(false, true, 1.0, 10.0);
-    ContainerRef particles(container);
-
-    const std::filesystem::path path = std::filesystem::current_path() / "diffusion.csv";
-    {
-        std::error_code ec;
-        std::filesystem::remove(path, ec);
-    }
-    created_files.push_back(path);
 
     container[0].getX() = container[0].getX() + R3{1.0, 0.0, 0.0};
     container[1].getX() = container[1].getX() + R3{3.0, 0.0, 0.0};
 
-    writer.plotDiffusion(particles, 7);
+    const std::filesystem::path path = writeDiff(writer, container, 7);
 
     const auto lines = readAllLines(path);
     ASSERT_EQ(lines.size(), 1U);
@@ -179,11 +193,16 @@ class RDFWriterTtest : public StatsWriterTest {
      * @brief Writes a the data for RDF file using the StatsWriter and returns the path to the created file, as well as
      * tracks the created files for cleanup.
      */
-    std::filesystem::path writeRDF(SimpleContainer& container, int iteration, const std::vector<Particle>& mirrored) {
-        ContainerRef particles(container);
-        writer.plotRDF(particles, iteration, mirrored);
-
+    std::filesystem::path writeRDF(const StatsWriter& w, SimpleContainer& container, int iteration,
+                                   const std::vector<Particle>& mirrored) {
         std::filesystem::path path = std::filesystem::current_path() / "rdf.csv";
+        {
+            std::error_code ec;
+            std::filesystem::remove(path, ec);
+        }
+
+        ContainerRef particles(container);
+        w.plotRDF(particles, iteration, mirrored);
         created_files.push_back(path);
 
         return path;
@@ -196,42 +215,48 @@ class RDFWriterTtest : public StatsWriterTest {
 TEST_F(RDFWriterTtest, testComputeNormal) {
     // Enable RDF computation with a known bin width.
     writer = StatsWriter(true, false, 1.0, 10.0);
-    ContainerRef particles(container);
+    SimpleContainer container;
+    container.reserve(2);
+    container.push_back(Particle(R3{0.0, 0.0, 0.0}, R3{0.0, 0.0, 0.0}, 1.0, SettingsParam::EPSILON_DEFAULT,
+                                 SettingsParam::SIGMA_DEFAULT));
+    container.push_back(Particle(R3{5.0, 0.0, 0.0}, R3{0.0, 0.0, 0.0}, 1.0, SettingsParam::EPSILON_DEFAULT,
+                                 SettingsParam::SIGMA_DEFAULT));
 
-    container[0].getX() = R3{0.0, 0.0, 0.0};
-    container[1].getX() = R3{5.0, 0.0, 0.0};
+    ContainerRef particles(container);
 
     std::vector<double> results(10, 0.0);
     const std::vector<Particle> mirrored;
 
     writer.computeRDF(particles, results, mirrored);
 
-    // Two particles -> pair counted twice (p0->p1, p1->p0) into bin index 5.
-    // density = 0.375 * 2 / ( (6^3-5^3) * pi )
     const double expected = 0.75 / (91.0 * std::numbers::pi);
     EXPECT_NEAR(results[5], expected, 1e-12);
 }
 
 /**
- * @brief Tests computing and writing RDF data with simulated periodic boundary conditions.
+ * @brief Tests computing and writing RDF data with simulated periodic boundary conditions, meaning that mirrored
+ * particles contribute to the RDF bins.
  */
 TEST_F(RDFWriterTtest, testComputePeriodic) {
-    // This checks that mirrored particles contribute to the RDF bins.
     writer = StatsWriter(true, false, 1.0, 10.0);
-    ContainerRef particles(container);
 
-    container[0].getX() = R3{0.0, 0.0, 0.0};
-    container[1].getX() = R3{100.0, 0.0, 0.0};  // out of RDF window for bin_count=10
+    SimpleContainer container;
+    container.reserve(2);
+    container.push_back(Particle(R3{0.0, 0.0, 0.0}, R3{0.0, 0.0, 0.0}, 1.0, SettingsParam::EPSILON_DEFAULT,
+                                 SettingsParam::SIGMA_DEFAULT));
+    container.push_back(Particle(R3{100.0, 0.0, 0.0}, R3{0.0, 0.0, 0.0}, 1.0, SettingsParam::EPSILON_DEFAULT,
+                                 SettingsParam::SIGMA_DEFAULT));
+
+    ContainerRef particles(container);
 
     std::vector<double> results(10, 0.0);
     std::vector<Particle> mirrored;
-    mirrored.emplace_back(R3{1.0, 0.0, 0.0}, R3{0.0, 0.0, 0.0}, 1.0, SettingsParam::EPSILON_DEFAULT,
+    mirrored.emplace_back(R3{0.5, 0.0, 0.0}, R3{0.0, 0.0, 0.0}, 1.0, SettingsParam::EPSILON_DEFAULT,
                           SettingsParam::SIGMA_DEFAULT);
 
     writer.computeRDF(particles, results, mirrored);
 
-    // Only p0 sees the mirrored particle at distance 1 -> count 1 into bin index 1.
-    const double expected = 0.375 / (7.0 * std::numbers::pi);  // vol = 2^3 - 1^3 = 7
+    const double expected = 0.375 / (7.0 * std::numbers::pi);
     EXPECT_NEAR(results[1], expected, 1e-12);
 }
 
@@ -240,20 +265,12 @@ TEST_F(RDFWriterTtest, testComputePeriodic) {
  */
 TEST_F(RDFWriterTtest, testOutput) {
     writer = StatsWriter(true, false, 1.0, 3.0);
-    ContainerRef particles(container);
-
-    const std::filesystem::path path = std::filesystem::current_path() / "rdf.csv";
-    {
-        std::error_code ec;
-        std::filesystem::remove(path, ec);
-    }
-    created_files.push_back(path);
 
     const std::vector<Particle> mirrored;
-    writer.plotRDF(particles, 42, mirrored);
+    const std::filesystem::path path = writeRDF(writer, container, 42, mirrored);
 
     const auto lines = readAllLines(path);
-    // bin_count = ceil(3/1) = 3
+
     ASSERT_EQ(lines.size(), 3U);
 
     for (size_t i = 0; i < lines.size(); ++i) {
