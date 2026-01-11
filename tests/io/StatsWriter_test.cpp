@@ -88,6 +88,9 @@ class DiffusionWriterTtest : public StatsWriterTest {
 
 namespace {
 
+/**
+ * @brief Helper function to read all lines from a file.
+ */
 std::vector<std::string> readAllLines(const std::filesystem::path& path) {
     std::ifstream in(path);
     std::vector<std::string> lines;
@@ -103,6 +106,9 @@ std::vector<std::string> readAllLines(const std::filesystem::path& path) {
     return lines;
 }
 
+/**
+ * @brief Helper function to split a CSV line into its components.
+ */
 std::vector<std::string> splitCsvLine(const std::string& line) {
     std::vector<std::string> parts;
     std::stringstream ss(line);
