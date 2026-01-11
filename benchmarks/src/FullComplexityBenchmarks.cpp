@@ -60,8 +60,10 @@ void bmSimulationComplexityLinkedCell(benchmark::State& state) {
     auto force_source = std::make_unique<LennardJonesForce>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
     auto writer = std::make_unique<XYZWriter>();
+    auto stat_writer = std::make_unique<StatsWriter>();
 
-    Simulation<LinkedCellContainer> simulation(part_container, *force_source, settings, *writer, *cp_writer);
+    Simulation<LinkedCellContainer> simulation(part_container, *force_source, settings, *writer, *cp_writer,
+                                               *stat_writer);
     for ([[maybe_unused]] auto _ : state) {
         particles.clear();
         generator.generateParticles(particles);
@@ -104,7 +106,8 @@ void bmSimulationComplexityDirectSum(benchmark::State& state) {
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
-    Simulation<SimpleContainer> simulation(part_container, *force_source, settings, *writer, *cp_writer);
+    auto stat_writer = std::make_unique<StatsWriter>();
+    Simulation<SimpleContainer> simulation(part_container, *force_source, settings, *writer, *cp_writer, *stat_writer);
     for ([[maybe_unused]] auto _ : state) {
         particles.clear();
         generator.generateParticles(particles);

@@ -3,6 +3,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <io/outputWriter/XYZWriter.h>
+#include <particles/container/ContainerRef.h>
 #include <particles/container/domain/Domain.h>
 #include <physics/GravitationalForce.h>
 #include <physics/LennardJonesForce.h>
@@ -11,6 +12,7 @@
 
 #include "io/CheckpointWriter.h"
 #include "io/OutputWriter.h"
+#include "io/StatsWriter.h"
 #include "particles/Particle.h"
 #include "particles/container/LinkedCellContainer.h"
 #include "particles/container/SimpleContainer.h"
@@ -48,6 +50,16 @@ class CheckpointWriterMock : public CheckpointWriter {
     MOCK_METHOD(void, createCheckpoint,
                 (SettingsParam & settings, const Domain& domain, ContainerRef particles, int iteration, size_t N),
                 (const, override));
+};
+
+/**
+ * @brief Mocks StatsWriter for testing without file I/O.
+ *
+ */
+class StatsWriterMock : public StatsWriter {
+   public:
+    MOCK_METHOD(void, plotDiffusion, (ContainerRef particles, int iteration), (const));
+    MOCK_METHOD(void, plotRDF, (ContainerRef particles, int iteration, const std::vector<Particle>& mirrored), (const));
 };
 
 // ==================== Container Traits ====================
@@ -121,7 +133,9 @@ TYPED_TEST(CalculateXTest, calculateX_dt) {
     GravitationalForce force_source;
     OutputWriterMock writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, force_source, this->settings, writer, checkpoint_writer);
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, force_source, this->settings, writer, checkpoint_writer,
+                                     stat_writer);
     simulation.calculateX();
     R3 expected = {5.0, -10.0, 0.0};
     EXPECT_EQ(this->particles[0].getX(), expected);
@@ -142,7 +156,9 @@ TYPED_TEST(CalculateXTest, calculateX_force) {
     GravitationalForce force_source;
     OutputWriterMock writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, force_source, this->settings, writer, checkpoint_writer);
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, force_source, this->settings, writer, checkpoint_writer,
+                                     stat_writer);
     simulation.calculateX();
     R3 expected = {10.0, 5.0, 0.0};
     EXPECT_EQ(this->particles[0].getX(), expected);
@@ -160,7 +176,9 @@ TYPED_TEST(CalculateVTest, calculateV_no_force) {
     GravitationalForce force_source;
     OutputWriterMock writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, force_source, this->settings, writer, checkpoint_writer);
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, force_source, this->settings, writer, checkpoint_writer,
+                                     stat_writer);
     simulation.calculateV(1.);
     EXPECT_EQ(this->particles[0].getV(), v);
 }
@@ -180,7 +198,9 @@ TYPED_TEST(CalculateVTest, calculateV_simple) {
     GravitationalForce force_source;
     OutputWriterMock writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, force_source, this->settings, writer, checkpoint_writer);
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, force_source, this->settings, writer, checkpoint_writer,
+                                     stat_writer);
     simulation.calculateV(1.);
     R3 expected = {10.5, -19.5, 30.5};
     EXPECT_EQ(this->particles[0].getV(), expected);
@@ -203,7 +223,9 @@ TYPED_TEST(CalculateVTest, calculateV_complex) {
     GravitationalForce force_source;
     OutputWriterMock writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, force_source, this->settings, writer, checkpoint_writer);
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, force_source, this->settings, writer, checkpoint_writer,
+                                     stat_writer);
     simulation.calculateV(1.);
     R3 expected = {11.0625, -19.375, 39.9375};
     EXPECT_EQ(this->particles[0].getV(), expected);
@@ -224,7 +246,8 @@ TYPED_TEST(CalculateFTest, calculateF_simple2_pairwise) {
     EXPECT_CALL(mock, applyForce(p1, p2)).Times(1).WillOnce(testing::Return(f12));
     OutputWriterMock writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, mock, this->settings, writer, checkpoint_writer);
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, mock, this->settings, writer, checkpoint_writer, stat_writer);
     simulation.calculateF();
     EXPECT_EQ(this->particles[0].getF(), f12);
     EXPECT_EQ(this->particles[1].getF(), -1.0 * f12);
@@ -245,7 +268,8 @@ TYPED_TEST(CalculateFTest, calculateF_complex2_pairwise) {
     EXPECT_CALL(mock, applyForce(p1, p2)).Times(1).WillOnce(testing::Return(f12));
     OutputWriterMock writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, mock, this->settings, writer, checkpoint_writer);
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, mock, this->settings, writer, checkpoint_writer, stat_writer);
     simulation.calculateF();
     EXPECT_EQ(this->particles[0].getF(), f12);
     EXPECT_EQ(this->particles[1].getF(), -1.0 * f12);
@@ -274,7 +298,8 @@ TYPED_TEST(CalculateFTest, calculateF_simple3_pairwise) {
     EXPECT_CALL(mock, applyForce(p22, p32)).Times(1).WillOnce(testing::Return(f23));
     OutputWriterMock writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, mock, this->settings, writer, checkpoint_writer);
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, mock, this->settings, writer, checkpoint_writer, stat_writer);
     simulation.calculateF();
     R3 expected1 = {30.0, 0.0, 0.0};
     R3 expected2 = {-20.0, 0.0, 0.0};
@@ -307,7 +332,8 @@ TYPED_TEST(CalculateFTest, calculateF_complex3_pairwise) {
     EXPECT_CALL(mock, applyForce(p22, p32)).Times(1).WillOnce(testing::Return(f23));
     OutputWriterMock writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, mock, this->settings, writer, checkpoint_writer);
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, mock, this->settings, writer, checkpoint_writer, stat_writer);
     simulation.calculateF();
     R3 expected1 = {30.0, 15.0, 13.0};
     R3 expected2 = {-20.0, -10.0, -10.0};
@@ -327,7 +353,8 @@ TYPED_TEST(CalculateThermostatTest, test_total_energy_0) {
     LennardJonesForce force;
     XYZWriter writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, force, this->settings, writer, checkpoint_writer);
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, force, this->settings, writer, checkpoint_writer, stat_writer);
     simulation.getTotalEnergy() = 0;
     EXPECT_EQ(simulation.calculateThermostatFactor(), 1.);
 }
@@ -350,7 +377,8 @@ TYPED_TEST(CalculateThermostatTest, test_factor_without_delta) {
     LennardJonesForce force;
     XYZWriter writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, force, this->settings, writer, checkpoint_writer);
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, force, this->settings, writer, checkpoint_writer, stat_writer);
     simulation.getTotalEnergy() = 175;
     EXPECT_NEAR(simulation.calculateThermostatFactor(), expected, this->precision);
 }
@@ -370,7 +398,8 @@ TYPED_TEST(CalculateThermostatTest, test_factor_at_target_temp) {
     LennardJonesForce force;
     XYZWriter writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, force, this->settings, writer, checkpoint_writer);
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, force, this->settings, writer, checkpoint_writer, stat_writer);
     simulation.getTotalEnergy() = 125;
     EXPECT_NEAR(simulation.calculateThermostatFactor(), 1., this->precision);
 }
@@ -392,7 +421,8 @@ TYPED_TEST(CalculateThermostatTest, test_delta_temp) {
     LennardJonesForce force;
     XYZWriter writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, force, this->settings, writer, checkpoint_writer);
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, force, this->settings, writer, checkpoint_writer, stat_writer);
     simulation.getTotalEnergy() = 175;
     double b = simulation.calculateThermostatFactor();
 
@@ -424,7 +454,9 @@ TYPED_TEST(SimulationRunTest, run_gravitational_timestep) {
     GravitationalForce force_source;
     OutputWriterMock writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, force_source, this->settings, writer, checkpoint_writer);
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, force_source, this->settings, writer, checkpoint_writer,
+                                     stat_writer);
     simulation.run();
     // After 1 timestep: positions update first (with old_f=0), then forces calculated, then velocities
     R3 p1_x_expect = {2.0, 1.0, 1.0};
@@ -453,7 +485,9 @@ TYPED_TEST(SimulationRunTest, run_lennardjones_timestep) {
     LennardJonesForce force_source;
     OutputWriterMock writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, force_source, this->settings, writer, checkpoint_writer);
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, force_source, this->settings, writer, checkpoint_writer,
+                                     stat_writer);
     simulation.run();
     // At distance=1 with sigma=1, epsilon=5: F = -24*5*(1-2)*direction = 120*direction
     // p1-p2 = (1,0,0), so F on p1 = (120,0,0), F on p2 = (-120,0,0)

@@ -128,6 +128,7 @@ static void bmSimulationFullBenchmark(benchmark::State& state) {
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<YAMLWriterCP>();
+    auto stat_writer = std::make_unique<StatsWriter>();
 
     for ([[maybe_unused]] auto _ : state) {
         state.PauseTiming();
@@ -141,7 +142,8 @@ static void bmSimulationFullBenchmark(benchmark::State& state) {
         state.counters["Particles"] = static_cast<double>(num_particles);
         state.counters["Iterations"] = static_cast<double>(num_iterations);
 
-        Simulation<LinkedCellContainer> simulation(container, *force_source, settings, *writer, *cp_writer);
+        Simulation<LinkedCellContainer> simulation(container, *force_source, settings, *writer, *cp_writer,
+                                                   *stat_writer);
         state.ResumeTiming();
 
         simulation.run();
@@ -161,6 +163,7 @@ static void bmSimulationFullContest(benchmark::State& state) {
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<YAMLWriterCP>();
+    auto stat_writer = std::make_unique<StatsWriter>();
 
     for ([[maybe_unused]] auto _ : state) {
         SettingsParam settings = createContestSettings();
@@ -175,7 +178,8 @@ static void bmSimulationFullContest(benchmark::State& state) {
         state.counters["Particles"] = static_cast<double>(num_particles);
         state.counters["Iterations"] = static_cast<double>(num_iterations);
 
-        Simulation<LinkedCellContainer> simulation(container, *force_source, settings, *writer, *cp_writer);
+        Simulation<LinkedCellContainer> simulation(container, *force_source, settings, *writer, *cp_writer,
+                                                   *stat_writer);
         state.ResumeTiming();
 
         simulation.run();

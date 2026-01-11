@@ -29,7 +29,7 @@ class StatsWriter {
           sample_radius(sample_radius),
           window_size(window_size) {};
 
-    ~StatsWriter();
+    ~StatsWriter() = default;
 
     /**
      * @brief Computes the variance of the movement of particles since the last call, using the Particle member
@@ -39,7 +39,7 @@ class StatsWriter {
      * @param particles ContainerRef to the particles.
      * @return double Computed diffusion value.
      */
-    [[nodiscard]] double computeDiffusion(ContainerRef particles);
+    [[nodiscard]] double computeDiffusion(ContainerRef particles) const;
     /**
      * @brief Computes the local densities of the Radial Distribution Function (RDF) of the given particles and stores
      * the results in the provided vector.
@@ -48,8 +48,9 @@ class StatsWriter {
      * @param particles ContainerRef to the particles.
      * @param results Reference to a vector where the results will be stored. The index corresponds to distance /
      * sample_radius.
+     * @param mirrored Vector of mirrored particles to consider for RDF calculation.
      */
-    void computeRDF(ContainerRef particles, std::vector<double>& results) const;
+    void computeRDF(ContainerRef particles, std::vector<double>& results, const std::vector<Particle>& mirrored) const;
 
     /**
      * @brief Writes the diffusion data into the diffusion.csv file. Each row has the format: <iteration>,<diffusion>
@@ -57,14 +58,15 @@ class StatsWriter {
      * @param particles ContainerRef to the particles.
      * @param iteration Current iteration of the simulation.
      */
-    void plotDiffusion(ContainerRef particles, int iteration);
+    void plotDiffusion(ContainerRef particles, int iteration) const;
     /**
      * @brief Writes the RDF data into the rdf.csv file. Each row has the format: <iteration>,<distance>,<density>
      *
      * @param particles ContainerRef to the particles.
      * @param iteration Current iteration of the simulation.
+     * @param mirrored Vector of mirrored particles to consider for RDF calculation.
      */
-    void plotRDF(ContainerRef particles, int iteration) const;
+    void plotRDF(ContainerRef particles, int iteration, const std::vector<Particle>& mirrored) const;
 };
 
 }  // namespace mol_sim
