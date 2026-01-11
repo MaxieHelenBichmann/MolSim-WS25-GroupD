@@ -5,6 +5,7 @@
 #include <limits>
 #include <memory>
 
+#include "io/StatsWriter.h"
 #include "io/checkpointWriter/XVMWriterCP.h"
 #include "io/outputWriter/XYZWriter.h"
 #include "particles/Particle.h"
@@ -66,7 +67,8 @@ TEST_F(VelocityReflectionTest, X_velocityreflect_linked) {
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
+    auto stat_writer = std::make_unique<StatsWriter>();
+    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
     simulation.run();
     R3 expected_x = {9.0, 5.0, 7.0};
     R3 expected_v = {-4.0, 0.0, 4.0};
@@ -85,7 +87,8 @@ TEST_F(VelocityReflectionTest, X_velocityreflect_simple) {
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
+    auto stat_writer = std::make_unique<StatsWriter>();
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
     simulation.run();
     R3 expected_x = {1.0, 5.0, 9.0};
     R3 expected_v = {4.0, 0.0, 8.0};
@@ -105,7 +108,8 @@ TEST_F(VelocityReflectionTest, Y_velocityreflect_linked) {
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
+    auto stat_writer = std::make_unique<StatsWriter>();
+    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
     simulation.run();
     R3 expected_x = {5.0, 9.0, 7.0};
     R3 expected_v = {0.0, -4.0, 4.0};
@@ -124,7 +128,8 @@ TEST_F(VelocityReflectionTest, Y_velocityreflect_simple) {
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
+    auto stat_writer = std::make_unique<StatsWriter>();
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
     simulation.run();
     R3 expected_x = {7.0, 1.0, 5.0};
     R3 expected_v = {4.0, 4.0, 0.0};
@@ -144,7 +149,8 @@ TEST_F(VelocityReflectionTest, Z_velocityreflect_linked) {
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
+    auto stat_writer = std::make_unique<StatsWriter>();
+    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
     simulation.run();
     R3 expected_x = {5.0, 1.0, 7.0};
     R3 expected_v = {0.0, -4.0, -4.0};
@@ -163,7 +169,8 @@ TEST_F(VelocityReflectionTest, Z_velocityreflect_simple) {
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
+    auto stat_writer = std::make_unique<StatsWriter>();
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
     simulation.run();
     R3 expected_x = {5.0, 4.0, 1.0};
     R3 expected_v = {0.0, -2.0, 4.0};
@@ -182,7 +189,8 @@ TEST_F(VelocityReflectionTest, VelocityReflect_two_corner_linked) {
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
+    auto stat_writer = std::make_unique<StatsWriter>();
+    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
     simulation.run();
     R3 expected_x = {1.0, 3.0, 1.0};
     R3 expected_v = {4.0, 4.0, 4.0};
@@ -201,7 +209,8 @@ TEST_F(VelocityReflectionTest, VelocityReflect_two_corner_simple) {
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
+    auto stat_writer = std::make_unique<StatsWriter>();
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
     simulation.run();
     R3 expected_x = {1.0, 3.0, 1.0};
     R3 expected_v = {4.0, 4.0, 4.0};
@@ -220,7 +229,8 @@ TEST_F(VelocityReflectionTest, VelocityReflect_three_corner_linked) {
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
+    auto stat_writer = std::make_unique<StatsWriter>();
+    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
     simulation.run();
     R3 expected_x = {1.0, 9.0, 1.0};
     R3 expected_v = {4.0, -4.0, 4.0};
@@ -239,7 +249,8 @@ TEST_F(VelocityReflectionTest, VelocityReflect_three_corner_simple) {
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
+    auto stat_writer = std::make_unique<StatsWriter>();
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
     simulation.run();
     R3 expected_x = {1.0, 9.0, 1.0};
     R3 expected_v = {4.0, -4.0, 4.0};
@@ -258,7 +269,8 @@ TEST_F(VelocityReflectionTest, VelocityReflect_diagonal_shot_linked) {
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
+    auto stat_writer = std::make_unique<StatsWriter>();
+    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
     simulation.run();
     R3 expected_x = {7.0, 9.0, 7.0};
     R3 expected_v = {4.0, -4.0, 4.0};
@@ -277,7 +289,8 @@ TEST_F(VelocityReflectionTest, VelocityReflect_diagonal_shot_simple) {
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
+    auto stat_writer = std::make_unique<StatsWriter>();
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
     simulation.run();
     R3 expected_x = {7.0, 9.0, 7.0};
     R3 expected_v = {4.0, -4.0, 4.0};

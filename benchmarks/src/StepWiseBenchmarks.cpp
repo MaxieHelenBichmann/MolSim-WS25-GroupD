@@ -52,9 +52,11 @@ void bmSimulationSingleStepLinkedCell(benchmark::State& state) {
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
+    auto stat_writer = std::make_unique<StatsWriter>();
     generator.generateParticles(particles);
 
-    Simulation<LinkedCellContainer> simulation(part_container, *force_source, settings, *writer, *cp_writer);
+    Simulation<LinkedCellContainer> simulation(part_container, *force_source, settings, *writer, *cp_writer,
+                                               *stat_writer);
     for ([[maybe_unused]] auto _ : state) {
         benchmark::ClobberMemory();
         simulation.run();
@@ -89,8 +91,9 @@ void bmSimulationSingleStepDirectSum(benchmark::State& state) {
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
+    auto stat_writer = std::make_unique<StatsWriter>();
     generator.generateParticles(particles);
-    Simulation<SimpleContainer> simulation(part_container, *force_source, settings, *writer, *cp_writer);
+    Simulation<SimpleContainer> simulation(part_container, *force_source, settings, *writer, *cp_writer, *stat_writer);
     for ([[maybe_unused]] auto _ : state) {
         benchmark::ClobberMemory();
         simulation.run();
