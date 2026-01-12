@@ -538,8 +538,8 @@ std::vector<YAMLReader::DiscData> YAMLReader::parseDiscs(const YAML::Node& node)
 void YAMLReader::readCube(ContainerRef particles, const SettingsParam& settings, const YAML::Node& node) {
     auto cuboids = parseCuboids(node);
     for (const auto& data : cuboids) {
-        CuboidGenerator generator(data.position, data.velocity, data.num_particles, data.mass, data.distance,
-                                  data.avg_velo, data.epsilon, data.sigma, settings.init_temp);
+        CuboidGenerator generator(data.position, data.velocity, data.num_particles, data.targets, data.mass,
+                                  data.distance, data.avg_velo, data.epsilon, data.sigma, settings.init_temp);
         generator.generateParticles(particles);
     }
 }
@@ -698,8 +698,8 @@ std::vector<YAMLReader::MembraneData> YAMLReader::parseMembranes(const YAML::Nod
 void YAMLReader::readMembrane(ContainerRef particles, const SettingsParam& settings, const YAML::Node& node) {
     auto membranes = parseMembranes(node);
     for (const auto& data : membranes) {
-        MembraneGenerator generator(data.position, data.velocity, data.num_particles, data.mass, data.distance,
-                                    data.avg_velo, data.epsilon, data.sigma, settings.init_temp);
+        MembraneGenerator generator(data.position, data.velocity, data.num_particles, data.targets, data.mass,
+                                    data.distance, data.avg_velo, data.epsilon, data.sigma, settings.init_temp);
         generator.generateParticles(particles, settings.thermo);
     }
 }

@@ -2,6 +2,7 @@
 #define MEMBRANE_GENERATOR_H
 
 #include <cstddef>
+#include <vector>
 
 #include "particles/Generator.h"
 #include "utils/Vector.h"
@@ -30,6 +31,8 @@ class MembraneGenerator : public Generator {
      *
      */
     N2 num_particles;
+
+    std::vector<N2> targets;
     /**
      * @brief Mass of the particles.
      *
@@ -79,17 +82,18 @@ class MembraneGenerator : public Generator {
      * @param epsilon Epsilon value of the generated particles.
      * @param sigma Sigma value of the generated particles.
      */
-    MembraneGenerator(R3 position, R3 velocity, N2 num_particles, double mass, double distance, double avg_velo,
-                      double epsilon, double sigma, double init_temp)
+    MembraneGenerator(R3 position, R3 velocity, N2 num_particles, const std::vector<N2>& targets, double mass,
+                      double distance, double avg_velo, double epsilon, double sigma, double init_temp)
         : position(position),
           velocity(velocity),
           num_particles(num_particles),
+          targets(targets),
           mass(mass),
           distance(distance),
           avg_velo(avg_velo),
           epsilon(epsilon),
           sigma(sigma),
-          init_temp(init_temp){};
+          init_temp(init_temp) {};
 };
 }  // namespace mol_sim
 

@@ -15,9 +15,10 @@ void MembraneGenerator::generateParticles(ContainerRef particles, bool use_init_
             if (use_init_temp) {
                 avg_velo = sqrt(init_temp / mass);
             }
-
+            N2 curr = {k, j};
+            int type = (std::ranges::find(targets, curr) != targets.end()) ? 4 : 2;
             R3 velo = maxwellBoltzmannDistributedVelocity(avg_velo, 2);
-            particles.addParticle(curr_pos, velocity + velo, mass, epsilon, sigma, 2);
+            particles.addParticle(curr_pos, velocity + velo, mass, epsilon, sigma, type);
         }
     }
     const size_t row_size = num_particles[0];

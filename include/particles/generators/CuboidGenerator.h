@@ -2,6 +2,8 @@
 #define CUBOID_GENERATOR_H
 
 #include <cstddef>
+#include <utility>
+#include <vector>
 
 #include "particles/Generator.h"
 #include "utils/Vector.h"
@@ -30,6 +32,8 @@ class CuboidGenerator : public Generator {
      *
      */
     N3 num_particles;
+
+    const std::vector<N3>& targets;
     /**
      * @brief Mass of the particles.
      *
@@ -79,17 +83,18 @@ class CuboidGenerator : public Generator {
      * @param epsilon Epsilon value of the generated particles.
      * @param sigma Sigma value of the generated particles.
      */
-    CuboidGenerator(R3 position, R3 velocity, N3 num_particles, double mass, double distance, double avg_velo,
-                    double epsilon, double sigma, double init_temp)
+    CuboidGenerator(R3 position, R3 velocity, N3 num_particles, const std::vector<N3>& targets, double mass,
+                    double distance, double avg_velo, double epsilon, double sigma, double init_temp)
         : position(position),
           velocity(velocity),
           num_particles(num_particles),
+          targets(targets),
           mass(mass),
           distance(distance),
           avg_velo(avg_velo),
           epsilon(epsilon),
           sigma(sigma),
-          init_temp(init_temp){};
+          init_temp(init_temp) {};
 };
 }  // namespace mol_sim
 
