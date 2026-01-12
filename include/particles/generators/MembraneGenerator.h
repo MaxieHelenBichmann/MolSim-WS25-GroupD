@@ -13,7 +13,7 @@ using N2 = Vector<size_t, 2>;
  * @brief Particle Generator, which generates a Cube of Particles with Brownian Motion.
  *
  */
-class CuboidGenerator : public Generator {
+class MembraneGenerator : public Generator {
    private:
     /**
      * @brief Position of the lower left corner of the cube of particles.
@@ -79,8 +79,8 @@ class CuboidGenerator : public Generator {
      * @param epsilon Epsilon value of the generated particles.
      * @param sigma Sigma value of the generated particles.
      */
-    CuboidGenerator(R3 position, R3 velocity, N2 num_particles, double mass, double distance, double avg_velo,
-                    double epsilon, double sigma, double init_temp)
+    MembraneGenerator(R3 position, R3 velocity, N2 num_particles, double mass, double distance, double avg_velo,
+                      double epsilon, double sigma, double init_temp)
         : position(position),
           velocity(velocity),
           num_particles(num_particles),
