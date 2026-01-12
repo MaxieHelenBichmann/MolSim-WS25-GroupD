@@ -236,11 +236,11 @@ TYPED_TEST(CalculateFTest, calculateF_simple2_pairwise) {
     R3 f12 = {10.0, 0.0, 0.0};
     this->particles.addParticle(p1);
     this->particles.addParticle(p2);
-    ForceMock mock;
+    auto mock = std::make_unique<ForceMock>();
+    EXPECT_CALL(*mock, applyForce(p1, p2)).Times(1).WillOnce(testing::Return(f12));
     std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
-    pairwise_forces.emplace_back(&mock);
+    pairwise_forces.push_back(std::move(mock));
     std::vector<std::unique_ptr<SingleForceSource>> single_forces;
-    EXPECT_CALL(mock, applyForce(p1, p2)).Times(1).WillOnce(testing::Return(f12));
     OutputWriterMock writer;
     CheckpointWriterMock checkpoint_writer;
     Simulation<TypeParam> simulation(this->particles, pairwise_forces, single_forces, this->settings, writer,
@@ -261,11 +261,11 @@ TYPED_TEST(CalculateFTest, calculateF_complex2_pairwise) {
     R3 f12 = {102.52, -51.3, 135.711};
     this->particles.addParticle(p1);
     this->particles.addParticle(p2);
-    ForceMock mock;
+    auto mock = std::make_unique<ForceMock>();
+    EXPECT_CALL(*mock, applyForce(p1, p2)).Times(1).WillOnce(testing::Return(f12));
     std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
-    pairwise_forces.emplace_back(&mock);
+    pairwise_forces.push_back(std::move(mock));
     std::vector<std::unique_ptr<SingleForceSource>> single_forces;
-    EXPECT_CALL(mock, applyForce(p1, p2)).Times(1).WillOnce(testing::Return(f12));
     OutputWriterMock writer;
     CheckpointWriterMock checkpoint_writer;
     Simulation<TypeParam> simulation(this->particles, pairwise_forces, single_forces, this->settings, writer,
@@ -292,13 +292,13 @@ TYPED_TEST(CalculateFTest, calculateF_simple3_pairwise) {
     this->particles.addParticle(p1);
     this->particles.addParticle(p2);
     this->particles.addParticle(p3);
-    ForceMock mock;
+    auto mock = std::make_unique<ForceMock>();
+    EXPECT_CALL(*mock, applyForce(p1, p2)).Times(1).WillOnce(testing::Return(f12));
+    EXPECT_CALL(*mock, applyForce(p12, p3)).Times(1).WillOnce(testing::Return(f13));
+    EXPECT_CALL(*mock, applyForce(p22, p32)).Times(1).WillOnce(testing::Return(f23));
     std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
-    pairwise_forces.emplace_back(&mock);
+    pairwise_forces.push_back(std::move(mock));
     std::vector<std::unique_ptr<SingleForceSource>> single_forces;
-    EXPECT_CALL(mock, applyForce(p1, p2)).Times(1).WillOnce(testing::Return(f12));
-    EXPECT_CALL(mock, applyForce(p12, p3)).Times(1).WillOnce(testing::Return(f13));
-    EXPECT_CALL(mock, applyForce(p22, p32)).Times(1).WillOnce(testing::Return(f23));
     OutputWriterMock writer;
     CheckpointWriterMock checkpoint_writer;
     Simulation<TypeParam> simulation(this->particles, pairwise_forces, single_forces, this->settings, writer,
@@ -329,13 +329,13 @@ TYPED_TEST(CalculateFTest, calculateF_complex3_pairwise) {
     this->particles.addParticle(p1);
     this->particles.addParticle(p2);
     this->particles.addParticle(p3);
-    ForceMock mock;
+    auto mock = std::make_unique<ForceMock>();
+    EXPECT_CALL(*mock, applyForce(p1, p2)).Times(1).WillOnce(testing::Return(f12));
+    EXPECT_CALL(*mock, applyForce(p12, p3)).Times(1).WillOnce(testing::Return(f13));
+    EXPECT_CALL(*mock, applyForce(p22, p32)).Times(1).WillOnce(testing::Return(f23));
     std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
-    pairwise_forces.emplace_back(&mock);
+    pairwise_forces.push_back(std::move(mock));
     std::vector<std::unique_ptr<SingleForceSource>> single_forces;
-    EXPECT_CALL(mock, applyForce(p1, p2)).Times(1).WillOnce(testing::Return(f12));
-    EXPECT_CALL(mock, applyForce(p12, p3)).Times(1).WillOnce(testing::Return(f13));
-    EXPECT_CALL(mock, applyForce(p22, p32)).Times(1).WillOnce(testing::Return(f23));
     OutputWriterMock writer;
     CheckpointWriterMock checkpoint_writer;
     Simulation<TypeParam> simulation(this->particles, pairwise_forces, single_forces, this->settings, writer,
