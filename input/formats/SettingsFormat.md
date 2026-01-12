@@ -31,11 +31,14 @@ The settings block has the following keys, with every key except format being op
   - Available forces: `"GRAVITATIONAL"`, `"LENNARDJONES"`, `"TRUNCLENNARDJONES"`
   - Multiple forces can be specified and will all be applied
   - Default: `["LENNARDJONES"]`
-- `single_forces`: A sequence containing all desired single particle forces (forces applied to individual particles).
-  - Available forces: `"GRAV"` (gravitational pull), `"HARMONIC"` (membrane bonds)
+- `single_forces`: A sequence of force objects defining single particle forces (forces applied to individual particles).
+  - Each force object must have a `type` field and force-specific parameters
   - Multiple forces can be specified and will all be applied
-  - Default: `["GRAV"]`
-- `target_force`: A boolean enabling the target force. Which particles are to be targetted have to be specified in the corresponding Generator.
+  - Available force types:
+    - `GRAV`: Uniform gravitational pull
+    - `HARMONIC`: Harmonic bonds for membrane structures
+  - See Single Force Configuration below for details
+- `target_force`: Configuration for targeted force applied to specific particles (see Target Force Configuration below).
 - `domain`: A map defining the domain of the simulation (see Domain Configuration below).
 - `thermostat`: A map defining the thermostat of the simulation
 
@@ -48,11 +51,58 @@ Pairwise forces are applied between pairs of particles within the cutoff radius.
 - **`LENNARDJONES`**: Standard Lennard-Jones potential for molecular interactions. Includes both attractive and repulsive components.
 - **`TRUNCLENNARDJONES`**: Truncated Lennard-Jones potential cut off at `r = 2^(1/6) * σ`. Only the repulsive part is active. Used for preventing self-penetration in membrane simulations. Only applies to particles with type 2.
 
-### Single Forces
-Single forces are applied to individual particles. Multiple single forces can be active simultaneously.
+### Single Force Configuration
 
-- **`GRAV`**: Uniform gravitational pull in the -y direction. Force magnitude: `F = m * g_grav` (where `g_grav` is specified in the domain configuration).
-- **`HARMONIC`**: Harmonic bonds between neighboring particles in membrane structures. Only applies to particles with type 2 that have neighbors set. Uses harmonic potential: `U = k/2 * (r - r0)²`
+Single forces are applied to individual particles. Each force requires specific parameters:
+
+#### GRAV - Gravitational Pull
+Applies uniform gravitational acceleration to all particles.
+
+**Required Parameters:**
+- `g_grav`: Gravitational acceleration vector as `[gx, gy, gz]` (default: `[0.0, -9.81, 0.0]`)
+
+**Example:**
+```yaml
+single_forces:
+  - type: GRAV
+    g_grav: [0.0, -9.81, 0.0]  # Gravity in -y direction
+```
+
+#### HARMONIC - Membrane Bonds
+Applies harmonic spring forces between neighboring particles in membrane structures. Only affects particles with type 2 or 4 that have neighbors set.
+
+**Required Parameters:**
+- `k`: Stiffness constant (spring constant) in N/m
+- `r_0`: Average bond length (equilibrium distance) in meters
+
+**Force Formula:**
+- Direct neighbors (up/down/left/right): `F = k/2 * (|r| - r_0) * (r / |r|)`
+- Diagonal neighbors: `F = k/2 * (|r| - √2*r_0) * (r / |r|)`
+
+**Example:**
+```yaml
+single_forces:
+  - type: HARMONIC
+    k: 300.0      # Stiffness constant
+    r_0: 1.2      # Equilibrium bond length
+```
+
+## Target Force Configuration
+
+The `target_force` enables forces applied only to specific particles (types 3 and 4). Target particles must be specified in the generator configuration using the `targets` field.
+
+**Parameters:**
+- `direction`: Force direction vector as `[dx, dy, dz]`
+- `magnitude`: Force magnitude (scalar)
+- `max_iterations`: Apply force only for the first N iterations
+
+**Example:**
+```yaml
+settings:
+  target_force:
+    direction: [0.0, 1.0, 0.0]  # Pull upward
+    magnitude: 10.0
+    max_iterations: 1000        # Apply for first 1000 steps
 
 ## Thermostat Configuration
 The thermostat is only activated when the `thermostat` key is provided. It can contain the following subkeys:  
@@ -67,7 +117,6 @@ The `domain` key contains the following sub-keys:
 - `x`: The x-dimension of the domain (default: 1.0).
 - `y`: The y-dimension of the domain (default: 1.0).
 - `z`: The z-dimension of the domain (default: 1.0).
-- `g_grav`: The gravitational force present in the simulation domain (default: 0.0).
 - `dimensions`: The number of dimensions the domain has. Supported values: 2, 3.
 - `boundaries`: A map defining boundary conditions for each of the 6 domain faces.
 
@@ -103,10 +152,10 @@ settings:
     base_name: "MD"
     frequency: 10
     cutoff: 1.0
-    pairwise_forces:
-      - "LENNARDJONES"
+    pairwise_forces: [LENNARDJONES]
     single_forces:
-      - "GRAV"
+      - type: GRAV
+        g_grav: [0.0, -9.81, 0.0]
     domain:
       x: 1.0
       y: 1.0
@@ -120,16 +169,43 @@ settings:
     delta_t: 0.0005
     end_time: 20.0
     pairwise_forces:
-      - "LENNARDJONES"      # Regular LJ between all particles
-      - "TRUNCLENNARDJONES" # Repulsive-only LJ for membrane particles
+      - LENNARDJONES      # Regular LJ between all particles
+      - TRUNCLENNARDJONES # Repulsive-only LJ for membrane particles
     single_forces:
-      - "GRAV"              # Gravity pull
-      - "HARMONIC"          # Membrane bonds
+      - type: GRAV
+        g_grav: [0.0, -0.981, 0.0]  # Gravity in -y direction
+      - type: HARMONIC
+        k: 300.0
+        r_0: 1.2
     domain:
       x: 50.0
       y: 50.0
       z: 1.0
-      g_grav: -0.981
+```
+
+### Membrane Simulation Example
+```yaml
+settings:
+    format: Settings
+    delta_t: 0.0001
+    end_time: 10.0
+    container: LINKED
+    cutoff: 3.0
+    pairwise_forces:
+      - LENNARDJONES
+      - TRUNCLENNARDJONES
+    single_forces:
+      - type: HARMONIC
+        k: 300.0        # Spring stiffness
+        r_0: 1.1225     # Equilibrium bond length
+    target_force:
+      direction: [0.0, 1.0, 0.0]
+      magnitude: 5.0
+      max_iterations: 500
+    domain:
+      x: 40.0
+      y: 40.0
+      z: 1.0
 ```
 
 ### Backward Compatible Example (Deprecated)
@@ -156,8 +232,10 @@ settings:
     frequency: 10
     cutoff: 3.0
     container: LINKED
-    pairwise_forces:
-      - "LENNARDJONES"
+    pairwise_forces: [LENNARDJONES]
+    single_forces:
+      - type: GRAV
+        g_grav: [0.0, -9.81, 0.0]
     domain:
       x: 180.0
       y: 90.0
@@ -188,7 +266,6 @@ settings:
       x: 50.0
       y: 50.0
       z: 50.0
-      g_grav: -9.81
       boundaries:
         left:
           type: REFLECTING

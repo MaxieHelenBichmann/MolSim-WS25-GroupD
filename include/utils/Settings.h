@@ -162,14 +162,35 @@ class SettingsParam {
      * @brief Maximum allowed temperature change of the system with one thermostat application.
      */
     double delta_temp = DELTA_TEMP_DEFAULT;
-    /**
-     * @brief Used to simulate of gravitational pull in simulation.
-     */
-    double g_grav = G_GRAV_DEFAULT;
 
     double k = K_DEFAULT;
 
     double r_0 = R_0_DEFAULT;
+
+    /**
+     * @brief g_grav vector for GRAV single force (gravitational acceleration vector).
+     */
+    R3 g_grav_vec = {0.0, -9.81, 0.0};
+
+    /**
+     * @brief Enable target force.
+     */
+    bool target_force_enabled = false;
+
+    /**
+     * @brief Target force direction vector.
+     */
+    R3 target_force_direction = {0.0, 1.0, 0.0};
+
+    /**
+     * @brief Target force magnitude.
+     */
+    double target_force_magnitude = 0.0;
+
+    /**
+     * @brief Maximum iterations for target force.
+     */
+    size_t target_force_max_iterations = 0;
 
     /**
      * @brief Construct new SettingsParam with default values.

@@ -44,6 +44,7 @@ class YAMLReader : public FileReader {
         double avg_velo;
         double epsilon;
         double sigma;
+        std::vector<N3> targets;
     };
 
     /**
@@ -58,6 +59,22 @@ class YAMLReader : public FileReader {
         double avg_velo;
         double epsilon;
         double sigma;
+        std::vector<N3> targets;
+    };
+
+    /**
+     * @brief Struct to hold Membrane Generation Data
+     */
+    struct MembraneData {
+        R3 position;
+        R3 velocity;
+        Vector<size_t, 2> num_particles;  // N2
+        double mass;
+        double distance;
+        double avg_velo;
+        double epsilon;
+        double sigma;
+        std::vector<Vector<size_t, 2>> targets;  // 2D targets
     };
 
     YAMLReader();
@@ -103,6 +120,17 @@ class YAMLReader : public FileReader {
      */
     std::vector<DiscData> parseDiscs(const YAML::Node& node);
 
+    /**
+     * @brief      Helper function to parse Membrane Format
+     *
+     * @param[in]  node YAML::Node of the start of the membrane block
+     *
+     * @return     Vector of read in Membranes
+     * @throws YAMLReaderException if parsing fails.
+     * @throws ValidationException if membrane parameters are invalid.
+     */
+    std::vector<MembraneData> parseMembranes(const YAML::Node& node);
+
    private:
     /**
      * @brief      Helper function to parse Domains
@@ -128,6 +156,13 @@ class YAMLReader : public FileReader {
      * @param[in]  node YAML::Node of the start of the disc block
      */
     void readDisc(ContainerRef particles, const SettingsParam& settings, const YAML::Node& node);
+
+    /**
+     * @brief      Helper function to create membrane particles
+     *
+     * @param[in]  node YAML::Node of the start of the membrane block
+     */
+    void readMembrane(ContainerRef particles, const SettingsParam& settings, const YAML::Node& node);
 };
 
 }  // namespace mol_sim

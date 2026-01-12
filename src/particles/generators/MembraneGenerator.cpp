@@ -1,7 +1,5 @@
 #include "particles/generators/MembraneGenerator.h"
 
-#include <vector>
-
 #include "utils/MaxwellBoltzmannDistribution.h"
 
 namespace mol_sim {
