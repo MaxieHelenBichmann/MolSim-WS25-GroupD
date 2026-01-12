@@ -369,37 +369,33 @@ void LinkedCellContainer::addParticle(R3 x_arg, R3 old_x_arg, R3 v_arg, R3 f_arg
     cells[findCellIndex(x_arg)].addParticle(data.size() - 1);
 };
 
-void eraseSelfFromNeighbors(const Particle& p) {
-    /**
-     * Indices Mapping:
-     * 0 <-> 1          left <-> right
-     * 2 <-> 3           top <-> bottom
-     * 4 <-> 7   bottom-left <-> top-right
-     * 5 <-> 6  bottom-right <-> top left
-     */
-    constexpr std::array<size_t, 8> indices_lookup{1, 0, 3, 2, 7, 6, 5, 4};
-    for (size_t i = 0; i < 8; i++) {
-        if (p.getNeighbors()[i] != nullptr) {
-            p.getNeighbors()[i]->getNeighbors()[indices_lookup[i]] = nullptr;
-        }
-    }
-}
-
 std::vector<Particle>::iterator LinkedCellContainer::eraseParticle(std::vector<Particle>::iterator p) {
-    eraseSelfFromNeighbors(*p);
-
+    // Store information about the particle to erase before any vector modifications
+    size_t idx_to_remove = static_cast<size_t>(p - data.begin());
     size_t cell_to_remove_idx = findCellIndex(p->getX());
 
+    // First, clean up neighbor relationships for the particle being removed
+    // We need to remove references to this particle from all other particles
+    Particle* ptr_to_remove = &data[idx_to_remove];
+    for (auto& particle : data) {
+        for (auto& neighbor_ptr : particle.getNeighbors()) {
+            if (neighbor_ptr == ptr_to_remove) {
+                neighbor_ptr = nullptr;
+            }
+        }
+    }
+
     if (cell_to_remove_idx < cells.size()) {
-        size_t idx_to_remove = &(*p) - data.data();
         size_t idx_to_swap = data.size() - 1;
         if (idx_to_remove == idx_to_swap) {  // Particle to remove is already the last one
             cells[cell_to_remove_idx].removeParticle(idx_to_remove);
             return data.erase(p);
         }
 
-        // swap particle to remove with last particle, so no shifting of all particles (thanks Jonas Schuhmacher!)
+        // swap particle to remove with last particle, so no shifting of all particles
         size_t cell_to_swap_idx = findCellIndex(data[idx_to_swap].getX());
+
+        // Update cell bookkeeping
         if (cell_to_swap_idx != cell_to_remove_idx) {
             cells[cell_to_remove_idx].removeParticle(idx_to_remove);
             cells[cell_to_swap_idx].updateParticleIndex(idx_to_swap, idx_to_remove);
@@ -407,7 +403,22 @@ std::vector<Particle>::iterator LinkedCellContainer::eraseParticle(std::vector<P
             cells[cell_to_remove_idx].removeParticle(idx_to_swap);
         }
 
+        // Before swapping, update all neighbor pointers that point to the particle at idx_to_swap
+        // After swap, it will be at idx_to_remove
+        Particle* ptr_to_swap = &data[idx_to_swap];
+        Particle* new_location = &data[idx_to_remove];
+
         std::swap(data[idx_to_remove], data[idx_to_swap]);
+
+        // Update all references from old swap location to new location
+        for (auto& particle : data) {
+            for (auto& neighbor_ptr : particle.getNeighbors()) {
+                if (neighbor_ptr == ptr_to_swap) {
+                    neighbor_ptr = new_location;
+                }
+            }
+        }
+
         data.pop_back();
 
         return data.begin() + static_cast<std::ptrdiff_t>(idx_to_remove);  // NOLINT
