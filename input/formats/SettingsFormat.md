@@ -114,9 +114,7 @@ The thermostat is only activated when the `thermostat` key is provided. It can c
 ## Domain Configuration
 
 The `domain` key contains the following sub-keys:
-- `x`: The x-dimension of the domain (default: 1.0).
-- `y`: The y-dimension of the domain (default: 1.0).
-- `z`: The z-dimension of the domain (default: 1.0).
+- `coordinates`: coordinates of the left lower corner of the domain (format [x, y, z]).
 - `dimensions`: The number of dimensions the domain has. Supported values: 2, 3.
 - `boundaries`: A map defining boundary conditions for each of the 6 domain faces.
 

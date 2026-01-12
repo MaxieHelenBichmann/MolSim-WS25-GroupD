@@ -555,9 +555,10 @@ void YAMLReader::readDisc(ContainerRef particles, const SettingsParam& settings,
 
 void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
     try {
+        R3 dimension;
         auto coordinates = node["coordinates"];
         if (coordinates && coordinates.IsSequence() && coordinates.size() == 3) {
-            R3 dimension = {coordinates[0].as<double>(), coordinates[1].as<double>(), coordinates[2].as<double>()};
+            dimension = {coordinates[0].as<double>(), coordinates[1].as<double>(), coordinates[2].as<double>()};
         } else {
             SPDLOG_ERROR("Domain: coordinates must be [x, y, z]");
             throw ValidationException("Domain: coordinates must be [x, y, z]");
@@ -567,7 +568,6 @@ void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
         if (dimensions_node) {
             settings.dimensions = dimensions_node.as<size_t>();  // NOLINT
         }
-        size_t dimension = settings.dimensions;
 
         // Define boundary locations and their YAML keys
         static const std::array<std::pair<BoundaryLocation, std::string>, 6> boundary_mappings = {{

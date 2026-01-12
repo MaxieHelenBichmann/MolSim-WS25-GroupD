@@ -86,7 +86,6 @@ void YAMLWriterCP::createCheckpoint(SettingsParam& settings, const Domain& domai
     out << YAML::Key << "x" << YAML::Value << domain.getDimension()[0];
     out << YAML::Key << "y" << YAML::Value << domain.getDimension()[1];
     out << YAML::Key << "z" << YAML::Value << domain.getDimension()[2];
-    out << YAML::Key << "g_grav" << YAML::Value << settings.g_grav;
     out << YAML::Key << "dimensions" << YAML::Value << settings.dimensions;
 
     const auto boundary_type_string = [](BoundaryType type) -> std::string {
