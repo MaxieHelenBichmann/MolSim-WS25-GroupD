@@ -16,6 +16,7 @@
 #include "particles/container/domain/Domain.h"
 #include "physics/pairwiseforces/PairwiseForceSource.h"
 #include "physics/singleforces/SingleForceSource.h"
+#include "physics/targettedforces/TargetForceSource.h"
 #include "utils/Settings.h"
 #include "utils/Vector.h"
 
@@ -128,6 +129,10 @@ class Simulation {
      */
     std::vector<Particle> new_particles;
 
+    bool target_force_enabled = false;
+
+    TargetForceSource target_force;
+
    public:
     /**
      * @brief Construct a new Simulation object and prepare for run() call.
@@ -159,7 +164,10 @@ class Simulation {
           target_temp(settings.target_temp),
           delta_temp(settings.delta_temp),
           thermostat_freq(settings.thermostat_freq),
-          thermo(settings.thermo) {
+          thermo(settings.thermo),
+          target_force_enabled(settings.target_force_enabled),
+          target_force(settings.target_force_direction, settings.target_force_magnitude,
+                       settings.target_force_max_iterations) {
         for (const Particle& p : particles) {
             total_energy += p.getM() * R3::scalarProduct(p.getV(), p.getV());
         }
@@ -233,6 +241,9 @@ class Simulation {
                     p1.getF() += force;
                     p2.getF() -= force;
                 }
+            }
+            if (target_force_enabled) {
+                p1.getF() += target_force.applyForce(p1);
             }
         }
         // Calculate forces from mirrored/ghost particles

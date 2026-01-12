@@ -379,7 +379,9 @@ void eraseSelfFromNeighbors(const Particle& p) {
      */
     constexpr std::array<size_t, 8> indices_lookup{1, 0, 3, 2, 7, 6, 5, 4};
     for (size_t i = 0; i < 8; i++) {
-        p.getNeighbors()[i]->getNeighbors()[indices_lookup[i]] = nullptr;
+        if (p.getNeighbors()[i] != nullptr) {
+            p.getNeighbors()[i]->getNeighbors()[indices_lookup[i]] = nullptr;
+        }
     }
 }
 
