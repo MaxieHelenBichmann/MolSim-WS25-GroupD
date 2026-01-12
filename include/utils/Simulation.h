@@ -241,6 +241,7 @@ class Simulation {
     /**
      * @brief Calculates the forces of every particle for the next time step.
      */
+
     void calculateF() {
         size_t idx = 0;
         for (auto it = particles.begin(); it != particles.end(); ++it, idx++) {

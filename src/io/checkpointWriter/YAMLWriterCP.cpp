@@ -45,7 +45,7 @@ void YAMLWriterCP::createCheckpoint(SettingsParam& settings, const Domain& domai
         << (settings.start_time > settings.end_time ? settings.end_time : settings.start_time);
     ;
     out << YAML::Key << "base_name" << YAML::Value << settings.base_name;
-    
+
     // Write pairwise forces
     out << YAML::Key << "pairwise_forces" << YAML::Value << YAML::BeginSeq;
     for (const auto& force : settings.pairwise_forces) {
@@ -56,7 +56,7 @@ void YAMLWriterCP::createCheckpoint(SettingsParam& settings, const Domain& domai
         }
     }
     out << YAML::EndSeq;
-    
+
     // Write single forces as objects with parameters
     out << YAML::Key << "single_forces" << YAML::Value << YAML::BeginSeq;
     for (const auto& force : settings.single_forces) {
@@ -74,7 +74,7 @@ void YAMLWriterCP::createCheckpoint(SettingsParam& settings, const Domain& domai
         out << YAML::EndMap;
     }
     out << YAML::EndSeq;
-    
+
     out << YAML::Key << "container" << YAML::Value << settings.container_type;
     out << YAML::Key << "frequency" << YAML::Value << settings.frequency_output;
     out << YAML::Key << "checkpoint" << YAML::Value << settings.frequency_checkpoint;
@@ -96,7 +96,7 @@ void YAMLWriterCP::createCheckpoint(SettingsParam& settings, const Domain& domai
     if (settings.target_force_enabled) {
         out << YAML::Key << "target_force" << YAML::Value << YAML::BeginMap;
         out << YAML::Key << "direction" << YAML::Value << YAML::Flow << YAML::BeginSeq;
-        out << settings.target_force_direction[0] << settings.target_force_direction[1] 
+        out << settings.target_force_direction[0] << settings.target_force_direction[1]
             << settings.target_force_direction[2];
         out << YAML::EndSeq;
         out << YAML::Key << "magnitude" << YAML::Value << settings.target_force_magnitude;

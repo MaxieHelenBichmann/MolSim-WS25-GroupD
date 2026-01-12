@@ -15,10 +15,10 @@ namespace mol_sim {
  */
 class GravForce : public SingleForceSource {
    private:
-    const R3 g_grav;
+    const R3 G_GRAV;
 
    public:
-    GravForce(R3 g_grav) : g_grav(g_grav) {}
+    GravForce(R3 g_grav) : G_GRAV(g_grav) {}
 
     /**
      * @brief Calculates the gravitational force a particle p2 exerts on a different particle p1.
@@ -30,7 +30,7 @@ class GravForce : public SingleForceSource {
      * Calculates the gravitational force a particle p2 exerts on a different particle p1.
      */
     [[nodiscard]] Vector<double, 3> applyForce(const Particle& p1) const noexcept override {
-        return p1.getM() * g_grav;
+        return p1.getM() * G_GRAV;
     }
 };
 }  // namespace mol_sim

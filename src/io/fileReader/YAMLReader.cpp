@@ -95,7 +95,7 @@ void validateParticleParams(double mass, double epsilon, double sigma, const std
 YAMLReader::YAMLReader() = default;
 
 YAMLReader::~YAMLReader() = default;
-// NOLINTNEXTLINE
+
 void YAMLReader::readSettings(SettingsParam& settings, const std::string& filename) {
     try {
         YAML::Node root = YAML::LoadFile(filename);
