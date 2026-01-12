@@ -347,6 +347,12 @@ class Simulation {
         cp_settings.thermostat_freq = thermostat_freq;
         cp_settings.dimensions = dimensions;
         cp_settings.thermo = thermo;
+        cp_settings.target_force_enabled = target_force_enabled;
+        if (target_force_enabled) {
+            cp_settings.target_force_direction = target_force.getDirection();
+            cp_settings.target_force_magnitude = target_force.getMagnitude();
+            cp_settings.target_force_max_iterations = target_force.getMaxIterations();
+        }
         auto cp_n = static_cast<size_t>(std::ceil((end_time - start_time) / delta_t));
 #endif
 

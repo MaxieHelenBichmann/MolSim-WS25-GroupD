@@ -30,6 +30,10 @@ class TargetForceSource {
 
         return magnitude * direction;
     }
+
+    [[nodiscard]] R3 getDirection() const noexcept { return direction; }
+    [[nodiscard]] double getMagnitude() const noexcept { return magnitude; }
+    [[nodiscard]] size_t getMaxIterations() const noexcept { return max_iterations; }
 };
 
 }  // namespace mol_sim

@@ -83,10 +83,25 @@ void YAMLWriterCP::createCheckpoint(SettingsParam& settings, const Domain& domai
     // Write thermostat settings in nested format
     if (settings.thermo) {
         out << YAML::Key << "thermostat" << YAML::Value << YAML::BeginMap;
+        if (settings.init_temp != SettingsParam::INIT_TEMP_DEFAULT) {
+            out << YAML::Key << "initial_temp" << YAML::Value << settings.init_temp;
+        }
         out << YAML::Key << "target_temp" << YAML::Value << settings.target_temp;
         out << YAML::Key << "n_thermostat" << YAML::Value << settings.thermostat_freq;
         out << YAML::Key << "delta_temp" << YAML::Value << settings.delta_temp;
         out << YAML::EndMap;  // close thermostat
+    }
+
+    // Write target force settings if enabled
+    if (settings.target_force_enabled) {
+        out << YAML::Key << "target_force" << YAML::Value << YAML::BeginMap;
+        out << YAML::Key << "direction" << YAML::Value << YAML::Flow << YAML::BeginSeq;
+        out << settings.target_force_direction[0] << settings.target_force_direction[1] 
+            << settings.target_force_direction[2];
+        out << YAML::EndSeq;
+        out << YAML::Key << "magnitude" << YAML::Value << settings.target_force_magnitude;
+        out << YAML::Key << "max_iterations" << YAML::Value << settings.target_force_max_iterations;
+        out << YAML::EndMap;  // close target_force
     }
 
     out << YAML::Key << "domain" << YAML::Value << YAML::BeginMap;  // open domain

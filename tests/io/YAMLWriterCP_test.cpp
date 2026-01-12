@@ -317,4 +317,204 @@ TEST_F(YAMLWriterCPTest, testReadBackCheckpointWithYAMLReader) {  // NOLINT
         EXPECT_TRUE(std::ranges::any_of(restored, [&particle](const auto& p) { return p == particle; }));
     }
 }
+
+TEST_F(YAMLWriterCPTest, testWritesSingleForces) {  // NOLINT
+    constexpr int iteration = 3;
+    constexpr size_t iteration_cap = 10;
+    const Domain domain{R3{10.0, 10.0, 10.0}};
+    
+    ContainerRef particles(container);
+    SettingsParam settings;
+    settings.delta_t = 0.01;
+    settings.end_time = 1.0;
+    settings.start_time = 0.0;
+    settings.base_name = "test_single";
+    settings.pairwise_forces = {PairwiseForce::LENNARDJONES};
+    settings.single_forces = {SingleForce::GRAV, SingleForce::HARMONIC};
+    settings.g_grav_vec = {0.0, -9.81, 0.0};
+    settings.k = 300.0;
+    settings.r_0 = 2.2;
+    settings.container_type = "SIMPLE";
+    settings.frequency_output = 1;
+    settings.frequency_checkpoint = 1;
+    settings.cutoff = 1.0;
+    settings.dimensions = 3;
+    settings.thermo = false;
+    
+    writer.createCheckpoint(settings, domain, particles, iteration, iteration_cap);
+    
+    std::ostringstream oss;
+    oss << "cp_" << std::setfill('0') << std::setw(1) << iteration << ".yaml";
+    std::filesystem::path path = std::filesystem::current_path() / oss.str();
+    created_files.push_back(path);
+    
+    ASSERT_TRUE(std::filesystem::exists(path));
+    YAML::Node root = YAML::LoadFile(path.string());
+    
+    const YAML::Node settings_node = root["settings"];
+    ASSERT_TRUE(settings_node["single_forces"]);
+    const YAML::Node single_forces = settings_node["single_forces"];
+    ASSERT_TRUE(single_forces.IsSequence());
+    ASSERT_EQ(2, single_forces.size());
+    
+    const YAML::Node grav_force = single_forces[0];
+    EXPECT_EQ("GRAV", grav_force["type"].as<std::string>());
+    ASSERT_TRUE(grav_force["g_grav"]);
+    const YAML::Node g_grav = grav_force["g_grav"];
+    ASSERT_TRUE(g_grav.IsSequence());
+    EXPECT_DOUBLE_EQ(0.0, g_grav[0].as<double>());
+    EXPECT_DOUBLE_EQ(-9.81, g_grav[1].as<double>());
+    EXPECT_DOUBLE_EQ(0.0, g_grav[2].as<double>());
+    
+    const YAML::Node harmonic_force = single_forces[1];
+    EXPECT_EQ("HARMONIC", harmonic_force["type"].as<std::string>());
+    EXPECT_DOUBLE_EQ(300.0, harmonic_force["k"].as<double>());
+    EXPECT_DOUBLE_EQ(2.2, harmonic_force["r_0"].as<double>());
+}
+
+TEST_F(YAMLWriterCPTest, testWritesTargetForce) {  // NOLINT
+    constexpr int iteration = 2;
+    constexpr size_t iteration_cap = 5;
+    const Domain domain{R3{10.0, 10.0, 10.0}};
+    
+    ContainerRef particles(container);
+    SettingsParam settings;
+    settings.delta_t = 0.01;
+    settings.end_time = 1.0;
+    settings.start_time = 0.0;
+    settings.base_name = "test_target";
+    settings.pairwise_forces = {PairwiseForce::LENNARDJONES};
+    settings.target_force_enabled = true;
+    settings.target_force_direction = {1.0, 0.0, 0.0};
+    settings.target_force_magnitude = 50.0;
+    settings.target_force_max_iterations = 1000;
+    settings.container_type = "SIMPLE";
+    settings.frequency_output = 1;
+    settings.frequency_checkpoint = 1;
+    settings.cutoff = 1.0;
+    settings.dimensions = 3;
+    settings.thermo = false;
+    
+    writer.createCheckpoint(settings, domain, particles, iteration, iteration_cap);
+    
+    std::ostringstream oss;
+    oss << "cp_" << std::setfill('0') << std::setw(1) << iteration << ".yaml";
+    std::filesystem::path path = std::filesystem::current_path() / oss.str();
+    created_files.push_back(path);
+    
+    ASSERT_TRUE(std::filesystem::exists(path));
+    YAML::Node root = YAML::LoadFile(path.string());
+    
+    const YAML::Node settings_node = root["settings"];
+    ASSERT_TRUE(settings_node["target_force"]);
+    const YAML::Node target_force = settings_node["target_force"];
+    
+    ASSERT_TRUE(target_force["direction"]);
+    const YAML::Node direction = target_force["direction"];
+    ASSERT_TRUE(direction.IsSequence());
+    EXPECT_DOUBLE_EQ(1.0, direction[0].as<double>());
+    EXPECT_DOUBLE_EQ(0.0, direction[1].as<double>());
+    EXPECT_DOUBLE_EQ(0.0, direction[2].as<double>());
+    
+    EXPECT_DOUBLE_EQ(50.0, target_force["magnitude"].as<double>());
+    EXPECT_EQ(1000, target_force["max_iterations"].as<size_t>());
+}
+
+TEST_F(YAMLWriterCPTest, testWritesInitialTemp) {  // NOLINT
+    constexpr int iteration = 1;
+    constexpr size_t iteration_cap = 5;
+    const Domain domain{R3{10.0, 10.0, 10.0}};
+    
+    ContainerRef particles(container);
+    SettingsParam settings;
+    settings.delta_t = 0.01;
+    settings.end_time = 1.0;
+    settings.start_time = 0.0;
+    settings.base_name = "test_init_temp";
+    settings.pairwise_forces = {PairwiseForce::LENNARDJONES};
+    settings.container_type = "SIMPLE";
+    settings.frequency_output = 1;
+    settings.frequency_checkpoint = 1;
+    settings.cutoff = 1.0;
+    settings.dimensions = 3;
+    settings.thermo = true;
+    settings.init_temp = 200.0;
+    settings.target_temp = 300.0;
+    settings.delta_temp = 0.5;
+    settings.thermostat_freq = 10;
+    
+    writer.createCheckpoint(settings, domain, particles, iteration, iteration_cap);
+    
+    std::ostringstream oss;
+    oss << "cp_" << std::setfill('0') << std::setw(1) << iteration << ".yaml";
+    std::filesystem::path path = std::filesystem::current_path() / oss.str();
+    created_files.push_back(path);
+    
+    ASSERT_TRUE(std::filesystem::exists(path));
+    YAML::Node root = YAML::LoadFile(path.string());
+    
+    const YAML::Node settings_node = root["settings"];
+    ASSERT_TRUE(settings_node["thermostat"]);
+    const YAML::Node thermostat = settings_node["thermostat"];
+    
+    EXPECT_DOUBLE_EQ(200.0, thermostat["initial_temp"].as<double>());
+    EXPECT_DOUBLE_EQ(300.0, thermostat["target_temp"].as<double>());
+}
+
+TEST_F(YAMLWriterCPTest, testReadBackCheckpointWithSingleForces) {  // NOLINT
+    constexpr int iteration = 5;
+    constexpr size_t iteration_cap = 10;
+    const Domain domain{R3{10.0, 10.0, 10.0}};
+    
+    ContainerRef particles(container);
+    SettingsParam settings;
+    settings.delta_t = 0.01;
+    settings.end_time = 1.0;
+    settings.start_time = 0.0;
+    settings.base_name = "test_readback";
+    settings.pairwise_forces = {PairwiseForce::LENNARDJONES};
+    settings.single_forces = {SingleForce::GRAV, SingleForce::HARMONIC};
+    settings.g_grav_vec = {0.0, -9.81, 0.0};
+    settings.k = 300.0;
+    settings.r_0 = 2.2;
+    settings.target_force_enabled = true;
+    settings.target_force_direction = {1.0, 0.0, 0.0};
+    settings.target_force_magnitude = 50.0;
+    settings.target_force_max_iterations = 1000;
+    settings.container_type = "SIMPLE";
+    settings.frequency_output = 1;
+    settings.frequency_checkpoint = 1;
+    settings.cutoff = 1.0;
+    settings.dimensions = 3;
+    settings.thermo = false;
+    
+    writer.createCheckpoint(settings, domain, particles, iteration, iteration_cap);
+    
+    std::ostringstream oss;
+    oss << "cp_" << std::setfill('0') << std::setw(1) << iteration << ".yaml";
+    std::filesystem::path path = std::filesystem::current_path() / oss.str();
+    created_files.push_back(path);
+    
+    // Read back
+    SettingsParam read_settings;
+    YAMLReader reader;
+    reader.readSettings(read_settings, path.string());
+    
+    ASSERT_EQ(2, read_settings.single_forces.size());
+    EXPECT_EQ(SingleForce::GRAV, read_settings.single_forces[0]);
+    EXPECT_EQ(SingleForce::HARMONIC, read_settings.single_forces[1]);
+    EXPECT_DOUBLE_EQ(0.0, read_settings.g_grav_vec[0]);
+    EXPECT_DOUBLE_EQ(-9.81, read_settings.g_grav_vec[1]);
+    EXPECT_DOUBLE_EQ(0.0, read_settings.g_grav_vec[2]);
+    EXPECT_DOUBLE_EQ(300.0, read_settings.k);
+    EXPECT_DOUBLE_EQ(2.2, read_settings.r_0);
+    
+    EXPECT_TRUE(read_settings.target_force_enabled);
+    EXPECT_DOUBLE_EQ(1.0, read_settings.target_force_direction[0]);
+    EXPECT_DOUBLE_EQ(0.0, read_settings.target_force_direction[1]);
+    EXPECT_DOUBLE_EQ(0.0, read_settings.target_force_direction[2]);
+    EXPECT_DOUBLE_EQ(50.0, read_settings.target_force_magnitude);
+    EXPECT_EQ(1000, read_settings.target_force_max_iterations);
+}
+
 }  // namespace mol_sim
