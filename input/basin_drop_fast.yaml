@@ -1,16 +1,13 @@
 settings:
   format: Settings
-  delta_t: 0.00005
+  delta_t: 5.0e-05
   end_time: 10.0
   start_time: 0.0
-  force: "Lennard Jones"
   frequency: 10
   cutoff: 3.0
   container: LINKED
   domain:
-    x: 40
-    y: 20
-    z: 1
+    coordinates: [40, 20, 1]
     boundaries:
       left:
         type: REFLECTING
@@ -18,17 +15,11 @@ settings:
         type: REFLECTING
       lower:
         type: REFLECTING
-
+  pairwise_forces: [LENNARDJONES]
 disc:
   format: Disc
-  coordinates:
-    x: 20.0
-    y: 8.0
-    z: 0.0
-  velocity:
-    vx: 0.0
-    vy: -30.0
-    vz: 0.0
+  coordinates: [20.0, 8.0, 0.0]
+  velocity: [0.0, -30.0, 0.0]
   radius: 3
   mass: 1.0
   distance: 1.1225

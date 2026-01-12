@@ -1,13 +1,4 @@
 simple_xvm:
-    format: XVM
-    num_particles: 1
-    particles:
-      - coordinates:
-          x: 0.0
-          y: 0.0
-          z: 0.0
-        velocity:
-          vx: 0.0
-          vy: 0.0
-          vz: 0.0
-        mass: 1.0
+  format: XVM
+  num_particles: 1
+  particles: [{coordinates: [0.0, 0.0, 0.0], velocity: [0.0, 0.0, 0.0], mass: 1.0}]

@@ -72,10 +72,6 @@ class SettingsParam {
      * @brief Default dimensions of the simulation..
      */
     static constexpr size_t DIMENSIONS_DEFAULT = 3;
-    /**
-     * @brief Default value for g_grav used to simulate gravitational pull in simulation.
-     */
-    static constexpr double G_GRAV_DEFAULT = 0.0;
 
     static constexpr double K_DEFAULT = 300.0;
 
@@ -108,6 +104,7 @@ class SettingsParam {
      * @brief Type of force used in the simulation.
      */
     std::vector<PairwiseForce> pairwise_forces = PAIRWISE_FORCE_DEFAULT;
+
     std::vector<SingleForce> single_forces = SINGLE_FORCE_DEFAULT;
     /**
      * @brief Frequency of output files being written.
