@@ -133,6 +133,21 @@ class Simulation {
 
     TargetForceSource target_force;
 
+    /**
+     * @brief Gravitational acceleration vector for single GRAV force.
+     */
+    R3 g_grav_vec;
+
+    /**
+     * @brief Spring constant for HARMONIC force.
+     */
+    double k;
+
+    /**
+     * @brief Equilibrium distance for HARMONIC force.
+     */
+    double r_0;
+
    public:
     /**
      * @brief Construct a new Simulation object and prepare for run() call.
@@ -167,7 +182,10 @@ class Simulation {
           thermo(settings.thermo),
           target_force_enabled(settings.target_force_enabled),
           target_force(settings.target_force_direction, settings.target_force_magnitude,
-                       settings.target_force_max_iterations) {
+                       settings.target_force_max_iterations),
+          g_grav_vec(settings.g_grav_vec),
+          k(settings.k),
+          r_0(settings.r_0) {
         for (const Particle& p : particles) {
             total_energy += p.getM() * R3::scalarProduct(p.getV(), p.getV());
         }
@@ -334,6 +352,9 @@ class Simulation {
         cp_settings.base_name = base_name;
         cp_settings.pairwise_forces = pairwise_forces;
         cp_settings.single_forces = single_forces;
+        cp_settings.g_grav_vec = g_grav_vec;
+        cp_settings.k = k;
+        cp_settings.r_0 = r_0;
         if constexpr (std::is_same_v<std::remove_cvref_t<containerType>, LinkedCellContainer>) {
             cp_settings.container_type = "LINKED";
         } else {
