@@ -15,10 +15,10 @@ namespace mol_sim {
  */
 class GravForce : public SingleForceSource {
    private:
-    const double g_grav;
+    const R3 g_grav;
 
    public:
-    GravForce(double g_grav) : g_grav(g_grav) {}
+    GravForce(R3 g_grav) : g_grav(g_grav) {}
 
     /**
      * @brief Calculates the gravitational force a particle p2 exerts on a different particle p1.

@@ -70,7 +70,7 @@ SettingsParam createBenchmarkSettings(R3 domain_size, double cutoff, double delt
     settings.target_temp = 40.;
     settings.delta_temp = 0.1;
     settings.thermostat_freq = 1000;
-    settings.g_grav = -12.44;
+    settings.g_grav_vec = {0.0, -12.44, 0.0};
 
     std::array<std::unique_ptr<Boundary>, 6> boundaries;
     boundaries[0] = std::make_unique<Periodic>(BoundaryLocation::LEFT, domain_size, cutoff, 2);
@@ -101,7 +101,7 @@ SettingsParam createContestSettings() {
     settings.init_temp = 40;
     settings.target_temp = 40.;
     settings.thermostat_freq = 1000;
-    settings.g_grav = -12.44;
+    settings.g_grav_vec = {0.0, -12.44, 0.0};
     R3 domain_size = {300., 54., 1.};
     std::array<std::unique_ptr<Boundary>, 6> boundaries;
     boundaries[0] = std::make_unique<Periodic>(BoundaryLocation::LEFT, domain_size, 3, 2);

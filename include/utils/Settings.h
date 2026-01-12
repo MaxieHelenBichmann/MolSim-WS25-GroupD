@@ -43,7 +43,7 @@ class SettingsParam {
      * @brief Default force type of the simulation.
      */
     inline static const std::vector<PairwiseForce> PAIRWISE_FORCE_DEFAULT = {LENNARDJONES};
-    inline static const std::vector<SingleForce> SINGLE_FORCE_DEFAULT = {GRAV};
+    inline static const std::vector<SingleForce> SINGLE_FORCE_DEFAULT = {};
     /**
      * @brief Default write frequency of the simulation.
      */

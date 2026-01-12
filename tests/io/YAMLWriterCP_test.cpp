@@ -47,7 +47,7 @@ class YAMLWriterCPTest : public testing::Test {
                                           double delta_t, double current_time, double end_time, size_t frequency_output,
                                           size_t frequency_checkpoint, const std::string& base_name,
                                           double cutoff_radius, double target_temp, double delta_temp,
-                                          size_t thermostat_freq, double g_grav, size_t dimensions, size_t N) {
+                                          size_t thermostat_freq, size_t dimensions, size_t N) {
         ContainerRef particles(container);
         SettingsParam settings;
         settings.delta_t = delta_t;
@@ -63,7 +63,6 @@ class YAMLWriterCPTest : public testing::Test {
         settings.delta_temp = delta_temp;
         settings.thermostat_freq = thermostat_freq;
         settings.dimensions = dimensions;
-        settings.g_grav = g_grav;
         settings.thermo = true;
         writer.createCheckpoint(settings, domain, particles, iteration, N);
 
@@ -95,13 +94,12 @@ TEST_F(YAMLWriterCPTest, testWritesSimpleSettingsAndParticleData) {  // NOLINT
     constexpr double target_temp = 300.0;
     constexpr double delta_temp = 0.5;
     constexpr size_t thermostat_freq = 10;
-    constexpr double g_grav = 9.81;
     constexpr size_t dimensions = 3;
     const Domain domain{R3{10.0, 10.0, 10.0}};
 
     auto file_path = writeCheckpoint(domain, container, iteration, PairwiseForce::LENNARDJONES, delta_t, start_time, end_time,
                                      frequency_output, frequency_checkpoint, base_name, cutoff_radius, target_temp,
-                                     delta_temp, thermostat_freq, g_grav, dimensions, iteration_cap);
+                                     delta_temp, thermostat_freq, dimensions, iteration_cap);
 
     ASSERT_TRUE(std::filesystem::exists(file_path));
 
@@ -115,7 +113,14 @@ TEST_F(YAMLWriterCPTest, testWritesSimpleSettingsAndParticleData) {  // NOLINT
     EXPECT_DOUBLE_EQ(end_time, settings_node["end_time"].as<double>());
     EXPECT_DOUBLE_EQ(start_time, settings_node["start_time"].as<double>());
     EXPECT_EQ(base_name, settings_node["base_name"].as<std::string>());
-    EXPECT_EQ("Lennard Jones", settings_node["force"].as<std::string>());
+    
+    // Check pairwise_forces instead of deprecated "force"
+    ASSERT_TRUE(settings_node["pairwise_forces"]);
+    const YAML::Node pairwise_forces = settings_node["pairwise_forces"];
+    ASSERT_TRUE(pairwise_forces.IsSequence());
+    ASSERT_EQ(1, pairwise_forces.size());
+    EXPECT_EQ("LENNARDJONES", pairwise_forces[0].as<std::string>());
+    
     EXPECT_EQ("SIMPLE", settings_node["container"].as<std::string>());
     EXPECT_EQ(frequency_output, settings_node["frequency"].as<size_t>());
     EXPECT_EQ(frequency_checkpoint, settings_node["checkpoint"].as<size_t>());
@@ -130,10 +135,13 @@ TEST_F(YAMLWriterCPTest, testWritesSimpleSettingsAndParticleData) {  // NOLINT
 
     const YAML::Node domain_node = settings_node["domain"];
     ASSERT_TRUE(domain_node);
-    EXPECT_DOUBLE_EQ(domain.getDimension()[0], domain_node["x"].as<double>());
-    EXPECT_DOUBLE_EQ(domain.getDimension()[1], domain_node["y"].as<double>());
-    EXPECT_DOUBLE_EQ(domain.getDimension()[2], domain_node["z"].as<double>());
-    EXPECT_DOUBLE_EQ(g_grav, domain_node["g_grav"].as<double>());
+    const YAML::Node coords_node = domain_node["coordinates"];
+    ASSERT_TRUE(coords_node);
+    ASSERT_TRUE(coords_node.IsSequence());
+    EXPECT_EQ(3, coords_node.size());
+    EXPECT_DOUBLE_EQ(domain.getDimension()[0], coords_node[0].as<double>());
+    EXPECT_DOUBLE_EQ(domain.getDimension()[1], coords_node[1].as<double>());
+    EXPECT_DOUBLE_EQ(domain.getDimension()[2], coords_node[2].as<double>());
     EXPECT_EQ(dimensions, domain_node["dimensions"].as<size_t>());
 
     const YAML::Node boundaries = domain_node["boundaries"];
@@ -157,21 +165,41 @@ TEST_F(YAMLWriterCPTest, testWritesSimpleSettingsAndParticleData) {  // NOLINT
     for (const auto& expected : container) {
         const YAML::Node particle_node = particles_node[idx++];
         ASSERT_TRUE(particle_node);
-        EXPECT_DOUBLE_EQ(expected.getX()[0], particle_node["coordinates"]["x"].as<double>());
-        EXPECT_DOUBLE_EQ(expected.getX()[1], particle_node["coordinates"]["y"].as<double>());
-        EXPECT_DOUBLE_EQ(expected.getX()[2], particle_node["coordinates"]["z"].as<double>());
-        EXPECT_DOUBLE_EQ(expected.getOldX()[0], particle_node["old_coordinates"]["ox"].as<double>());
-        EXPECT_DOUBLE_EQ(expected.getOldX()[1], particle_node["old_coordinates"]["oy"].as<double>());
-        EXPECT_DOUBLE_EQ(expected.getOldX()[2], particle_node["old_coordinates"]["oz"].as<double>());
-        EXPECT_DOUBLE_EQ(expected.getV()[0], particle_node["velocity"]["vx"].as<double>());
-        EXPECT_DOUBLE_EQ(expected.getV()[1], particle_node["velocity"]["vy"].as<double>());
-        EXPECT_DOUBLE_EQ(expected.getV()[2], particle_node["velocity"]["vz"].as<double>());
-        EXPECT_DOUBLE_EQ(expected.getF()[0], particle_node["force"]["fx"].as<double>());
-        EXPECT_DOUBLE_EQ(expected.getF()[1], particle_node["force"]["fy"].as<double>());
-        EXPECT_DOUBLE_EQ(expected.getF()[2], particle_node["force"]["fz"].as<double>());
-        EXPECT_DOUBLE_EQ(expected.getOldF()[0], particle_node["old_force"]["ofx"].as<double>());
-        EXPECT_DOUBLE_EQ(expected.getOldF()[1], particle_node["old_force"]["ofy"].as<double>());
-        EXPECT_DOUBLE_EQ(expected.getOldF()[2], particle_node["old_force"]["ofz"].as<double>());
+        
+        const YAML::Node coords = particle_node["coordinates"];
+        ASSERT_TRUE(coords.IsSequence());
+        EXPECT_EQ(3, coords.size());
+        EXPECT_DOUBLE_EQ(expected.getX()[0], coords[0].as<double>());
+        EXPECT_DOUBLE_EQ(expected.getX()[1], coords[1].as<double>());
+        EXPECT_DOUBLE_EQ(expected.getX()[2], coords[2].as<double>());
+        
+        const YAML::Node old_coords = particle_node["old_coordinates"];
+        ASSERT_TRUE(old_coords.IsSequence());
+        EXPECT_EQ(3, old_coords.size());
+        EXPECT_DOUBLE_EQ(expected.getOldX()[0], old_coords[0].as<double>());
+        EXPECT_DOUBLE_EQ(expected.getOldX()[1], old_coords[1].as<double>());
+        EXPECT_DOUBLE_EQ(expected.getOldX()[2], old_coords[2].as<double>());
+        
+        const YAML::Node velocity = particle_node["velocity"];
+        ASSERT_TRUE(velocity.IsSequence());
+        EXPECT_EQ(3, velocity.size());
+        EXPECT_DOUBLE_EQ(expected.getV()[0], velocity[0].as<double>());
+        EXPECT_DOUBLE_EQ(expected.getV()[1], velocity[1].as<double>());
+        EXPECT_DOUBLE_EQ(expected.getV()[2], velocity[2].as<double>());
+        
+        const YAML::Node force = particle_node["force"];
+        ASSERT_TRUE(force.IsSequence());
+        EXPECT_EQ(3, force.size());
+        EXPECT_DOUBLE_EQ(expected.getF()[0], force[0].as<double>());
+        EXPECT_DOUBLE_EQ(expected.getF()[1], force[1].as<double>());
+        EXPECT_DOUBLE_EQ(expected.getF()[2], force[2].as<double>());
+        
+        const YAML::Node old_force = particle_node["old_force"];
+        ASSERT_TRUE(old_force.IsSequence());
+        EXPECT_EQ(3, old_force.size());
+        EXPECT_DOUBLE_EQ(expected.getOldF()[0], old_force[0].as<double>());
+        EXPECT_DOUBLE_EQ(expected.getOldF()[1], old_force[1].as<double>());
+        EXPECT_DOUBLE_EQ(expected.getOldF()[2], old_force[2].as<double>());
         EXPECT_DOUBLE_EQ(expected.getM(), particle_node["mass"].as<double>());
         EXPECT_DOUBLE_EQ(expected.getEpsilon(), particle_node["epsilon"].as<double>());
         EXPECT_DOUBLE_EQ(expected.getSigma(), particle_node["sigma"].as<double>());
@@ -185,7 +213,7 @@ TEST_F(YAMLWriterCPTest, testEmptyContainer) {  // NOLINT
     constexpr size_t iteration_cap = 1;
     const Domain domain{R3{10.0, 10.0, 10.0}};
     auto file_path = writeCheckpoint(domain, empty, iteration, PairwiseForce::GRAVITATIONAL, 0.01, 0.0, 1.0, 1, 1, "test_base",
-                                     1.0, 1.0, 1.0, 10, 1., 3, iteration_cap);
+                                     1.0, 1.0, 1.0, 10, 3, iteration_cap);
 
     ASSERT_TRUE(std::filesystem::exists(file_path));
     YAML::Node root = YAML::LoadFile(file_path.string());
@@ -211,7 +239,7 @@ TEST_F(YAMLWriterCPTest, testWritesReflectingBoundaryMetadata) {  // NOLINT
     constexpr int iteration = 5;
     constexpr size_t iteration_cap = 10;
     auto file_path = writeCheckpoint(reflecting_domain, container, iteration, PairwiseForce::GRAVITATIONAL, 0.02, 0.0, 2.0, 2,
-                                     4, "test_reflect", 2.0, 1.0, 1.0, 10, 1., 3, iteration_cap);
+                                     4, "test_reflect", 2.0, 1.0, 1.0, 10, 3, iteration_cap);
 
     YAML::Node root = YAML::LoadFile(file_path.string());
     const YAML::Node boundaries = root["settings"]["domain"]["boundaries"];
@@ -249,13 +277,12 @@ TEST_F(YAMLWriterCPTest, testReadBackCheckpointWithYAMLReader) {  // NOLINT
     constexpr double target_temp = 300.0;
     constexpr double delta_temp = 0.5;
     constexpr size_t thermostat_freq = 10;
-    constexpr double g_grav = 9.81;
     constexpr size_t dimensions = 3;
     const Domain domain{R3{10.0, 10.0, 10.0}};
 
     auto file_path = writeCheckpoint(domain, container, iteration, PairwiseForce::LENNARDJONES, delta_t, start_time, end_time,
                                      frequency_output, frequency_checkpoint, base_name, cutoff_radius, target_temp,
-                                     delta_temp, thermostat_freq, g_grav, dimensions, iteration_cap);
+                                     delta_temp, thermostat_freq, dimensions, iteration_cap);
 
     // Settings
     SettingsParam settings;

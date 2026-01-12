@@ -85,7 +85,7 @@ int main(int argc, char* argsv[]) {
     for (auto single_type : settings.single_forces) {
         switch (single_type) {
             case SingleForce::GRAV:
-                single_sources.emplace_back(std::make_unique<GravForce>(settings.g_grav));
+                single_sources.emplace_back(std::make_unique<GravForce>(settings.g_grav_vec));
                 break;
             case SingleForce::HARMONIC:
                 single_sources.emplace_back(std::make_unique<HarmonicForce>(settings.k, settings.r_0));
