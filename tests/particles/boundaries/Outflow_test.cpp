@@ -58,8 +58,8 @@ TEST_F(OutflowTest, X_outflow_linked) {
     settings.container_type = "LINKED";
     LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
-    auto force_source = std::make_unique<LennardJonesForce>();
     std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
     std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
