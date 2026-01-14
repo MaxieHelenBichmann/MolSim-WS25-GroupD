@@ -12,6 +12,7 @@ settings:
     initial_temp: 10
     target_temp: 50
     n_thermostat: 10
+    delta_t: 1
 
   statistics:
     diffusion: 100
