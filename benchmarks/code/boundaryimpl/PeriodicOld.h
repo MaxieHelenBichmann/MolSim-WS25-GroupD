@@ -44,7 +44,7 @@ class PeriodicOld : public Boundary {
 
     void teleportParticleIfOOB(Particle& p);
 
-    std::vector<Particle> mirrorParticle(Particle& p);
+    void mirrorParticle(Particle& p);
 
     void updateOffset(R3& offset, size_t i);
 

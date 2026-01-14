@@ -1,8 +1,6 @@
 #ifndef PERIODIC_H
 #define PERIODIC_H
 
-#include <memory>
-
 #include "particles/boundaries/Boundary.h"
 #include "particles/container/LinkedCellContainer.h"
 #include "utils/Vector.h"

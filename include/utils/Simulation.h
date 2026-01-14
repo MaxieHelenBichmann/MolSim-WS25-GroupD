@@ -221,7 +221,7 @@ class Simulation {
         for (auto it = particles.begin(); it != particles.end(); ++it, idx++) {
             Particle& p1 = *it;
             p1.getF()[1] += p1.getM() * g_grav;  // add gravitational pull along y-axis
-
+            // Applying forces between normal particles
             auto it_prox = particles.proximityBegin(p1.getX(), idx);
             auto it_prox_end = particles.proximityEnd(p1.getX());
             for (; it_prox != it_prox_end; ++it_prox) {
@@ -232,10 +232,12 @@ class Simulation {
                 p2.getF() -= force;
             }
             R3 actual_pos = p1.getX();
-            for (R3 mirr_pos : p1.getMirrorPositions()) {
+            const R3& domain_size = domain.getDimension();
+            // Applying forces between Mirror Particles and normal particles
+            for (const R3& mirr_pos : p1.getMirrorPositions()) {
                 p1.getX() = mirr_pos;
                 R3 lookup_pos = mirr_pos;
-                R3 domain_size = domain.getDimension();
+
                 constexpr double epsilon = 1e-6;  // Small offset to stay inside domain
                 for (size_t dim = 0; dim < 3; ++dim) {
                     // Mirror slightly left of domain (x < 0) → clamp to just inside left boundary
@@ -249,10 +251,10 @@ class Simulation {
                 }
                 auto it_prox = particles.proximityBegin(lookup_pos, particles.size());
                 auto it_prox_end = particles.proximityEnd(lookup_pos);
+
                 for (; it_prox != it_prox_end; ++it_prox) {
                     Particle& p2 = *it_prox;
-                    Vector<double, 3> force = force_source.applyForce(p2, p1);
-                    p2.getF() = p2.getF() + force;
+                    p2.getF() += force_source.applyForce(p2, p1);
                 }
             }
             p1.getX() = actual_pos;

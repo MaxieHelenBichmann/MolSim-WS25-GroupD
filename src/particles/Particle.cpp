@@ -25,6 +25,7 @@ Particle::Particle(int type_arg)
       old_x(R3{0., 0., 0.}),
       old_f(R3{0., 0., 0.}),
       type(type_arg) {
+    mirror_positions.reserve(4);  // Reserve space for up to 4 mirrors
     SPDLOG_DEBUG("Particle generated!");
 }
 
@@ -70,6 +71,7 @@ Particle::Particle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double 
       old_x(R3{0., 0., 0.}),
       old_f(R3{0., 0., 0.}),
       type(type_arg) {
+    mirror_positions.reserve(4);
     SPDLOG_DEBUG("Particle generated!");
 }
 Particle::Particle(R3 x_arg, R3 v_arg, R3 f_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg)
@@ -82,6 +84,7 @@ Particle::Particle(R3 x_arg, R3 v_arg, R3 f_arg, double m_arg, double epsilon_ar
       old_x(R3{0., 0., 0.}),
       old_f(R3{0., 0., 0.}),
       type(type_arg) {
+    mirror_positions.reserve(4);
     SPDLOG_DEBUG("Particle generated!");
 }
 
@@ -96,6 +99,7 @@ Particle::Particle(R3 x_arg, R3 old_x_arg, R3 v_arg, R3 f_arg, R3 old_f_arg, dou
       old_x(old_x_arg),
       old_f(old_f_arg),
       type(type_arg) {
+    mirror_positions.reserve(4);
     SPDLOG_DEBUG("Particle generated!");
 }
 
