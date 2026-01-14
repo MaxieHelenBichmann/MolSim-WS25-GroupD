@@ -1,0 +1,51 @@
+settings:
+  format: Settings
+  delta_t: 0.001
+  end_time: 1
+  start_time: 0.0
+  force: "Lennard Jones"
+  frequency: 10
+  cutoff: 5
+  container: LINKED
+
+  thermostat: 
+    initial_temp: 10
+    target_temp: 50
+    n_thermostat: 10
+
+  statistics:
+    diffusion: 100
+
+  domain:
+    x: 50
+    y: 40
+    z: 1
+    dimensions: 2
+    boundaries:
+      left:
+        type: Periodic
+      right:
+        type: Periodic
+      front:
+        type: Reflecting
+      back:
+        type: Reflecting
+
+matter:
+  format: Cuboid
+  coordinates:
+      x: 1.0
+      y: 1.0
+      z: 0.0
+  velocity:
+      vx: 0.0
+      vy: 0.0
+      vz: 0.0
+  particleNum:
+      nx: 40
+      ny: 30
+      nz: 1
+  mass: 1.0
+  distance: 1.0
+  epsilon: 1.0
+  sigma: 1.0
