@@ -203,9 +203,7 @@ class Simulation {
             (*it).getOldF() = (*it).getF();
             (*it).getF() = Vector<double, 3>();
             // TODO: Optimization to only call this for relevant particles
-            for (auto& p : domain.applyBoundary(*it, force_source)) {
-                new_particles.push_back(p);
-            }
+            domain.applyBoundary(*it, force_source);
             (*it).getMirrorLocations() = 0;
             // TODO: bit of an ugly workaround for now.
             R3 new_position = (*it).getX();
@@ -233,15 +231,10 @@ class Simulation {
                 p1.getF() += force;
                 p2.getF() -= force;
             }
-        }
-        // Calculate forces from mirrored/ghost particles
-        for (const Particle& p1 : new_particles) {
-            R3 lookup_pos = p1.getX();
-
-            // For mirrored particles from periodic boundaries (type==1), their position is slightly
-            // outside the domain. We need to clamp it to just inside the boundary region to find
-            // the correct neighbors while preserving the actual position for force calculation.
-            if (p1.getType() == 1) {  // Mirrored particle from periodic boundary
+            R3 actual_pos = p1.getX();
+            for (R3 mirr_pos : p1.getMirrorPositions()) {
+                p1.getX() = mirr_pos;
+                R3 lookup_pos = mirr_pos;
                 R3 domain_size = domain.getDimension();
                 constexpr double epsilon = 1e-6;  // Small offset to stay inside domain
                 for (size_t dim = 0; dim < 3; ++dim) {
@@ -254,17 +247,16 @@ class Simulation {
                         lookup_pos[dim] = domain_size[dim] - epsilon;
                     }
                 }
+                auto it_prox = particles.proximityBegin(lookup_pos, particles.size());
+                auto it_prox_end = particles.proximityEnd(lookup_pos);
+                for (; it_prox != it_prox_end; ++it_prox) {
+                    Particle& p2 = *it_prox;
+                    Vector<double, 3> force = force_source.applyForce(p2, p1);
+                    p2.getF() = p2.getF() + force;
+                }
             }
-
-            auto it_prox = particles.proximityBegin(lookup_pos, particles.size());
-            auto it_prox_end = particles.proximityEnd(lookup_pos);
-            for (; it_prox != it_prox_end; ++it_prox) {
-                Particle& p2 = *it_prox;
-                Vector<double, 3> force = force_source.applyForce(p2, p1);
-                p2.getF() = p2.getF() + force;
-            }
+            p1.getX() = actual_pos;
         }
-        new_particles.clear();
     }
 
     /**
@@ -272,6 +264,7 @@ class Simulation {
      */
     void calculateX() {
         for (auto& p : particles) {
+            p.getMirrorPositions().clear();
             p.getOldX() = p.getX();
             p.getX() += (delta_t * p.getV()) + ((0.5 * delta_t * delta_t / p.getM()) * p.getF());
         }

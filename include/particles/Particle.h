@@ -10,6 +10,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 #include "utils/Vector.h"
 
@@ -78,7 +79,7 @@ class Particle {
      */
     int type;
 
-    //NOLINTBEGIN
+    // NOLINTBEGIN
     /**
      * @brief A bitmap indicating the locations the particle has been mirrored to.
      * This is relevant for periodic boundaries. See also Assignment4/Periodic slides
@@ -90,7 +91,7 @@ class Particle {
      * n-th bit         Location
      * --------------------------------------------------------------------------
      * 0                (-d0, -d1, -d2)
-     * 1                (-d0, -d1,   0) 
+     * 1                (-d0, -d1,   0)
      * 2                (-d0, -d1,  d2)
      * 3                (  0, -d0, -d2)
      * 4                (  0, -d1,   0)
@@ -118,7 +119,10 @@ class Particle {
      * 26               ( d0,  d1,  d2)
      */
     uint32_t mirror_locations = 0;
-    //NOLINTEND
+
+    // Positions Particle is mirrored to
+    std::vector<R3> mirror_positions;
+    // NOLINTEND
 
    public:
     explicit Particle(int type = 0);
@@ -278,6 +282,9 @@ class Particle {
      * @return String representation of the Particle.
      */
     [[nodiscard]] std::string toString() const;
+
+    [[nodiscard]] std::vector<R3>& getMirrorPositions() noexcept { return mirror_positions; }
+    [[nodiscard]] const std::vector<R3>& getMirrorPositions() const noexcept { return mirror_positions; }
 };
 
 std::ostream& operator<<(std::ostream& stream, const Particle& p);
