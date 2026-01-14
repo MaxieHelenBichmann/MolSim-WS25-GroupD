@@ -7,6 +7,7 @@
 
 #include "particles/ParticleContainer.h"
 #include "particles/boundaries/Boundary.h"
+#include "exceptions/ContainerException.h"
 
 namespace mol_sim {
 
@@ -297,6 +298,20 @@ class SimpleContainer : public std::vector<Particle> {
             proximity_iterator tmp = *this;
             ++(*this);
             return tmp;
+        }
+
+        //here to satisfy std::random_access_iterator (required for OpenMP)
+        friend auto operator- (const proximity_iterator<P>& a, const proximity_iterator<P>& b) {
+            throw ContainerException("OpenMP not supported for SimpleContainer!");
+            return 0;
+        } 
+        friend auto operator-= (const proximity_iterator<P>& a, long int n) {
+            throw ContainerException("OpenMP not supported for SimpleContainer!");
+            return 0;
+        }
+        friend auto operator+= (const proximity_iterator<P>& a, long int n) {
+            throw ContainerException("OpenMP not supported for SimpleContainer!");
+            return 0;
         }
 
         friend bool operator==(const proximity_iterator<P>& a, const proximity_iterator<P>& b) noexcept {

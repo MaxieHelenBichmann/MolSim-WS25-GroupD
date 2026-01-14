@@ -348,25 +348,49 @@ class LinkedCellContainer {
         double radius;
         R3 center;
         size_t center_idx;
+        long int cur_idx = 0;
 
         void inc() {
             SPDLOG_DEBUG("Incrementing proximity iterator");
             if (cur != cells[curr_cell_idx]->stableIteratorEnd()) {
                 ++cur;
+                ++cur_idx;
             }
             while (cur == cells[curr_cell_idx]->stableIteratorEnd() &&
                    curr_cell_idx < cells.size() - 1) {  // reached end of current cell
                 curr_cell_idx++;
                 cur = cells[curr_cell_idx]->stableIteratorBegin();
+                ++cur_idx;
             }
         }
-
         void satisfy() {
             while (cur != cells.back()->stableIteratorEnd() &&
                    (cur == cells[curr_cell_idx]->stableIteratorEnd() ||
                     !((center - container_data[*cur].getX()).sqrEuclidNorm() <= radius * radius) ||
                     (curr_cell_idx == cells.size() - 1 && *cur <= center_idx && center_idx != container_data.size()))) {
                 inc();
+            }
+        }
+        //needed here to satisfy std::random_access_iterator (required for OpenMP)
+        void dec() {
+            SPDLOG_DEBUG("Decrementing proximity iterator");
+            if (cur != cells[curr_cell_idx]->stableIteratorBegin()) {
+                --cur;
+                --cur_idx;
+            }
+            while (cur == cells[curr_cell_idx]->stableIteratorBegin() &&
+                   curr_cell_idx > 0) {  // reached start of current cell
+                curr_cell_idx--;
+                cur = cells[curr_cell_idx]->stableIteratorEnd();
+                --cur;
+                --cur_idx;
+            }
+        }
+        void satisfyDec() { //always needs to be called AFTER dec(). Don't call this on its own.
+            while (cur != cells.begin()->stableIteratorBegin() &&
+                   (!((center - container_data[*cur].getX()).sqrEuclidNorm() <= radius * radius) ||
+                    (curr_cell_idx == cells.size() - 1 && *cur <= center_idx && center_idx != container_data.size()))) {
+                dec();
             }
         }
 
@@ -403,6 +427,41 @@ class LinkedCellContainer {
             ++(*this);
             return tmp;
         }
+
+        //here to satisfy std::random_access_iterator (required for OpenMP)
+        proximity_iterator<P, C>& operator--() {
+            dec();
+            satisfyDec();
+            return *this;
+        }
+
+        //here to satisfy std::random_access_iterator (required for OpenMP)
+        proximity_iterator<P, C> operator--(int) {
+            proximity_iterator<P, C> tmp = *this;
+            --(*this);
+            return tmp;
+        }
+
+        //here to satisfy std::random_access_iterator (required for OpenMP)
+        proximity_iterator<P, C>& operator+=(long int n) {
+            for (long int i = 0; i < n; i++) {
+                ++(*this);
+            }
+            return *this;
+        }
+
+        //here to satisfy std::random_access_iterator (required for OpenMP)
+        proximity_iterator<P, C>& operator-=(long int n) {
+            for (long int i = 0; i < n; i++) {
+                --(*this);
+            }
+            return *this;
+        }
+
+        //here to satisfy std::random_access_iterator (required for OpenMP)
+        friend auto operator- (const proximity_iterator<P, C>& a, const proximity_iterator<P, C>& b) {
+            return b.cur_idx - a.cur_idx;
+        } 
 
         friend bool operator==(const proximity_iterator<P, C>& a, const proximity_iterator<P, C>& b) noexcept {
             return a.cur == b.cur;

@@ -1,0 +1,69 @@
+settings:
+  format: Settings
+  delta_t: 0.0005
+  end_time: 100
+  start_time: 0.0
+  force: "Lennard Jones"
+  frequency: 10
+  cutoff: 3.6
+  container: LINKED
+  initial_temp: 40
+  n_thermostat: 1000
+
+  domain:
+    x: 60
+    y: 60
+    z: 60
+    g_grav: -12.44
+    dimensions: 3
+    boundaries:
+      left:
+        type: Periodic
+      right:
+        type: Periodic
+      front:
+        type: Reflecting
+      back:
+        type: Reflecting
+      upper:
+        type: Periodic
+      lower:
+        type: Periodic
+
+liquid_1:
+  format: Cuboid
+  coordinates:
+      x: 0.6
+      y: 0.6
+      z: 0.6
+  velocity:
+      vx: 0.0
+      vy: 0.0
+      vz: 0.0
+  particleNum:
+      nx: 50
+      ny: 20
+      nz: 50
+  mass: 1.0
+  distance: 1.2
+  epsilon: 1.0
+  sigma: 1.2
+
+liquid_2:
+  format: Cuboid
+  coordinates:
+      x: 0.6
+      y: 24.6
+      z: 0.6
+  velocity:
+      vx: 0.0
+      vy: 0.0
+      vz: 0.0
+  particleNum:
+      nx: 50
+      ny: 20
+      nz: 50
+  mass: 2.0
+  distance: 1.2
+  epsilon: 1.0
+  sigma: 1.1

@@ -2,6 +2,9 @@
 #define SIMULATION_H
 
 #include <spdlog/spdlog.h>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 #include <algorithm>
 #include <cmath>
@@ -163,6 +166,7 @@ class Simulation {
           thermostat_freq(settings.thermostat_freq),
           g_grav(settings.g_grav),
           thermo(settings.thermo) {
+        #pragma omp parallel for
         for (const Particle& p : particles) {
             total_energy += p.getM() * R3::scalarProduct(p.getV(), p.getV());
         }
@@ -178,17 +182,20 @@ class Simulation {
         // Collect indices of particles to remove using halo iterator
         SPDLOG_DEBUG("Container has currently {} particles before erase", particles.size());
         std::vector<size_t> to_remove;
+//==============================ISSUE (operator-)=============================================
         for (auto it = particles.haloBegin(); it != particles.haloEnd(); ++it) {
             size_t idx = &(*it) - &particles[0];
             to_remove.push_back(idx);
         }
+//============================================================================================
 
         SPDLOG_DEBUG("Added {} (ghost) particles to remove", to_remove.size());
 
         // Sort in descending order to remove from end first (avoids index shifting issues that cause segfaults)
         std::sort(to_remove.begin(), to_remove.end(), std::greater<size_t>());  // NOLINT
 
-        // Remove particles using the standard vector iterator version
+        // Remove particles using the standard vector iterator version 
+        #pragma omp parallel for
         for (size_t idx : to_remove) {
             particles.eraseParticle(particles.begin() + static_cast<std::ptrdiff_t>(idx));
         }
@@ -199,11 +206,14 @@ class Simulation {
      * @brief Applies the necessary boundary conditions to the particles.
      */
     void applyBoundaries() {
+//============================ISSUE (it = updatePartPos)======================================
         for (auto it = particles.begin(); it != particles.end();) {
             (*it).getOldF() = (*it).getF();
             (*it).getF() = Vector<double, 3>();
             // TODO: Optimization to only call this for relevant particles
-            for (auto& p : domain.applyBoundary(*it, force_source)) {
+            std::vector<Particle> tmp = domain.applyBoundary(*it, force_source);
+            #pragma omp parallel for
+            for (auto& p : tmp) {
                 new_particles.push_back(p);
             }
             (*it).getMirrorLocations() = 0;
@@ -213,6 +223,7 @@ class Simulation {
             it = particles.updateParticlePosition(
                 it, new_position);  // for now SimpleContainer + Periodic (and also Reflecting) needs this here
         }
+//============================================================================================
     }
 
     /**
@@ -220,21 +231,27 @@ class Simulation {
      */
     void calculateF() {
         size_t idx = 0;
-        for (auto it = particles.begin(); it != particles.end(); ++it, idx++) {
+        for (auto it = particles.begin(); it != particles.end(); it++) {
             Particle& p1 = *it;
             p1.getF()[1] += p1.getM() * g_grav;  // add gravitational pull along y-axis
 
-            auto it_prox = particles.proximityBegin(p1.getX(), idx);
+            auto it_prox_begin = particles.proximityBegin(p1.getX(), idx);
             auto it_prox_end = particles.proximityEnd(p1.getX());
-            for (; it_prox != it_prox_end; ++it_prox) {
+//=================================ISSUE (operator-)==============================================
+            //#pragma omp parallel for //(disabled for now cause of parallelization overhead)
+            //could be changed to #pragma omp parallel for if (cutoff > some_value) or smn like that
+            for (auto it_prox = it_prox_begin; it_prox != it_prox_end; ++it_prox) {
                 Particle& p2 = *it_prox;
                 Vector<double, 3> force = force_source.applyForce(p1, p2);
                 // Apply force directly (Newton's 3rd law: equal and opposite)
                 p1.getF() += force;
                 p2.getF() -= force;
             }
+//================================================================================================
+            idx++;
         }
         // Calculate forces from mirrored/ghost particles
+        #pragma omp parallel for
         for (const Particle& p1 : new_particles) {
             R3 lookup_pos = p1.getX();
 
@@ -256,13 +273,15 @@ class Simulation {
                 }
             }
 
-            auto it_prox = particles.proximityBegin(lookup_pos, particles.size());
+            auto it_prox_begin = particles.proximityBegin(lookup_pos, particles.size());
             auto it_prox_end = particles.proximityEnd(lookup_pos);
-            for (; it_prox != it_prox_end; ++it_prox) {
+//=================================ISSUE (operator-)==============================================
+            for (auto it_prox = it_prox_begin; it_prox != it_prox_end; ++it_prox) {
                 Particle& p2 = *it_prox;
                 Vector<double, 3> force = force_source.applyForce(p2, p1);
                 p2.getF() = p2.getF() + force;
             }
+//================================================================================================
         }
         new_particles.clear();
     }
@@ -271,6 +290,7 @@ class Simulation {
      * @brief Calculates the positions of every particle for the next time step.
      */
     void calculateX() {
+        #pragma omp parallel for
         for (auto& p : particles) {
             p.getOldX() = p.getX();
             p.getX() += (delta_t * p.getV()) + ((0.5 * delta_t * delta_t / p.getM()) * p.getF());
@@ -282,6 +302,7 @@ class Simulation {
      */
     void calculateV(double scalar_factor) {
         double curr_energy = 0;
+        #pragma omp parallel for
         for (auto& p : particles) {
             R3 new_v = scalar_factor * (p.getV() + ((0.5 * delta_t / p.getM()) * (p.getOldF() + p.getF())));
             p.getV() = new_v;
