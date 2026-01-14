@@ -23,11 +23,7 @@ class StatsWriter {
    public:
     StatsWriter() = default;
 
-    StatsWriter(bool compute_rdf, bool compute_diffusion, double sample_radius, double window_size)
-        : compute_rdf(compute_rdf),
-          compute_diffusion(compute_diffusion),
-          sample_radius(sample_radius),
-          window_size(window_size) {};
+    StatsWriter(bool compute_rdf, bool compute_diffusion, double sample_radius, double window_size);
 
     ~StatsWriter() = default;
 

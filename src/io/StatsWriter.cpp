@@ -2,10 +2,36 @@
 
 #include <cmath>
 #include <cstddef>
+#include <filesystem>
 #include <fstream>
 #include <numbers>
 
 using namespace mol_sim;
+
+StatsWriter::StatsWriter(bool compute_rdf, bool compute_diffusion, double sample_radius, double window_size)
+    : compute_rdf(compute_rdf),
+      compute_diffusion(compute_diffusion),
+      sample_radius(sample_radius),
+      window_size(window_size) {
+    auto remove_if_exists = [](const std::string& filename) {
+        std::error_code ec;
+        if (std::filesystem::exists(filename, ec) && !ec) {
+            std::filesystem::remove(filename, ec);
+            if (ec) {
+                SPDLOG_ERROR("Failed to remove {}: {}", filename, ec.message());
+            }
+        } else if (ec) {
+            SPDLOG_ERROR("Failed to check existence of {}: {}", filename, ec.message());
+        }
+    };
+
+    if (this->compute_diffusion) {
+        remove_if_exists(filename_diffusion);
+    }
+    if (this->compute_rdf) {
+        remove_if_exists(filename_rdf);
+    }
+}
 
 double StatsWriter::computeDiffusion([[maybe_unused]] ContainerRef particles) const {
     double result = 0.0;
@@ -13,6 +39,8 @@ double StatsWriter::computeDiffusion([[maybe_unused]] ContainerRef particles) co
         result += (p.getX() - p.getRefX()).sqrEuclidNorm();
         p.getRefX() = p.getX();
     }
+    SPDLOG_ERROR("Computed diffusion {} with {} particles", result / static_cast<double>(particles.size()),
+                 particles.size());
 
     return result / static_cast<double>(particles.size());
 }
