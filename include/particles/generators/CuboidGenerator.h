@@ -33,7 +33,7 @@ class CuboidGenerator : public Generator {
      */
     N3 num_particles;
 
-    const std::vector<N3>& targets;
+    std::vector<N3> targets;
     /**
      * @brief Mass of the particles.
      *
