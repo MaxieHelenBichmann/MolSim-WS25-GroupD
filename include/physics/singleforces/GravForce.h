@@ -8,26 +8,30 @@
 namespace mol_sim {
 
 /**
- * @brief Class to calculate gravitational forces between two different objects. Implements the ForceSource concept.
+ * @brief Class to calculate constant gravitational force on particles.
  *
- * Class to calculate gravitational forces between two different objects.
- * Implements the ForceSource concept.
+ * Applies a uniform gravitational field to all particles based on mass.
  */
 class GravForce : public SingleForceSource {
    private:
+    /**
+     * @brief Gravitational acceleration vector (e.g., {0, -9.81, 0} for downward gravity).
+     */
     const R3 G_GRAV;
 
    public:
+    /**
+     * @brief Construct a new Gravitational Force calculator.
+     *
+     * @param g_grav Gravitational acceleration vector.
+     */
     GravForce(R3 g_grav) : G_GRAV(g_grav) {}
 
     /**
-     * @brief Calculates the gravitational force a particle p2 exerts on a different particle p1.
+     * @brief Calculates the gravitational force acting on a particle.
      *
      * @param p1 Particle whose force is to be calculated.
-     * @param p2 Particle which exerts force on p1.
-     * @return Vector<double, 3> Force exerted on p1 by p2.
-     *
-     * Calculates the gravitational force a particle p2 exerts on a different particle p1.
+     * @return Vector<double, 3> Gravitational force (mass * gravitational acceleration).
      */
     [[nodiscard]] Vector<double, 3> applyForce(const Particle& p1) const noexcept override {
         return p1.getM() * G_GRAV;

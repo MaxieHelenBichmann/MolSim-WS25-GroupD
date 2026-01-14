@@ -8,28 +8,37 @@
 namespace mol_sim {
 
 /**
- * @brief Class to calculate gravitational forces between two different objects. Implements the ForceSource concept.
+ * @brief Class to calculate harmonic spring forces for membrane particles.
  *
- * Class to calculate gravitational forces between two different objects.
- * Implements the ForceSource concept.
+ * Calculates forces based on harmonic potential between neighboring particles in a membrane structure.
+ * Only applies to membrane particles (types 2 and 4).
  */
 class HarmonicForce : public SingleForceSource {
    private:
-    // stiffness constant
+    /**
+     * @brief Stiffness constant of the harmonic spring.
+     */
     const double K;
-    // average bond length of molecule
+    /**
+     * @brief Equilibrium bond length between direct neighbors.
+     */
     const double R_0;
 
    public:
+    /**
+     * @brief Construct a new Harmonic Force calculator.
+     *
+     * @param k Stiffness constant.
+     * @param r_0 Equilibrium bond length.
+     */
     HarmonicForce(double k, double r_0) : K(k), R_0(r_0) {}
     /**
-     * @brief Calculates the gravitational force a particle p2 exerts on a different particle p1.
+     * @brief Calculates the harmonic spring force acting on a membrane particle.
      *
      * @param p1 Particle whose force is to be calculated.
-     * @param p2 Particle which exerts force on p1.
-     * @return Vector<double, 3> Force exerted on p1 by p2.
+     * @return Vector<double, 3> Total harmonic force from all neighbors.
      *
-     * Calculates the gravitational force a particle p2 exerts on a different particle p1.
+     * Calculates forces from direct neighbors using distance R_0 and diagonal neighbors using sqrt(2)*R_0.
      */
     [[nodiscard]] Vector<double, 3> applyForce(const Particle& p1) const noexcept override {
         Vector<double, 3> force = {0., 0., 0.};
