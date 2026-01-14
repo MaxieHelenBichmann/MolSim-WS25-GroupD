@@ -377,14 +377,12 @@ std::vector<Particle>::iterator LinkedCellContainer::eraseParticle(std::vector<P
     // First, clean up neighbor relationships for the particle being removed
     // We need to remove references to this particle from all other particles
     Particle* ptr_to_remove = &data[idx_to_remove];
-    for (auto& particle : data) {
-        for (auto& neighbor_ptr : particle.getNeighbors()) {
-            if (neighbor_ptr == ptr_to_remove) {
-                neighbor_ptr = nullptr;
-            }
+    constexpr std::array<size_t, 8> indices_lookup{1, 0, 3, 2, 7, 6, 5, 4};
+    for (size_t i = 0; i < 8; i++) {
+        if (ptr_to_remove->getNeighbors()[i] != nullptr) {
+            ptr_to_remove->getNeighbors()[i]->getNeighbors()[indices_lookup[i]] = nullptr;
         }
     }
-
     if (cell_to_remove_idx < cells.size()) {
         size_t idx_to_swap = data.size() - 1;
         if (idx_to_remove == idx_to_swap) {  // Particle to remove is already the last one
@@ -405,17 +403,14 @@ std::vector<Particle>::iterator LinkedCellContainer::eraseParticle(std::vector<P
 
         // Before swapping, update all neighbor pointers that point to the particle at idx_to_swap
         // After swap, it will be at idx_to_remove
-        Particle* ptr_to_swap = &data[idx_to_swap];
         Particle* new_location = &data[idx_to_remove];
 
         std::swap(data[idx_to_remove], data[idx_to_swap]);
 
         // Update all references from old swap location to new location
-        for (auto& particle : data) {
-            for (auto& neighbor_ptr : particle.getNeighbors()) {
-                if (neighbor_ptr == ptr_to_swap) {
-                    neighbor_ptr = new_location;
-                }
+        for (size_t i = 0; i < 8; i++) {
+            if (new_location->getNeighbors()[i] != nullptr) {
+                new_location->getNeighbors()[i]->getNeighbors()[indices_lookup[i]] = new_location;
             }
         }
 
