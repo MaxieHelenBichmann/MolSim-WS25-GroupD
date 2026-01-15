@@ -40,9 +40,9 @@ double StatsWriter::computeDiffusion(ContainerRef particles) const {
         p.getRefX() = p.getX();
     }
     SPDLOG_ERROR("Computed diffusion {} with {} particles",
-                 particles.size() > 0 ? result / static_cast<double>(particles.size()) : 0.0, particles.size());
+                 !particles.empty() ? result / static_cast<double>(particles.size()) : 0.0, particles.size());
 
-    return particles.size() > 0 ? result / static_cast<double>(particles.size()) : 0.0;
+    return !particles.empty() ? result / static_cast<double>(particles.size()) : 0.0;
 }
 
 void StatsWriter::computeRDF(ContainerRef particles, std::vector<double>& results) const {  // NOLINT
