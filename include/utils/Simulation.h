@@ -250,13 +250,13 @@ class Simulation {
                 p1.getF() += force_source->applyForce(p1);
             }
 
-            auto it_prox = particles.proximityBegin(p1.getX(), idx);
-            auto it_prox_end = particles.proximityEnd(p1.getX());
+            const R3& p1_pos = p1.getX();
+            auto it_prox = particles.proximityBegin(p1_pos, idx);
+            auto it_prox_end = particles.proximityEnd(p1_pos);
             for (; it_prox != it_prox_end; ++it_prox) {
                 Particle& p2 = *it_prox;
                 for (const auto& force_source : pairwise_force_sources) {
-                    Vector<double, 3> force = force_source->applyForce(p1, p2);
-                    // Apply force directly (Newton's 3rd law: equal and opposite)
+                    const Vector<double, 3> force = force_source->applyForce(p1, p2);
                     p1.getF() += force;
                     p2.getF() -= force;
                 }
@@ -266,22 +266,19 @@ class Simulation {
             }
         }
         // Calculate forces from mirrored/ghost particles
+        const R3& domain_size = domain.getDimension();
+        constexpr double epsilon = 1e-6;
         for (const Particle& p1 : new_particles) {
             R3 lookup_pos = p1.getX();
 
             // For mirrored particles from periodic boundaries (type==1), their position is slightly
             // outside the domain. We need to clamp it to just inside the boundary region to find
             // the correct neighbors while preserving the actual position for force calculation.
-            if (p1.getType() == 1) {  // Mirrored particle from periodic boundary
-                R3 domain_size = domain.getDimension();
-                constexpr double epsilon = 1e-6;  // Small offset to stay inside domain
+            if (p1.getType() == 1) {
                 for (size_t dim = 0; dim < 3; ++dim) {
-                    // Mirror slightly left of domain (x < 0) → clamp to just inside left boundary
                     if (lookup_pos[dim] < 0) {
                         lookup_pos[dim] = epsilon;
-                    }
-                    // Mirror slightly right of domain (x > domain) → clamp to just inside right boundary
-                    else if (lookup_pos[dim] > domain_size[dim]) {
+                    } else if (lookup_pos[dim] > domain_size[dim]) {
                         lookup_pos[dim] = domain_size[dim] - epsilon;
                     }
                 }
@@ -292,9 +289,7 @@ class Simulation {
             for (; it_prox != it_prox_end; ++it_prox) {
                 Particle& p2 = *it_prox;
                 for (const auto& force_source : pairwise_force_sources) {
-                    Vector<double, 3> force = force_source->applyForce(p2, p1);
-                    // Apply force directly (Newton's 3rd law: equal and opposite)
-                    p2.getF() += force;
+                    p2.getF() += force_source->applyForce(p2, p1);
                 }
             }
         }
