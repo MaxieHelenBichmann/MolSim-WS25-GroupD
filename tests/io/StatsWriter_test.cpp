@@ -246,14 +246,15 @@ TEST_F(RDFWriterTtest, testComputePeriodic) {
     container.reserve(2);
     container.push_back(Particle(R3{0.0, 0.0, 0.0}, R3{0.0, 0.0, 0.0}, 1.0, SettingsParam::EPSILON_DEFAULT,
                                  SettingsParam::SIGMA_DEFAULT));
-    container.push_back(Particle(R3{100.0, 0.0, 0.0}, R3{0.0, 0.0, 0.0}, 1.0, SettingsParam::EPSILON_DEFAULT,
+    container.push_back(Particle(R3{99.5, 0.0, 0.0}, R3{0.0, 0.0, 0.0}, 1.0, SettingsParam::EPSILON_DEFAULT,
                                  SettingsParam::SIGMA_DEFAULT));
 
     ContainerRef particles(container);
 
     std::vector<double> results(10, 0.0);
 
-    container[1].getMirrorPositions().push_back(R3{0.5, 0.0, 0.0});  // NOLINT
+    container[0].getMirrorPositions().push_back(R3{100, 0.0, 0.0});   // NOLINT
+    container[1].getMirrorPositions().push_back(R3{-0.5, 0.0, 0.0});  // NOLINT
 
     writer.computeRDF(container, results);
 

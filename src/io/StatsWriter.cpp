@@ -46,17 +46,15 @@ double StatsWriter::computeDiffusion(ContainerRef particles) const {
 }
 
 void StatsWriter::computeRDF(ContainerRef particles, std::vector<double>& results) const {  // NOLINT
-    for (auto& p1 : particles) {
-        for (auto& p2 : particles) {
-            if (&p1 != &p2) {
-                auto index = static_cast<size_t>((p1.getX() - p2.getX()).euclidNorm() / sample_radius);
-                for (auto mirrored_pos : p2.getMirrorPositions()) {
-                    size_t idx = static_cast<size_t>((p1.getX() - mirrored_pos).euclidNorm() / sample_radius);
-                    index = idx < index ? idx : index;
-                }
-                if (index < results.size()) {
-                    results[index]++;
-                }
+    for (size_t i = 0; i < particles.size(); ++i) {
+        for (size_t j = i + 1; j < particles.size(); ++j) {
+            auto index = static_cast<size_t>((particles[i].getX() - particles[j].getX()).euclidNorm() / sample_radius);
+            for (auto mirrored_pos : particles[j].getMirrorPositions()) {
+                size_t idx = static_cast<size_t>((particles[i].getX() - mirrored_pos).euclidNorm() / sample_radius);
+                index = idx < index ? idx : index;
+            }
+            if (index < results.size()) {
+                results[index]++;
             }
         }
     }
@@ -64,7 +62,7 @@ void StatsWriter::computeRDF(ContainerRef particles, std::vector<double>& result
         const double end_interval = (static_cast<double>(i + 1)) * sample_radius;
         const double start_interval = static_cast<double>(i) * sample_radius;
         double vol = (end_interval * end_interval * end_interval) - (start_interval * start_interval * start_interval);
-        results[i] = 0.375 * results[i] / (vol * std::numbers::pi);
+        results[i] = 0.75 * results[i] / (vol * std::numbers::pi);
     }
 }
 
