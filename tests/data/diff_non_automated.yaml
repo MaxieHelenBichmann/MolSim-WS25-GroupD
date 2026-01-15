@@ -11,33 +11,33 @@ settings:
 
   thermostat: 
     initial_temp: 1
-    target_temp: 1000
+    target_temp: 60
     n_thermostat: 10
-    delta_temp: 10
+    delta_temp: 1
 
   statistics:
     diffusion: 10
 
   domain:
-    x: 100
-    y: 100
+    x: 60
+    y: 50
     z: 1
     dimensions: 2
     boundaries:
       left:
-        type: Reflecting
+        type: VELOCITYREFLECT
       right:
-        type: Reflecting
+        type: VELOCITYREFLECT
       front:
-        type: Reflecting
+        type: VELOCITYREFLECT
       back:
-        type: Reflecting
+        type: OUTFLOW
 
 matter:
   format: Cuboid
   coordinates:
-      x: 10.0
-      y: 10.0
+      x: 2.0
+      y: 2.0
       z: 0.0
   velocity:
       vx: 0.0
@@ -48,6 +48,6 @@ matter:
       ny: 30
       nz: 1
   mass: 1.0
-  distance: 1.0
+  distance: 1.2
   epsilon: 1.0
-  sigma: 1.0
+  sigma: 1.2

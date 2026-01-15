@@ -39,10 +39,10 @@ double StatsWriter::computeDiffusion([[maybe_unused]] ContainerRef particles) co
         result += (p.getX() - p.getRefX()).sqrEuclidNorm();
         p.getRefX() = p.getX();
     }
-    SPDLOG_ERROR("Computed diffusion {} with {} particles", result / static_cast<double>(particles.size()),
-                 particles.size());
+    SPDLOG_ERROR("Computed diffusion {} with {} particles",
+                 particles.size() > 0 ? result / static_cast<double>(particles.size()) : 0.0, particles.size());
 
-    return result / static_cast<double>(particles.size());
+    return particles.size() > 0 ? result / static_cast<double>(particles.size()) : 0.0;
 }
 
 void StatsWriter::computeRDF([[maybe_unused]] ContainerRef particles, std::vector<double>& results,
