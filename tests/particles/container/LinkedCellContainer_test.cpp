@@ -244,4 +244,116 @@ TEST_F(LinkedCellContainerSpecificTest, ProximityIteratorN3L) {
     EXPECT_EQ(count, 1U);
 }
 
+/**
+ * @brief Tests that particle neighbors are correctly invalidated after eraseParticle.
+ * This is critical for membrane simulations to avoid dangling pointers.
+ */
+TEST_F(LinkedCellContainerSpecificTest, EraseParticleInvalidatesNeighbors) {
+    LinkedCellContainer particles({10.0, 10.0, 10.0}, 5.0);
+
+    R3 v{0.0, 0.0, 0.0};
+    // Create a simple 2x2 membrane-like structure with neighbors
+    particles.addParticle(R3{1.0, 1.0, 0.0}, v, 1.0, 1.0, 1.0, 2);  // idx 0
+    particles.addParticle(R3{2.0, 1.0, 0.0}, v, 1.0, 1.0, 1.0, 2);  // idx 1
+    particles.addParticle(R3{1.0, 2.0, 0.0}, v, 1.0, 1.0, 1.0, 2);  // idx 2
+    particles.addParticle(R3{2.0, 2.0, 0.0}, v, 1.0, 1.0, 1.0, 2);  // idx 3
+
+    ASSERT_EQ(particles.size(), 4);
+
+    // Set up neighbor relationships manually (as MembraneGenerator would)
+    // Particle 0 (bottom-left): right=1, top=2, top-right=3
+    particles[0].getNeighbors()[1] = &particles[1];  // right
+    particles[0].getNeighbors()[3] = &particles[2];  // top
+    particles[0].getNeighbors()[7] = &particles[3];  // top-right
+
+    // Particle 1 (bottom-right): left=0, top=3, top-left=2
+    particles[1].getNeighbors()[0] = &particles[0];  // left
+    particles[1].getNeighbors()[3] = &particles[3];  // top
+    particles[1].getNeighbors()[6] = &particles[2];  // top-left
+
+    // Particle 2 (top-left): right=3, bottom=0, bottom-right=1
+    particles[2].getNeighbors()[1] = &particles[3];  // right
+    particles[2].getNeighbors()[2] = &particles[0];  // bottom
+    particles[2].getNeighbors()[5] = &particles[1];  // bottom-right
+
+    // Particle 3 (top-right): left=2, bottom=1, bottom-left=0
+    particles[3].getNeighbors()[0] = &particles[2];  // left
+    particles[3].getNeighbors()[2] = &particles[1];  // bottom
+    particles[3].getNeighbors()[4] = &particles[0];  // bottom-left
+
+    // Verify initial setup
+    EXPECT_EQ(particles[0].getNeighbors()[1], &particles[1]);
+    EXPECT_EQ(particles[1].getNeighbors()[0], &particles[0]);
+
+    // Save address of particle to be erased
+    Particle* addr_1 = &particles[1];
+
+    // Erase particle 1 (bottom-right)
+    auto it = particles.begin();
+    ++it;  // Move to particle 1
+    particles.eraseParticle(it);
+
+    EXPECT_EQ(particles.size(), 3);
+
+    // After erase, the last particle (old index 3) is swapped to position 1
+    // So particles[1] now contains what was particles[3]
+    // Verify that old neighbors pointing to erased particle 1 should be updated/invalidated
+    // Note: The container doesn't automatically fix neighbor pointers - this is a manual concern
+
+    // Check that particles still in container don't have dangling pointers to erased particle
+    // In a real membrane simulation, the user would need to fix these neighbor pointers
+    for (size_t i = 0; i < particles.size(); i++) {
+        for (auto* neighbor : particles[i].getNeighbors()) {
+            // If neighbor points to old address of particle 1, that's a dangling pointer
+            if (neighbor == addr_1) {
+                FAIL() << "Particle " << i << " has dangling pointer to erased particle at " << addr_1;
+            }
+        }
+    }
+}
+
+/**
+ * @brief Tests that after erasing multiple membrane particles, remaining neighbors are valid.
+ */
+TEST_F(LinkedCellContainerSpecificTest, EraseMultipleMembraneParticles) {
+    LinkedCellContainer particles({10.0, 10.0, 10.0}, 5.0);
+
+    R3 v{0.0, 0.0, 0.0};
+    // Create a 3x3 membrane
+    for (size_t j = 0; j < 3; j++) {
+        for (size_t k = 0; k < 3; k++) {
+            particles.addParticle(R3{static_cast<double>(k), static_cast<double>(j), 0.0}, v, 1.0, 1.0, 1.0, 2);
+        }
+    }
+
+    ASSERT_EQ(particles.size(), 9);
+
+    // Set up some neighbor relationships for particles 3, 4, 5 (middle row)
+    // Particle 4 (center): left=3, right=5
+    particles[4].getNeighbors()[0] = &particles[3];
+    particles[4].getNeighbors()[1] = &particles[5];
+    particles[3].getNeighbors()[1] = &particles[4];
+    particles[5].getNeighbors()[0] = &particles[4];
+
+    // Erase center particle (index 4)
+    auto it = particles.begin();
+    std::advance(it, 4);
+    Particle* erased_addr = &(*it);
+    particles.eraseParticle(it);
+
+    EXPECT_EQ(particles.size(), 8);
+
+    // Verify no remaining particles have dangling pointers to the erased particle
+    for (size_t i = 0; i < particles.size(); i++) {
+        for (auto* neighbor : particles[i].getNeighbors()) {
+            if (neighbor == erased_addr) {
+                FAIL() << "Particle " << i << " has dangling pointer to erased center particle";
+            }
+        }
+    }
+
+    // Note: In a real application, neighbor pointers would need to be manually updated
+    // This test just verifies the container operation doesn't introduce new dangling pointers
+}
+
 }  // namespace mol_sim
