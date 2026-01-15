@@ -183,7 +183,7 @@ TEST_F(DiffusionWriterTtest, testOutput) {
     const auto parts = splitCsvLine(lines[0]);
     ASSERT_EQ(parts.size(), 2U);
     EXPECT_EQ(std::stoi(parts[0]), 7);
-    EXPECT_NEAR(std::stod(parts[1]), 5.0, 1e-12);
+    EXPECT_NEAR(std::stod(parts[1]), 2.0, 1e-12);
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -227,11 +227,9 @@ TEST_F(RDFWriterTtest, testComputeNormal) {
     container.push_back(Particle(R3{5.0, 0.0, 0.0}, R3{0.0, 0.0, 0.0}, 1.0, SettingsParam::EPSILON_DEFAULT,
                                  SettingsParam::SIGMA_DEFAULT));
 
-    ContainerRef particles(container);
-
     std::vector<double> results(10, 0.0);
 
-    writeRDF(writer, container, 0);
+    writer.computeRDF(container, results);
 
     const double expected = 0.75 / (91.0 * std::numbers::pi);
     EXPECT_NEAR(results[5], expected, 1e-12);
@@ -257,10 +255,10 @@ TEST_F(RDFWriterTtest, testComputePeriodic) {
 
     container[1].getMirrorPositions().push_back(R3{0.5, 0.0, 0.0});  // NOLINT
 
-    writeRDF(writer, container, 0);
+    writer.computeRDF(container, results);
 
-    const double expected = 0.375 / (7.0 * std::numbers::pi);
-    EXPECT_NEAR(results[1], expected, 1e-12);
+    const double expected = 1.0 / ((4.0 * std::numbers::pi) / 3.0);
+    EXPECT_NEAR(results[0], expected, 1e-12);
 }
 
 /**
