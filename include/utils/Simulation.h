@@ -410,7 +410,7 @@ class Simulation {
             }
             if (iteration % frequency_stats_rdf == 0) {
                 try {
-                    stats_writer.plotRDF(particles, iteration, new_particles);
+                    stats_writer.plotRDF(particles, iteration);
                 } catch (const std::runtime_error& e) {
                     SPDLOG_ERROR("Failed to plot RDF at iteration {}: {}", iteration, e.what());
                 }

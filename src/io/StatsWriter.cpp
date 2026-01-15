@@ -45,22 +45,22 @@ double StatsWriter::computeDiffusion([[maybe_unused]] ContainerRef particles) co
     return particles.size() > 0 ? result / static_cast<double>(particles.size()) : 0.0;
 }
 
-void StatsWriter::computeRDF([[maybe_unused]] ContainerRef particles, std::vector<double>& results,
-                             const std::vector<Particle>& mirrored) const {
+void StatsWriter::computeRDF([[maybe_unused]] ContainerRef particles, std::vector<double>& results) const {
     for (auto& p1 : particles) {
         for (auto& p2 : particles) {
             if (&p1 != &p2) {
                 auto index = static_cast<size_t>((p1.getX() - p2.getX()).euclidNorm() / sample_radius);
                 if (index < results.size()) {
                     results[index]++;
+                } else {
+                    for (auto mirrored_pos : p2.getMirrorPositions()) {
+                        size_t idx = static_cast<size_t>((p1.getX() - mirrored_pos).euclidNorm() / sample_radius);
+                        if (idx < results.size() && idx < index) {
+                            index = idx;
+                        }
+                    }
+                    results[index]++;
                 }
-            }
-        }
-        // TODO: Periodic Boundary Conditions more stable
-        for (const auto& p2 : mirrored) {
-            auto index = static_cast<size_t>((p1.getX() - p2.getX()).euclidNorm() / sample_radius);
-            if (index < results.size()) {
-                results[index]++;
             }
         }
     }
@@ -86,13 +86,12 @@ void StatsWriter::plotDiffusion(ContainerRef particles, int iteration) const {
     }
 }
 
-void StatsWriter::plotRDF([[maybe_unused]] ContainerRef particles, [[maybe_unused]] int iteration,
-                          const std::vector<Particle>& mirrored) const {
+void StatsWriter::plotRDF([[maybe_unused]] ContainerRef particles, [[maybe_unused]] int iteration) const {
     if (compute_rdf) {
         const auto bin_count = static_cast<size_t>(std::ceil(window_size / sample_radius));
         std::vector<double> results(bin_count, 0.0);
 
-        computeRDF(particles, results, mirrored);
+        computeRDF(particles, results);
 
         std::ofstream rdf_file(filename_rdf, std::ios::app);
         if (rdf_file.is_open()) {
