@@ -44,9 +44,8 @@ class StatsWriter {
      * @param particles ContainerRef to the particles.
      * @param results Reference to a vector where the results will be stored. The index corresponds to distance /
      * sample_radius.
-     * @param mirrored Vector of mirrored particles to consider for RDF calculation.
      */
-    void computeRDF(ContainerRef particles, std::vector<double>& results, const std::vector<Particle>& mirrored) const;
+    void computeRDF(ContainerRef particles, std::vector<double>& results) const;
 
     /**
      * @brief Writes the diffusion data into the diffusion.csv file. Each row has the format: <iteration>,<diffusion>
@@ -60,9 +59,8 @@ class StatsWriter {
      *
      * @param particles ContainerRef to the particles.
      * @param iteration Current iteration of the simulation.
-     * @param mirrored Vector of mirrored particles to consider for RDF calculation.
      */
-    void plotRDF(ContainerRef particles, int iteration, const std::vector<Particle>& mirrored) const;
+    void plotRDF(ContainerRef particles, int iteration) const;
 };
 
 }  // namespace mol_sim
