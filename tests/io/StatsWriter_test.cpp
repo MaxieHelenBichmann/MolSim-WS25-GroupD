@@ -199,8 +199,7 @@ class RDFWriterTtest : public StatsWriterTest {
      * @brief Writes a the data for RDF file using the StatsWriter and returns the path to the created file, as well as
      * tracks the created files for cleanup.
      */
-    std::filesystem::path writeRDF(const StatsWriter& w, SimpleContainer& container, int iteration,
-                                   const std::vector<Particle>& mirrored) {
+    std::filesystem::path writeRDF(const StatsWriter& w, SimpleContainer& container, int iteration) {
         std::filesystem::path path = std::filesystem::current_path() / "rdf.csv";
         {
             std::error_code ec;
@@ -208,7 +207,7 @@ class RDFWriterTtest : public StatsWriterTest {
         }
 
         ContainerRef particles(container);
-        w.plotRDF(particles, iteration, mirrored);
+        w.plotRDF(particles, iteration);
         created_files.push_back(path);
 
         return path;
@@ -231,9 +230,8 @@ TEST_F(RDFWriterTtest, testComputeNormal) {
     ContainerRef particles(container);
 
     std::vector<double> results(10, 0.0);
-    const std::vector<Particle> mirrored;
 
-    writer.computeRDF(particles, results, mirrored);
+    writeRDF(writer, container, 0);
 
     const double expected = 0.75 / (91.0 * std::numbers::pi);
     EXPECT_NEAR(results[5], expected, 1e-12);
@@ -256,11 +254,10 @@ TEST_F(RDFWriterTtest, testComputePeriodic) {
     ContainerRef particles(container);
 
     std::vector<double> results(10, 0.0);
-    std::vector<Particle> mirrored;
-    mirrored.emplace_back(R3{0.5, 0.0, 0.0}, R3{0.0, 0.0, 0.0}, 1.0, SettingsParam::EPSILON_DEFAULT,
-                          SettingsParam::SIGMA_DEFAULT);
 
-    writer.computeRDF(particles, results, mirrored);
+    container[1].getMirrorPositions().push_back(R3{0.5, 0.0, 0.0});  // NOLINT
+
+    writeRDF(writer, container, 0);
 
     const double expected = 0.375 / (7.0 * std::numbers::pi);
     EXPECT_NEAR(results[1], expected, 1e-12);
@@ -273,7 +270,7 @@ TEST_F(RDFWriterTtest, testOutput) {
     writer = StatsWriter(true, false, 1.0, 3.0);
 
     const std::vector<Particle> mirrored;
-    const std::filesystem::path path = writeRDF(writer, container, 42, mirrored);
+    const std::filesystem::path path = writeRDF(writer, container, 42);
 
     const auto lines = readAllLines(path);
 
