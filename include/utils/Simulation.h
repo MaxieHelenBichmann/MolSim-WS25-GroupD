@@ -169,10 +169,17 @@ class Simulation {
         //#pragma omp parallel for
         for (auto it = particles.begin(); it != particles.end(); it++) {
             Particle& p = (*it);
+            //#pragma omp atomic
             total_energy += p.getM() * R3::scalarProduct(p.getV(), p.getV());
         }
         total_energy *= 0.5;
     }
+/**
+ * TODO:
+ * maybe take into account the relation between creation and #iterations per thread
+ * e.g. at 1400 particles and 50 bigger overhead for thread creation than thread
+ * computing. In that case sweet spot at lower number of threads
+ */
 
     double& getTotalEnergy() { return total_energy; }
 
@@ -183,12 +190,11 @@ class Simulation {
         // Collect indices of particles to remove using halo iterator
         SPDLOG_DEBUG("Container has currently {} particles before erase", particles.size());
         std::vector<size_t> to_remove;
-//==============================ISSUE (operator-)=============================================
+        //#pragma omp parallel for 
         for (auto it = particles.haloBegin(); it != particles.haloEnd(); ++it) {
             size_t idx = &(*it) - &particles[0];
             to_remove.push_back(idx);
         }
-//============================================================================================
 
         SPDLOG_DEBUG("Added {} (ghost) particles to remove", to_remove.size());
 
@@ -231,29 +237,32 @@ class Simulation {
      * @brief Calculates the forces of every particle for the next time step.
      */
     void calculateF() {
-        #pragma omp parallel for
+        //#pragma omp parallel for
+        size_t idx = 0;
         for (auto it = particles.begin(); it != particles.end(); it++) {
             Particle& p1 = *it;
             p1.getF()[1] += p1.getM() * g_grav;  // add gravitational pull along y-axis
 
-            #pragma omp critical
-            {
-            auto it_prox_begin = particles.proximityBegin(p1.getX(), it - particles.begin());
+            //#pragma omp critical
+           // {
+            auto it_prox_begin = particles.proximityBegin(p1.getX(), idx);
             auto it_prox_end = particles.proximityEnd(p1.getX());
+            
             //#pragma omp parallel for 
             //(disabled for now cause of parallelization overhead)
             //could be changed to #pragma omp parallel for if (cutoff > some_value) or smn like that
             for (auto it_prox = it_prox_begin; it_prox != it_prox_end; ++it_prox) {
                 // Apply force directly (Newton's 3rd law: equal and opposite)
-                    Particle& p2 = *it_prox;
-                    Vector<double, 3> force = force_source.applyForce(p1, p2);
-                    p1.getF() += force;
-                    p2.getF() -= force;
-            }
+                Particle p2 = *it_prox;
+                Vector<double, 3> force = force_source.applyForce(p1, p2);
+                p1.getF() += force;
+                p2.getF() -= force;
             }   
+            //}
+            idx++;
         }
         // Calculate forces from mirrored/ghost particles
-        #pragma omp parallel for
+        //#pragma omp parallel for
         for (auto it = new_particles.begin(); it != new_particles.end(); it++) {
             Particle& p1 = *it;
             R3 lookup_pos = p1.getX();
@@ -278,13 +287,14 @@ class Simulation {
 
             auto it_prox_begin = particles.proximityBegin(lookup_pos, particles.size());
             auto it_prox_end = particles.proximityEnd(lookup_pos);
-//=================================ISSUE (operator-)==============================================
+            //#pragma omp parallel for 
+            //(disabled for now cause of parallelization overhead)
+            //could be changed to #pragma omp parallel for if (cutoff > some_value) or smn like that
             for (auto it_prox = it_prox_begin; it_prox != it_prox_end; ++it_prox) {
                 Particle& p2 = *it_prox;
                 Vector<double, 3> force = force_source.applyForce(p2, p1);
                 p2.getF() = p2.getF() + force;
             }
-//================================================================================================
         }
         new_particles.clear();
     }
@@ -315,6 +325,7 @@ class Simulation {
         }
         total_energy = 0.5 * curr_energy;
     }
+
     /**
      * @brief      Calculates the thermostat factor used to modulate velocity.
      *
