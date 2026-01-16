@@ -61,13 +61,13 @@ class TargetForceSource {
      * @return Direction vector.
      */
     [[nodiscard]] R3 getDirection() const noexcept { return direction; }
-    
+
     /**
      * @brief Get the magnitude of the force.
      * @return Force magnitude.
      */
     [[nodiscard]] double getMagnitude() const noexcept { return magnitude; }
-    
+
     /**
      * @brief Get the maximum number of iterations.
      * @return Maximum iteration count.

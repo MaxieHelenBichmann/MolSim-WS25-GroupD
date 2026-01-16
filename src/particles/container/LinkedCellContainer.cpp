@@ -379,8 +379,9 @@ std::vector<Particle>::iterator LinkedCellContainer::eraseParticle(std::vector<P
     // We need to remove references to this particle from all other particles
     constexpr std::array<size_t, 8> indices_lookup{1, 0, 3, 2, 7, 6, 5, 4};
     for (size_t i = 0; i < 8; i++) {
-        if (data[idx_to_remove].getNeighbors()[i].has_value()) {
-            data[data[idx_to_remove].getNeighbors()[i].value()].getNeighbors()[indices_lookup[i]] = std::nullopt;
+        const std::optional<size_t> neighbor = data[idx_to_remove].getNeighbors()[i];
+        if (neighbor.has_value()) {
+            data[neighbor.value()].getNeighbors()[indices_lookup[i]] = std::nullopt;
         }
     }
     if (cell_to_remove_idx < cells.size()) {
@@ -406,9 +407,9 @@ std::vector<Particle>::iterator LinkedCellContainer::eraseParticle(std::vector<P
         std::swap(data[idx_to_remove], data[idx_to_swap]);
 
         for (size_t i = 0; i < 8; i++) {
-            if (data[idx_to_remove].getNeighbors()[i].has_value()) {
-                const size_t neighbor_idx = data[idx_to_remove].getNeighbors()[i].value();
-                data[neighbor_idx].getNeighbors()[indices_lookup[i]] = idx_to_remove;
+            const std::optional<size_t> neighbor = data[idx_to_remove].getNeighbors()[i];
+            if (neighbor.has_value()) {
+                data[neighbor.value()].getNeighbors()[indices_lookup[i]] = idx_to_remove;
             }
         }
 

@@ -143,7 +143,6 @@ class Particle {
      * 7        [ 1,  1,  0]         Top-right diagonal (xy-plane)
      *
      * Null pointers indicate no neighbor at that position (e.g., boundary particles).
-     * TODO: Discuss how neighbor are stored here, currently its Raw pointers
      */
     std::array<std::optional<size_t>, 8> neighbors;
 

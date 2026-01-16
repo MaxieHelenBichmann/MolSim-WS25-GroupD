@@ -226,12 +226,10 @@ class Simulation {
         for (auto it = particles.begin(); it != particles.end();) {
             (*it).getOldF() = (*it).getF();
             (*it).getF() = Vector<double, 3>();
-            // TODO: Optimization to only call this for relevant particles
             for (auto& p : domain.applyBoundary(*it, *pairwise_force_sources[0])) {
                 new_particles.push_back(p);
             }
             (*it).getMirrorLocations() = 0;
-            // TODO: bit of an ugly workaround for now.
             R3 new_position = (*it).getX();
             (*it).getX() = (*it).getOldX();
             it = particles.updateParticlePosition(
@@ -400,8 +398,7 @@ class Simulation {
 
             // 5. Calculate thermostat factor
             double thermo_factor = 1.0;
-            // TODO: Iteration > 0 is a fix for the tests, discussion needed.
-            if (thermo && iteration > 0 && iteration % thermostat_freq == 0) {
+            if (iteration % thermostat_freq == 0) {
                 thermo_factor = calculateThermostatFactor();
             }
             // 6. Calculate new velocities

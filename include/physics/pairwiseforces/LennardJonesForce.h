@@ -30,7 +30,7 @@ class LennardJonesForce : public PairwiseForceSource {
         const auto difference = p1.getX() - p2.getX();
         const double sqr_distance = difference.sqrEuclidNorm();
 
-        // Guard against very small distances that would cause overflow (TODO still correct with squared distance?)
+        // Guard against very small distances that would cause overflow
         constexpr double sqr_min_distance = 1e-20;
         if (sqr_distance < sqr_min_distance) {
             return {0.0, 0.0, 0.0};

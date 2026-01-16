@@ -1,6 +1,8 @@
 #ifndef HARMONIC_FORCE_H
 #define HARMONIC_FORCE_H
 
+#include <cstddef>
+
 #include "particles/Particle.h"
 #include "particles/container/ContainerRef.h"
 #include "physics/singleforces/SingleForceSource.h"
@@ -50,22 +52,22 @@ class HarmonicForce : public SingleForceSource {
         }
         // compute direct neighbor influence
         for (size_t i = 0; i < 4; i++) {
-            if (!p1.getNeighbors()[i].has_value()) {
+            const std::optional<size_t> neighbor = p1.getNeighbors()[i];
+            if (!neighbor.has_value()) {
                 continue;
             }
-            const size_t neighbor_idx = p1.getNeighbors()[i].value();
-            const Particle& p2 = particles[neighbor_idx];
+            const Particle& p2 = particles[neighbor.value()];
             double dist = (p1.getX() - p2.getX()).euclidNorm();
             double scalar = (K * 0.5 * (dist - R_0)) / dist;
             force += scalar * (p2.getX() - p1.getX());
         }
         // compute diagonal neighbor influence
         for (size_t i = 4; i < 8; i++) {
-            if (!p1.getNeighbors()[i].has_value()) {
+            const std::optional<size_t> neighbor = p1.getNeighbors()[i];
+            if (!neighbor.has_value()) {
                 continue;
             }
-            const size_t neighbor_idx = p1.getNeighbors()[i].value();
-            const Particle& p2 = particles[neighbor_idx];
+            const Particle& p2 = particles[neighbor.value()];
             double dist = (p1.getX() - p2.getX()).euclidNorm();
             double scalar = (K * 0.5 * (dist - std::numbers::sqrt2 * R_0)) / dist;
             force += scalar * (p2.getX() - p1.getX());

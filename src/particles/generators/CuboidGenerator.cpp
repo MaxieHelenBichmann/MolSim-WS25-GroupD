@@ -14,7 +14,6 @@ void CuboidGenerator::generateParticles(ContainerRef particles, bool use_init_te
                 R3 curr_pos = {position[0] + (static_cast<double>(k) * distance),
                                position[1] + (static_cast<double>(j) * distance),
                                position[2] + (static_cast<double>(i) * distance)};
-                // TODO: Look at this more carefully, what do they mean with optional brownian.
                 if (use_init_temp) {
                     avg_velo = sqrt(init_temp / mass);
                 }
