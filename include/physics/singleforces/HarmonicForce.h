@@ -2,6 +2,7 @@
 #define HARMONIC_FORCE_H
 
 #include "particles/Particle.h"
+#include "particles/container/ContainerRef.h"
 #include "physics/singleforces/SingleForceSource.h"
 #include "utils/Vector.h"
 
@@ -23,6 +24,8 @@ class HarmonicForce : public SingleForceSource {
      * @brief Equilibrium bond length between direct neighbors.
      */
     const double R_0;
+
+    ContainerRef particles;
 
    public:
     /**
@@ -47,24 +50,31 @@ class HarmonicForce : public SingleForceSource {
         }
         // compute direct neighbor influence
         for (size_t i = 0; i < 4; i++) {
-            if ((p1.getNeighbors()[i]) == nullptr) {
+            if (!p1.getNeighbors()[i].has_value()) {
                 continue;
             }
-            double dist = (p1.getX() - p1.getNeighbors()[i]->getX()).euclidNorm();
+            const size_t neighbor_idx = p1.getNeighbors()[i].value();
+            const Particle& p2 = particles[neighbor_idx];
+            double dist = (p1.getX() - p2.getX()).euclidNorm();
             double scalar = (K * 0.5 * (dist - R_0)) / dist;
-            force += scalar * (p1.getNeighbors()[i]->getX() - p1.getX());
+            force += scalar * (p2.getX() - p1.getX());
         }
         // compute diagonal neighbor influence
         for (size_t i = 4; i < 8; i++) {
-            if ((p1.getNeighbors()[i]) == nullptr) {
+            if (!p1.getNeighbors()[i].has_value()) {
                 continue;
             }
-            double dist = (p1.getX() - p1.getNeighbors()[i]->getX()).euclidNorm();
+            const size_t neighbor_idx = p1.getNeighbors()[i].value();
+            const Particle& p2 = particles[neighbor_idx];
+            double dist = (p1.getX() - p2.getX()).euclidNorm();
             double scalar = (K * 0.5 * (dist - std::numbers::sqrt2 * R_0)) / dist;
-            force += scalar * (p1.getNeighbors()[i]->getX() - p1.getX());
+            force += scalar * (p2.getX() - p1.getX());
         }
         return force;
     }
+
+    void setContainer(ContainerRef container) { particles = container; }
+    [[nodiscard]] SingleForce getType() const override { return HARMONIC; }
 };
 }  // namespace mol_sim
 

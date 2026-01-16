@@ -290,8 +290,8 @@ TEST_F(MembraneGeneratorTest, testNeighborCounts) {
 
     auto count_neighbors = [](const Particle& p) {
         int count = 0;
-        for (const auto* neighbor : p.getNeighbors()) {
-            if (neighbor != nullptr) {
+        for (const auto& neighbor : p.getNeighbors()) {
+            if (neighbor.has_value()) {
                 count++;
             }
         }
@@ -337,21 +337,21 @@ TEST_F(MembraneGeneratorTest, testCenterParticleNeighbors) {
     auto& neighbors = center.getNeighbors();
 
     // Left neighbor (index 0): particle at (0,1) - index 3
-    EXPECT_EQ(neighbors[0], &particles[3]);
+    EXPECT_EQ(neighbors[0], 3);
     // Right neighbor (index 1): particle at (2,1) - index 5
-    EXPECT_EQ(neighbors[1], &particles[5]);
+    EXPECT_EQ(neighbors[1], 5);
     // Bottom neighbor (index 2): particle at (1,0) - index 1 (lower y)
-    EXPECT_EQ(neighbors[2], &particles[1]);
+    EXPECT_EQ(neighbors[2], 1);
     // Top neighbor (index 3): particle at (1,2) - index 7 (higher y)
-    EXPECT_EQ(neighbors[3], &particles[7]);
+    EXPECT_EQ(neighbors[3], 7);
     // Bottom-left diagonal (index 4): particle at (0,0) - index 0 (lower y, lower x)
-    EXPECT_EQ(neighbors[4], &particles[0]);
+    EXPECT_EQ(neighbors[4], 0);
     // Bottom-right diagonal (index 5): particle at (2,0) - index 2 (lower y, higher x)
-    EXPECT_EQ(neighbors[5], &particles[2]);
+    EXPECT_EQ(neighbors[5], 2);
     // Top-left diagonal (index 6): particle at (0,2) - index 6 (higher y, lower x)
-    EXPECT_EQ(neighbors[6], &particles[6]);
+    EXPECT_EQ(neighbors[6], 6);
     // Top-right diagonal (index 7): particle at (2,2) - index 8 (higher y, higher x)
-    EXPECT_EQ(neighbors[7], &particles[8]);
+    EXPECT_EQ(neighbors[7], 8);
 }
 
 /**
@@ -364,17 +364,17 @@ TEST_F(MembraneGeneratorTest, testBidirectionalNeighbors) {
     Particle& p1 = particles[1];  // (1,0)
 
     // p1 should be the right neighbor (index 1) of p0
-    EXPECT_EQ(p0.getNeighbors()[1], &p1);
+    EXPECT_EQ(p0.getNeighbors()[1], 1);
     // p0 should be the left neighbor (index 0) of p1
-    EXPECT_EQ(p1.getNeighbors()[0], &p0);
+    EXPECT_EQ(p1.getNeighbors()[0], 0);
 
     // Test bottom-top relationship between particles 0 (y=0) and 3 (y=1)
     Particle& p3 = particles[3];  // (0,1)
 
     // p3 should be the top neighbor (index 3) of p0
-    EXPECT_EQ(p0.getNeighbors()[3], &p3);
+    EXPECT_EQ(p0.getNeighbors()[3], 3);
     // p0 should be the bottom neighbor (index 2) of p3
-    EXPECT_EQ(p3.getNeighbors()[2], &p0);
+    EXPECT_EQ(p3.getNeighbors()[2], 0);
 }
 
 /**
@@ -384,18 +384,18 @@ TEST_F(MembraneGeneratorTest, testCornerParticleNullNeighbors) {
     Particle& bottom_left = particles[0];  // (0,0)
 
     // Bottom-left corner should have no left, bottom, or bottom-diagonal neighbors
-    EXPECT_EQ(bottom_left.getNeighbors()[0], nullptr);  // Left
-    EXPECT_EQ(bottom_left.getNeighbors()[2], nullptr);  // Bottom (no row below)
-    EXPECT_EQ(bottom_left.getNeighbors()[4], nullptr);  // Bottom-left diagonal
-    EXPECT_EQ(bottom_left.getNeighbors()[5], nullptr);  // Bottom-right diagonal
+    EXPECT_EQ(bottom_left.getNeighbors()[0], std::nullopt);  // Left
+    EXPECT_EQ(bottom_left.getNeighbors()[2], std::nullopt);  // Bottom (no row below)
+    EXPECT_EQ(bottom_left.getNeighbors()[4], std::nullopt);  // Bottom-left diagonal
+    EXPECT_EQ(bottom_left.getNeighbors()[5], std::nullopt);  // Bottom-right diagonal
 
     Particle& top_right = particles[8];  // (2,2)
 
     // Top-right corner should have no right, top, or top-diagonal neighbors
-    EXPECT_EQ(top_right.getNeighbors()[1], nullptr);  // Right
-    EXPECT_EQ(top_right.getNeighbors()[3], nullptr);  // Top (no row above)
-    EXPECT_EQ(top_right.getNeighbors()[6], nullptr);  // Top-left diagonal
-    EXPECT_EQ(top_right.getNeighbors()[7], nullptr);  // Top-right diagonal
+    EXPECT_EQ(top_right.getNeighbors()[1], std::nullopt);  // Right
+    EXPECT_EQ(top_right.getNeighbors()[3], std::nullopt);  // Top (no row above)
+    EXPECT_EQ(top_right.getNeighbors()[6], std::nullopt);  // Top-left diagonal
+    EXPECT_EQ(top_right.getNeighbors()[7], std::nullopt);  // Top-right diagonal
 }
 
 /**
@@ -414,8 +414,8 @@ TEST_F(MembraneGeneratorTest, testMinimalMembrane) {
     // All particles in 2x2 grid should have exactly 3 neighbors (corner particles)
     for (auto& p : particles) {
         int neighbor_count = 0;
-        for (const auto* neighbor : p.getNeighbors()) {
-            if (neighbor != nullptr) {
+        for (const auto& neighbor : p.getNeighbors()) {
+            if (neighbor.has_value()) {
                 neighbor_count++;
             }
         }
@@ -447,17 +447,11 @@ TEST_F(MembraneGeneratorTest, testNeighborsWithExistingParticles) {
     // Verify that membrane particles (indices 2-5) have correct neighbor relationships
     // and don't accidentally reference the pre-existing particles (indices 0-1)
     for (size_t i = base; i < particles.size(); i++) {
-        for (const auto* neighbor : particles[i].getNeighbors()) {
-            if (neighbor != nullptr) {
-                // All neighbors should be within the membrane particle range
-                bool neighbor_in_range = false;
-                for (size_t j = base; j < particles.size(); j++) {
-                    if (neighbor == &particles[j]) {
-                        neighbor_in_range = true;
-                        break;
-                    }
-                }
-                EXPECT_TRUE(neighbor_in_range) << "Membrane particle has neighbor outside membrane range";
+        for (const auto& neighbor : particles[i].getNeighbors()) {
+            if (neighbor.has_value()) {
+                // All neighbors should be within the membrane particle range [base, size)
+                EXPECT_GE(neighbor.value(), base) << "Membrane particle has neighbor outside membrane range";
+                EXPECT_LT(neighbor.value(), particles.size()) << "Membrane particle has invalid neighbor index";
             }
         }
     }

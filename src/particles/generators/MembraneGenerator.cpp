@@ -25,23 +25,25 @@ void MembraneGenerator::generateParticles(ContainerRef particles, bool use_init_
     for (size_t index = 0; index < particles.size() - base; index++) {
         const size_t curr_elem = base + index;
         if (index % row_size != 0) {
-            particles[curr_elem].getNeighbors()[0] = &particles[curr_elem - 1];
-            particles[curr_elem - 1].getNeighbors()[1] = &particles[curr_elem];
+            particles[curr_elem].getNeighbors()[0] = curr_elem - 1;
+            particles[curr_elem - 1].getNeighbors()[1] = curr_elem;
         }
         // Check if bottom neighbor exists (previous row), if so set it and set current particle as its top neighbor
         if (index >= row_size) {
-            particles[curr_elem].getNeighbors()[2] = &particles[curr_elem - row_size];
-            particles[curr_elem - row_size].getNeighbors()[3] = &particles[curr_elem];
+            particles[curr_elem].getNeighbors()[2] = curr_elem - row_size;
+            particles[curr_elem - row_size].getNeighbors()[3] = curr_elem;
         }
-        // Check if bottom-left diagonal neighbor exists, if so set it and set current particle as its top-right diagonal
+        // Check if bottom-left diagonal neighbor exists, if so set it and set current particle as its top-right
+        // diagonal
         if (index >= row_size && index % row_size != 0) {
-            particles[curr_elem].getNeighbors()[4] = &particles[curr_elem - row_size - 1];
-            particles[curr_elem - row_size - 1].getNeighbors()[7] = &particles[curr_elem];
+            particles[curr_elem].getNeighbors()[4] = curr_elem - row_size - 1;
+            particles[curr_elem - row_size - 1].getNeighbors()[7] = curr_elem;
         }
-        // Check if bottom-right diagonal neighbor exists, if so set it and set current particle as its top-left diagonal
+        // Check if bottom-right diagonal neighbor exists, if so set it and set current particle as its top-left
+        // diagonal
         if (index >= num_particles[0] && (index + 1) % row_size != 0) {
-            particles[curr_elem].getNeighbors()[5] = &particles[curr_elem - row_size + 1];
-            particles[curr_elem - row_size + 1].getNeighbors()[6] = &particles[curr_elem];
+            particles[curr_elem].getNeighbors()[5] = curr_elem - row_size + 1;
+            particles[curr_elem - row_size + 1].getNeighbors()[6] = curr_elem;
         }
     }
 }

@@ -15,6 +15,7 @@
 #include "particles/ParticleContainer.h"
 #include "particles/container/domain/Domain.h"
 #include "physics/pairwiseforces/PairwiseForceSource.h"
+#include "physics/singleforces/HarmonicForce.h"
 #include "physics/singleforces/SingleForceSource.h"
 #include "physics/targettedforces/TargetForceSource.h"
 #include "utils/Settings.h"
@@ -339,6 +340,11 @@ class Simulation {
     void run() {
         double current_time = start_time;
         [[maybe_unused]] int iteration = 0;
+        for (const auto& source : single_force_sources) {
+            if (source->getType() == SingleForce::HARMONIC) {
+                static_cast<HarmonicForce*>(source.get())->setContainer(particles);
+            }
+        }
 
 #ifdef ENABLE_CHECKPOINTING
         SettingsParam cp_settings;

@@ -9,7 +9,9 @@
 #define PARTICLE_H
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <string>
 
 #include "utils/Vector.h"
@@ -143,7 +145,7 @@ class Particle {
      * Null pointers indicate no neighbor at that position (e.g., boundary particles).
      * TODO: Discuss how neighbor are stored here, currently its Raw pointers
      */
-    std::array<Particle*, 8> neighbors;
+    std::array<std::optional<size_t>, 8> neighbors;
 
    public:
     explicit Particle(int type = 0);
@@ -151,6 +153,10 @@ class Particle {
     Particle(const Particle& other);
 
     Particle& operator=(const Particle& other);
+
+    Particle(Particle&& other) noexcept;
+
+    Particle& operator=(Particle&& other) noexcept;
 
     Particle(
         // for visualization, we need always 3 coordinates
@@ -301,14 +307,14 @@ class Particle {
      *
      * @return Reference to the neighbor pointer array
      */
-    std::array<Particle*, 8>& getNeighbors() noexcept { return neighbors; }
+    std::array<std::optional<size_t>, 8>& getNeighbors() noexcept { return neighbors; }
 
     /**
      * @brief Access the neighbor array for membrane simulations (const)
      *
      * @return Const reference to the neighbor pointer array
      */
-    [[nodiscard]] const std::array<Particle*, 8>& getNeighbors() const noexcept { return neighbors; }
+    [[nodiscard]] const std::array<std::optional<size_t>, 8>& getNeighbors() const noexcept { return neighbors; }
 
     bool operator==(const Particle& other) const noexcept;
 

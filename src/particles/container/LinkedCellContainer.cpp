@@ -5,6 +5,7 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <optional>
 #include <unordered_set>
 
 #include "particles/Particle.h"
@@ -376,11 +377,10 @@ std::vector<Particle>::iterator LinkedCellContainer::eraseParticle(std::vector<P
 
     // First, clean up neighbor relationships for the particle being removed
     // We need to remove references to this particle from all other particles
-    Particle* ptr_to_remove = &data[idx_to_remove];
     constexpr std::array<size_t, 8> indices_lookup{1, 0, 3, 2, 7, 6, 5, 4};
     for (size_t i = 0; i < 8; i++) {
-        if (ptr_to_remove->getNeighbors()[i] != nullptr) {
-            ptr_to_remove->getNeighbors()[i]->getNeighbors()[indices_lookup[i]] = nullptr;
+        if (data[idx_to_remove].getNeighbors()[i].has_value()) {
+            data[data[idx_to_remove].getNeighbors()[i].value()].getNeighbors()[indices_lookup[i]] = std::nullopt;
         }
     }
     if (cell_to_remove_idx < cells.size()) {
@@ -401,16 +401,14 @@ std::vector<Particle>::iterator LinkedCellContainer::eraseParticle(std::vector<P
             cells[cell_to_remove_idx].removeParticle(idx_to_swap);
         }
 
-        // Before swapping, update all neighbor pointers that point to the particle at idx_to_swap
-        // After swap, it will be at idx_to_remove
-        Particle* new_location = &data[idx_to_remove];
-
+        // Now swap - the particle moving from idx_to_swap to idx_to_remove already has
+        // its neighbors pointing back to idx_to_remove
         std::swap(data[idx_to_remove], data[idx_to_swap]);
 
-        // Update all references from old swap location to new location
         for (size_t i = 0; i < 8; i++) {
-            if (new_location->getNeighbors()[i] != nullptr) {
-                new_location->getNeighbors()[i]->getNeighbors()[indices_lookup[i]] = new_location;
+            if (data[idx_to_remove].getNeighbors()[i].has_value()) {
+                const size_t neighbor_idx = data[idx_to_remove].getNeighbors()[i].value();
+                data[neighbor_idx].getNeighbors()[indices_lookup[i]] = idx_to_remove;
             }
         }
 

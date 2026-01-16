@@ -36,6 +36,7 @@ class GravForce : public SingleForceSource {
     [[nodiscard]] Vector<double, 3> applyForce(const Particle& p1) const noexcept override {
         return p1.getM() * G_GRAV;
     }
+    [[nodiscard]] SingleForce getType() const override { return GRAV; }
 };
 }  // namespace mol_sim
 
