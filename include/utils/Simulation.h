@@ -166,10 +166,10 @@ class Simulation {
           thermostat_freq(settings.thermostat_freq),
           g_grav(settings.g_grav),
           thermo(settings.thermo) {
-        //#pragma omp parallel for
-        for (auto it = particles.begin(); it != particles.end(); it++) {
+        #pragma omp parallel for
+        for (auto it = particles.begin(); it != particles.end(); ++it) {
             Particle& p = (*it);
-            //#pragma omp atomic
+            #pragma omp atomic
             total_energy += p.getM() * R3::scalarProduct(p.getV(), p.getV());
         }
         total_energy *= 0.5;
@@ -190,7 +190,7 @@ class Simulation {
         // Collect indices of particles to remove using halo iterator
         SPDLOG_DEBUG("Container has currently {} particles before erase", particles.size());
         std::vector<size_t> to_remove;
-        //#pragma omp parallel for 
+        #pragma omp parallel for 
         for (auto it = particles.haloBegin(); it != particles.haloEnd(); ++it) {
             size_t idx = &(*it) - &particles[0];
             to_remove.push_back(idx);
@@ -202,7 +202,7 @@ class Simulation {
         std::sort(to_remove.begin(), to_remove.end(), std::greater<size_t>());  // NOLINT
 
         // Remove particles using the standard vector iterator version 
-        //#pragma omp parallel for
+        #pragma omp parallel for
         for (size_t idx : to_remove) {
             particles.eraseParticle(particles.begin() + static_cast<std::ptrdiff_t>(idx));
         }
@@ -218,9 +218,9 @@ class Simulation {
             (*it).getOldF() = (*it).getF();
             (*it).getF() = Vector<double, 3>();
             // TODO: Optimization to only call this for relevant particles
-            std::vector<Particle> tmp = domain.applyBoundary(*it, force_source);
+            //std::vector<Particle> tmp = domain.applyBoundary(*it, force_source);
             //#pragma omp parallel for
-            for (auto& p : tmp) {
+            for (auto& p : domain.applyBoundary(*it, force_source)) {
                 new_particles.push_back(p);
             }
             (*it).getMirrorLocations() = 0;
@@ -236,35 +236,37 @@ class Simulation {
     /**
      * @brief Calculates the forces of every particle for the next time step.
      */
-    void calculateF() {
-        //#pragma omp parallel for
-        size_t idx = 0;
-        for (auto it = particles.begin(); it != particles.end(); it++) {
+    void calculateF_LCC() {
+        #pragma omp parallel for
+        for (auto it = particles.begin(); it != particles.end(); ++it) {
             Particle& p1 = *it;
             p1.getF()[1] += p1.getM() * g_grav;  // add gravitational pull along y-axis
 
-            //#pragma omp critical
-           // {
-            auto it_prox_begin = particles.proximityBegin(p1.getX(), idx);
-            auto it_prox_end = particles.proximityEnd(p1.getX());
-            
+            LinkedCellContainer::proximity_iterator<Particle, Cell> it_prox;
+            LinkedCellContainer::proximity_iterator<Particle, Cell> it_prox_end;
+            #pragma omp critical
+            {
+            it_prox = particles.proximityBegin(p1.getX(), it - particles.begin());
+            it_prox_end = particles.proximityEnd(p1.getX());
+            }
+
             //#pragma omp parallel for 
             //(disabled for now cause of parallelization overhead)
             //could be changed to #pragma omp parallel for if (cutoff > some_value) or smn like that
-            for (auto it_prox = it_prox_begin; it_prox != it_prox_end; ++it_prox) {
+            for (; it_prox != it_prox_end; ++it_prox) {
                 // Apply force directly (Newton's 3rd law: equal and opposite)
-                Particle p2 = *it_prox;
+                #pragma omp critical
+                {
+                Particle& p2 = *it_prox;
                 Vector<double, 3> force = force_source.applyForce(p1, p2);
                 p1.getF() += force;
                 p2.getF() -= force;
-            }   
-            //}
-            idx++;
+                }   
+            }
         }
         // Calculate forces from mirrored/ghost particles
-        //#pragma omp parallel for
-        for (auto it = new_particles.begin(); it != new_particles.end(); it++) {
-            Particle& p1 = *it;
+        #pragma omp parallel for
+        for (const Particle& p1 : new_particles) {
             R3 lookup_pos = p1.getX();
 
             // For mirrored particles from periodic boundaries (type==1), their position is slightly
@@ -285,12 +287,70 @@ class Simulation {
                 }
             }
 
-            auto it_prox_begin = particles.proximityBegin(lookup_pos, particles.size());
+            auto it_prox = particles.proximityBegin(lookup_pos, particles.size());
             auto it_prox_end = particles.proximityEnd(lookup_pos);
             //#pragma omp parallel for 
             //(disabled for now cause of parallelization overhead)
             //could be changed to #pragma omp parallel for if (cutoff > some_value) or smn like that
-            for (auto it_prox = it_prox_begin; it_prox != it_prox_end; ++it_prox) {
+            for (; it_prox != it_prox_end; ++it_prox) {
+                Particle& p2 = *it_prox;
+                Vector<double, 3> force = force_source.applyForce(p2, p1);
+                p2.getF() = p2.getF() + force;
+            }
+        }
+        new_particles.clear();
+    }
+
+    /**
+     * @brief Calculates the forces of every particle for the next time step.
+     */
+    void calculateF() {
+        for (auto it = particles.begin(); it != particles.end(); ++it) {
+            Particle& p1 = *it;
+            p1.getF()[1] += p1.getM() * g_grav;  // add gravitational pull along y-axis
+
+            auto it_prox = particles.proximityBegin(p1.getX(), it - particles.begin());
+            auto it_prox_end = particles.proximityEnd(p1.getX());   
+
+            //#pragma omp parallel for 
+            //(disabled for now cause of parallelization overhead)
+            //could be changed to #pragma omp parallel for if (cutoff > some_value) or smn like that
+            for (; it_prox != it_prox_end; ++it_prox) {
+                // Apply force directly (Newton's 3rd law: equal and opposite)
+                Particle& p2 = *it_prox;
+                Vector<double, 3> force = force_source.applyForce(p1, p2);
+                p1.getF() += force;
+                p2.getF() -= force;
+            }   
+        }
+        // Calculate forces from mirrored/ghost particles
+        for (const Particle& p1 : new_particles) {
+            R3 lookup_pos = p1.getX();
+
+            // For mirrored particles from periodic boundaries (type==1), their position is slightly
+            // outside the domain. We need to clamp it to just inside the boundary region to find
+            // the correct neighbors while preserving the actual position for force calculation.
+            if (p1.getType() == 1) {  // Mirrored particle from periodic boundary
+                R3 domain_size = domain.getDimension();
+                constexpr double epsilon = 1e-6;  // Small offset to stay inside domain
+                for (size_t dim = 0; dim < 3; ++dim) {
+                    // Mirror slightly left of domain (x < 0) → clamp to just inside left boundary
+                    if (lookup_pos[dim] < 0) {
+                        lookup_pos[dim] = epsilon;
+                    }
+                    // Mirror slightly right of domain (x > domain) → clamp to just inside right boundary
+                    else if (lookup_pos[dim] > domain_size[dim]) {
+                        lookup_pos[dim] = domain_size[dim] - epsilon;
+                    }
+                }
+            }
+
+            auto it_prox = particles.proximityBegin(lookup_pos, particles.size());
+            auto it_prox_end = particles.proximityEnd(lookup_pos);
+            //#pragma omp parallel for 
+            //(disabled for now cause of parallelization overhead)
+            //could be changed to #pragma omp parallel for if (cutoff > some_value) or smn like that
+            for (; it_prox != it_prox_end; ++it_prox) {
                 Particle& p2 = *it_prox;
                 Vector<double, 3> force = force_source.applyForce(p2, p1);
                 p2.getF() = p2.getF() + force;
@@ -303,9 +363,8 @@ class Simulation {
      * @brief Calculates the positions of every particle for the next time step.
      */
     void calculateX() {
-        //#pragma omp parallel for
-        for (auto it = particles.begin(); it != particles.end(); it++) {
-            Particle& p = (*it);
+        #pragma omp parallel for
+        for (auto& p : particles) {
             p.getOldX() = p.getX();
             p.getX() += (delta_t * p.getV()) + ((0.5 * delta_t * delta_t / p.getM()) * p.getF());
         }
@@ -316,9 +375,8 @@ class Simulation {
      */
     void calculateV(double scalar_factor) {
         double curr_energy = 0;
-        //#pragma omp parallel for
-        for (auto it = particles.begin(); it != particles.end(); it++) {
-            Particle& p = (*it);
+        #pragma omp parallel for
+        for (auto& p : particles) {
             R3 new_v = scalar_factor * (p.getV() + ((0.5 * delta_t / p.getM()) * (p.getOldF() + p.getF())));
             p.getV() = new_v;
             curr_energy += p.getM() * R3::scalarProduct(new_v, new_v);
@@ -389,7 +447,11 @@ class Simulation {
 
             // 4. Calculate forces (including ghost interactions)
             SPDLOG_DEBUG("Iteration {}: Calculating forces for {} particles", iteration + 1, particles.size());
-            calculateF();
+            if constexpr (std::is_same_v<std::remove_cvref_t<containerType>, LinkedCellContainer>) {
+                calculateF_LCC();
+            } else {
+                calculateF();
+            }
 
             // 5. Calculate thermostat factor
             double thermo_factor = 1.0;
