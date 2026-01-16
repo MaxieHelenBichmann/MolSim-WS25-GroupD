@@ -61,7 +61,7 @@ TEST_F(LennardJonesForceTest, FarAway_X_Aligned) {
     R3 expected_force = {0.007320642471, 0., 0.};
     p2.getX() = {4.0, 0.0, 0.0};
     R3 result = LennardJonesForce().applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
     p2.getX() = {-4.0, 0.0, 0.0};
     result = LennardJonesForce().applyForce(p1, p2);
     EXPECT_R3_NEAR(result, -1 * expected_force, precision);
@@ -76,12 +76,12 @@ TEST_F(LennardJonesForceTest, FarAway_Y_Aligned) {
     p2.getX() = {0.0, 4.0, 0.0};
     R3 result = LennardJonesForce().applyForce(p1, p2);
 
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 
     p2.getX() = {0.0, -4.0, 0.0};
     result = LennardJonesForce().applyForce(p1, p2);
 
-    EXPECT_R3_NEAR(result, -1 * expected_force, precision);
+    EXPECT_R3_NEAR(-1 * expected_force, result, precision);
 }
 /**
  * @brief Tests the Lennard Jones Force between two far away particles that are not aligned.
@@ -92,11 +92,11 @@ TEST_F(LennardJonesForceTest, FarAway_Diagonal) {
     R3 expected_force = {0.0004577357322, 0.0004577357322, 0.};
     p2.getX() = {4.0, 4.0, 0.0};
     R3 result = LennardJonesForce().applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 
     p2.getX() = {-4.0, -4.0, 0.0};
     result = LennardJonesForce().applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, -1 * expected_force, precision);
+    EXPECT_R3_NEAR(-1 * expected_force, result, precision);
 }
 
 /**
@@ -147,10 +147,10 @@ TEST_F(LennardJonesForceAtBottomTest, PotentialWellAtRadius2_Diagonal) {
 
     p2.getX() = {bottom_diagonal, bottom_diagonal, 0.0};
     R3 result = LennardJonesForce().applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
     p2.getX() = {-bottom_diagonal, -bottom_diagonal, 0.0};
     result = LennardJonesForce().applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 }
 /**
  * @brief Testing the afromentioned case at radius 1 when the two particles are cardinal to one another.
@@ -167,11 +167,11 @@ TEST_F(LennardJonesForceAtBottomTest, PotentialWellAtRadius1_Cardinal) {
 
     p2.getX() = {1.0, 0.0, 0.0};
     R3 result = LennardJonesForce().applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 
     p2.getX() = {0.0, 1.0, 0.0};
     result = LennardJonesForce().applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 }
 
 /**
@@ -190,10 +190,10 @@ TEST_F(LennardJonesForceAtBottomTest, PotentialWellAtRadius1_Diagonal) {
 
     p2.getX() = {bottom_diagonal, bottom_diagonal, 0.0};
     R3 result = LennardJonesForce().applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
     p2.getX() = {bottom_diagonal, -bottom_diagonal, 0.0};
     result = LennardJonesForce().applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 }
 
 /**
@@ -216,16 +216,16 @@ TEST_F(LennardJonesForceAtSigmaTest, Cardinal) {
     R3 expected_force = {-120.0, 0., 0.};
     p2.getX() = {small_sigma, 0.0, 0.0};
     R3 result = LennardJonesForce().applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 
     p2.getX() = {-small_sigma, 0.0, 0.0};
     result = LennardJonesForce().applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, -1 * expected_force, precision);
+    EXPECT_R3_NEAR(-1 * expected_force, result, precision);
 
     p2.getX() = {0.0, small_sigma, 0.0};
     expected_force = {0., -120.0, 0.};
     result = LennardJonesForce().applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 }
 /**
  * @brief Testing the afromentioned case when the two particles are diagonal to one another.
@@ -237,12 +237,12 @@ TEST_F(LennardJonesForceAtSigmaTest, Diagonal) {
 
     p2.getX() = {sigma_diagonal, sigma_diagonal, 0.0};
     R3 result = LennardJonesForce().applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 
     expected_force = {-60.0 * std::numbers::sqrt2, 60.0 * std::numbers::sqrt2, 0.};
     p2.getX() = {sigma_diagonal, -sigma_diagonal, 0.0};
     result = LennardJonesForce().applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 }
 
 /**
@@ -258,7 +258,7 @@ TEST_F(LennardJonesForceTest, Newton3) {
     p2.getX() = {4.0, 4.0, 0.0};
     R3 result1 = LennardJonesForce().applyForce(p1, p2);
     R3 result2 = LennardJonesForce().applyForce(p2, p1);
-    EXPECT_R3_NEAR(result1, -1 * result2, precision);
+    EXPECT_R3_NEAR(-1 * result2, result1, precision);
 }
 
 /**
@@ -269,7 +269,7 @@ TEST_F(LennardJonesForceTest, TestForceCalcZeroDistance) {
     p2 = {p1_x, p2_v, 1.0, 5., 1.};
     R3 result = LennardJonesForce().applyForce(p1, p2);
     R3 expected_force = {0., 0., 0.};
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 }
 /**
  * @brief Tests that the force between particles with different epsilons and sigmas gets computed correctly.
@@ -286,7 +286,7 @@ TEST_F(LennardJonesForceTest, MixingRules) {
     const R3 expected_force = {1.48242203050000000141839251455E-2, 1.97656040600000006135505969951E-2, 0.};
     R3 result = LennardJonesForce().applyForce(p1, p2);
 
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 }
 
 }  // namespace mol_sim
