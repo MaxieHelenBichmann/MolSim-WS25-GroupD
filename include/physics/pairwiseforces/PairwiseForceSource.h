@@ -20,7 +20,7 @@ class PairwiseForceSource {
  * @brief Enum of all available Force Sources.
  *
  */
-enum PairwiseForce : std::uint8_t { GRAVITATIONAL, LENNARDJONES };
+enum PairwiseForce : std::uint8_t { GRAVITATIONAL, LENNARDJONES, TRUNCLENNARDJONES };
 
 }  // namespace mol_sim
 

@@ -22,6 +22,7 @@
 #include "particles/generators/CuboidGenerator.h"
 #include "particles/generators/DiscGenerator.h"
 #include "particles/generators/MembraneGenerator.h"
+#include "physics/pairwiseforces/PairwiseForceSource.h"
 #include "utils/Settings.h"
 #include "utils/Vector.h"
 
@@ -101,6 +102,7 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
         YAML::Node root = YAML::LoadFile(filename);
 
         if (root.size() == 0) {
+            SPDLOG_ERROR("Empty YAML file");
             throw YAMLReaderException("Empty YAML file");
         }
 
@@ -109,6 +111,7 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
         YAML::Node node = first_it->second;
 
         if (!node["format"] || node["format"].as<std::string>() != "Settings") {
+            SPDLOG_ERROR("First block must be 'Settings' format");
             throw YAMLReaderException("First block must be 'Settings' format");
         }
 
@@ -150,6 +153,8 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
                         settings.pairwise_forces.push_back(PairwiseForce::GRAVITATIONAL);
                     } else if (force_str == "LENNARDJONES") {
                         settings.pairwise_forces.push_back(PairwiseForce::LENNARDJONES);
+                    } else if (force_str == "TRUNCLENNARDJONES") {
+                        settings.pairwise_forces.push_back(PairwiseForce::TRUNCLENNARDJONES);
                     } else {
                         SPDLOG_ERROR("Unknown pairwise force type: " + force_str);
                         throw ValidationException("Unknown pairwise force type: " + force_str);
@@ -177,6 +182,7 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
                                     settings.g_grav_vec[1] = g_grav_node[1].as<double>();
                                     settings.g_grav_vec[2] = g_grav_node[2].as<double>();
                                 } else {
+                                    SPDLOG_ERROR("GRAV force: g_grav must be [gx, gy, gz]");
                                     throw ValidationException("GRAV force: g_grav must be [gx, gy, gz]");
                                 }
                             }
@@ -193,6 +199,7 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
                             throw ValidationException("Unknown single force type: " + force_type);
                         }
                     } else {
+                        SPDLOG_ERROR("single_forces items must be objects with 'type' field or strings");
                         throw ValidationException("single_forces items must be objects with 'type' field or strings");
                     }
                 }
@@ -212,6 +219,7 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
                     settings.target_force_direction[1] = dir_node[1].as<double>();
                     settings.target_force_direction[2] = dir_node[2].as<double>();
                 } else {
+                    SPDLOG_ERROR("target_force: direction must be [dx, dy, dz]");
                     throw ValidationException("target_force: direction must be [dx, dy, dz]");
                 }
             }
@@ -264,6 +272,7 @@ void YAMLReader::readParticles(ContainerRef particles, const SettingsParam& sett
         YAML::Node root = YAML::LoadFile(filename);
 
         if (root.size() == 0) {
+            SPDLOG_ERROR("Empty YAML file");
             throw YAMLReaderException("Empty YAML file");
         }
 
@@ -633,6 +642,7 @@ std::vector<YAMLReader::MembraneData> YAMLReader::parseMembranes(const YAML::Nod
 
         const YAML::Node& coordinates = node["coordinates"];
         if (!coordinates.IsSequence() || coordinates.size() != 3) {
+            SPDLOG_ERROR("Membrane: coordinates must be [x, y, z]");
             throw ValidationException("Membrane: coordinates must be [x, y, z]");
         }
         data.position[0] = coordinates[0].as<double>();
@@ -641,6 +651,7 @@ std::vector<YAMLReader::MembraneData> YAMLReader::parseMembranes(const YAML::Nod
 
         const YAML::Node& velocity_node = node["velocity"];
         if (!velocity_node.IsSequence() || velocity_node.size() != 3) {
+            SPDLOG_ERROR("Membrane: velocity must be [vx, vy, vz]");
             throw ValidationException("Membrane: velocity must be [vx, vy, vz]");
         }
         data.velocity[0] = velocity_node[0].as<double>();
@@ -649,6 +660,7 @@ std::vector<YAMLReader::MembraneData> YAMLReader::parseMembranes(const YAML::Nod
 
         const YAML::Node& count_node = node["particleNum"];
         if (!count_node.IsSequence() || count_node.size() != 2) {
+            SPDLOG_ERROR("Membrane: particleNum must be [nx, ny]");
             throw ValidationException("Membrane: particleNum must be [nx, ny]");
         }
         data.num_particles[0] = count_node[0].as<size_t>();

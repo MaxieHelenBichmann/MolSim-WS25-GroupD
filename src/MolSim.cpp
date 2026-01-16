@@ -21,6 +21,7 @@
 #include "physics/pairwiseforces/GravitationalForce.h"
 #include "physics/pairwiseforces/LennardJonesForce.h"
 #include "physics/pairwiseforces/PairwiseForceSource.h"
+#include "physics/pairwiseforces/TruncLennardJonesForce.h"
 #include "physics/singleforces/GravForce.h"
 #include "physics/singleforces/HarmonicForce.h"
 #include "utils/Settings.h"
@@ -75,6 +76,9 @@ int main(int argc, char* argsv[]) {
                 break;
             case PairwiseForce::LENNARDJONES:
                 pairwise_sources.emplace_back(std::make_unique<LennardJonesForce>());
+                break;
+            case PairwiseForce::TRUNCLENNARDJONES:
+                pairwise_sources.emplace_back(std::make_unique<TruncLennardJonesForce>());
                 break;
             default:
                 SPDLOG_ERROR("Unrecognized Force Type!");

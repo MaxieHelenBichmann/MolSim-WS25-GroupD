@@ -27,7 +27,7 @@ membrane:
   format: Membrane
   coordinates: [15, 15, 1.5]
   velocity: [0.0, 0.0, 0.0]
-  particleNum: [50, 50, 1]
+  particleNum: [50, 50]
   mass: 1.0
   distance: 2.2
   epsilon: 1.0
