@@ -398,7 +398,7 @@ class Simulation {
 
             // 5. Calculate thermostat factor
             double thermo_factor = 1.0;
-            if (iteration % thermostat_freq == 0) {
+            if (thermo && iteration % thermostat_freq == 0) {
                 thermo_factor = calculateThermostatFactor();
             }
             // 6. Calculate new velocities
