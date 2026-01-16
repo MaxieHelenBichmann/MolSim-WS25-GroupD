@@ -1,0 +1,39 @@
+settings:
+  format: Settings
+  delta_t: 0.01
+  end_time: 500
+  start_time: 0.0
+  frequency: 10
+  cutoff: 4
+  container: LINKED
+  domain:
+    coordinates: [148, 148, 148]
+    dimensions: 3
+    boundaries:
+      lower: 
+        type: Reflecting
+  pairwise_forces: [TRUNCLENNARDJONES]
+  single_forces: 
+    - type: GRAV 
+      g_grav: [0.0, 0.0, -0.001]
+    - type: HARMONIC
+      k: 300
+      r_0: 2.2  
+  target_force: 
+    direction: [0,0,1]
+    magnitude: 0.8
+    max_iterations: 15000
+membrane:
+  format: Membrane
+  coordinates: [15, 15, 1.5]
+  velocity: [0.0, 0.0, 0.0]
+  particleNum: [50, 50, 1]
+  mass: 1.0
+  distance: 2.2
+  epsilon: 1.0
+  sigma: 1.0
+  targets:
+    - [17, 24]
+    - [17, 25]
+    - [18, 24]
+    - [18, 25]
