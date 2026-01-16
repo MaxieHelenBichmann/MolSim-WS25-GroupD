@@ -226,7 +226,7 @@ class Simulation {
         for (auto it = particles.begin(); it != particles.end();) {
             (*it).getOldF() = (*it).getF();
             (*it).getF() = Vector<double, 3>();
-            for (auto& p : domain.applyBoundary(*it, *pairwise_force_sources[0])) {
+            for (auto& p : domain.applyBoundary(*it)) {
                 new_particles.push_back(p);
             }
             (*it).getMirrorLocations() = 0;
@@ -241,8 +241,9 @@ class Simulation {
      * @brief Calculates the forces of every particle for the next time step.
      */
 
-    void calculateF() {
+    void calculateF(const size_t iteration) {
         size_t idx = 0;
+
         for (auto it = particles.begin(); it != particles.end(); ++it, idx++) {
             Particle& p1 = *it;
             for (const auto& force_source : single_force_sources) {
@@ -260,7 +261,7 @@ class Simulation {
                     p2.getF() -= force;
                 }
             }
-            if (target_force_enabled) {
+            if (target_force_enabled && iteration < target_force.getMaxIterations()) {
                 p1.getF() += target_force.applyForce(p1);
             }
         }
@@ -394,7 +395,7 @@ class Simulation {
 
             // 4. Calculate forces (including ghost interactions)
             SPDLOG_DEBUG("Iteration {}: Calculating forces for {} particles", iteration + 1, particles.size());
-            calculateF();
+            calculateF(iteration);
 
             // 5. Calculate thermostat factor
             double thermo_factor = 1.0;

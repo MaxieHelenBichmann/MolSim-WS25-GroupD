@@ -28,7 +28,7 @@ class TruncLennardJonesForce : public PairwiseForceSource {
      */
     [[nodiscard]] Vector<double, 3> applyForce(const Particle& p1, const Particle& p2) const noexcept override {
         // Only apply to membrane particles (type 2)
-        if ((p1.getType() != 2 && p1.getType() != 4) || (p2.getType() != 2 && p1.getType() != 4)) {
+        if ((p1.getType() != 2 && p1.getType() != 4) || (p2.getType() != 2 && p2.getType() != 4)) {
             return {0.0, 0.0, 0.0};
         }
 

@@ -4,6 +4,7 @@
 
 #include "exceptions/BoundaryException.h"
 #include "particles/boundaries/Outflow.h"
+#include "physics/pairwiseforces/LennardJonesForce.h"
 
 namespace mol_sim {
 
@@ -68,8 +69,9 @@ const Boundary& Domain::getBoundary(BoundaryLocation location) const {
     return *boundary;
 }
 
-std::vector<Particle> Domain::applyBoundary(Particle& p, const PairwiseForceSource& force) const noexcept {  // NOLINT
+std::vector<Particle> Domain::applyBoundary(Particle& p) const noexcept {  // NOLINT
     std::vector<Particle> particles;
+    const LennardJonesForce force;
     for (const auto& boundary : boundaries) {
         if (boundary) {
             auto new_particles = boundary->applyBoundary(p, force).value_or(std::vector<Particle>());

@@ -23,10 +23,6 @@ class TargetForceSource {
      * @brief Maximum number of iterations to apply the force.
      */
     size_t max_iterations;
-    /**
-     * @brief Current iteration count.
-     */
-    size_t curr_iteration{};
 
    public:
     /**
@@ -48,10 +44,6 @@ class TargetForceSource {
         if (p.getType() != 3 && p.getType() != 4) {
             return 0.0;
         }
-        if (curr_iteration >= max_iterations) {
-            return {0., 0., 0.};
-        }
-        curr_iteration++;
 
         return magnitude * direction;
     }

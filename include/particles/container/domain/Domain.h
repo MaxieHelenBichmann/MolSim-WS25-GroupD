@@ -74,7 +74,7 @@ class Domain {
      * @param p The particle to apply boundaries to / compute ghost particles for.
      * @param force The force source for ghost particle interactions.
      */
-    std::vector<Particle> applyBoundary(Particle& p, const PairwiseForceSource& force) const noexcept;
+    std::vector<Particle> applyBoundary(Particle& p) const noexcept;
 
     Domain& operator=(const Domain& other) = delete;
     Domain& operator=(Domain&& other) noexcept;

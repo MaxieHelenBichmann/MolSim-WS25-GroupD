@@ -83,6 +83,8 @@ class SimulationTestBase : public testing::Test {
     void SetUp() override {
         settings.cutoff = std::numeric_limits<double>::infinity();
         settings.thermostat_freq = std::numeric_limits<size_t>::max();
+        settings.thermo = false;
+        settings.target_force_enabled = false;
         particles.clear();
     }
 };
@@ -245,7 +247,7 @@ TYPED_TEST(CalculateFTest, calculateF_simple2_pairwise) {
     CheckpointWriterMock checkpoint_writer;
     Simulation<TypeParam> simulation(this->particles, pairwise_forces, single_forces, this->settings, writer,
                                      checkpoint_writer);
-    simulation.calculateF();
+    simulation.calculateF(0);
     EXPECT_EQ(this->particles[0].getF(), f12);
     EXPECT_EQ(this->particles[1].getF(), -1.0 * f12);
 }
@@ -270,7 +272,7 @@ TYPED_TEST(CalculateFTest, calculateF_complex2_pairwise) {
     CheckpointWriterMock checkpoint_writer;
     Simulation<TypeParam> simulation(this->particles, pairwise_forces, single_forces, this->settings, writer,
                                      checkpoint_writer);
-    simulation.calculateF();
+    simulation.calculateF(0);
     EXPECT_EQ(this->particles[0].getF(), f12);
     EXPECT_EQ(this->particles[1].getF(), -1.0 * f12);
 }
@@ -303,7 +305,7 @@ TYPED_TEST(CalculateFTest, calculateF_simple3_pairwise) {
     CheckpointWriterMock checkpoint_writer;
     Simulation<TypeParam> simulation(this->particles, pairwise_forces, single_forces, this->settings, writer,
                                      checkpoint_writer);
-    simulation.calculateF();
+    simulation.calculateF(0);
     R3 expected1 = {30.0, 0.0, 0.0};
     R3 expected2 = {-20.0, 0.0, 0.0};
     R3 expected3 = {-10.0, 0.0, 0.0};
@@ -340,7 +342,7 @@ TYPED_TEST(CalculateFTest, calculateF_complex3_pairwise) {
     CheckpointWriterMock checkpoint_writer;
     Simulation<TypeParam> simulation(this->particles, pairwise_forces, single_forces, this->settings, writer,
                                      checkpoint_writer);
-    simulation.calculateF();
+    simulation.calculateF(0);
     R3 expected1 = {30.0, 15.0, 13.0};
     R3 expected2 = {-20.0, -10.0, -10.0};
     R3 expected3 = {-10.0, -5.0, -3.0};
