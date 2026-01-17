@@ -29,22 +29,6 @@ void Cell::updateParticleIndex(size_t old_idx, size_t new_idx) {
         cache_dirty = true;
     }
 }
-std::vector<size_t>::iterator Cell::stableIteratorBegin() {
-    updateCache();
-    return sorted_cache.begin();
-}
-std::vector<size_t>::iterator Cell::stableIteratorEnd() {
-    updateCache();
-    return sorted_cache.end();
-}
-std::vector<size_t>::const_iterator Cell::stableIteratorBegin() const {
-    const_cast<Cell*>(this)->updateCache();
-    return sorted_cache.begin();
-}
-std::vector<size_t>::const_iterator Cell::stableIteratorEnd() const {
-    const_cast<Cell*>(this)->updateCache();
-    return sorted_cache.end();
-}
 
 void Cell::clear() noexcept { indices.clear(); }
 bool Cell::fits(R3 x) const noexcept {
