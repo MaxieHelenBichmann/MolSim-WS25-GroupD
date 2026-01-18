@@ -38,6 +38,8 @@ MolSim is a molecular dynamics simulation framework developed as part of the PSE
 - Particle generators (Cuboid, Disc, Membrane) with Brownian Motion
 - Output formats (VTK, XYZ)
 - Checkpointing support for long simulations
+- Statistical Analysis of the Simulation over its runtime
+- 2D Particle Membranes 
 - Configurable via YAML input files
 
 **Supported Simulations:**
@@ -45,6 +47,7 @@ MolSim is a molecular dynamics simulation framework developed as part of the PSE
 - Molecular dynamics with Lennard-Jones potentials (fluids, collisions)
 - Membrane simulations with harmonic spring forces
 - Large-scale particle systems using spatial optimization (Linked Cells)
+- Argon Crystallization simulations
 
 ---
 
