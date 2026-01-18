@@ -62,6 +62,7 @@ void bmSimulationComplexityLinkedCell(benchmark::State& state) {
     std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto cp_writer = std::make_unique<XVMWriterCP>();
     auto writer = std::make_unique<XYZWriter>();
+    auto stat_writer = std::make_unique<StatsWriter>();
 
     Simulation<LinkedCellContainer> simulation(part_container, pairwise_forces, single_forces, settings, *writer,
                                                *cp_writer);

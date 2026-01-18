@@ -41,7 +41,7 @@ PeriodicOld::PeriodicOld(BoundaryLocation location, R3 domain_size, double cutof
  * types of the other boundaries) and not overcomplicating this code (unless really necessary)
  * I will leave this behavior in for now.
  */
-std::optional<std::vector<Particle>> PeriodicOld::applyBoundary(  // NOLINT
+void PeriodicOld::applyBoundary(  // NOLINT
     Particle& p, [[maybe_unused]] const PairwiseForceSource& force) noexcept {
     teleportParticleIfOOB(p);
     if (!isOnBoundary(p.getX(), getAxis(), getSign())) {  // only mirror particles in correct boundary region

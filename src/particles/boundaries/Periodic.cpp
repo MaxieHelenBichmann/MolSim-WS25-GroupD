@@ -72,17 +72,13 @@ void Periodic::setShiftLookup(R3 domain_size) {
  * types of the other boundaries) and not overcomplicating this code (unless really necessary)
  * I will leave this behavior in for now.
  */
-std::optional<std::vector<Particle>> Periodic::applyBoundary(  // NOLINT
+void Periodic::applyBoundary(  // NOLINT
     Particle& p, [[maybe_unused]] const PairwiseForceSource& force) noexcept {
     teleportParticleIfOOB(p);
     if (!isOnBoundary(p.getX(), getAxis(), getSign())) {  // only mirror particles in correct boundary region
-        return std::nullopt;
+        return;
     }
-    auto mirrored_particles = mirrorParticle(p);
-    if (mirrored_particles.empty()) {
-        return std::nullopt;
-    }
-    return mirrored_particles;
+    mirrorParticle(p);
 }
 
 void Periodic::teleportParticleIfOOB(Particle& p) {
@@ -100,46 +96,40 @@ void Periodic::teleportParticleIfOOB(Particle& p) {
         }
     }
     p.getX() = p.getX() + position_shift;
+    p.getRefX() = p.getRefX() + position_shift;
 }
 
 /**
  * TODO: make this work with an std::array<Particle, 4>
  */
-std::vector<Particle> Periodic::mirrorParticle(Particle& p) {
-    std::vector<Particle> mirrored_particles;
+void Periodic::mirrorParticle(Particle& p) {
     size_t location_idx = getBoundaryLocationIdx();
 
     // 1) definitely mirror particle to other side once
     R3 shift = {.0, .0, .0};
     size_t axis = getAxis();
     shift[axis] = -getSign() * domain_size[axis];
-    addMirrorParticle(p.getX() + shift, MIRROR_IDX_LOOKUP[(dimensions == 2 ? 58 : 48) + location_idx], p,
-                      mirrored_particles);
+    addMirrorParticle(p.getX() + shift, MIRROR_IDX_LOOKUP[(dimensions == 2 ? 58 : 48) + location_idx], p);
 
     // 2 handle edges and corners
     size_t idx = getIdx(p);
     if (idx <= 3) {  // if p in some 3D edge = 2D corner
         uint8_t mirror_idx = MIRROR_IDX_LOOKUP[idx + (dimensions == 2 ? 54 : 8 * location_idx)];
-        addMirrorParticle(p.getX() + shift_lookup[mirror_idx], mirror_idx, p, mirrored_particles);
+        addMirrorParticle(p.getX() + shift_lookup[mirror_idx], mirror_idx, p);
     } else if (dimensions == 3 && 4 <= idx && idx <= 7) {  // if p in some 3D corner
         uint8_t mirror_idx1 = MIRROR_IDX_LOOKUP[(8 * location_idx) + (idx % 4)];
         uint8_t mirror_idx2 = MIRROR_IDX_LOOKUP[(8 * location_idx) + ((idx + 1) % 4)];
         uint8_t mirror_idx = MIRROR_IDX_LOOKUP[idx + (8 * location_idx)];
-        addMirrorParticle(p.getX() + shift_lookup[mirror_idx1], mirror_idx1, p, mirrored_particles);
-        addMirrorParticle(p.getX() + shift_lookup[mirror_idx2], mirror_idx2, p, mirrored_particles);
-        addMirrorParticle(p.getX() + shift_lookup[mirror_idx], mirror_idx, p, mirrored_particles);
+        addMirrorParticle(p.getX() + shift_lookup[mirror_idx1], mirror_idx1, p);
+        addMirrorParticle(p.getX() + shift_lookup[mirror_idx2], mirror_idx2, p);
+        addMirrorParticle(p.getX() + shift_lookup[mirror_idx], mirror_idx, p);
     }
-    return mirrored_particles;
 }
 
-void Periodic::addMirrorParticle(const R3& mirrorLocation, size_t mirrorIdx, Particle& p,
-                                 std::vector<Particle>& mirrored_particles) {
+void Periodic::addMirrorParticle(const R3& mirrorLocation, size_t mirrorIdx, Particle& p) {
     if ((p.getMirrorLocations() & (1 << mirrorIdx)) == 0) {
-        Particle mirror_particle(p);
-        mirror_particle.getX() = mirrorLocation;
-        mirror_particle.getType() = 1;
+        p.getMirrorPositions().emplace_back(mirrorLocation);
         p.getMirrorLocations() |= (1 << mirrorIdx);
-        mirrored_particles.push_back(mirror_particle);
     }
 }
 

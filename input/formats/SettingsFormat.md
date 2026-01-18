@@ -26,9 +26,10 @@ The settings block has the following keys, with every key except format being op
 - `frequency`: A whole number specifying the frequency of the output files of the simulation.
 - `checkpoint`: A whole number specifying the frequency of the checkpoint files of the simulation.
 - `cutoff`: A floating-point number specifying the cutoff radius of the Linked Cells of the simulation.
+- `smooth`: A floating-point number specifying the smoothing radius of the Smooth Lennard-Jones Force.
 - `container`: Container type, either `"SIMPLE"` or `"LINKED"` (default: `"LINKED"`).
 - `pairwise_forces`: A sequence containing all desired pairwise forces (forces applied between particle pairs).
-  - Available forces: `"GRAVITATIONAL"`, `"LENNARDJONES"`, `"TRUNCLENNARDJONES"`
+  - Available forces: `"GRAVITATIONAL"`, `"LENNARDJONES"`, `"TRUNCLENNARDJONES"`, `"Smooth Lennard Jones"`
   - Multiple forces can be specified and will all be applied
   - Default: `["LENNARDJONES"]`
 - `single_forces`: A sequence of force objects defining single particle forces (forces applied to individual particles).
@@ -41,6 +42,7 @@ The settings block has the following keys, with every key except format being op
 - `target_force`: Configuration for targeted force applied to specific particles (see Target Force Configuration below).
 - `domain`: A map defining the domain of the simulation (see Domain Configuration below).
 - `thermostat`: A map defining the thermostat of the simulation
+- `statistics`: A map defining the collection of thermodynamic statistics
 
 ## Force Types
 
@@ -103,13 +105,21 @@ settings:
     direction: [0.0, 1.0, 0.0]  # Pull upward
     magnitude: 10.0
     max_iterations: 1000        # Apply for first 1000 steps
-
+```
 ## Thermostat Configuration
 The thermostat is only activated when the `thermostat` key is provided. It can contain the following subkeys:  
 - `initial_temp`: A floating-point number specifying the initial target temperature of the simulation.
 - `target_temp`: A floating-point number specifying the normal target temperature of the simulation.
 - `n_thermostat`: A whole point number specifying the frequency with which the thermostat gets applied.
 - `delta_temp`: A floating-point number specifying the maximum allowed change of temperature with one application of the thermostat.
+
+## Statistics Configuration
+The data collection is only activated when the `statistics` key is provided. It can contain the following subkeys:
+- `diffusion`:  A whole number specifying the frequency of the data collection regarding diffusion. If key not provided, data will not be collected.
+- `rdf`: A whole number specifying the frequency of the data collection regarding RDF. If key not provided, data will not be collected.
+- `sample_r`: A floating-point number specifying the sample width of the RDF (default: 1.0).
+- `window_size`: A floating-point number specifying the size of the considered window for the RDF (default: 10.0).
+
 
 ## Domain Configuration
 

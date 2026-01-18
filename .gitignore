@@ -64,3 +64,8 @@ perf.data.old
 *.vtune
 *.advixeproj
 valgrind/
+
+# Python
+__pycache__/
+**/venv/
+**/.venv/

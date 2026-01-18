@@ -13,6 +13,7 @@
 
 #include "particles/boundaries/Boundary.h"
 #include "particles/boundaries/Reflecting.h"
+#include "physics/ForceSource.h"
 
 using namespace mol_sim;
 
@@ -79,6 +80,9 @@ void YAMLWriterCP::createCheckpoint(SettingsParam& settings, const Domain& domai
     out << YAML::Key << "frequency" << YAML::Value << settings.frequency_output;
     out << YAML::Key << "checkpoint" << YAML::Value << settings.frequency_checkpoint;
     out << YAML::Key << "cutoff" << YAML::Value << settings.cutoff;
+    if (settings.force == S_LENNARDJONES) {
+        out << YAML::Key << "smooth" << YAML::Value << settings.smoothing;
+    }
 
     // Write thermostat settings in nested format
     if (settings.thermo) {
@@ -102,6 +106,19 @@ void YAMLWriterCP::createCheckpoint(SettingsParam& settings, const Domain& domai
         out << YAML::Key << "magnitude" << YAML::Value << settings.target_force_magnitude;
         out << YAML::Key << "max_iterations" << YAML::Value << settings.target_force_max_iterations;
         out << YAML::EndMap;  // close target_force
+    }
+    // Write statistics settings in nested format
+    if (settings.rdf || settings.diff) {
+        out << YAML::Key << "statistics" << YAML::Value << YAML::BeginMap;
+        if (settings.diff) {
+            out << YAML::Key << "diffusion" << YAML::Value << settings.stats_freq_diffusion;
+        }
+        if (settings.rdf) {
+            out << YAML::Key << "rdf" << YAML::Value << settings.stats_freq_rdf;
+            out << YAML::Key << "sample_r" << YAML::Value << settings.sample_radius;
+            out << YAML::Key << "window_size" << YAML::Value << settings.window_size;
+        }
+        out << YAML::EndMap;  // close statistics
     }
 
     out << YAML::Key << "domain" << YAML::Value << YAML::BeginMap;  // open domain

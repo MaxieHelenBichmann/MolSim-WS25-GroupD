@@ -133,6 +133,7 @@ static void bmSimulationFullBenchmark(benchmark::State& state) {
     std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<YAMLWriterCP>();
+    auto stat_writer = std::make_unique<StatsWriter>();
 
     for ([[maybe_unused]] auto _ : state) {
         state.PauseTiming();
@@ -169,6 +170,7 @@ static void bmSimulationFullContest(benchmark::State& state) {
     std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<YAMLWriterCP>();
+    auto stat_writer = std::make_unique<StatsWriter>();
 
     for ([[maybe_unused]] auto _ : state) {
         SettingsParam settings = createContestSettings();

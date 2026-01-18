@@ -1,8 +1,6 @@
 #ifndef PERIODIC_H
 #define PERIODIC_H
 
-#include <memory>
-
 #include "particles/boundaries/Boundary.h"
 #include "particles/container/LinkedCellContainer.h"
 #include "utils/Vector.h"
@@ -82,7 +80,7 @@ class Periodic : public Boundary {
      * @param p The particle to be mirrored. IMPORTANT: The particle must be within the boundary region of the domain.
      * @return std::vector<Particle> A vector containing the created mirror particles.
      */
-    [[nodiscard]] std::vector<Particle> mirrorParticle(Particle& p);
+    void mirrorParticle(Particle& p);
 
     /**
      * @brief Returns the index of the corner or edge if the passed particle is contained in either
@@ -130,8 +128,7 @@ class Periodic : public Boundary {
      * @param p The particle the mirror particle belongs to.
      * @param mirrored_particles The vector of previously accumulated mirror particles.
      */
-    void addMirrorParticle(const R3& mirrorLocation, size_t mirrorIdx, Particle& p,
-                           std::vector<Particle>& mirrored_particles);
+    void addMirrorParticle(const R3& mirrorLocation, size_t mirrorIdx, Particle& p);
 
     /**
      * @brief Initializes the shift lookup table.
@@ -159,8 +156,7 @@ class Periodic : public Boundary {
      * @param force The force source that should be used in the boundary condition (in this case irrelevant).
      * @return The copied particles to be added to the halo cells of the container.
      */
-    std::optional<std::vector<Particle>> applyBoundary(
-        Particle& p, [[maybe_unused]] const PairwiseForceSource& force) noexcept override;
+    void applyBoundary(Particle& p, [[maybe_unused]] const PairwiseForceSource& force) noexcept override;
 };
 
 }  // namespace mol_sim

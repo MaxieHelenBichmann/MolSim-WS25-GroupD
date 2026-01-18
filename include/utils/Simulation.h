@@ -11,6 +11,7 @@
 #include "exceptions/SimulationException.h"
 #include "io/CheckpointWriter.h"
 #include "io/OutputWriter.h"
+#include "io/StatsWriter.h"
 #include "particles/Particle.h"
 #include "particles/ParticleContainer.h"
 #include "particles/container/domain/Domain.h"
@@ -67,6 +68,11 @@ class Simulation {
      */
     const CheckpointWriter& cp_writer;
     /**
+     * @brief Writer used for statistics.
+     */
+    const StatsWriter& stats_writer;
+
+    /**
      * @brief Time step of simulation.
      */
     double delta_t;
@@ -90,6 +96,15 @@ class Simulation {
      * @brief Frequency of checkpoint writing.
      */
     size_t frequency_checkpoint;
+
+    /**
+     * @brief Frequency of statistics writing.
+     */
+    size_t frequency_stats_diff;
+    /**
+     * @brief Frequency of statistics writing.
+     */
+    size_t frequency_stats_rdf;
 
     /**
      * @brief Base name for output files.
@@ -160,7 +175,7 @@ class Simulation {
     Simulation(containerType& particles,
                const std::vector<std::unique_ptr<PairwiseForceSource>>& pairwise_force_sources,
                const std::vector<std::unique_ptr<SingleForceSource>>& single_force_sources, SettingsParam& settings,
-               const OutputWriter& writer, const CheckpointWriter& cp_writer)
+               const OutputWriter& writer, const CheckpointWriter& cp_writer, const StatsWriter& stats_writer)
         : domain(std::move(settings.domain)),
           particles(particles),
           pairwise_force_sources(pairwise_force_sources),
@@ -169,11 +184,14 @@ class Simulation {
           single_forces(settings.single_forces),
           writer(writer),
           cp_writer(cp_writer),
+          stats_writer(stats_writer),
           delta_t(settings.delta_t),
           start_time(settings.start_time),
           end_time(settings.end_time),
           frequency_output(settings.frequency_output),
           frequency_checkpoint(settings.frequency_checkpoint),
+          frequency_stats_diff(settings.stats_freq_diffusion),
+          frequency_stats_rdf(settings.stats_freq_rdf),
           base_name(settings.base_name),
           dimensions(settings.dimensions),
           cutoff_radius(settings.cutoff),
@@ -226,9 +244,7 @@ class Simulation {
         for (auto it = particles.begin(); it != particles.end();) {
             (*it).getOldF() = (*it).getF();
             (*it).getF() = Vector<double, 3>();
-            for (auto& p : domain.applyBoundary(*it)) {
-                new_particles.push_back(p);
-            }
+            domain.applyBoundary(*it);
             (*it).getMirrorLocations() = 0;
             R3 new_position = (*it).getX();
             (*it).getX() = (*it).getOldX();
@@ -264,17 +280,14 @@ class Simulation {
             if (target_force_enabled && iteration < target_force.getMaxIterations()) {
                 p1.getF() += target_force.applyForce(p1);
             }
-        }
-        // Calculate forces from mirrored/ghost particles
-        const R3& domain_size = domain.getDimension();
-        constexpr double epsilon = 1e-6;
-        for (const Particle& p1 : new_particles) {
-            R3 lookup_pos = p1.getX();
+            R3 actual_pos = p1.getX();
+            const R3& domain_size = domain.getDimension();
+            // Applying forces between Mirror Particles and normal particles
+            for (const R3& mirr_pos : p1.getMirrorPositions()) {
+                p1.getX() = mirr_pos;
+                R3 lookup_pos = mirr_pos;
 
-            // For mirrored particles from periodic boundaries (type==1), their position is slightly
-            // outside the domain. We need to clamp it to just inside the boundary region to find
-            // the correct neighbors while preserving the actual position for force calculation.
-            if (p1.getType() == 1) {
+                constexpr double epsilon = 1e-6;  // Small offset to stay inside domain
                 for (size_t dim = 0; dim < 3; ++dim) {
                     if (lookup_pos[dim] < 0) {
                         lookup_pos[dim] = epsilon;
@@ -282,18 +295,18 @@ class Simulation {
                         lookup_pos[dim] = domain_size[dim] - epsilon;
                     }
                 }
-            }
+                auto it_prox = particles.proximityBegin(lookup_pos, particles.size());
+                auto it_prox_end = particles.proximityEnd(lookup_pos);
 
-            auto it_prox = particles.proximityBegin(lookup_pos, particles.size());
-            auto it_prox_end = particles.proximityEnd(lookup_pos);
-            for (; it_prox != it_prox_end; ++it_prox) {
-                Particle& p2 = *it_prox;
-                for (const auto& force_source : pairwise_force_sources) {
-                    p2.getF() += force_source->applyForce(p2, p1);
+                for (; it_prox != it_prox_end; ++it_prox) {
+                    Particle& p2 = *it_prox;
+                    for (const auto& force_source : pairwise_force_sources) {
+                        p2.getF() += force_source->applyForce(p2, p1);
+                    }
                 }
             }
+            p1.getX() = actual_pos;
         }
-        new_particles.clear();
     }
 
     /**
@@ -301,6 +314,7 @@ class Simulation {
      */
     void calculateX() {
         for (auto& p : particles) {
+            p.getMirrorPositions().clear();
             p.getOldX() = p.getX();
             p.getX() += (delta_t * p.getV()) + ((0.5 * delta_t * delta_t / p.getM()) * p.getF());
         }
@@ -336,6 +350,7 @@ class Simulation {
      * @brief Performs a full simulation run.
      * @throws SimulationException if an error occurs during output writing.
      */
+    // NOLINTNEXTLINE(readability-function-cognitive-complexity)
     void run() {
         double current_time = start_time;
         [[maybe_unused]] int iteration = 0;
@@ -407,6 +422,7 @@ class Simulation {
 
             iteration++;
 #ifdef ENABLE_IO
+            // 7. Write output (optional)
             if (iteration % frequency_output == 0) {
                 try {
                     std::string out_name = base_name;
@@ -418,6 +434,7 @@ class Simulation {
             }
 #endif
 #ifdef ENABLE_CHECKPOINTING
+            // 8. Write checkpoint (optional)
             if (iteration % frequency_checkpoint == 0) {
                 try {
                     cp_settings.start_time = current_time;
@@ -428,12 +445,31 @@ class Simulation {
                 }
             }
 #endif
+#ifdef ENABLE_STATS
+            // 9. Write diffusion statistics (optional)
+            if (iteration % frequency_stats_diff == 0) {
+                try {
+                    stats_writer.plotDiffusion(particles, iteration);
+                } catch (const std::runtime_error& e) {
+                    SPDLOG_ERROR("Failed to plot diffusion at iteration {}: {}", iteration, e.what());
+                }
+            }
+            // 10. Write RDF statistics (optional)
+            if (iteration % frequency_stats_rdf == 0) {
+                try {
+                    stats_writer.plotRDF(particles, iteration);
+                } catch (const std::runtime_error& e) {
+                    SPDLOG_ERROR("Failed to plot RDF at iteration {}: {}", iteration, e.what());
+                }
+            }
+#endif
 
             SPDLOG_DEBUG("Iteration {} finished, {} particles remaining", iteration, particles.size());
             current_time += delta_t;
         }
         SPDLOG_INFO("Simulation completed: {} iterations, {} particles remaining", iteration, particles.size());
 #ifdef ENABLE_CHECKPOINTING
+        // Final checkpoint at end of simulation (optional)
         try {
             cp_settings.start_time = current_time;
             cp_writer.createCheckpoint(cp_settings, domain, particles, iteration, cp_n);

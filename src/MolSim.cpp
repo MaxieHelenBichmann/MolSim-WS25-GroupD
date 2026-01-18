@@ -9,6 +9,7 @@
 #include "io/CLIParse.h"
 #include "io/CheckpointWriter.h"
 #include "io/FileReader.h"
+#include "io/StatsWriter.h"
 #include "io/checkpointWriter/XVMWriterCP.h"
 #include "io/checkpointWriter/YAMLWriterCP.h"
 #include "io/fileReader/XVMReader.h"
@@ -18,6 +19,7 @@
 #include "particles/container/ContainerRef.h"
 #include "particles/container/LinkedCellContainer.h"
 #include "particles/container/SimpleContainer.h"
+#include "physics/SmoothLennardJonesForce.h"
 #include "physics/pairwiseforces/GravitationalForce.h"
 #include "physics/pairwiseforces/LennardJonesForce.h"
 #include "physics/pairwiseforces/PairwiseForceSource.h"
@@ -67,6 +69,9 @@ int main(int argc, char* argsv[]) {
     writer = std::make_unique<XYZWriter>();
 #endif
 
+    std::unique_ptr<StatsWriter> stats_writer =
+        std::make_unique<StatsWriter>(settings.rdf, settings.diff, settings.sample_radius, settings.window_size);
+
     std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_sources;
 
     for (auto pairwise_type : settings.pairwise_forces) {
@@ -97,6 +102,12 @@ int main(int argc, char* argsv[]) {
             default:
                 SPDLOG_ERROR("Unrecognized Force Type!");
         }
+        case S_LENNARDJONES: {
+            force = std::make_unique<SmoothLennardJonesForce>();
+            static_cast<SmoothLennardJonesForce*>(force.get())->initForce(settings.cutoff, settings.cutoff);
+            SPDLOG_DEBUG("Using Smooth Lennard-Jones force model");
+            break;
+        }
     }
 
     // Phase 2: Read particles and run simulation
@@ -111,7 +122,7 @@ int main(int argc, char* argsv[]) {
                             settings.delta_t, settings.start_time, settings.end_time);
             }
             Simulation<SimpleContainer> simulation(particle_container, pairwise_sources, single_sources, settings,
-                                                   *writer, *cp_writer);
+                                                   *writer, *cp_writer, *stats_writer);
             simulation.run();
         } else if (settings.container_type == "LINKED") {
             LinkedCellContainer particle_container{settings.domain.getDimension(), settings.cutoff};
@@ -123,7 +134,7 @@ int main(int argc, char* argsv[]) {
                             settings.delta_t, settings.start_time, settings.end_time);
             }
             Simulation<LinkedCellContainer> simulation(particle_container, pairwise_sources, single_sources, settings,
-                                                       *writer, *cp_writer);
+                                                       *writer, *cp_writer, *stats_writer);
             simulation.run();
         } else {
             SPDLOG_ERROR("Unknown container type: {}", settings.container_type);

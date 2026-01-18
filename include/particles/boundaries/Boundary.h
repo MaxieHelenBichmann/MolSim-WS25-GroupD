@@ -64,8 +64,7 @@ class Boundary {
      * @return Newly generated particles that need further processing beyond the scope of
      * this / an implementing class.
      */
-    virtual std::optional<std::vector<Particle>> applyBoundary(Particle& p,
-                                                               const PairwiseForceSource& force) noexcept = 0;
+    virtual void applyBoundary(Particle& p, const PairwiseForceSource& force) noexcept = 0;
 
     /**
      * @brief Returns the type of the boundary.

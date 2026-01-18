@@ -53,9 +53,29 @@ class SettingsParam {
      */
     static constexpr size_t FREQUENCY_CHECKPOINT_DEFAULT = 5000;
     /**
+     * @brief Default frequency for thermodynamical statistics (Diffusion).
+     */
+    static constexpr size_t FREQUENCY_STATS_DEFAULT_DIFF = 1000;
+    /**
+     * @brief Default frequency for thermodynamical statistics (RDF).
+     */
+    static constexpr size_t FREQUENCY_STATS_DEFAULT_RDF = 7000;
+    /**
+     * @brief Default sample width for the radial distribution function.
+     */
+    static constexpr double RDF_DEFAULT = 1.0;
+    /**
+     * @brief Default window size for the radial distribution function.
+     */
+    static constexpr double RDF_SIZE_DEFAULT = 10.0;
+    /**
      * @brief Default cutoff radius for the linked cells.
      */
     static constexpr double CUTOFF_DEFAULT = std::numeric_limits<double>::infinity();
+    /**
+     * @brief Default smoothing radius for the linked cells.
+     */
+    static constexpr double SMOOTHING_DEFAULT = std::numeric_limits<double>::infinity();
     /**
      * @brief Default initial temperature for the system.
      */
@@ -126,6 +146,10 @@ class SettingsParam {
      */
     double cutoff = CUTOFF_DEFAULT;
     /**
+     * @brief Smoothing radius for the linked cells algorithm.
+     */
+    double smoothing = SMOOTHING_DEFAULT;
+    /**
      * @brief The type in string format of the particle container.
      *
      * SIMPLE = SimpleContainer
@@ -155,6 +179,33 @@ class SettingsParam {
      * @brief Frequency with which the thermostat gets applied.
      */
     size_t thermostat_freq = THERMOSTAT_FREQ_DEFAULT;
+
+    /**
+     * @brief Frequency for thermodynamical statistics (Diffusion).
+     */
+    size_t stats_freq_diffusion = FREQUENCY_STATS_DEFAULT_DIFF;
+    /**
+     * @brief Frequency for thermodynamical statistics (RDF).
+     */
+    size_t stats_freq_rdf = FREQUENCY_STATS_DEFAULT_RDF;
+    /**
+     * @brief Toggles if data collection for the radial distribution function is enabled for this simulation.
+     *
+     */
+    bool rdf = false;
+    /**
+     * @brief Toggles if data collection for the diffusion is enabled for this simulation.
+     *
+     */
+    bool diff = false;
+    /**
+     * @brief Sample width for the radial distribution function.
+     */
+    double sample_radius = RDF_DEFAULT;
+    /**
+     * @brief Size of the window for the radial distribution function.
+     */
+    double window_size = RDF_SIZE_DEFAULT;
     /**
      * @brief Maximum allowed temperature change of the system with one thermostat application.
      */

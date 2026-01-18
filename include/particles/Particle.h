@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <vector>
 
 #include "utils/Vector.h"
 
@@ -62,7 +63,7 @@ class Particle {
     // ========== COLD DATA ==========
 
     /**
-     * @brief New position of the particle
+     * @brief Old position of the particle
      */
     R3 old_x;
 
@@ -125,6 +126,17 @@ class Particle {
      *
      */
     uint32_t mirror_locations = 0;
+
+    /**
+     * @brief Positions Particle is mirrored to, so no materialization of explicit mirror particles is necessary.
+     */
+    std::vector<R3> mirror_positions;
+    // NOLINTEND
+
+    /**
+     * @brief Reference position of the particle, which is needed in statistics. Is not included in the checkpoint.
+     */
+    R3 reference_position;
 
     /*
     Index mapping for neighbor positions (relative to current particle):
@@ -196,6 +208,18 @@ class Particle {
      * @return Reference to the previous coordinates of the Particle.
      */
     R3& getOldX() noexcept { return old_x; };
+    /**
+     * @brief Access the coordinates of the reference position of the Particle (needed in statistics).
+     *
+     * @return Const reference to the reference coordinates of the Particle.
+     */
+    [[nodiscard]] const R3& getRefX() const noexcept { return reference_position; };
+    /**
+     * @brief Access the coordinates of the reference position of the Particle (needed in statistics).
+     *
+     * @return Reference to the reference coordinates of the Particle.
+     */
+    R3& getRefX() noexcept { return reference_position; };
 
     /**
      * @brief Access the current velocity Vector of a Particle.
@@ -287,16 +311,30 @@ class Particle {
     /**
      * @brief Get the Mirror Locations bitmap of the particle
      *
-     * @return uint32_t& A reference to the bitmap indicating where the particle has already been mirrored
+     * @return A reference to the bitmap indicating where the particle has already been mirrored
      */
     uint32_t& getMirrorLocations() noexcept { return mirror_locations; }
 
     /**
      * @brief Get the Mirror Locations bitmap of the particle
      *
-     * @return uint32_t& A const reference to the bitmap indicating where the particle has already been mirrored
+     * @return A const reference to the bitmap indicating where the particle has already been mirrored
      */
     [[nodiscard]] const uint32_t& getMirrorLocations() const noexcept { return mirror_locations; }
+
+    /**
+     * @brief Get the explicit Mirror Positions of the particle
+     *
+     * @return The vector of mirror positions
+     */
+    [[nodiscard]] std::vector<R3>& getMirrorPositions() noexcept { return mirror_positions; }
+
+    /**
+     * @brief Get the explicit Mirror Positions of the particle
+     *
+     * @return The const vector of mirror positions
+     */
+    [[nodiscard]] const std::vector<R3>& getMirrorPositions() const noexcept { return mirror_positions; }
 
     /**
      * @brief Access the neighbor array for membrane simulations

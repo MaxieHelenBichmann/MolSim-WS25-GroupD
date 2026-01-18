@@ -1,0 +1,53 @@
+settings:
+  format: Settings
+  delta_t: 0.001
+  end_time: 5
+  start_time: 0.0
+  force: "Lennard Jones"
+  frequency: 10
+  checkpoint: 5000
+  cutoff: 5
+  container: LINKED
+
+  thermostat: 
+    initial_temp: 1
+    target_temp: 60
+    n_thermostat: 10
+    delta_temp: 1
+
+  statistics:
+    diffusion: 10
+
+  domain:
+    x: 60
+    y: 50
+    z: 1
+    dimensions: 2
+    boundaries:
+      left:
+        type: VELOCITYREFLECT
+      right:
+        type: VELOCITYREFLECT
+      front:
+        type: VELOCITYREFLECT
+      back:
+        type: OUTFLOW
+
+matter:
+  format: Cuboid
+  coordinates:
+      x: 2.0
+      y: 2.0
+      z: 0.0
+  velocity:
+      vx: 0.0
+      vy: 0.0
+      vz: 0.0
+  particleNum:
+      nx: 40
+      ny: 30
+      nz: 1
+  mass: 1.0
+  distance: 1.2
+  epsilon: 1.0
+  sigma: 1.2

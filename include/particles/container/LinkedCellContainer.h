@@ -342,30 +342,32 @@ class LinkedCellContainer {
                  (std::is_same_v<P, const Particle> && std::is_same_v<C, const Cell>))
     class proximity_iterator {
         std::vector<size_t>::const_iterator cur;
+        std::vector<size_t>::const_iterator cur_cell_end;
         std::vector<C*> cells;
         size_t curr_cell_idx = 0;
         std::span<P> container_data;
-        double radius;
+        double radius_sqr;
         R3 center;
         size_t center_idx;
+        size_t last_cell_idx;
+        std::vector<size_t>::const_iterator last_cell_end;
 
         void inc() {
             SPDLOG_DEBUG("Incrementing proximity iterator");
-            if (cur != cells[curr_cell_idx]->stableIteratorEnd()) {
+            if (cur != cur_cell_end) {
                 ++cur;
             }
-            while (cur == cells[curr_cell_idx]->stableIteratorEnd() &&
-                   curr_cell_idx < cells.size() - 1) {  // reached end of current cell
+            while (cur == cur_cell_end && curr_cell_idx < last_cell_idx) {
                 curr_cell_idx++;
                 cur = cells[curr_cell_idx]->stableIteratorBegin();
+                cur_cell_end = cells[curr_cell_idx]->stableIteratorEnd();
             }
         }
 
         void satisfy() {
-            while (cur != cells.back()->stableIteratorEnd() &&
-                   (cur == cells[curr_cell_idx]->stableIteratorEnd() ||
-                    !((center - container_data[*cur].getX()).sqrEuclidNorm() <= radius * radius) ||
-                    (curr_cell_idx == cells.size() - 1 && *cur <= center_idx && center_idx != container_data.size()))) {
+            while (cur != last_cell_end &&
+                   (cur == cur_cell_end || !((center - container_data[*cur].getX()).sqrEuclidNorm() <= radius_sqr) ||
+                    (curr_cell_idx == last_cell_idx && *cur <= center_idx && center_idx != container_data.size()))) {
                 inc();
             }
         }
@@ -377,15 +379,23 @@ class LinkedCellContainer {
         using pointer = P*;
         using reference = P&;
 
-        proximity_iterator() noexcept : radius(0.0) {}
+        proximity_iterator() noexcept : radius_sqr(0.0), last_cell_idx(0) {}
         proximity_iterator(R3 center, double radius, std::vector<size_t>::const_iterator cur, std::vector<C*>&& cells,
                            std::span<P> data, size_t center_idx)
             : cur(cur),
               cells(std::move(cells)),
               container_data(data),
-              radius(radius),
+              radius_sqr(radius * radius),
               center(center),
-              center_idx(center_idx) {
+              center_idx(center_idx),
+              last_cell_idx(this->cells.size() - 1) {
+            if (!this->cells.empty()) {
+                cur_cell_end = this->cells[0]->stableIteratorEnd();
+                last_cell_end = this->cells.back()->stableIteratorEnd();
+            } else {
+                cur_cell_end = cur;
+                last_cell_end = cur;
+            }
             satisfy();
         }
 
@@ -410,12 +420,6 @@ class LinkedCellContainer {
         friend bool operator!=(const proximity_iterator<P, C>& a, const proximity_iterator<P, C>& b) noexcept {
             return !(a == b);
         }
-
-        [[nodiscard]] std::vector<C*> getCells() const { return cells; }
-        [[nodiscard]] double getRadius() const noexcept { return radius; }
-        [[nodiscard]] R3 getCenter() const { return center; }
-        [[nodiscard]] size_t getCenterIdx() const noexcept { return center_idx; }
-        [[nodiscard]] size_t getIdx() const noexcept { return *cur; }
     };
     static_assert(std::forward_iterator<proximity_iterator<Particle, Cell>>);
     static_assert(std::forward_iterator<proximity_iterator<const Particle, const Cell>>);

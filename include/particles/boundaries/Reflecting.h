@@ -55,7 +55,7 @@ class Reflecting : public Boundary {
      * @return std::nullopt always, since ghost particles are created, applied (in terms of force calculation) and
      * destroyed entirely within this method.
      */
-    std::optional<std::vector<Particle>> applyBoundary(Particle& p, const PairwiseForceSource& force) noexcept override;
+    void applyBoundary(Particle& p, const PairwiseForceSource& force) noexcept override;
     /**
      * @brief Returns the sigma of the ghost particles of this boundary.
      *
