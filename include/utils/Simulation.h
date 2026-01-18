@@ -370,7 +370,6 @@ class Simulation {
 
             // 5. Calculate thermostat factor
             double thermo_factor = 1.0;
-            // TODO: Iteration > 0 is a fix for the tests, discussion needed.
             if (thermo && iteration > 0 && iteration % thermostat_freq == 0) {
                 thermo_factor = calculateThermostatFactor();
             }
@@ -379,6 +378,7 @@ class Simulation {
 
             iteration++;
 #ifdef ENABLE_IO
+            // 7. Write output (optional)
             if (iteration % frequency_output == 0) {
                 try {
                     std::string out_name = base_name;
@@ -390,6 +390,7 @@ class Simulation {
             }
 #endif
 #ifdef ENABLE_CHECKPOINTING
+            // 8. Write checkpoint (optional)
             if (iteration % frequency_checkpoint == 0) {
                 try {
                     cp_settings.start_time = current_time;
@@ -401,6 +402,7 @@ class Simulation {
             }
 #endif
 #ifdef ENABLE_STATS
+            // 9. Write diffusion statistics (optional)
             if (iteration % frequency_stats_diff == 0) {
                 try {
                     stats_writer.plotDiffusion(particles, iteration);
@@ -408,6 +410,7 @@ class Simulation {
                     SPDLOG_ERROR("Failed to plot diffusion at iteration {}: {}", iteration, e.what());
                 }
             }
+            // 10. Write RDF statistics (optional)
             if (iteration % frequency_stats_rdf == 0) {
                 try {
                     stats_writer.plotRDF(particles, iteration);
@@ -422,6 +425,7 @@ class Simulation {
         }
         SPDLOG_INFO("Simulation completed: {} iterations, {} particles remaining", iteration, particles.size());
 #ifdef ENABLE_CHECKPOINTING
+        // Final checkpoint at end of simulation (optional)
         try {
             cp_settings.start_time = current_time;
             cp_writer.createCheckpoint(cp_settings, domain, particles, iteration, cp_n);

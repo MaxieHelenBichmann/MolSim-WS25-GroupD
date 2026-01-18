@@ -120,7 +120,9 @@ class Particle {
      */
     uint32_t mirror_locations = 0;
 
-    // Positions Particle is mirrored to
+    /**
+     * @brief Positions Particle is mirrored to, so no materialization of explicit mirror particles is necessary.
+     */
     std::vector<R3> mirror_positions;
     // NOLINTEND
 
@@ -280,16 +282,30 @@ class Particle {
     /**
      * @brief Get the Mirror Locations bitmap of the particle
      *
-     * @return uint32_t& A reference to the bitmap indicating where the particle has already been mirrored
+     * @return A reference to the bitmap indicating where the particle has already been mirrored
      */
     uint32_t& getMirrorLocations() noexcept { return mirror_locations; }
 
     /**
      * @brief Get the Mirror Locations bitmap of the particle
      *
-     * @return uint32_t& A const reference to the bitmap indicating where the particle has already been mirrored
+     * @return A const reference to the bitmap indicating where the particle has already been mirrored
      */
     [[nodiscard]] const uint32_t& getMirrorLocations() const noexcept { return mirror_locations; }
+
+    /**
+     * @brief Get the explicit Mirror Positions of the particle
+     *
+     * @return The vector of mirror positions
+     */
+    [[nodiscard]] std::vector<R3>& getMirrorPositions() noexcept { return mirror_positions; }
+
+    /**
+     * @brief Get the explicit Mirror Positions of the particle
+     *
+     * @return The const vector of mirror positions
+     */
+    [[nodiscard]] const std::vector<R3>& getMirrorPositions() const noexcept { return mirror_positions; }
 
     bool operator==(const Particle& other) const noexcept;
 
@@ -299,9 +315,6 @@ class Particle {
      * @return String representation of the Particle.
      */
     [[nodiscard]] std::string toString() const;
-
-    [[nodiscard]] std::vector<R3>& getMirrorPositions() noexcept { return mirror_positions; }
-    [[nodiscard]] const std::vector<R3>& getMirrorPositions() const noexcept { return mirror_positions; }
 };
 
 std::ostream& operator<<(std::ostream& stream, const Particle& p);
