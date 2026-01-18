@@ -28,7 +28,6 @@ set(RUN_CLANG_TIDY_CMD
     ${RUN_CLANG_TIDY_EXE}
     -clang-tidy-binary=${CLANG_TIDY_EXE}
     -p=${CMAKE_BINARY_DIR}
-    -quiet
     -config-file=${CMAKE_SOURCE_DIR}/.clang-tidy
     -header-filter=${CMAKE_SOURCE_DIR}/include/.*
 )
@@ -39,16 +38,16 @@ if (CLANG_TIDY_WARNINGS_AS_ERRORS)
 endif()
 
 # add fix and lint targets that runs run-clang-tidy
-# Use regex to match only project source files (src|include|tests|benchmarks)
+# Use regex to match only project source files, anchoring to project directory name
 add_custom_target(lint 
-    COMMAND ${RUN_CLANG_TIDY_CMD} ".*/\\(src\\|include\\|tests\\|benchmarks\\)/.*"
+    COMMAND ${RUN_CLANG_TIDY_CMD} ".*/MolSim-WS25-GroupD/(src|include|tests|benchmarks)/.*"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMENT "Running clang-tidy analysis"
     VERBATIM
 )
 
 add_custom_target(fix 
-    COMMAND ${RUN_CLANG_TIDY_CMD} -fix -warnings-as-errors="" -extra-arg=-Wno-error ".*/\\(src\\|include\\|tests\\|benchmarks\\)/.*"
+    COMMAND ${RUN_CLANG_TIDY_CMD} -fix -warnings-as-errors="" -extra-arg=-Wno-error ".*/MolSim-WS25-GroupD/(src|include|tests|benchmarks)/.*"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMENT "Running clang-tidy and applying fixes"
     VERBATIM
