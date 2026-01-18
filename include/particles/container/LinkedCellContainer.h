@@ -346,7 +346,6 @@ class LinkedCellContainer {
         std::vector<C*> cells;
         size_t curr_cell_idx = 0;
         std::span<P> container_data;
-        double radius;
         double radius_sqr;
         R3 center;
         size_t center_idx;
@@ -380,13 +379,12 @@ class LinkedCellContainer {
         using pointer = P*;
         using reference = P&;
 
-        proximity_iterator() noexcept : radius(0.0), radius_sqr(0.0), last_cell_idx(0) {}
+        proximity_iterator() noexcept : radius_sqr(0.0), last_cell_idx(0) {}
         proximity_iterator(R3 center, double radius, std::vector<size_t>::const_iterator cur, std::vector<C*>&& cells,
                            std::span<P> data, size_t center_idx)
             : cur(cur),
               cells(std::move(cells)),
               container_data(data),
-              radius(radius),
               radius_sqr(radius * radius),
               center(center),
               center_idx(center_idx),
@@ -394,6 +392,9 @@ class LinkedCellContainer {
             if (!this->cells.empty()) {
                 cur_cell_end = this->cells[0]->stableIteratorEnd();
                 last_cell_end = this->cells.back()->stableIteratorEnd();
+            } else {
+                cur_cell_end = cur;
+                last_cell_end = cur;
             }
             satisfy();
         }
@@ -419,12 +420,6 @@ class LinkedCellContainer {
         friend bool operator!=(const proximity_iterator<P, C>& a, const proximity_iterator<P, C>& b) noexcept {
             return !(a == b);
         }
-
-        [[nodiscard]] std::vector<C*> getCells() const { return cells; }
-        [[nodiscard]] double getRadius() const noexcept { return radius; }
-        [[nodiscard]] R3 getCenter() const { return center; }
-        [[nodiscard]] size_t getCenterIdx() const noexcept { return center_idx; }
-        [[nodiscard]] size_t getIdx() const noexcept { return *cur; }
     };
     static_assert(std::forward_iterator<proximity_iterator<Particle, Cell>>);
     static_assert(std::forward_iterator<proximity_iterator<const Particle, const Cell>>);
