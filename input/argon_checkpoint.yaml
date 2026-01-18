@@ -4,7 +4,8 @@ settings:
   end_time: 150
   start_time: 0.0
   force: "Smooth Lennard Jones"
-  frequency: 10
+  frequency: 1000
+  checkpoint: 50000
   cutoff: 2.3
   smooth: 1.9
   container: LINKED

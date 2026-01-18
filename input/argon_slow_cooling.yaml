@@ -7,3 +7,9 @@ settings:
     target_temp: 0.5
     n_thermostat: 50
     delta_temp: 0.00078
+  
+  statistics:
+    diffusion: 1000
+    rdf: 10000
+    sample_r: 0.1
+    window_size: 10.0
