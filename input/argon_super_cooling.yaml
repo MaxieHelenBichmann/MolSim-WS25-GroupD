@@ -1,6 +1,8 @@
 settings:
   format: Settings
   end_time: 150
+  pairwise_forces:
+    - SMOOTHLENNARDJONES
 
   thermostat: 
     initial_temp: 3.0

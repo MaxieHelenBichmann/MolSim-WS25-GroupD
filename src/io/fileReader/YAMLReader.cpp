@@ -4,6 +4,7 @@
 #include <yaml-cpp/exceptions.h>
 #include <yaml-cpp/node/node.h>
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstdlib>
@@ -47,6 +48,19 @@ void validateSettings(const SettingsParam& settings) {
     if (settings.cutoff < 0) {
         SPDLOG_ERROR("cutoff must be non-negative, got: " + std::to_string(settings.cutoff));
         throw ValidationException("cutoff must be non-negative, got: " + std::to_string(settings.cutoff));
+    }
+    if (settings.smoothing < 0) {
+        SPDLOG_ERROR("smoothing must be non-negative, got: " + std::to_string(settings.smoothing));
+        throw ValidationException("smoothing must be non-negative, got: " + std::to_string(settings.smoothing));
+    }
+    // Check if smooth LJ is used, then smoothing must be <= cutoff
+    if (std::find(settings.pairwise_forces.begin(), settings.pairwise_forces.end(), S_LENNARDJONES) !=
+        settings.pairwise_forces.end()) {
+        if (settings.smoothing > settings.cutoff) {
+            SPDLOG_ERROR("For SMOOTHLENNARDJONES: smoothing radius must be <= cutoff radius, got smoothing={}, cutoff={}",
+                         settings.smoothing, settings.cutoff);
+            throw ValidationException("For SMOOTHLENNARDJONES: smoothing radius must be <= cutoff radius");
+        }
     }
     if (settings.delta_temp <= 0) {
         SPDLOG_ERROR("delta_temp must be greater then 0, got: " + std::to_string(settings.delta_temp));
@@ -142,6 +156,9 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
         }
         if (node["cutoff"]) {
             settings.cutoff = node["cutoff"].as<double>();
+        }
+        if (node["smooth"]) {
+            settings.smoothing = node["smooth"].as<double>();
         }
         if (node["pairwise_forces"]) {
             settings.pairwise_forces.clear();

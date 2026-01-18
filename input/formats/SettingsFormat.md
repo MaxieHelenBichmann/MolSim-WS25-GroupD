@@ -29,7 +29,7 @@ The settings block has the following keys, with every key except format being op
 - `smooth`: A floating-point number specifying the smoothing radius of the Smooth Lennard-Jones Force.
 - `container`: Container type, either `"SIMPLE"` or `"LINKED"` (default: `"LINKED"`).
 - `pairwise_forces`: A sequence containing all desired pairwise forces (forces applied between particle pairs).
-  - Available forces: `"GRAVITATIONAL"`, `"LENNARDJONES"`, `"TRUNCLENNARDJONES"`, `"Smooth Lennard Jones"`
+  - Available forces: `"GRAVITATIONAL"`, `"LENNARDJONES"`, `"TRUNCLENNARDJONES"`, `"SMOOTHLENNARDJONES"`
   - Multiple forces can be specified and will all be applied
   - Default: `["LENNARDJONES"]`
 - `single_forces`: A sequence of force objects defining single particle forces (forces applied to individual particles).
@@ -52,6 +52,7 @@ Pairwise forces are applied between pairs of particles within the cutoff radius.
 - **`GRAVITATIONAL`**: Newtonian gravitational attraction between particle pairs. Force magnitude: `F = G * m1 * m2 / r²`
 - **`LENNARDJONES`**: Standard Lennard-Jones potential for molecular interactions. Includes both attractive and repulsive components.
 - **`TRUNCLENNARDJONES`**: Truncated Lennard-Jones potential cut off at `r = 2^(1/6) * σ`. Only the repulsive part is active. Used for preventing self-penetration in membrane simulations. Only applies to particles with type 2.
+- **`SMOOTHLENNARDJONES`**: Smooth Lennard-Jones potential that smoothly transitions to zero at the cutoff radius. Requires `cutoff` and `smooth` parameters. The smoothing radius (`smooth`) must be less than or equal to the cutoff radius (`cutoff`).
 
 ### Single Force Configuration
 
@@ -213,6 +214,23 @@ settings:
     domain:
       x: 40.0
       y: 40.0
+      z: 1.0
+```
+
+### Smooth Lennard-Jones Example
+```yaml
+settings:
+    format: Settings
+    delta_t: 0.0005
+    end_time: 20.0
+    container: LINKED
+    cutoff: 3.0
+    smooth: 2.5       # Smoothing radius (must be <= cutoff)
+    pairwise_forces:
+      - SMOOTHLENNARDJONES
+    domain:
+      x: 50.0
+      y: 50.0
       z: 1.0
 ```
 
