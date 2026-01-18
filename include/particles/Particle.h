@@ -75,73 +75,77 @@ class Particle {
      * @brief Type of the particle.
      * A particle with a negative type should be created and destroyed within the same
      * simulation iteration. Positive particle types may also exist beyond one iteration.
-     * -1 if particle is GHOST particle
-     *  0 default
-     *  1 if particle is a mirrored particle (in periodic boundaries)
-     *  2 if particle is in a membrane
-     *  3 default particle targetted by target Force
-     *  4 membrane particle targetted by target Force
+     *  0: default.
+     *  1: if particle is a mirrored particle (in periodic boundaries).
+     *  2: if particle is in a membrane.
+     *  3: default particle targetted by target Force.
+     *  4: membrane particle targetted by target Force.
      */
     int type;
 
-    // NOLINTBEGIN
+    /*
+    n-th bit = n-th mirror location. The coordinates are *relative* to particle.getX()
+    d0 = domain_size[0], d1 = domain_size[1], d2 = domain_size[2]
+    --------------------------------------------------------------------------
+    n-th bit         Location
+    --------------------------------------------------------------------------
+    0                (-d0, -d1, -d2)
+    1                (-d0, -d1,   0)
+    2                (-d0, -d1,  d2)
+    3                (  0, -d0, -d2)
+    4                (  0, -d1,   0)
+    5                (  0, -d1,  d2)
+    6                ( d0, -d1, -d2)
+    7                ( d0, -d1,   0)
+    8                ( d0, -d1,  d2)
+    9                (-d0,   0, -d2)
+    10               (-d0,   0,   0)
+    11               (-d0,   0,  d2)
+    12               (  0,   0, -d2)
+    13               (  0,   0,   0)         this is where the particle is
+    14               (  0,   0,  d2)
+    15               ( d0,   0, -d2)
+    16               ( d0,   0,   0)
+    17               ( d0,   0,  d2)
+    18               (-d0,  d1, -d2)
+    19               (-d0,  d1,   0)
+    20               (-d0,  d1,  d2)
+    21               (  0,  d1, -d2)
+    22               (  0,  d1,   0)
+    23               (  0,  d1,  d2)
+    24               ( d0,  d1, -d2)
+    25               ( d0,  d1,   0)
+    26               ( d0,  d1,  d2)
+    */
+
     /**
      * @brief A bitmap indicating the locations the particle has been mirrored to.
      * This is relevant for periodic boundaries. See also Assignment4/Periodic slides
      * for a visualization.
      *
-     * n-th bit = n-th mirror location. The coordinates are *relative* to particle.getX()
-     * d0 = domain_size[0], d1 = domain_size[1], d2 = domain_size[2]
-     * --------------------------------------------------------------------------
-     * n-th bit         Location
-     * --------------------------------------------------------------------------
-     * 0                (-d0, -d1, -d2)
-     * 1                (-d0, -d1,   0)
-     * 2                (-d0, -d1,  d2)
-     * 3                (  0, -d0, -d2)
-     * 4                (  0, -d1,   0)
-     * 5                (  0, -d1,  d2)
-     * 6                ( d0, -d1, -d2)
-     * 7                ( d0, -d1,   0)
-     * 8                ( d0, -d1,  d2)
-     * 9                (-d0,   0, -d2)
-     * 10               (-d0,   0,   0)
-     * 11               (-d0,   0,  d2)
-     * 12               (  0,   0, -d2)
-     * 13               (  0,   0,   0)         this is where the particle is
-     * 14               (  0,   0,  d2)
-     * 15               ( d0,   0, -d2)
-     * 16               ( d0,   0,   0)
-     * 17               ( d0,   0,  d2)
-     * 18               (-d0,  d1, -d2)
-     * 19               (-d0,  d1,   0)
-     * 20               (-d0,  d1,  d2)
-     * 21               (  0,  d1, -d2)
-     * 22               (  0,  d1,   0)
-     * 23               (  0,  d1,  d2)
-     * 24               ( d0,  d1, -d2)
-     * 25               ( d0,  d1,   0)
-     * 26               ( d0,  d1,  d2)
      */
     uint32_t mirror_locations = 0;
-    // NOLINTEND
+
+    /*
+    Index mapping for neighbor positions (relative to current particle):
+    --------------------------------------------------------------------------
+    Index    Relative Position    Description
+    --------------------------------------------------------------------------
+    0        [-1,  0,  0]         Left neighbor (x-axis)
+    1        [ 1,  0,  0]         Right neighbor (x-axis)
+    2        [ 0, -1,  0]         Bottom neighbor (y-axis)
+    3        [ 0,  1,  0]         Top neighbor (y-axis)
+    4        [-1, -1,  0]         Bottom-left diagonal (xy-plane)
+    5        [ 1, -1,  0]         Bottom-right diagonal (xy-plane)
+    6        [-1,  1,  0]         Top-left diagonal (xy-plane)
+    7        [ 1,  1,  0]         Top-right diagonal (xy-plane)
+    */
 
     /**
      * @brief Array storing pointers to neighboring particles in a membrane structure.
+     * @warning Copying these is disallowed, as it would break reciprocal relationships required for the project to
+     * work.
      * Used for membrane simulations to track direct and diagonal neighbors in 2D.
-     * Index mapping for neighbor positions (relative to current particle):
-     * --------------------------------------------------------------------------
-     * Index    Relative Position    Description
-     * --------------------------------------------------------------------------
-     * 0        [-1,  0,  0]         Left neighbor (x-axis)
-     * 1        [ 1,  0,  0]         Right neighbor (x-axis)
-     * 2        [ 0, -1,  0]         Bottom neighbor (y-axis)
-     * 3        [ 0,  1,  0]         Top neighbor (y-axis)
-     * 4        [-1, -1,  0]         Bottom-left diagonal (xy-plane)
-     * 5        [ 1, -1,  0]         Bottom-right diagonal (xy-plane)
-     * 6        [-1,  1,  0]         Top-left diagonal (xy-plane)
-     * 7        [ 1,  1,  0]         Top-right diagonal (xy-plane)
-     *
      * Null pointers indicate no neighbor at that position (e.g., boundary particles).
      */
     std::array<std::optional<size_t>, 8> neighbors;
@@ -157,21 +161,14 @@ class Particle {
 
     Particle& operator=(Particle&& other) noexcept;
 
-    Particle(
-        // for visualization, we need always 3 coordinates
+    /* for visualization, we need always 3 coordinates
+     -> in case of 2d, we use only the first and the second
+    */
+    Particle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg = 0);
+    Particle(R3 x_arg, R3 v_arg, R3 f_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg = 0);
 
-        // -> in case of 2d, we use only the first and the second
-        R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg = 0);
-    Particle(
-        // for visualization, we need always 3 coordinates
-        // -> in case of 2d, we use only the first and the second
-        R3 x_arg, R3 v_arg, R3 f_arg, double m_arg, double epsilon_arg, double sigma_arg, int type_arg = 0);
-
-    Particle(
-        // for visualization, we need always 3 coordinates
-        // -> in case of 2d, we use only the first and the second
-        R3 x_arg, R3 old_x_arg, R3 v_arg, R3 f_arg, R3 old_f_arg, double m_arg, double epsilon_arg, double sigma_arg,
-        int type_arg);
+    Particle(R3 x_arg, R3 old_x_arg, R3 v_arg, R3 f_arg, R3 old_f_arg, double m_arg, double epsilon_arg,
+             double sigma_arg, int type_arg);
 
     ~Particle();
 

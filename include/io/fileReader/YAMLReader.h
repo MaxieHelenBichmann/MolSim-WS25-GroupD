@@ -100,32 +100,32 @@ class YAMLReader : public FileReader {
      */
     void readParticles(ContainerRef particles, const SettingsParam& settings, const std::string& filename) override;
     /**
-     * @brief      Helper function to parse Cuboid Format
+     * @brief Helper function to parse Cuboid Format
      *
-     * @param[in]  node YAML::Node of the start of the cuboid block
+     * @param node YAML::Node of the start of the cuboid block
      *
-     * @return     Vector of read in Cuboids
+     * @return Vector of read in Cuboids
      * @throws YAMLReaderException if parsing fails.
      * @throws ValidationException if cuboid parameters are invalid.
      */
     std::vector<CuboidData> parseCuboids(const YAML::Node& node);
     /**
-     * @brief      Helper function to parse Disc Format
+     * @brief Helper function to parse Disc Format
      *
-     * @param[in]  node YAML::Node of the start of the disc block
+     * @param node YAML::Node of the start of the disc block
      *
-     * @return     Vector of read in Discs
+     * @return Vector of read in Discs
      * @throws YAMLReaderException if parsing fails.
      * @throws ValidationException if disc parameters are invalid.
      */
     std::vector<DiscData> parseDiscs(const YAML::Node& node);
 
     /**
-     * @brief      Helper function to parse Membrane Format
+     * @brief Helper function to parse Membrane Format
      *
-     * @param[in]  node YAML::Node of the start of the membrane block
+     * @param node YAML::Node of the start of the membrane block
      *
-     * @return     Vector of read in Membranes
+     * @return Vector of read in Membranes
      * @throws YAMLReaderException if parsing fails.
      * @throws ValidationException if membrane parameters are invalid.
      */
@@ -133,34 +133,34 @@ class YAMLReader : public FileReader {
 
    private:
     /**
-     * @brief      Helper function to parse Domains
+     * @brief Helper function to parse Domains
      *
-     * @param[in]  node YAML::Node of the start of the domain block
+     * @param node YAML::Node of the start of the domain block
      */
     void parseDomain(SettingsParam& settings, const YAML::Node& node);
     /**
-     * @brief      Helper function to create XVM particles
+     * @brief Helper function to create XVM particles
      *
-     * @param[in]  node YAML::Node of the start of the particles block
+     * @param node YAML::Node of the start of the particles block
      */
     void readXVM(ContainerRef particles, const YAML::Node& node);
     /**
-     * @brief      Helper function to create cuboid particles
+     * @brief Helper function to create cuboid particles
      *
-     * @param[in]  node YAML::Node of the start of the cuboid block
+     * @param node YAML::Node of the start of the cuboid block
      */
     void readCube(ContainerRef particles, const SettingsParam& settings, const YAML::Node& node);
     /**
-     * @brief      Helper function to create disc particles
+     * @brief Helper function to create disc particles
      *
-     * @param[in]  node YAML::Node of the start of the disc block
+     * @param node YAML::Node of the start of the disc block
      */
     void readDisc(ContainerRef particles, const SettingsParam& settings, const YAML::Node& node);
 
     /**
-     * @brief      Helper function to create membrane particles
+     * @brief Helper function to create membrane particles
      *
-     * @param[in]  node YAML::Node of the start of the membrane block
+     * @param node YAML::Node of the start of the membrane block
      */
     void readMembrane(ContainerRef particles, const SettingsParam& settings, const YAML::Node& node);
 };
