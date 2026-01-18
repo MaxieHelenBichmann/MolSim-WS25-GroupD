@@ -49,7 +49,7 @@ void StatsWriter::computeRDF(ContainerRef particles, std::vector<double>& result
     for (size_t i = 0; i < particles.size(); ++i) {
         for (size_t j = i + 1; j < particles.size(); ++j) {
             auto index = static_cast<size_t>((particles[i].getX() - particles[j].getX()).euclidNorm() / sample_radius);
-            for (auto mirrored_pos : particles[j].getMirrorPositions()) {
+            for (const auto& mirrored_pos : particles[j].getMirrorPositions()) {
                 size_t idx = static_cast<size_t>((particles[i].getX() - mirrored_pos).euclidNorm() / sample_radius);
                 index = idx < index ? idx : index;
             }
