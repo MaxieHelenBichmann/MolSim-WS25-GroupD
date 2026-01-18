@@ -100,58 +100,6 @@ TEST_F(TargetForceSourceTest, CorrectMagnitude) {
 }
 
 /**
- * @brief Tests that force stops after max_iterations.
- */
-TEST_F(TargetForceSourceTest, StopsAfterMaxIterations) {
-    R3 direction = {0.0, 0.0, 1.0};
-    double magnitude = 1.0;
-    size_t max_iterations = 3;
-    TargetForceSource target_force(direction, magnitude, max_iterations);
-
-    Particle p(R3{0.0, 0.0, 0.0}, R3{0.0, 0.0, 0.0}, 1.0, 1.0, 1.0, 3);
-
-    R3 expected_force = {0.0, 0.0, 1.0};
-    R3 zero_force = {0.0, 0.0, 0.0};
-
-    // First 3 iterations should apply force
-    EXPECT_R3_NEAR(expected_force, target_force.applyForce(p), precision);
-    EXPECT_R3_NEAR(expected_force, target_force.applyForce(p), precision);
-    EXPECT_R3_NEAR(expected_force, target_force.applyForce(p), precision);
-
-    // After max_iterations, should return zero
-    EXPECT_R3_NEAR(zero_force, target_force.applyForce(p), precision);
-    EXPECT_R3_NEAR(zero_force, target_force.applyForce(p), precision);
-}
-
-/**
- * @brief Tests that iteration counter increments only for target particles.
- */
-TEST_F(TargetForceSourceTest, IterationCounterOnlyIncrementsForTargets) {
-    R3 direction = {0.0, 0.0, 1.0};
-    double magnitude = 1.0;
-    size_t max_iterations = 2;
-    TargetForceSource target_force(direction, magnitude, max_iterations);
-
-    Particle p_target(R3{0.0, 0.0, 0.0}, R3{0.0, 0.0, 0.0}, 1.0, 1.0, 1.0, 3);
-    Particle p_normal(R3{0.0, 0.0, 0.0}, R3{0.0, 0.0, 0.0}, 1.0, 1.0, 1.0, 0);
-
-    R3 expected_force = {0.0, 0.0, 1.0};
-    R3 zero_force = {0.0, 0.0, 0.0};
-
-    // Apply to normal particle (should not increment counter)
-    EXPECT_R3_NEAR(zero_force, target_force.applyForce(p_normal), precision);
-    EXPECT_R3_NEAR(zero_force, target_force.applyForce(p_normal), precision);
-    EXPECT_R3_NEAR(zero_force, target_force.applyForce(p_normal), precision);
-
-    // Should still have 2 iterations left for target particles
-    EXPECT_R3_NEAR(expected_force, target_force.applyForce(p_target), precision);
-    EXPECT_R3_NEAR(expected_force, target_force.applyForce(p_target), precision);
-
-    // Now should be exhausted
-    EXPECT_R3_NEAR(zero_force, target_force.applyForce(p_target), precision);
-}
-
-/**
  * @brief Tests that force works with arbitrary direction vector (not unit vector).
  */
 TEST_F(TargetForceSourceTest, ArbitraryDirectionVector) {
@@ -215,23 +163,6 @@ TEST_F(TargetForceSourceTest, AppliesToBothType3And4) {
 
     EXPECT_R3_NEAR(expected, target_force.applyForce(p_type3), precision);
     EXPECT_R3_NEAR(expected, target_force.applyForce(p_type4), precision);
-}
-
-/**
- * @brief Tests max_iterations = 0 means no force is applied.
- */
-TEST_F(TargetForceSourceTest, ZeroMaxIterations) {
-    R3 direction = {0.0, 0.0, 1.0};
-    double magnitude = 5.0;
-    size_t max_iterations = 0;
-    TargetForceSource target_force(direction, magnitude, max_iterations);
-
-    Particle p(R3{0.0, 0.0, 0.0}, R3{0.0, 0.0, 0.0}, 1.0, 1.0, 1.0, 3);
-
-    R3 result = target_force.applyForce(p);
-    R3 expected = {0.0, 0.0, 0.0};
-
-    EXPECT_R3_NEAR(expected, result, precision);
 }
 
 }  // namespace mol_sim

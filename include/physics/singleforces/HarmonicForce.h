@@ -53,25 +53,25 @@ class HarmonicForce : public SingleForceSource {
         const auto& neighbors = p1.getNeighbors();
         // compute direct neighbor influence
         for (size_t i = 0; i < 4; i++) {
-            if (!neighbors[i].has_value()) {
-                continue;
+            const auto neighbor = neighbors[i];
+            if (neighbor.has_value()) {
+                const Particle& p2 = particles[neighbor.value()];
+                const R3 diff = p2.getX() - p1.getX();
+                const double dist = diff.euclidNorm();
+                const double scalar = (K * 0.5 * (dist - R_0)) / dist;
+                force += scalar * diff;
             }
-            const Particle& p2 = particles[neighbors[i].value()];
-            const R3 diff = p2.getX() - p1.getX();
-            const double dist = diff.euclidNorm();
-            const double scalar = (K * 0.5 * (dist - R_0)) / dist;
-            force += scalar * diff;
         }
         // compute diagonal neighbor influence
         for (size_t i = 4; i < 8; i++) {
-            if (!neighbors[i].has_value()) {
-                continue;
+            const auto neighbor = neighbors[i];
+            if (neighbor.has_value()) {
+                const Particle& p2 = particles[neighbor.value()];
+                const R3 diff = p2.getX() - p1.getX();
+                const double dist = diff.euclidNorm();
+                const double scalar = (K * 0.5 * (dist - std::numbers::sqrt2 * R_0)) / dist;
+                force += scalar * diff;
             }
-            const Particle& p2 = particles[neighbors[i].value()];
-            const R3 diff = p2.getX() - p1.getX();
-            const double dist = diff.euclidNorm();
-            const double scalar = (K * 0.5 * (dist - std::numbers::sqrt2 * R_0)) / dist;
-            force += scalar * diff;
         }
         return force;
     }
