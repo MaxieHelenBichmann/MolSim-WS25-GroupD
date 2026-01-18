@@ -54,11 +54,11 @@ void validateSettings(const SettingsParam& settings) {
         throw ValidationException("smoothing must be non-negative, got: " + std::to_string(settings.smoothing));
     }
     // Check if smooth LJ is used, then smoothing must be <= cutoff
-    if (std::find(settings.pairwise_forces.begin(), settings.pairwise_forces.end(), S_LENNARDJONES) !=
-        settings.pairwise_forces.end()) {
+    if (std::ranges::find(settings.pairwise_forces, S_LENNARDJONES) != settings.pairwise_forces.end()) {
         if (settings.smoothing > settings.cutoff) {
-            SPDLOG_ERROR("For SMOOTHLENNARDJONES: smoothing radius must be <= cutoff radius, got smoothing={}, cutoff={}",
-                         settings.smoothing, settings.cutoff);
+            SPDLOG_ERROR(
+                "For SMOOTHLENNARDJONES: smoothing radius must be <= cutoff radius, got smoothing={}, cutoff={}",
+                settings.smoothing, settings.cutoff);
             throw ValidationException("For SMOOTHLENNARDJONES: smoothing radius must be <= cutoff radius");
         }
     }
