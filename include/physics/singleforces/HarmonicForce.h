@@ -50,32 +50,44 @@ class HarmonicForce : public SingleForceSource {
         if (p1.getType() != 2 && p1.getType() != 4) {
             return force;
         }
+        const auto& neighbors = p1.getNeighbors();
         // compute direct neighbor influence
         for (size_t i = 0; i < 4; i++) {
-            const std::optional<size_t> neighbor = p1.getNeighbors()[i];
-            if (!neighbor.has_value()) {
+            if (!neighbors[i].has_value()) {
                 continue;
             }
-            const Particle& p2 = particles[neighbor.value()];
-            double dist = (p1.getX() - p2.getX()).euclidNorm();
-            double scalar = (K * 0.5 * (dist - R_0)) / dist;
-            force += scalar * (p2.getX() - p1.getX());
+            const Particle& p2 = particles[neighbors[i].value()];
+            const R3 diff = p2.getX() - p1.getX();
+            const double dist = diff.euclidNorm();
+            const double scalar = (K * 0.5 * (dist - R_0)) / dist;
+            force += scalar * diff;
         }
         // compute diagonal neighbor influence
         for (size_t i = 4; i < 8; i++) {
-            const std::optional<size_t> neighbor = p1.getNeighbors()[i];
-            if (!neighbor.has_value()) {
+            if (!neighbors[i].has_value()) {
                 continue;
             }
-            const Particle& p2 = particles[neighbor.value()];
-            double dist = (p1.getX() - p2.getX()).euclidNorm();
-            double scalar = (K * 0.5 * (dist - std::numbers::sqrt2 * R_0)) / dist;
-            force += scalar * (p2.getX() - p1.getX());
+            const Particle& p2 = particles[neighbors[i].value()];
+            const R3 diff = p2.getX() - p1.getX();
+            const double dist = diff.euclidNorm();
+            const double scalar = (K * 0.5 * (dist - std::numbers::sqrt2 * R_0)) / dist;
+            force += scalar * diff;
         }
         return force;
     }
 
+    /**
+     * @brief Sets the particle container reference for force calculations.
+     *
+     * @param container Reference to the particle container.
+     */
     void setContainer(ContainerRef container) { particles = container; }
+
+    /**
+     * @brief Gets the type of this force source.
+     *
+     * @return SingleForce type identifier (HARMONIC).
+     */
     [[nodiscard]] SingleForce getType() const override { return HARMONIC; }
 };
 }  // namespace mol_sim
