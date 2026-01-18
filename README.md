@@ -110,6 +110,12 @@ ccmake ..
 | `ENABLE_BENCHMARK` | Enable benchmarking (requires `BENCHMARK_DOWNLOAD_DEPENDENCIES`) |
 | `ENABLE_DOXYGEN` | Enable Doxygen documentation generation |
 | `ENABLE_PROFILING` | Enable profiling tools (perf and valgrind) |
+| `ENABLE_INTEL_VTUNE` | Enable Intel VTune profiling targets |
+| `ENABLE_INTEL_ADVISOR` | Enable Intel Advisor profiling targets |
+| `ENABLE_IO` | Enable IO Output |
+| `ENABLE_CHECKPOINTS` | Enables Checkpoint writing at specified intervals |
+| `ENABLE_STATS` | Enables writing of simulation statistics at specified intervals |
+| `ENABLE_UBSAN` | Enables undefined behavior sanitizer (Debug only) |
 | `COVERAGE` | Enable code coverage reports |
 | `ENABLE_VTK_OUTPUT` | Enable output in VTK format |
 | `CMAKE_BUILD_TYPE` | Build type: `Debug`, `Release`, `RelWithDebInfo`, `MinSizeRel` |
@@ -203,10 +209,10 @@ ctest -V --test-dir ./build/tests
 | Filter Pattern | Description |
 |----------------|-------------|
 | `Simulation/Complexity/` | Compares O(n) LinkedCell vs O(n²) DirectSum scaling |
-| `Cell/` | Compares cell data structures (Vector, Set, UnorderedSet) |
+| `Cell/` | Compares cell data structures (Vector, Set, UnorderedSet) |  
 | `Boundary/` | Measures boundary condition overhead (Reflecting, VelocityReflect) |
-| `Simulation/` | Full end-to-end simulation benchmarks |(Do Not Work Currently)
-| `LinkedCell/` | LinkedCellContainer-specific operation benchmarks | (Do Not Work Currently)
+| `Simulation/Full` | Full end-to-end simulation benchmarks and the Contest 1 benchmark  |
+| `LinkedCell/` | LinkedCellContainer-specific operation benchmarks |
 
 ### Example Benchmark Commands
 
@@ -275,6 +281,8 @@ Output location: `build/coverage/`
 | `perf` | CPU profiling (requires Linux kernel support) |
 | `valgrind` | Memory debugging and profiling suite |
 | `ms_print` | View massif output (included with valgrind) |
+| `vtune` | Intel VTune Profiler (optional, requires Intel oneAPI) |
+| `advisor` | Intel Advisor (optional, requires Intel oneAPI) |
 
 
 ### Build Configuration for Profiling
@@ -363,6 +371,35 @@ cat build/valgrind/memcheck.log  # Review findings
 make valgrind-massif
 ms_print build/valgrind/massif.out | less
 ```
+
+---
+
+### Intel VTune and Advisor
+
+> **Note:** Requires `ENABLE_INTEL_VTUNE` and/or `ENABLE_INTEL_ADVISOR` in CMake configuration and Intel oneAPI toolkit installed.
+
+**VTune Profiler targets:**
+```bash
+make vtune-hotspots    # CPU hotspot analysis
+make vtune-memory      # Memory access patterns
+make vtune-uarch       # Microarchitecture exploration
+make vtune-all         # Run all VTune analyses
+```
+
+**Advisor targets:**
+```bash
+make advisor-survey       # Vectorization opportunities
+make advisor-tripcounts   # Loop iteration counts
+make advisor-roofline     # Roofline performance model
+make advisor-all          # Run all Advisor analyses
+```
+
+**Combined Intel profiling:**
+```bash
+make intel-profile-all  # Run all analyses and create archive
+```
+
+Results saved to `build/vtune/`, `build/advisor/`, or `build/profiling-results/`.
 
 ---
 

@@ -6,7 +6,7 @@
  * Tests 2D simulation with periodic boundaries (left/right) and reflecting boundaries (top/bottom).
  * I/O is disabled to measure pure simulation performance.
  *
- * Run with: ./build/benchmarks/benchmarks --benchmark_filter=FullSimulation
+ * Run with: ./build/benchmarks/benchmarks --benchmark_filter=Simulation/Full
  */
 #include <benchmark/benchmark.h>
 #include <spdlog/spdlog.h>
