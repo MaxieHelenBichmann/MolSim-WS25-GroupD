@@ -44,7 +44,7 @@ add_custom_target(lint COMMAND ${RUN_CLANG_TIDY_CMD}
     COMMENT "Running clang-tidy analysis"
 )
 
-add_custom_target(fix COMMAND ${RUN_CLANG_TIDY_CMD} -fix -fix-errors -fix-notes 
+add_custom_target(fix COMMAND ${RUN_CLANG_TIDY_CMD} -fix -warnings-as-errors="" -extra-arg=-Wno-error
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMENT "Running clang-tidy and applying fixes"
 )
