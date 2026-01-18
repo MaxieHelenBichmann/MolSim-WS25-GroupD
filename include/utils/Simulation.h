@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
-#include <type_traits>
 #include <vector>
 
 #include "exceptions/SimulationException.h"
@@ -15,9 +14,11 @@
 #include "io/StatsWriter.h"
 #include "particles/Particle.h"
 #include "particles/ParticleContainer.h"
-#include "particles/container/LinkedCellContainer.h"
 #include "particles/container/domain/Domain.h"
-#include "physics/ForceSource.h"
+#include "physics/pairwiseforces/PairwiseForceSource.h"
+#include "physics/singleforces/HarmonicForce.h"
+#include "physics/singleforces/SingleForceSource.h"
+#include "physics/targettedforces/TargetForceSource.h"
 #include "utils/Settings.h"
 #include "utils/Vector.h"
 
@@ -50,13 +51,14 @@ class Simulation {
     containerType& particles;
 
     /**
-     * @brief Force source for calculating particle interactions.
+     * @brief Force sources for calculating particle interactions.
      */
-    const ForceSource& force_source;
-    /**
-     * @brief Force type, used in checkpointing.
-     */
-    Force force;
+    const std::vector<std::unique_ptr<PairwiseForceSource>>& pairwise_force_sources;
+
+    const std::vector<std::unique_ptr<SingleForceSource>>& single_force_sources;
+
+    std::vector<PairwiseForce> pairwise_forces;
+    std::vector<SingleForce> single_forces;
     /**
      * @brief Writer used for output.
      */
@@ -133,13 +135,7 @@ class Simulation {
      * @brief Frequency with which the thermostat is applied.
      */
     size_t thermostat_freq;
-    /**
-     * @brief Graviational constant to be used for simulating gravity in the simulation.
-     * Will be used to apply a force m * g_grav (y-axis) to each particle.
-     * Make sure it's 0 if you do NOT want to simulate gravitational pull along y-axis.
-     * Make sure it's NEGATIVE if you want the particle to be pulled DOWN the y-axis.
-     */
-    double g_grav;
+
     /**
      * @brief Flag if thermostat is enabled for this simulation.
      */
@@ -149,6 +145,25 @@ class Simulation {
      */
     std::vector<Particle> new_particles;
 
+    bool target_force_enabled = false;
+
+    TargetForceSource target_force;
+
+    /**
+     * @brief Gravitational acceleration vector for single GRAV force.
+     */
+    R3 g_grav_vec;
+
+    /**
+     * @brief Spring constant for HARMONIC force.
+     */
+    double k;
+
+    /**
+     * @brief Equilibrium distance for HARMONIC force.
+     */
+    double r_0;
+
    public:
     /**
      * @brief Construct a new Simulation object and prepare for run() call.
@@ -157,12 +172,16 @@ class Simulation {
      * @param force_source Force source to be used in the simulation.
      * @param settings Simulation parameters.
      */
-    Simulation(containerType& particles, const ForceSource& force_source, SettingsParam& settings,
+    Simulation(containerType& particles,
+               const std::vector<std::unique_ptr<PairwiseForceSource>>& pairwise_force_sources,
+               const std::vector<std::unique_ptr<SingleForceSource>>& single_force_sources, SettingsParam& settings,
                const OutputWriter& writer, const CheckpointWriter& cp_writer, const StatsWriter& stats_writer)
         : domain(std::move(settings.domain)),
           particles(particles),
-          force_source(force_source),
-          force(settings.force),
+          pairwise_force_sources(pairwise_force_sources),
+          single_force_sources(single_force_sources),
+          pairwise_forces(settings.pairwise_forces),
+          single_forces(settings.single_forces),
           writer(writer),
           cp_writer(cp_writer),
           stats_writer(stats_writer),
@@ -179,8 +198,13 @@ class Simulation {
           target_temp(settings.target_temp),
           delta_temp(settings.delta_temp),
           thermostat_freq(settings.thermostat_freq),
-          g_grav(settings.g_grav),
-          thermo(settings.thermo) {
+          thermo(settings.thermo),
+          target_force_enabled(settings.target_force_enabled),
+          target_force(settings.target_force_direction, settings.target_force_magnitude,
+                       settings.target_force_max_iterations),
+          g_grav_vec(settings.g_grav_vec),
+          k(settings.k),
+          r_0(settings.r_0) {
         for (const Particle& p : particles) {
             total_energy += p.getM() * R3::scalarProduct(p.getV(), p.getV());
         }
@@ -220,10 +244,8 @@ class Simulation {
         for (auto it = particles.begin(); it != particles.end();) {
             (*it).getOldF() = (*it).getF();
             (*it).getF() = Vector<double, 3>();
-            // TODO: Optimization to only call this for relevant particles
-            domain.applyBoundary(*it, force_source);
+            domain.applyBoundary(*it);
             (*it).getMirrorLocations() = 0;
-            // TODO: bit of an ugly workaround for now.
             R3 new_position = (*it).getX();
             (*it).getX() = (*it).getOldX();
             it = particles.updateParticlePosition(
@@ -234,20 +256,29 @@ class Simulation {
     /**
      * @brief Calculates the forces of every particle for the next time step.
      */
-    void calculateF() {
+
+    void calculateF(const size_t iteration) {
         size_t idx = 0;
+
         for (auto it = particles.begin(); it != particles.end(); ++it, idx++) {
             Particle& p1 = *it;
-            p1.getF()[1] += p1.getM() * g_grav;  // add gravitational pull along y-axis
-            // Applying forces between normal particles
-            auto it_prox = particles.proximityBegin(p1.getX(), idx);
-            auto it_prox_end = particles.proximityEnd(p1.getX());
+            for (const auto& force_source : single_force_sources) {
+                p1.getF() += force_source->applyForce(p1);
+            }
+
+            const R3& p1_pos = p1.getX();
+            auto it_prox = particles.proximityBegin(p1_pos, idx);
+            auto it_prox_end = particles.proximityEnd(p1_pos);
             for (; it_prox != it_prox_end; ++it_prox) {
                 Particle& p2 = *it_prox;
-                Vector<double, 3> force = force_source.applyForce(p1, p2);
-                // Apply force directly (Newton's 3rd law: equal and opposite)
-                p1.getF() += force;
-                p2.getF() -= force;
+                for (const auto& force_source : pairwise_force_sources) {
+                    const Vector<double, 3> force = force_source->applyForce(p1, p2);
+                    p1.getF() += force;
+                    p2.getF() -= force;
+                }
+            }
+            if (target_force_enabled && iteration < target_force.getMaxIterations()) {
+                p1.getF() += target_force.applyForce(p1);
             }
             R3 actual_pos = p1.getX();
             const R3& domain_size = domain.getDimension();
@@ -258,12 +289,9 @@ class Simulation {
 
                 constexpr double epsilon = 1e-6;  // Small offset to stay inside domain
                 for (size_t dim = 0; dim < 3; ++dim) {
-                    // Mirror slightly left of domain (x < 0) → clamp to just inside left boundary
                     if (lookup_pos[dim] < 0) {
                         lookup_pos[dim] = epsilon;
-                    }
-                    // Mirror slightly right of domain (x > domain) → clamp to just inside right boundary
-                    else if (lookup_pos[dim] > domain_size[dim]) {
+                    } else if (lookup_pos[dim] > domain_size[dim]) {
                         lookup_pos[dim] = domain_size[dim] - epsilon;
                     }
                 }
@@ -272,7 +300,9 @@ class Simulation {
 
                 for (; it_prox != it_prox_end; ++it_prox) {
                     Particle& p2 = *it_prox;
-                    p2.getF() += force_source.applyForce(p2, p1);
+                    for (const auto& force_source : pairwise_force_sources) {
+                        p2.getF() += force_source->applyForce(p2, p1);
+                    }
                 }
             }
             p1.getX() = actual_pos;
@@ -324,6 +354,11 @@ class Simulation {
     void run() {
         double current_time = start_time;
         [[maybe_unused]] int iteration = 0;
+        for (const auto& source : single_force_sources) {
+            if (source->getType() == SingleForce::HARMONIC) {
+                static_cast<HarmonicForce*>(source.get())->setContainer(particles);
+            }
+        }
 
 #ifdef ENABLE_CHECKPOINTING
         SettingsParam cp_settings;
@@ -331,7 +366,11 @@ class Simulation {
         cp_settings.end_time = end_time;
         cp_settings.start_time = current_time;
         cp_settings.base_name = base_name;
-        cp_settings.force = force;
+        cp_settings.pairwise_forces = pairwise_forces;
+        cp_settings.single_forces = single_forces;
+        cp_settings.g_grav_vec = g_grav_vec;
+        cp_settings.k = k;
+        cp_settings.r_0 = r_0;
         if constexpr (std::is_same_v<std::remove_cvref_t<containerType>, LinkedCellContainer>) {
             cp_settings.container_type = "LINKED";
         } else {
@@ -344,8 +383,13 @@ class Simulation {
         cp_settings.delta_temp = delta_temp;
         cp_settings.thermostat_freq = thermostat_freq;
         cp_settings.dimensions = dimensions;
-        cp_settings.g_grav = g_grav;
         cp_settings.thermo = thermo;
+        cp_settings.target_force_enabled = target_force_enabled;
+        if (target_force_enabled) {
+            cp_settings.target_force_direction = target_force.getDirection();
+            cp_settings.target_force_magnitude = target_force.getMagnitude();
+            cp_settings.target_force_max_iterations = target_force.getMaxIterations();
+        }
         auto cp_n = static_cast<size_t>(std::ceil((end_time - start_time) / delta_t));
 #endif
 
@@ -366,11 +410,11 @@ class Simulation {
 
             // 4. Calculate forces (including ghost interactions)
             SPDLOG_DEBUG("Iteration {}: Calculating forces for {} particles", iteration + 1, particles.size());
-            calculateF();
+            calculateF(iteration);
 
             // 5. Calculate thermostat factor
             double thermo_factor = 1.0;
-            if (thermo && iteration > 0 && iteration % thermostat_freq == 0) {
+            if (thermo && iteration % thermostat_freq == 0) {
                 thermo_factor = calculateThermostatFactor();
             }
             // 6. Calculate new velocities

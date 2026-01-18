@@ -1,12 +1,13 @@
 #include "particles/boundaries/Periodic.h"
 
 #include <gtest/gtest.h>
+#include <physics/pairwiseforces/PairwiseForceSource.h>
 
 #include <algorithm>
 
 #include "particles/Particle.h"
 #include "particles/boundaries/Boundary.h"
-#include "physics/LennardJonesForce.h"
+#include "physics/pairwiseforces/LennardJonesForce.h"
 #include "utils/Vector.h"
 
 namespace mol_sim {
@@ -23,7 +24,7 @@ class PeriodicTest : public testing::Test {
     R3 dimension{10.0, 10.0, 10.0};
     R3 zero{.0, .0, .0};
     double cutoff = 1.0;
-    const ForceSource& force_source = *(new LennardJonesForce());
+    const PairwiseForceSource& force_source = *(new LennardJonesForce());
     Periodic left_boundary{BoundaryLocation::LEFT, dimension, cutoff, 3};
     Periodic right_boundary{BoundaryLocation::RIGHT, dimension, cutoff, 3};
     Periodic upper_boundary{BoundaryLocation::UPPER, dimension, cutoff, 3};
@@ -86,7 +87,7 @@ TEST_F(PeriodicTest, Particle2DTeleport) {
     R3 x = {-.5, 5.0, 0.0};
     R3 v = {.0, .0, .0};
     Particle p = Particle(x, v, 1.0, 1.0, 1.0, 0);
-    const ForceSource& force_source = LennardJonesForce();
+    const PairwiseForceSource& force_source = LennardJonesForce();
     left_boundary2_d.applyBoundary(p, force_source);
     Particle p_exp(p);
     p_exp.getX() = {9.5, 5.0, 0.0};

@@ -1,0 +1,13 @@
+cuboid_targets:
+  format: Cuboid
+  coordinates: [0.0, 0.0, 0.0]
+  velocity: [0.0, 0.0, 0.0]
+  particleNum: [2, 2, 2]
+  mass: 1.0
+  distance: 1.0
+  mean_velo: 0.0
+  epsilon: 5.0
+  sigma: 1.0
+  targets:
+    - [0, 0, 0]
+    - [1, 1, 1]

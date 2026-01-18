@@ -73,7 +73,7 @@ void Periodic::setShiftLookup(R3 domain_size) {
  * I will leave this behavior in for now.
  */
 void Periodic::applyBoundary(  // NOLINT
-    Particle& p, [[maybe_unused]] const ForceSource& force) noexcept {
+    Particle& p, [[maybe_unused]] const PairwiseForceSource& force) noexcept {
     teleportParticleIfOOB(p);
     if (!isOnBoundary(p.getX(), getAxis(), getSign())) {  // only mirror particles in correct boundary region
         return;

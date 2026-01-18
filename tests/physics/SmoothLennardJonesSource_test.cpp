@@ -3,7 +3,7 @@
 #include <numbers>
 
 #include "particles/Particle.h"
-#include "physics/SmoothLennardJonesForce.h"
+#include "physics/pairwiseforces/SmoothLennardJonesForce.h"
 #include "testingUtils.h"
 
 namespace mol_sim {
@@ -77,7 +77,7 @@ TEST_F(SmoothLennardJonesFarAwayTest, FarAway_Cardinal) {
     R3 expected_force = {0., 0., 0.};
     p2.getX() = {100.0, 0.0, 0.0};
     R3 result = force.applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
     p2.getX() = {-100.0, 0.0, 0.0};
     result = force.applyForce(p1, p2);
     EXPECT_R3_NEAR(result, -1 * expected_force, precision);
@@ -90,11 +90,11 @@ TEST_F(SmoothLennardJonesFarAwayTest, FarAway_Diagonal) {
     R3 expected_force = {0., 0., 0.};
     p2.getX() = {100.0, 100.0, 0.0};
     R3 result = force.applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 
     p2.getX() = {-100.0, -100.0, 0.0};
     result = force.applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, -1 * expected_force, precision);
+    EXPECT_R3_NEAR(-1 * expected_force, result, precision);
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -117,11 +117,11 @@ TEST_F(SmoothLennardJonesCloseTest, Close_LJ) {
     R3 expected_force = {0.0004577357322, 0.0004577357322, 0.};
     p2.getX() = {4.0, 4.0, 0.0};
     R3 result = force.applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 
     p2.getX() = {-4.0, -4.0, 0.0};
     result = force.applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, -1 * expected_force, precision);
+    EXPECT_R3_NEAR(-1 * expected_force, result, precision);
 }
 
 /**
@@ -160,10 +160,10 @@ TEST_F(SmoothLennardJonesCloseTest, Close_PotentialWellAtRadius2_Diagonal) {
 
     p2.getX() = {bottom_diagonal, bottom_diagonal, 0.0};
     R3 result = force.applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
     p2.getX() = {-bottom_diagonal, -bottom_diagonal, 0.0};
     result = force.applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 }
 /**
  * @brief Testing the case when the two close particles are in the bottom well (no force), when they are cardinal to one
@@ -179,11 +179,11 @@ TEST_F(SmoothLennardJonesCloseTest, Close_PotentialWellAtRadius1_Cardinal) {
 
     p2.getX() = {1.0, 0.0, 0.0};
     R3 result = force.applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 
     p2.getX() = {0.0, 1.0, 0.0};
     result = force.applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 }
 
 /**
@@ -201,10 +201,10 @@ TEST_F(SmoothLennardJonesCloseTest, Close_PotentialWellAtRadius1_Diagonal) {
 
     p2.getX() = {bottom_diagonal, bottom_diagonal, 0.0};
     R3 result = force.applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
     p2.getX() = {bottom_diagonal, -bottom_diagonal, 0.0};
     result = force.applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 }
 
 /**
@@ -215,16 +215,16 @@ TEST_F(SmoothLennardJonesCloseTest, Close_Cardinal) {
     R3 expected_force = {-120.0, 0., 0.};
     p2.getX() = {small_sigma, 0.0, 0.0};
     R3 result = force.applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 
     p2.getX() = {-small_sigma, 0.0, 0.0};
     result = force.applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, -1 * expected_force, precision);
+    EXPECT_R3_NEAR(-1 * expected_force, result, precision);
 
     p2.getX() = {0.0, small_sigma, 0.0};
     expected_force = {0., -120.0, 0.};
     result = force.applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 }
 /**
  * @brief Testing the case when a particle is exactly at the sigma of the other particle's potential well (strong
@@ -236,12 +236,12 @@ TEST_F(SmoothLennardJonesCloseTest, Close_Diagonal) {
 
     p2.getX() = {sigma_diagonal, sigma_diagonal, 0.0};
     R3 result = force.applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 
     expected_force = {-60.0 * std::numbers::sqrt2, 60.0 * std::numbers::sqrt2, 0.};
     p2.getX() = {sigma_diagonal, -sigma_diagonal, 0.0};
     result = force.applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 }
 // ----------------------------------------------------------------------------------------------------
 /**
@@ -264,11 +264,11 @@ TEST_F(SmoothLennardJonesMediumDistanceTest, MediumDistance_Cardinal) {
     R3 expected_force = {0.018655817750600174, 0., 0.};
     p2.getX() = {3.5, 0.0, 0.0};
     R3 result = force.applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 
     p2.getX() = {-3.5, 0.0, 0.0};
     result = force.applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, -1 * expected_force, precision);
+    EXPECT_R3_NEAR(-1 * expected_force, result, precision);
 }
 
 /**
@@ -281,11 +281,11 @@ TEST_F(SmoothLennardJonesMediumDistanceTest, MediumDistance_Diagonal) {
     R3 expected_force = {0.00026160748585069596, 0.0007848224575520879, 0.0010464299434027838};
     p2.getX() = {1.0, 3.0, 4.0};
     R3 result = force.applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 
     p2.getX() = {-1.0, -3.0, -4.0};
     result = force.applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, -1 * expected_force, precision);
+    EXPECT_R3_NEAR(-1 * expected_force, result, precision);
 }
 
 /**
@@ -299,11 +299,11 @@ TEST_F(SmoothLennardJonesMediumDistanceTest, MediumDistance_AllSmoothing) {
     R3 expected_force = {8.327560625865901, 0.0, 0.0};
     p2.getX() = {1.4, 0.0, 0.0};
     R3 result = force.applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 
     p2.getX() = {-1.4, 0.0, 0.0};
     result = force.applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, -1 * expected_force, precision);
+    EXPECT_R3_NEAR(-1 * expected_force, result, precision);
 }
 /**
  * @brief Test the Smooth Lennard Jones Force between really close particles when all smoothing is applied
@@ -316,11 +316,11 @@ TEST_F(SmoothLennardJonesMediumDistanceTest, MediumDistance_AllSmoothing_ReallyC
     R3 expected_force = {-1949376.7822222223, 0.0, 0.0};
     p2.getX() = {0.5, 0.0, 0.0};
     R3 result = force.applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 
     p2.getX() = {-0.5, 0.0, 0.0};
     result = force.applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, -1 * expected_force, precision);
+    EXPECT_R3_NEAR(-1 * expected_force, result, precision);
 }
 
 /**
@@ -334,11 +334,11 @@ TEST_F(SmoothLennardJonesMediumDistanceTest, MediumDistance_AllSmoothing_Potenti
     R3 expected_force = {0.0, 0.0, 0.0};
     p2.getX() = {1.1223356471450733843382863, 0.0, 0.0};
     R3 result = force.applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 
     p2.getX() = {-1.1223356471450733843382863, 0.0, 0.0};
     result = force.applyForce(p1, p2);
-    EXPECT_R3_NEAR(result, -1 * expected_force, precision);
+    EXPECT_R3_NEAR(-1 * expected_force, result, precision);
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -374,7 +374,7 @@ TEST_F(SmoothLennardJonesForceTest, MixingRules) {
     const R3 expected_force = {1.48242203050000000141839251455E-2, 1.97656040600000006135505969951E-2, 0.};
     R3 result = SmoothLennardJonesForce().applyForce(p1, p2);
 
-    EXPECT_R3_NEAR(result, expected_force, precision);
+    EXPECT_R3_NEAR(expected_force, result, precision);
 }
 
 }  // namespace mol_sim

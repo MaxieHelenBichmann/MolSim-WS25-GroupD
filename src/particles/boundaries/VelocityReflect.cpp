@@ -4,7 +4,7 @@ namespace mol_sim {
 VelocityReflect::VelocityReflect(BoundaryLocation location, R3 domain_size) noexcept
     : Boundary(location, BoundaryType::VELOCITYREFLECT, domain_size) {}
 
-void VelocityReflect::applyBoundary(Particle& p, [[maybe_unused]] const ForceSource& force) noexcept {
+void VelocityReflect::applyBoundary(Particle& p, [[maybe_unused]] const PairwiseForceSource& force) noexcept {
     size_t axis = getAxis();
     int sign = getSign();
     if (sign < 0 && p.getX()[axis] < 0) {

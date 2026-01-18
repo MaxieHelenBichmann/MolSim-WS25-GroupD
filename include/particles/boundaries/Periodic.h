@@ -156,7 +156,7 @@ class Periodic : public Boundary {
      * @param force The force source that should be used in the boundary condition (in this case irrelevant).
      * @return The copied particles to be added to the halo cells of the container.
      */
-    void applyBoundary(Particle& p, [[maybe_unused]] const ForceSource& force) noexcept override;
+    void applyBoundary(Particle& p, [[maybe_unused]] const PairwiseForceSource& force) noexcept override;
 };
 
 }  // namespace mol_sim

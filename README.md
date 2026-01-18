@@ -31,16 +31,19 @@
 MolSim is a molecular dynamics simulation framework developed as part of the PSE Molekulardynamik course. The application simulates the physical behavior of particle systems using numerical integration methods and various force models.
 
 **Key Features:**
-- Multiple force implementations (Gravitational, Lennard-Jones)
+- Multiple force implementations (Gravitational, Lennard-Jones, Harmonic)
+- Single particle forces (Target forces for membrane simulations)
 - Efficient particle containers (Direct Sum, Linked Cell)
-- Boundary condition support (Reflecting, Outflow, VelocityReflect)
-- Particle generators utilities (Cuboid, Disc) with Brownian Motion
+- Boundary condition support (Reflecting, Outflow, Periodic)
+- Particle generators (Cuboid, Disc, Membrane) with Brownian Motion
 - Output formats (VTK, XYZ)
+- Checkpointing support for long simulations
 - Configurable via YAML input files
 
 **Supported Simulations:**
 - Gravitational N-body problems (planetary systems, stellar dynamics)
 - Molecular dynamics with Lennard-Jones potentials (fluids, collisions)
+- Membrane simulations with harmonic spring forces
 - Large-scale particle systems using spatial optimization (Linked Cells)
 
 ---

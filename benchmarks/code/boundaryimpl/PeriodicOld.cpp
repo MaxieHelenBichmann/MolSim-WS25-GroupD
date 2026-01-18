@@ -1,5 +1,7 @@
 #include "PeriodicOld.h"
 
+#include "particles/ParticleContainer.h"
+
 namespace mol_sim {
 
 std::unique_ptr<LinkedCellContainer> PeriodicOld::checker;
@@ -40,7 +42,7 @@ PeriodicOld::PeriodicOld(BoundaryLocation location, R3 domain_size, double cutof
  * I will leave this behavior in for now.
  */
 void PeriodicOld::applyBoundary(  // NOLINT
-    Particle& p, [[maybe_unused]] const ForceSource& force) noexcept {
+    Particle& p, [[maybe_unused]] const PairwiseForceSource& force) noexcept {
     teleportParticleIfOOB(p);
     if (!isOnBoundary(p.getX(), getAxis(), getSign())) {  // only mirror particles in correct boundary region
         return;
@@ -71,7 +73,8 @@ void PeriodicOld::teleportParticleIfOOB(Particle& p) {
  * of the possible locations)
  * Could also reserve vector or not use a vector for memory efficiency
  */
-void PeriodicOld::mirrorParticle(Particle& p) {
+std::vector<Particle> PeriodicOld::mirrorParticle(Particle& p) {
+    std::vector<Particle> mirrored_particles;
     size_t stride = is2D ? 3 : 1;
     size_t i = is2D ? 1 : 0;
     R3 offset = -1 * domain_size;
@@ -89,6 +92,7 @@ void PeriodicOld::mirrorParticle(Particle& p) {
         // update offset
         updateOffset(offset, i);
     }
+    return mirrored_particles;
 }
 
 bool PeriodicOld::isOnBoundary(R3 x, size_t axis, int sign) const noexcept {

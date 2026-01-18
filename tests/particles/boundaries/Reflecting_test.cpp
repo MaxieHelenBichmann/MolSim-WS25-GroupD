@@ -12,7 +12,7 @@
 #include "particles/Particle.h"
 #include "particles/boundaries/Boundary.h"
 #include "particles/container/domain/Domain.h"
-#include "physics/LennardJonesForce.h"
+#include "physics/pairwiseforces/LennardJonesForce.h"
 #include "testingUtils.h"
 #include "utils/Settings.h"
 #include "utils/Simulation.h"
@@ -75,11 +75,14 @@ TEST_F(ReflectingTest, X_reflecting_linked) {
     LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
 
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
     auto stat_writer = std::make_unique<StatsWriter>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
+    Simulation<LinkedCellContainer> simulation(particles, pairwise_forces, single_forces, settings, *writer, *cp_writer,
+                                               *stat_writer);
     simulation.run();
     R3 expected = {6.2, 5.0, 5.0};
     EXPECT_R3_EQ(particles[0].getX(), expected);
@@ -94,11 +97,14 @@ TEST_F(ReflectingTest, X_reflecting_simple) {
     SimpleContainer particles;
     particles.addParticle(p);
 
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
     auto stat_writer = std::make_unique<StatsWriter>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
+    Simulation<SimpleContainer> simulation(particles, pairwise_forces, single_forces, settings, *writer, *cp_writer,
+                                           *stat_writer);
     simulation.run();
     R3 expected = {3.8, 5.0, 5.0};
     EXPECT_R3_EQ(particles[0].getX(), expected);
@@ -113,11 +119,14 @@ TEST_F(ReflectingTest, Y_reflecting_linked) {
     LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
 
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
     auto stat_writer = std::make_unique<StatsWriter>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
+    Simulation<LinkedCellContainer> simulation(particles, pairwise_forces, single_forces, settings, *writer, *cp_writer,
+                                               *stat_writer);
     simulation.run();
     R3 expected = {5.0, 6.2, 5.0};
     EXPECT_R3_EQ(particles[0].getX(), expected);
@@ -132,11 +141,14 @@ TEST_F(ReflectingTest, Y_reflecting_simple) {
     SimpleContainer particles;
     particles.addParticle(p);
 
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
     auto stat_writer = std::make_unique<StatsWriter>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
+    Simulation<SimpleContainer> simulation(particles, pairwise_forces, single_forces, settings, *writer, *cp_writer,
+                                           *stat_writer);
     simulation.run();
     R3 expected = {5.0, 3.8, 5.0};
     EXPECT_R3_EQ(particles[0].getX(), expected);
@@ -151,11 +163,14 @@ TEST_F(ReflectingTest, Z_reflecting_linked) {
     LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
 
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
     auto stat_writer = std::make_unique<StatsWriter>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
+    Simulation<LinkedCellContainer> simulation(particles, pairwise_forces, single_forces, settings, *writer, *cp_writer,
+                                               *stat_writer);
     simulation.run();
     R3 expected = {5.0, 5.0, 6.2};
     EXPECT_R3_EQ(particles[0].getX(), expected);
@@ -170,11 +185,14 @@ TEST_F(ReflectingTest, Z_reflecting_simple) {
     SimpleContainer particles;
     particles.addParticle(p);
 
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
     auto stat_writer = std::make_unique<StatsWriter>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
+    Simulation<SimpleContainer> simulation(particles, pairwise_forces, single_forces, settings, *writer, *cp_writer,
+                                           *stat_writer);
     simulation.run();
     R3 expected = {5.0, 5.0, 3.8};
     EXPECT_R3_EQ(particles[0].getX(), expected);
@@ -189,11 +207,14 @@ TEST_F(ReflectingTest, Reflecting_two_sided_corner_linked) {
     LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
 
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
     auto stat_writer = std::make_unique<StatsWriter>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
+    Simulation<LinkedCellContainer> simulation(particles, pairwise_forces, single_forces, settings, *writer, *cp_writer,
+                                               *stat_writer);
     simulation.run();
     R3 expected = {3.8, 5.0, 3.8};
     EXPECT_R3_EQ(particles[0].getX(), expected);
@@ -208,11 +229,14 @@ TEST_F(ReflectingTest, Reflecting_three_sided_corner_linked) {
     LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
 
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
     auto stat_writer = std::make_unique<StatsWriter>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
+    Simulation<LinkedCellContainer> simulation(particles, pairwise_forces, single_forces, settings, *writer, *cp_writer,
+                                               *stat_writer);
     simulation.run();
     R3 expected = {3.8, 3.8, 3.8};
     EXPECT_R3_EQ(particles[0].getX(), expected);
@@ -228,11 +252,14 @@ TEST_F(ReflectingTest, Reflecting_Angular_trajectory_linked) {
     LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
 
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
     auto stat_writer = std::make_unique<StatsWriter>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
+    Simulation<LinkedCellContainer> simulation(particles, pairwise_forces, single_forces, settings, *writer, *cp_writer,
+                                               *stat_writer);
     simulation.run();
     R3 expected = {3.8, 5.0, 5.0};
     EXPECT_R3_EQ(particles[0].getX(), expected);
@@ -261,11 +288,14 @@ TEST_F(ReflectingTest, Reflecting_particle_sigma_epsilon_linked) {
     LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
 
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
     auto stat_writer = std::make_unique<StatsWriter>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
+    Simulation<LinkedCellContainer> simulation(particles, pairwise_forces, single_forces, settings, *writer, *cp_writer,
+                                               *stat_writer);
     simulation.run();
     R3 expected = {5.0, 5.0, 3.8};
     EXPECT_R3_EQ(particles[0].getX(), expected);
@@ -295,11 +325,14 @@ TEST_F(ReflectingTest, Reflecting_with_ghost_on_boundary_linked) {
     LinkedCellContainer particles(dimension, settings.cutoff);
     particles.addParticle(p);
 
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
     auto stat_writer = std::make_unique<StatsWriter>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
+    Simulation<LinkedCellContainer> simulation(particles, pairwise_forces, single_forces, settings, *writer, *cp_writer,
+                                               *stat_writer);
     simulation.run();
     R3 expected = {5.0, 5.0, 4.3};
     EXPECT_R3_EQ(particles[0].getX(), expected);
@@ -314,11 +347,14 @@ TEST_F(ReflectingTest, Reflecting_two_sided_corner_simple) {
     SimpleContainer particles;
     particles.addParticle(p);
 
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
     auto stat_writer = std::make_unique<StatsWriter>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
+    Simulation<SimpleContainer> simulation(particles, pairwise_forces, single_forces, settings, *writer, *cp_writer,
+                                           *stat_writer);
     simulation.run();
     R3 expected = {3.8, 5.0, 3.8};
     EXPECT_R3_EQ(particles[0].getX(), expected);
@@ -333,11 +369,14 @@ TEST_F(ReflectingTest, Reflecting_three_sided_corner_simple) {
     SimpleContainer particles;
     particles.addParticle(p);
 
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
     auto stat_writer = std::make_unique<StatsWriter>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
+    Simulation<SimpleContainer> simulation(particles, pairwise_forces, single_forces, settings, *writer, *cp_writer,
+                                           *stat_writer);
     simulation.run();
     R3 expected = {3.8, 3.8, 3.8};
     EXPECT_R3_EQ(particles[0].getX(), expected);
@@ -353,11 +392,14 @@ TEST_F(ReflectingTest, Reflecting_Angular_trajectory_simple) {
     SimpleContainer particles;
     particles.addParticle(p);
 
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
     auto stat_writer = std::make_unique<StatsWriter>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
+    Simulation<SimpleContainer> simulation(particles, pairwise_forces, single_forces, settings, *writer, *cp_writer,
+                                           *stat_writer);
     simulation.run();
     R3 expected = {3.8, 5.0, 5.0};
     EXPECT_R3_EQ(particles[0].getX(), expected);
@@ -385,11 +427,14 @@ TEST_F(ReflectingTest, Reflecting_particle_sigma_epsilon_simple) {
     SimpleContainer particles;
     particles.addParticle(p);
 
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
     auto stat_writer = std::make_unique<StatsWriter>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
+    Simulation<SimpleContainer> simulation(particles, pairwise_forces, single_forces, settings, *writer, *cp_writer,
+                                           *stat_writer);
     simulation.run();
     R3 expected = {5.0, 5.0, 3.8};
     EXPECT_R3_EQ(particles[0].getX(), expected);
@@ -419,11 +464,14 @@ TEST_F(ReflectingTest, Reflecting_with_ghost_on_boundary_simple) {
     SimpleContainer particles;
     particles.addParticle(p);
 
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
     auto stat_writer = std::make_unique<StatsWriter>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer, *stat_writer);
+    Simulation<SimpleContainer> simulation(particles, pairwise_forces, single_forces, settings, *writer, *cp_writer,
+                                           *stat_writer);
     simulation.run();
     R3 expected = {5.0, 5.0, 4.3};
     EXPECT_R3_EQ(particles[0].getX(), expected);

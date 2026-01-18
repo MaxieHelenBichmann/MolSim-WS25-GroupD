@@ -4,7 +4,7 @@
 #include <limits>
 
 #include "particles/Particle.h"
-#include "physics/ForceSource.h"
+#include "physics/pairwiseforces/PairwiseForceSource.h"
 #include "utils/Vector.h"
 
 namespace mol_sim {
@@ -14,7 +14,7 @@ namespace mol_sim {
  *
  * Class to calculate smooth Lennard-Jones forces between two different objects.
  */
-class SmoothLennardJonesForce : public ForceSource {
+class SmoothLennardJonesForce : public PairwiseForceSource {
     double rc = std::numeric_limits<double>::infinity();  ///< Cutoff radius
     double rl = std::numeric_limits<double>::infinity();  ///< Smoothing radius
 

@@ -36,7 +36,7 @@ class CuboidGeneratorTest : public testing::Test {
     CuboidGeneratorTest()
         : particle_container(),
           particles(particle_container),
-          generator(position, velocity, num_particles, mass, distance, avg_velo, epsilon, sigma, init_temp) {}
+          generator(position, velocity, num_particles, {}, mass, distance, avg_velo, epsilon, sigma, init_temp) {}
 
     void SetUp() override {
         particles.clear();
@@ -114,7 +114,7 @@ TEST_F(CuboidGeneratorTest, testVelocityDistribution) {
     ContainerRef particles(particle_container);
     N3 num_particles = {10U, 10U, 10U};
     R3 initial_velocity = {1.0, 2.0, 0.0};
-    CuboidGenerator generator(position, initial_velocity, num_particles, mass, distance, avg_velo, epsilon, sigma,
+    CuboidGenerator generator(position, initial_velocity, num_particles, {}, mass, distance, avg_velo, epsilon, sigma,
                               init_temp);
     generator.generateParticles(particles);
 
@@ -142,7 +142,7 @@ TEST_F(CuboidGeneratorTest, testAverageVelocity) {
     double init_temp = 0.25;
     R3 initial_velocity = {1.0, 2.0, 0.0};
 
-    CuboidGenerator generator(position, initial_velocity, num_particles, mass, distance, avg_velo, epsilon, sigma,
+    CuboidGenerator generator(position, initial_velocity, num_particles, {}, mass, distance, avg_velo, epsilon, sigma,
                               init_temp);
     generator.generateParticles(particles);
 
@@ -176,7 +176,8 @@ TEST_F(CuboidGeneratorTest, testZeroParticleGeneration) {
     SimpleContainer particle_container;
     ContainerRef particles(particle_container);
     N3 num_particles = {10U, 0U, 10U};
-    CuboidGenerator generator(position, velocity, num_particles, mass, distance, avg_velo, epsilon, sigma, init_temp);
+    CuboidGenerator generator(position, velocity, num_particles, {}, mass, distance, avg_velo, epsilon, sigma,
+                              init_temp);
     generator.generateParticles(particles);
     EXPECT_EQ(particles.size(), 0);
 }

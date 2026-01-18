@@ -3,20 +3,14 @@ settings:
   delta_t: 0.0005
   end_time: 15
   start_time: 0.0
-  force: "Lennard Jones"
   frequency: 10
   cutoff: 3
   container: LINKED
-
-  thermostat: 
+  thermostat:
     initial_temp: 0.5
     n_thermostat: 1000
-
   domain:
-    x: 303
-    y: 180
-    z: 1
-    g_grav: -12.44
+    coordinates: [303, 180, 1]
     dimensions: 2
     boundaries:
       left:
@@ -27,21 +21,15 @@ settings:
         type: Reflecting
       back:
         type: Reflecting
-
+  pairwise_forces: [LENNARDJONES]
+  single_forces: 
+    - type: GRAV 
+      g_grav: [0.0, -12.44, 0.0]
 liquid:
   format: Cuboid
-  coordinates:
-      x: 1.5
-      y: 2.0
-      z: 0.0
-  velocity:
-      vx: 0.0
-      vy: 0.0
-      vz: 0.0
-  particleNum:
-      nx: 250
-      ny: 50
-      nz: 1
+  coordinates: [1.5, 2.0, 0.0]
+  velocity: [0.0, 0.0, 0.0]
+  particleNum: [250, 50, 1]
   mass: 1.0
   distance: 1.2
   epsilon: 1.0

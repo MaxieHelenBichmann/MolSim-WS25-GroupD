@@ -1,6 +1,8 @@
 #ifndef OUTFLOW_H
 #define OUTFLOW_H
 
+#include <physics/pairwiseforces/PairwiseForceSource.h>
+
 #include "particles/boundaries/Boundary.h"
 
 namespace mol_sim {
@@ -19,7 +21,8 @@ class Outflow : public Boundary {
      * @param force The force source that should be used in the boundary condition (in this case irrelevant).
      * @return std::nullopt always, since no new particles are generated here.
      */
-    void applyBoundary([[maybe_unused]] Particle& p, [[maybe_unused]] const ForceSource& force) noexcept override {}
+    void applyBoundary([[maybe_unused]] Particle& p,
+                       [[maybe_unused]] const PairwiseForceSource& force) noexcept override {}
 };
 
 }  // namespace mol_sim

@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "particles/boundaries/Boundary.h"
-#include "physics/ForceSource.h"
+#include "physics/pairwiseforces/PairwiseForceSource.h"
 #include "utils/Vector.h"
 
 namespace mol_sim {
@@ -74,7 +74,7 @@ class Domain {
      * @param p The particle to apply boundaries to / compute ghost particles for.
      * @param force The force source for ghost particle interactions.
      */
-    void applyBoundary(Particle& p, const ForceSource& force) const noexcept;
+    void applyBoundary(Particle& p) const noexcept;
 
     Domain& operator=(const Domain& other) = delete;
     Domain& operator=(Domain&& other) noexcept;

@@ -31,7 +31,6 @@ set(RUN_CLANG_TIDY_CMD
     -quiet
     -config-file=${CMAKE_SOURCE_DIR}/.clang-tidy
     -header-filter=${CMAKE_SOURCE_DIR}/include/.*
-    -source-filter=${CMAKE_SOURCE_DIR}/src/.*
 )
 
 if (CLANG_TIDY_WARNINGS_AS_ERRORS)
@@ -45,7 +44,7 @@ add_custom_target(lint COMMAND ${RUN_CLANG_TIDY_CMD}
     COMMENT "Running clang-tidy analysis"
 )
 
-add_custom_target(fix COMMAND ${RUN_CLANG_TIDY_CMD} -fix
+add_custom_target(fix COMMAND ${RUN_CLANG_TIDY_CMD} -fix -fix-errors -fix-notes 
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMENT "Running clang-tidy and applying fixes"
 )

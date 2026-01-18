@@ -8,7 +8,6 @@ void DiscGenerator::generateParticles(ContainerRef particles, bool use_init_temp
     if (radius == 0) {
         return;
     }
-    // TODO Smarter reserve of particles (this is a bad upper bound)
     particles.reserve(radius * radius * 4);
     long loop_radius = static_cast<long>(radius);
 
@@ -17,7 +16,6 @@ void DiscGenerator::generateParticles(ContainerRef particles, bool use_init_temp
             if ((i * i) + (j * j) <= loop_radius * loop_radius) {
                 R3 curr_pos = {position[0] + (static_cast<double>(i) * distance),
                                position[1] + (static_cast<double>(j) * distance), position[2]};
-                // TODO: Look at this more carefully, what do they mean with optional brownian.
                 if (use_init_temp) {
                     avg_velo = sqrt(init_temp / mass);
                 }

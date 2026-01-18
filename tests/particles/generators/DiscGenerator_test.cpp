@@ -172,7 +172,7 @@ TEST_F(DiscGeneratorTest, testAverageVelocity) {
 
     // Check if variance is close to avg_velo^2 for 2D, and 0 for the 3rd dimension
     R3 expected_var = {avg_velo * avg_velo, avg_velo * avg_velo, 0.};
-    EXPECT_R3_NEAR(variance, expected_var, precision);
+    EXPECT_R3_NEAR(expected_var, variance, precision);
 }
 
 /**

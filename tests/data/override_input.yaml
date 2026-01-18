@@ -1,20 +1,10 @@
 settings:
-    format: Settings
-    delta_t: 0.005
-    end_time: 200.0
-    base_name: "OVERRIDE"
-    force: "Lennard Jones"
-
+  format: Settings
+  delta_t: 0.005
+  end_time: 200.0
+  base_name: OVERRIDE
+  pairwise_forces: [LENNARDJONES]
 simple_xvm:
-    format: XVM
-    num_particles: 1
-    particles:
-      - coordinates:
-          x: 10.0
-          y: 20.0
-          z: 30.0
-        velocity:
-          vx: 1.0
-          vy: 2.0
-          vz: 3.0
-        mass: 5.0
+  format: XVM
+  num_particles: 1
+  particles: [{coordinates: [10.0, 20.0, 30.0], velocity: [1.0, 2.0, 3.0], mass: 5.0}]

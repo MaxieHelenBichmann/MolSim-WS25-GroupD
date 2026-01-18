@@ -6,6 +6,7 @@
 #include <yaml-cpp/node/node.h>
 #include <yaml-cpp/yaml.h>
 
+#include <algorithm>
 #include <cstddef>
 #include <fstream>
 #include <iomanip>
@@ -13,7 +14,8 @@
 
 #include "particles/boundaries/Boundary.h"
 #include "particles/boundaries/Reflecting.h"
-#include "physics/ForceSource.h"
+#include "physics/pairwiseforces/PairwiseForceSource.h"
+#include "physics/singleforces/SingleForceSource.h"
 
 using namespace mol_sim;
 
@@ -46,35 +48,71 @@ void YAMLWriterCP::createCheckpoint(SettingsParam& settings, const Domain& domai
         << (settings.start_time > settings.end_time ? settings.end_time : settings.start_time);
     ;
     out << YAML::Key << "base_name" << YAML::Value << settings.base_name;
-    switch (settings.force) {
-        case LENNARDJONES: {
-            out << YAML::Key << "force" << YAML::Value << "Lennard Jones";
-            break;
+
+    // Write pairwise forces
+    out << YAML::Key << "pairwise_forces" << YAML::Value << YAML::BeginSeq;
+    for (const auto& force : settings.pairwise_forces) {
+        if (force == PairwiseForce::GRAVITATIONAL) {
+            out << "GRAVITATIONAL";
+        } else if (force == PairwiseForce::LENNARDJONES) {
+            out << "LENNARDJONES";
+        } else if (force == PairwiseForce::TRUNCLENNARDJONES) {
+            out << "TRUNCLENNARDJONES";
+        } else if (force == PairwiseForce::S_LENNARDJONES) {
+            out << "SMOOTHLENNARDJONES";
         }
-        case S_LENNARDJONES: {
-            out << YAML::Key << "force" << YAML::Value << "Smooth Lennard Jones";
-            break;
+    }
+    out << YAML::EndSeq;
+
+    // Write single forces as objects with parameters
+    out << YAML::Key << "single_forces" << YAML::Value << YAML::BeginSeq;
+    for (const auto& force : settings.single_forces) {
+        out << YAML::BeginMap;
+        if (force == SingleForce::GRAV) {
+            out << YAML::Key << "type" << YAML::Value << "GRAV";
+            out << YAML::Key << "g_grav" << YAML::Value << YAML::Flow << YAML::BeginSeq;
+            out << settings.g_grav_vec[0] << settings.g_grav_vec[1] << settings.g_grav_vec[2];
+            out << YAML::EndSeq;
+        } else if (force == SingleForce::HARMONIC) {
+            out << YAML::Key << "type" << YAML::Value << "HARMONIC";
+            out << YAML::Key << "k" << YAML::Value << settings.k;
+            out << YAML::Key << "r_0" << YAML::Value << settings.r_0;
         }
-        case GRAVITATIONAL: {
-            out << YAML::Key << "force" << YAML::Value << "Gravitational";
-            break;
-        }
-    };
+        out << YAML::EndMap;
+    }
+    out << YAML::EndSeq;
+
     out << YAML::Key << "container" << YAML::Value << settings.container_type;
     out << YAML::Key << "frequency" << YAML::Value << settings.frequency_output;
     out << YAML::Key << "checkpoint" << YAML::Value << settings.frequency_checkpoint;
     out << YAML::Key << "cutoff" << YAML::Value << settings.cutoff;
-    if (settings.force == S_LENNARDJONES) {
+    if (std::find(settings.pairwise_forces.begin(), settings.pairwise_forces.end(), S_LENNARDJONES) !=
+        settings.pairwise_forces.end()) {
         out << YAML::Key << "smooth" << YAML::Value << settings.smoothing;
     }
 
     // Write thermostat settings in nested format
     if (settings.thermo) {
         out << YAML::Key << "thermostat" << YAML::Value << YAML::BeginMap;
+        if (settings.init_temp != SettingsParam::INIT_TEMP_DEFAULT) {
+            out << YAML::Key << "initial_temp" << YAML::Value << settings.init_temp;
+        }
         out << YAML::Key << "target_temp" << YAML::Value << settings.target_temp;
         out << YAML::Key << "n_thermostat" << YAML::Value << settings.thermostat_freq;
         out << YAML::Key << "delta_temp" << YAML::Value << settings.delta_temp;
         out << YAML::EndMap;  // close thermostat
+    }
+
+    // Write target force settings if enabled
+    if (settings.target_force_enabled) {
+        out << YAML::Key << "target_force" << YAML::Value << YAML::BeginMap;
+        out << YAML::Key << "direction" << YAML::Value << YAML::Flow << YAML::BeginSeq;
+        out << settings.target_force_direction[0] << settings.target_force_direction[1]
+            << settings.target_force_direction[2];
+        out << YAML::EndSeq;
+        out << YAML::Key << "magnitude" << YAML::Value << settings.target_force_magnitude;
+        out << YAML::Key << "max_iterations" << YAML::Value << settings.target_force_max_iterations;
+        out << YAML::EndMap;  // close target_force
     }
     // Write statistics settings in nested format
     if (settings.rdf || settings.diff) {
@@ -91,10 +129,9 @@ void YAMLWriterCP::createCheckpoint(SettingsParam& settings, const Domain& domai
     }
 
     out << YAML::Key << "domain" << YAML::Value << YAML::BeginMap;  // open domain
-    out << YAML::Key << "x" << YAML::Value << domain.getDimension()[0];
-    out << YAML::Key << "y" << YAML::Value << domain.getDimension()[1];
-    out << YAML::Key << "z" << YAML::Value << domain.getDimension()[2];
-    out << YAML::Key << "g_grav" << YAML::Value << settings.g_grav;
+    out << YAML::Key << "coordinates" << YAML::Value << YAML::Flow << YAML::BeginSeq;
+    out << domain.getDimension()[0] << domain.getDimension()[1] << domain.getDimension()[2];
+    out << YAML::EndSeq;
     out << YAML::Key << "dimensions" << YAML::Value << settings.dimensions;
 
     const auto boundary_type_string = [](BoundaryType type) -> std::string {
@@ -168,35 +205,25 @@ void YAMLWriterCP::createCheckpoint(SettingsParam& settings, const Domain& domai
     for (const auto& p : particles) {
         out << YAML::BeginMap;
 
-        out << YAML::Key << "coordinates" << YAML::Value << YAML::BeginMap;
-        out << YAML::Key << "x" << YAML::Value << p.getX()[0];
-        out << YAML::Key << "y" << YAML::Value << p.getX()[1];
-        out << YAML::Key << "z" << YAML::Value << p.getX()[2];
-        out << YAML::EndMap;
+        out << YAML::Key << "coordinates" << YAML::Value << YAML::Flow << YAML::BeginSeq;
+        out << p.getX()[0] << p.getX()[1] << p.getX()[2];
+        out << YAML::EndSeq;
 
-        out << YAML::Key << "old_coordinates" << YAML::Value << YAML::BeginMap;
-        out << YAML::Key << "ox" << YAML::Value << p.getOldX()[0];
-        out << YAML::Key << "oy" << YAML::Value << p.getOldX()[1];
-        out << YAML::Key << "oz" << YAML::Value << p.getOldX()[2];
-        out << YAML::EndMap;
+        out << YAML::Key << "old_coordinates" << YAML::Value << YAML::Flow << YAML::BeginSeq;
+        out << p.getOldX()[0] << p.getOldX()[1] << p.getOldX()[2];
+        out << YAML::EndSeq;
 
-        out << YAML::Key << "velocity" << YAML::Value << YAML::BeginMap;
-        out << YAML::Key << "vx" << YAML::Value << p.getV()[0];
-        out << YAML::Key << "vy" << YAML::Value << p.getV()[1];
-        out << YAML::Key << "vz" << YAML::Value << p.getV()[2];
-        out << YAML::EndMap;
+        out << YAML::Key << "velocity" << YAML::Value << YAML::Flow << YAML::BeginSeq;
+        out << p.getV()[0] << p.getV()[1] << p.getV()[2];
+        out << YAML::EndSeq;
 
-        out << YAML::Key << "force" << YAML::Value << YAML::BeginMap;
-        out << YAML::Key << "fx" << YAML::Value << p.getF()[0];
-        out << YAML::Key << "fy" << YAML::Value << p.getF()[1];
-        out << YAML::Key << "fz" << YAML::Value << p.getF()[2];
-        out << YAML::EndMap;
+        out << YAML::Key << "force" << YAML::Value << YAML::Flow << YAML::BeginSeq;
+        out << p.getF()[0] << p.getF()[1] << p.getF()[2];
+        out << YAML::EndSeq;
 
-        out << YAML::Key << "old_force" << YAML::Value << YAML::BeginMap;
-        out << YAML::Key << "ofx" << YAML::Value << p.getOldF()[0];
-        out << YAML::Key << "ofy" << YAML::Value << p.getOldF()[1];
-        out << YAML::Key << "ofz" << YAML::Value << p.getOldF()[2];
-        out << YAML::EndMap;
+        out << YAML::Key << "old_force" << YAML::Value << YAML::Flow << YAML::BeginSeq;
+        out << p.getOldF()[0] << p.getOldF()[1] << p.getOldF()[2];
+        out << YAML::EndSeq;
 
         out << YAML::Key << "mass" << YAML::Value << p.getM();
         out << YAML::Key << "epsilon" << YAML::Value << p.getEpsilon();

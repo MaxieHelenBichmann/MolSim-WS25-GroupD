@@ -27,6 +27,11 @@ my_disc:
   format: Disc
   # ... disc data
 
+# A block defining a membrane of particles
+my_membrane:
+  format: Membrane
+  # ... membrane data
+
 # A block defining a set of individual particles
 my_particles:
   format: XVM
@@ -37,6 +42,7 @@ The following pages describe the specific keys and values for each format type.
 
 \subpage disc_format  
 \subpage cuboid_format    
+\subpage membrane_format  
 \subpage xvm_format   
 \subpage settings_format
 
