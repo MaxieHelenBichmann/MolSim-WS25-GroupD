@@ -86,7 +86,7 @@ void YAMLWriterCP::createCheckpoint(SettingsParam& settings, const Domain& domai
     out << YAML::Key << "frequency" << YAML::Value << settings.frequency_output;
     out << YAML::Key << "checkpoint" << YAML::Value << settings.frequency_checkpoint;
     out << YAML::Key << "cutoff" << YAML::Value << settings.cutoff;
-    if (std::ranges::find(settings.pairwise_forces, , S_LENNARDJONES) != settings.pairwise_forces.end()) {
+    if (std::ranges::find(settings.pairwise_forces, S_LENNARDJONES) != settings.pairwise_forces.end()) {
         out << YAML::Key << "smooth" << YAML::Value << settings.smoothing;
     }
 
