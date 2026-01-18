@@ -39,12 +39,17 @@ if (CLANG_TIDY_WARNINGS_AS_ERRORS)
 endif()
 
 # add fix and lint targets that runs run-clang-tidy
-add_custom_target(lint COMMAND ${RUN_CLANG_TIDY_CMD} 
+# Use regex to match only project source files (src|include|tests|benchmarks)
+add_custom_target(lint 
+    COMMAND ${RUN_CLANG_TIDY_CMD} ".*/\\(src\\|include\\|tests\\|benchmarks\\)/.*"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMENT "Running clang-tidy analysis"
+    VERBATIM
 )
 
-add_custom_target(fix COMMAND ${RUN_CLANG_TIDY_CMD} -fix -warnings-as-errors="" -extra-arg=-Wno-error
+add_custom_target(fix 
+    COMMAND ${RUN_CLANG_TIDY_CMD} -fix -warnings-as-errors="" -extra-arg=-Wno-error ".*/\\(src\\|include\\|tests\\|benchmarks\\)/.*"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMENT "Running clang-tidy and applying fixes"
+    VERBATIM
 )
