@@ -155,6 +155,8 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
                         settings.pairwise_forces.push_back(PairwiseForce::LENNARDJONES);
                     } else if (force_str == "TRUNCLENNARDJONES") {
                         settings.pairwise_forces.push_back(PairwiseForce::TRUNCLENNARDJONES);
+                    } else if (force_str == "SMOOTHLENNARDJONES") {
+                        settings.pairwise_forces.push_back(PairwiseForce::S_LENNARDJONES);
                     } else {
                         SPDLOG_ERROR("Unknown pairwise force type: " + force_str);
                         throw ValidationException("Unknown pairwise force type: " + force_str);

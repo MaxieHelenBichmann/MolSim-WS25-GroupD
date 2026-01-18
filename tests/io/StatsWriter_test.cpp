@@ -63,7 +63,7 @@ class StatsWriterTest : public testing::Test {
 /**
  * @brief Tests collecting and writing RDF data.
  */
-class DiffusionWriterTtest : public StatsWriterTest {
+class DiffusionWriterTest : public StatsWriterTest {
    protected:
     void SetUp() override { StatsWriterTest::SetUp(); }
     void TearDown() override { StatsWriterTest::TearDown(); }
@@ -124,7 +124,7 @@ std::vector<std::string> splitCsvLine(const std::string& line) {
 /**
  * @brief Tests computing and writing diffusion data.
  */
-TEST_F(DiffusionWriterTtest, testComputeDisplacement) {
+TEST_F(DiffusionWriterTest, testComputeDisplacement) {
     ContainerRef particles(container);
 
     container[0].getX() = container[0].getX() + R3{1.0, 0.0, 0.0};  // sq = 1
@@ -140,7 +140,7 @@ TEST_F(DiffusionWriterTtest, testComputeDisplacement) {
 /**
  * @brief Tests computing and writing diffusion data with explicit reference positions.
  */
-TEST_F(DiffusionWriterTtest, testComputeExplicit) {
+TEST_F(DiffusionWriterTest, testComputeExplicit) {
     ContainerRef particles(container);
 
     container[0].getRefX() = R3{10.0, 0.0, 0.0};
@@ -155,7 +155,7 @@ TEST_F(DiffusionWriterTtest, testComputeExplicit) {
 /**
  * @brief Tests computing and writing diffusion data with a bigger container.
  */
-TEST_F(DiffusionWriterTtest, testComputeBigger) {
+TEST_F(DiffusionWriterTest, testComputeBigger) {
     ContainerRef particles(container);
 
     for (Particle& p : container) {
@@ -170,7 +170,7 @@ TEST_F(DiffusionWriterTtest, testComputeBigger) {
 /**
  * @brief Tests writing diffusion data to file.
  */
-TEST_F(DiffusionWriterTtest, testOutput) {
+TEST_F(DiffusionWriterTest, testOutput) {
     writer = StatsWriter(false, true, 1.0, 10.0);
 
     container[0].getX() = container[0].getX() + R3{1.0, 0.0, 0.0};

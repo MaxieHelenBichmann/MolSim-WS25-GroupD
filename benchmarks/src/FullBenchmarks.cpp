@@ -148,7 +148,7 @@ static void bmSimulationFullBenchmark(benchmark::State& state) {
         state.counters["Iterations"] = static_cast<double>(num_iterations);
 
         Simulation<LinkedCellContainer> simulation(container, pairwise_forces, single_forces, settings, *writer,
-                                                   *cp_writer);
+                                                   *cp_writer, *stat_writer);
         state.ResumeTiming();
 
         simulation.run();
@@ -186,7 +186,7 @@ static void bmSimulationFullContest(benchmark::State& state) {
         state.counters["Iterations"] = static_cast<double>(num_iterations);
 
         Simulation<LinkedCellContainer> simulation(container, pairwise_forces, single_forces, settings, *writer,
-                                                   *cp_writer);
+                                                   *cp_writer, *stat_writer);
         state.ResumeTiming();
 
         simulation.run();

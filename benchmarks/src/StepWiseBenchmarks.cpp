@@ -58,7 +58,7 @@ void bmSimulationSingleStepLinkedCell(benchmark::State& state) {
     generator.generateParticles(particles);
 
     Simulation<LinkedCellContainer> simulation(part_container, pairwise_forces, single_forces, settings, *writer,
-                                               *cp_writer);
+                                               *cp_writer, *stat_writer);
     for ([[maybe_unused]] auto _ : state) {
         benchmark::ClobberMemory();
         simulation.run();
@@ -98,7 +98,7 @@ void bmSimulationSingleStepDirectSum(benchmark::State& state) {
     auto stat_writer = std::make_unique<StatsWriter>();
     generator.generateParticles(particles);
     Simulation<SimpleContainer> simulation(part_container, pairwise_forces, single_forces, settings, *writer,
-                                           *cp_writer);
+                                           *cp_writer, *stat_writer);
     for ([[maybe_unused]] auto _ : state) {
         benchmark::ClobberMemory();
         simulation.run();

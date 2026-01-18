@@ -131,7 +131,6 @@ class Particle {
      * @brief Positions Particle is mirrored to, so no materialization of explicit mirror particles is necessary.
      */
     std::vector<R3> mirror_positions;
-    // NOLINTEND
 
     /**
      * @brief Reference position of the particle, which is needed in statistics. Is not included in the checkpoint.

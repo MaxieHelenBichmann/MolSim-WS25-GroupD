@@ -39,8 +39,6 @@ double StatsWriter::computeDiffusion(ContainerRef particles) const {
         result += (p.getX() - p.getRefX()).sqrEuclidNorm();
         p.getRefX() = p.getX();
     }
-    SPDLOG_ERROR("Computed diffusion {} with {} particles",
-                 !particles.empty() ? result / static_cast<double>(particles.size()) : 0.0, particles.size());
 
     return !particles.empty() ? result / static_cast<double>(particles.size()) : 0.0;
 }

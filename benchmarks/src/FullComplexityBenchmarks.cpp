@@ -65,7 +65,7 @@ void bmSimulationComplexityLinkedCell(benchmark::State& state) {
     auto stat_writer = std::make_unique<StatsWriter>();
 
     Simulation<LinkedCellContainer> simulation(part_container, pairwise_forces, single_forces, settings, *writer,
-                                               *cp_writer);
+                                               *cp_writer, *stat_writer);
     for ([[maybe_unused]] auto _ : state) {
         particles.clear();
         generator.generateParticles(particles);
@@ -110,8 +110,9 @@ void bmSimulationComplexityDirectSum(benchmark::State& state) {
     std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
+    auto stat_writer = std::make_unique<StatsWriter>();
     Simulation<SimpleContainer> simulation(part_container, pairwise_forces, single_forces, settings, *writer,
-                                           *cp_writer);
+                                           *cp_writer, *stat_writer);
     for ([[maybe_unused]] auto _ : state) {
         particles.clear();
         generator.generateParticles(particles);

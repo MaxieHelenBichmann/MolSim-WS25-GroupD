@@ -19,7 +19,7 @@
 #include "particles/container/ContainerRef.h"
 #include "particles/container/LinkedCellContainer.h"
 #include "particles/container/SimpleContainer.h"
-#include "physics/SmoothLennardJonesForce.h"
+#include "physics/pairwiseforces/SmoothLennardJonesForce.h"
 #include "physics/pairwiseforces/GravitationalForce.h"
 #include "physics/pairwiseforces/LennardJonesForce.h"
 #include "physics/pairwiseforces/PairwiseForceSource.h"
@@ -85,6 +85,14 @@ int main(int argc, char* argsv[]) {
             case PairwiseForce::TRUNCLENNARDJONES:
                 pairwise_sources.emplace_back(std::make_unique<TruncLennardJonesForce>());
                 break;
+            case PairwiseForce::S_LENNARDJONES: {
+                auto smooth_lj = std::make_unique<SmoothLennardJonesForce>();
+                smooth_lj->initForce(settings.cutoff, settings.smoothing);
+                pairwise_sources.emplace_back(std::move(smooth_lj));
+                SPDLOG_DEBUG("Using Smooth Lennard-Jones force model with cutoff={}, smoothing={}", settings.cutoff,
+                             settings.smoothing);
+                break;
+            }
             default:
                 SPDLOG_ERROR("Unrecognized Force Type!");
         }
@@ -101,12 +109,6 @@ int main(int argc, char* argsv[]) {
                 break;
             default:
                 SPDLOG_ERROR("Unrecognized Force Type!");
-        }
-        case S_LENNARDJONES: {
-            force = std::make_unique<SmoothLennardJonesForce>();
-            static_cast<SmoothLennardJonesForce*>(force.get())->initForce(settings.cutoff, settings.cutoff);
-            SPDLOG_DEBUG("Using Smooth Lennard-Jones force model");
-            break;
         }
     }
 

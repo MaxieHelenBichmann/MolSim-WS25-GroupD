@@ -6,6 +6,7 @@
 #include <yaml-cpp/node/node.h>
 #include <yaml-cpp/yaml.h>
 
+#include <algorithm>
 #include <cstddef>
 #include <fstream>
 #include <iomanip>
@@ -13,7 +14,8 @@
 
 #include "particles/boundaries/Boundary.h"
 #include "particles/boundaries/Reflecting.h"
-#include "physics/ForceSource.h"
+#include "physics/pairwiseforces/PairwiseForceSource.h"
+#include "physics/singleforces/SingleForceSource.h"
 
 using namespace mol_sim;
 
@@ -54,6 +56,10 @@ void YAMLWriterCP::createCheckpoint(SettingsParam& settings, const Domain& domai
             out << "GRAVITATIONAL";
         } else if (force == PairwiseForce::LENNARDJONES) {
             out << "LENNARDJONES";
+        } else if (force == PairwiseForce::TRUNCLENNARDJONES) {
+            out << "TRUNCLENNARDJONES";
+        } else if (force == PairwiseForce::S_LENNARDJONES) {
+            out << "SMOOTHLENNARDJONES";
         }
     }
     out << YAML::EndSeq;
@@ -80,7 +86,8 @@ void YAMLWriterCP::createCheckpoint(SettingsParam& settings, const Domain& domai
     out << YAML::Key << "frequency" << YAML::Value << settings.frequency_output;
     out << YAML::Key << "checkpoint" << YAML::Value << settings.frequency_checkpoint;
     out << YAML::Key << "cutoff" << YAML::Value << settings.cutoff;
-    if (settings.force == S_LENNARDJONES) {
+    if (std::find(settings.pairwise_forces.begin(), settings.pairwise_forces.end(), S_LENNARDJONES) !=
+        settings.pairwise_forces.end()) {
         out << YAML::Key << "smooth" << YAML::Value << settings.smoothing;
     }
 
