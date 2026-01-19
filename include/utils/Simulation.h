@@ -274,6 +274,7 @@ class Simulation {
         particles.prepareForParallelIteration();
 
         const size_t num_particles = particles.size();
+        const R3& domain_size = domain.getDimension();
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic)
@@ -282,10 +283,17 @@ class Simulation {
             Particle& p1 = particles[i];
             Vector<double, 3> f1_accumulated{};
 
+            // 1. Single Forces
             for (const auto& force_source : single_force_sources) {
                 f1_accumulated += force_source->applyForce(p1);
             }
 
+            // 2. Target Forces
+            if (target_force_enabled && iteration < target_force.getMaxIterations()) {
+                f1_accumulated += target_force.applyForce(p1);
+            }
+
+            // 3. Normal Pairwise Forces (Push to p2, Add to p1)
             const R3& p1_pos = p1.getX();
             auto it_prox = particles.proximityBegin(p1_pos, i);
             auto it_prox_end = particles.proximityEnd(p1_pos);
@@ -299,20 +307,11 @@ class Simulation {
                 }
             }
 
-            if (target_force_enabled && iteration < target_force.getMaxIterations()) {
-                f1_accumulated += target_force.applyForce(p1);
-            }
-
-            p1.getF().atomicAdd(f1_accumulated);
-        }
-
-        const R3& domain_size = domain.getDimension();
-        for (auto it = particles.begin(); it != particles.end(); ++it) {
-            Particle& p1 = *it;
-            R3 actual_pos = p1.getX();
-
+            // 4. Mirror Pairwise Forces (Gather to p1)
             for (const R3& mirr_pos : p1.getMirrorPositions()) {
-                p1.getX() = mirr_pos;
+                // Create a local ghost particle to avoid modifying p1's position in shared memory
+                Particle p1_ghost = p1;
+                p1_ghost.getX() = mirr_pos;
                 R3 lookup_pos = mirr_pos;
 
                 constexpr double epsilon = 1e-6;
@@ -323,18 +322,22 @@ class Simulation {
                         lookup_pos[dim] = domain_size[dim] - epsilon;
                     }
                 }
-                auto it_prox = particles.proximityBegin(lookup_pos, particles.size());
-                auto it_prox_end = particles.proximityEnd(lookup_pos);
+                auto it_prox_mirror = particles.proximityBegin(lookup_pos, particles.size());
+                auto it_prox_mirror_end = particles.proximityEnd(lookup_pos);
 
-                for (; it_prox != it_prox_end; ++it_prox) {
-                    Particle& p2 = *it_prox;
+                for (; it_prox_mirror != it_prox_mirror_end; ++it_prox_mirror) {
+                    Particle& p2 = *it_prox_mirror;
                     for (const auto& force_source : pairwise_force_sources) {
-                        const Vector<double, 3> force = force_source->applyForce(p2, p1);
-                        p2.getF().atomicAdd(force);
+                        const Vector<double, 3> force = force_source->applyForce(p2, p1_ghost);
+                        // Newton's 3rd Law: Force on p1 is -Force on p2.
+                        // We gather the force on p1 instead of scattering to p2 to avoid atomic ops on p2.
+                        f1_accumulated -= force;
                     }
                 }
             }
-            p1.getX() = actual_pos;
+
+            // Final Apply to p1
+            p1.getF().atomicAdd(f1_accumulated);
         }
     }
 
