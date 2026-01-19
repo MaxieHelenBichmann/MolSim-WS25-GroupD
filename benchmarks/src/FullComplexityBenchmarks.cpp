@@ -68,7 +68,7 @@ void bmSimulationComplexityLinkedCell(benchmark::State& state) {
                                                *cp_writer, *stat_writer);
     for ([[maybe_unused]] auto _ : state) {
         particles.clear();
-        generator.generateParticles(particles);
+        generator.generateParticles(particles, true);
         benchmark::ClobberMemory();
         simulation.run();
         benchmark::DoNotOptimize(particles);
@@ -115,7 +115,7 @@ void bmSimulationComplexityDirectSum(benchmark::State& state) {
                                            *cp_writer, *stat_writer);
     for ([[maybe_unused]] auto _ : state) {
         particles.clear();
-        generator.generateParticles(particles);
+        generator.generateParticles(particles, true);
         benchmark::ClobberMemory();
         simulation.run();
         benchmark::DoNotOptimize(particles);

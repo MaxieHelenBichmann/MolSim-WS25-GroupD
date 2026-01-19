@@ -28,6 +28,7 @@ set(RUN_CLANG_TIDY_CMD
     ${RUN_CLANG_TIDY_EXE}
     -clang-tidy-binary=${CLANG_TIDY_EXE}
     -p=${CMAKE_BINARY_DIR}
+    -quiet
     -config-file=${CMAKE_SOURCE_DIR}/.clang-tidy
     -header-filter=${CMAKE_SOURCE_DIR}/include/.*
 )

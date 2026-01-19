@@ -214,6 +214,11 @@ class SettingsParam {
     double k = K_DEFAULT;
 
     double r_0 = R_0_DEFAULT;
+    /**
+     * @brief Toggles particle generation with brownian motion
+     *
+     */
+    bool brownian = true;
 
     /**
      * @brief g_grav vector for GRAV single force (gravitational acceleration vector).

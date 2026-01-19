@@ -27,6 +27,7 @@ The settings block has the following keys, with every key except format being op
 - `checkpoint`: A whole number specifying the frequency of the checkpoint files of the simulation.
 - `cutoff`: A floating-point number specifying the cutoff radius of the Linked Cells of the simulation.
 - `smooth`: A floating-point number specifying the smoothing radius of the Smooth Lennard-Jones Force.
+- `enable_brownian`: A boolean toggling the generation of particles using brownian motion.
 - `container`: Container type, either `"SIMPLE"` or `"LINKED"` (default: `"LINKED"`).
 - `pairwise_forces`: A sequence containing all desired pairwise forces (forces applied between particle pairs).
   - Available forces: `"GRAVITATIONAL"`, `"LENNARDJONES"`, `"TRUNCLENNARDJONES"`, `"SMOOTHLENNARDJONES"`

@@ -43,7 +43,7 @@ class DiscGeneratorTest : public testing::Test {
 
     void SetUp() override {
         particles.clear();
-        generator.generateParticles(particles);
+        generator.generateParticles(particles, true);
     }
     /*
      *
@@ -127,7 +127,7 @@ TEST_F(DiscGeneratorTest, testVelocityDistribution) {
     radius = 10;
     R3 initial_velocity = {1.0, 2.0, 0.0};
     DiscGenerator generator(position, initial_velocity, radius, mass, distance, avg_velo, epsilon, sigma, init_temp);
-    generator.generateParticles(particles);
+    generator.generateParticles(particles, true);
 
     R3 mean_velocity = {0.0, 0.0, 0.0};
     for (auto& p : particles) {
@@ -152,7 +152,7 @@ TEST_F(DiscGeneratorTest, testAverageVelocity) {
     R3 initial_velocity = {1.0, 2.0, 0.0};
 
     DiscGenerator generator(position, initial_velocity, radius, mass, distance, avg_velo, epsilon, sigma, init_temp);
-    generator.generateParticles(particles);
+    generator.generateParticles(particles, true);
 
     // Calculate mean velocity
     R3 mean_velocity = {0.0, 0.0, 0.0};
@@ -184,7 +184,7 @@ TEST_F(DiscGeneratorTest, testZeroParticleGeneration) {
     ContainerRef particles(particle_container);
     radius = 0;
     DiscGenerator generator(position, velocity, radius, mass, distance, avg_velo, epsilon, sigma, init_temp);
-    generator.generateParticles(particles);
+    generator.generateParticles(particles, true);
     EXPECT_EQ(particles.size(), 0);
 }
 

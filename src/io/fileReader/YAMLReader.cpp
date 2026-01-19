@@ -160,6 +160,9 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
         if (node["smooth"]) {
             settings.smoothing = node["smooth"].as<double>();
         }
+        if (node["enable_brownian"]) {
+            settings.brownian = node["enable_brownian"].as<bool>();
+        }
         if (node["pairwise_forces"]) {
             settings.pairwise_forces.clear();
             YAML::Node pairwise_node = node["pairwise_forces"];
@@ -599,7 +602,7 @@ void YAMLReader::readCube(ContainerRef particles, const SettingsParam& settings,
     for (const auto& data : cuboids) {
         CuboidGenerator generator(data.position, data.velocity, data.num_particles, data.targets, data.mass,
                                   data.distance, data.avg_velo, data.epsilon, data.sigma, settings.init_temp);
-        generator.generateParticles(particles);
+        generator.generateParticles(particles, settings.brownian, settings.thermo);
     }
 }
 
@@ -608,7 +611,7 @@ void YAMLReader::readDisc(ContainerRef particles, const SettingsParam& settings,
     for (const auto& data : discs) {
         DiscGenerator generator(data.position, data.velocity, data.radius, data.mass, data.distance, data.avg_velo,
                                 data.epsilon, data.sigma, settings.init_temp);
-        generator.generateParticles(particles);
+        generator.generateParticles(particles, settings.brownian, settings.thermo);
     }
 }
 
@@ -762,7 +765,7 @@ void YAMLReader::readMembrane(ContainerRef particles, const SettingsParam& setti
     for (const auto& data : membranes) {
         MembraneGenerator generator(data.position, data.velocity, data.num_particles, data.targets, data.mass,
                                     data.distance, data.avg_velo, data.epsilon, data.sigma, settings.init_temp);
-        generator.generateParticles(particles, settings.thermo);
+        generator.generateParticles(particles, settings.brownian, settings.thermo);
     }
 }
 
