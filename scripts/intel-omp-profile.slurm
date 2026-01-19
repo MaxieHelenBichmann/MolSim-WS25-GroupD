@@ -1,0 +1,30 @@
+#!/bin/bash
+#SBATCH -J intel-omp-profile
+#SBATCH -D ./
+#SBATCH -o ./results/intel/%j.out
+#SBATCH -e ./results/intel/%j.err
+#SBATCH --get-user-env
+#SBATCH --export=NONE
+#SBATCH --clusters=serial
+#SBATCH --partition=serial_std
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --time=01:00:00
+
+# Load necessary modules for profiling
+module load slurm_setup
+module load intel-oneapi-vtune/2024.2.1 
+module load intel-oneapi-advisor/2024.2.1
+
+# Set OpenMP threads to match the allocated CPUs
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+
+# Print job info
+echo "Job ID: $SLURM_JOB_ID"
+echo "Nodes: $SLURM_JOB_NODELIST"
+echo "CPUs per task: $SLURM_CPUS_PER_TASK"
+echo "OMP_NUM_THREADS: $OMP_NUM_THREADS"
+
+mkdir -p results/intel
+make -C MolSim-WS25-GroupD/build intel-profile-all
+
