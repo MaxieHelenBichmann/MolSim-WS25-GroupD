@@ -253,19 +253,24 @@ class Simulation {
      * @brief Applies the necessary boundary conditions to the particles.
      */
     void applyBoundaries() {
-        //============================ISSUE (it = updatePartPos)======================================
-        for (auto it = particles.begin(); it != particles.end();) {
-            (*it).getOldF() = (*it).getF();
-            (*it).getF() = Vector<double, 3>();
+        
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic)
+#endif
+        for (auto& p : particles) {
+            p.getOldF() = p.getF();
+            p.getF() = Vector<double, 3>();
             // TODO: Optimization to only call this for relevant particles
-            domain.applyBoundary(*it);
-            (*it).getMirrorLocations() = 0;
+            domain.applyBoundary(p);
+            p.getMirrorLocations() = 0;
+        }
+        
+        for (auto it = particles.begin(); it != particles.end();) {
             R3 new_position = (*it).getX();
             (*it).getX() = (*it).getOldX();
-            it = particles.updateParticlePosition(
-                it, new_position);  // for now SimpleContainer + Periodic (and also Reflecting) needs this here
+            it = particles.updateParticlePosition(it, new_position);  
+            // for now SimpleContainer + Periodic (and also Reflecting) needs this here
         }
-        //============================================================================================
     }
     /**
      * @brief Calculates the forces of every particle for the next time step.
