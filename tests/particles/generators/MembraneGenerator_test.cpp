@@ -40,7 +40,7 @@ class MembraneGeneratorTest : public testing::Test {
 
     void SetUp() override {
         particles.clear();
-        generator.generateParticles(particles);
+        generator.generateParticles(particles, true);
     }
 };
 
@@ -113,7 +113,7 @@ TEST_F(MembraneGeneratorTest, testTargetParticleType) {
     std::vector<N2> targets = {{1, 1}, {2, 2}};
     MembraneGenerator generator(position, velocity, num_particles, targets, mass, distance, avg_velo, epsilon, sigma,
                                 init_temp);
-    generator.generateParticles(particles);
+    generator.generateParticles(particles, true);
 
     int target_count = 0;
     int normal_count = 0;
@@ -142,7 +142,7 @@ TEST_F(MembraneGeneratorTest, testCorrectParticlesAreTargets) {
 
     MembraneGenerator generator(position, velocity, num_particles, targets, mass, distance, avg_velo, epsilon, sigma,
                                 init_temp);
-    generator.generateParticles(particles);
+    generator.generateParticles(particles, true);
 
     // Expected target positions in world coordinates
     std::vector<R3> expected_target_positions = {
@@ -189,7 +189,7 @@ TEST_F(MembraneGeneratorTest, testTargetParticlesAtBoundaries) {
 
     MembraneGenerator generator(position, velocity, num_particles, targets, mass, distance, avg_velo, epsilon, sigma,
                                 init_temp);
-    generator.generateParticles(particles);
+    generator.generateParticles(particles, true);
 
     EXPECT_EQ(particles.size(), 16);
 
@@ -221,7 +221,7 @@ TEST_F(MembraneGeneratorTest, testDuplicateTargetCoordinates) {
 
     MembraneGenerator generator(position, velocity, num_particles, targets, mass, distance, avg_velo, epsilon, sigma,
                                 init_temp);
-    generator.generateParticles(particles);
+    generator.generateParticles(particles, true);
 
     // Should still only have 2 unique target particles
     int target_count = 0;
@@ -252,7 +252,7 @@ TEST_F(MembraneGeneratorTest, testVelocityDistribution) {
     R3 initial_velocity = {1.0, 2.0, 0.0};
     MembraneGenerator generator(position, initial_velocity, num_particles, {}, mass, distance, avg_velo, epsilon, sigma,
                                 init_temp);
-    generator.generateParticles(particles);
+    generator.generateParticles(particles, true);
 
     R3 mean_velocity = {0.0, 0.0, 0.0};
     for (auto& p : particles) {
@@ -274,7 +274,7 @@ TEST_F(MembraneGeneratorTest, testZeroParticleGeneration) {
     N2 num_particles = {10U, 0U};
     MembraneGenerator generator(position, velocity, num_particles, {}, mass, distance, avg_velo, epsilon, sigma,
                                 init_temp);
-    generator.generateParticles(particles);
+    generator.generateParticles(particles, true);
     EXPECT_EQ(particles.size(), 0);
 }
 
@@ -407,7 +407,7 @@ TEST_F(MembraneGeneratorTest, testMinimalMembrane) {
     N2 num_particles = {2U, 2U};
     MembraneGenerator generator(position, velocity, num_particles, {}, mass, distance, avg_velo, epsilon, sigma,
                                 init_temp);
-    generator.generateParticles(particles);
+    generator.generateParticles(particles, true);
 
     EXPECT_EQ(particles.size(), 4);
 
@@ -440,7 +440,7 @@ TEST_F(MembraneGeneratorTest, testNeighborsWithExistingParticles) {
     N2 num_particles = {2U, 2U};
     MembraneGenerator generator(position, velocity, num_particles, {}, mass, distance, avg_velo, epsilon, sigma,
                                 init_temp);
-    generator.generateParticles(particles);
+    generator.generateParticles(particles, true);
 
     EXPECT_EQ(particles.size(), 6);
 

@@ -72,9 +72,10 @@ class MembraneGenerator : public Generator {
      * @brief Function to generate Particles.
      *
      * @param particles Container to place Particles in.
+     * @param use_brownian_motion If true, apply Brownian motion to particle velocities.
      * @param use_init_temp If true, use init_temp to calculate avg_velo based on temperature.
      */
-    void generateParticles(ContainerRef particles, bool use_init_temp = false) override;
+    void generateParticles(ContainerRef particles, bool use_brownian_motion, bool use_init_temp = false) override;
     /**
      * @brief Construct a new Membrane Generator object, setting all necessary parameters for generation.
      *
@@ -100,7 +101,7 @@ class MembraneGenerator : public Generator {
           avg_velo(avg_velo),
           epsilon(epsilon),
           sigma(sigma),
-          init_temp(init_temp){};
+          init_temp(init_temp) {};
 };
 }  // namespace mol_sim
 

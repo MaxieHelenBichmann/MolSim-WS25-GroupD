@@ -4,10 +4,9 @@
 
 namespace mol_sim {
 
-void MembraneGenerator::generateParticles(ContainerRef particles, bool use_init_temp) {
+void MembraneGenerator::generateParticles(ContainerRef particles, bool use_brownian_motion, bool use_init_temp) {
     const size_t base = particles.size();
     particles.reserve(base + (num_particles[0] * num_particles[1]));
-
     const double avg_v = use_init_temp ? sqrt(init_temp / mass) : avg_velo;
     const size_t row_size = num_particles[0];
 
@@ -18,7 +17,10 @@ void MembraneGenerator::generateParticles(ContainerRef particles, bool use_init_
 
             const N2 curr = {k, j};
             const int type = (std::ranges::find(targets, curr) != targets.end()) ? 4 : 2;
-            const R3 velo = maxwellBoltzmannDistributedVelocity(avg_v, 2);
+            R3 velo = {0., 0., 0.};
+            if (use_brownian_motion) {
+                velo = maxwellBoltzmannDistributedVelocity(avg_v, 2);
+            }
             particles.addParticle(curr_pos, velocity + velo, mass, epsilon, sigma, type);
         }
     }

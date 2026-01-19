@@ -55,7 +55,7 @@ void bmSimulationSingleStepLinkedCell(benchmark::State& state) {
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
     auto stat_writer = std::make_unique<StatsWriter>();
-    generator.generateParticles(particles);
+    generator.generateParticles(particles, true);
 
     Simulation<LinkedCellContainer> simulation(part_container, pairwise_forces, single_forces, settings, *writer,
                                                *cp_writer, *stat_writer);
@@ -96,7 +96,7 @@ void bmSimulationSingleStepDirectSum(benchmark::State& state) {
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
     auto stat_writer = std::make_unique<StatsWriter>();
-    generator.generateParticles(particles);
+    generator.generateParticles(particles, true);
     Simulation<SimpleContainer> simulation(part_container, pairwise_forces, single_forces, settings, *writer,
                                            *cp_writer, *stat_writer);
     for ([[maybe_unused]] auto _ : state) {
