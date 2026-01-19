@@ -89,6 +89,7 @@ MolSim-WS25-GroupD/
 ### Profiling
 - Perf
 - Valgrind
+- Intel oneAPI toolkit
 
 ---
 
