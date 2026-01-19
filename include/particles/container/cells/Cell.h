@@ -41,11 +41,11 @@ class Cell {
     /**
      * Cache for sorted particle indices to provide stable iteration.
      */
-    std::vector<size_t> sorted_cache;
+    mutable std::vector<size_t> sorted_cache;
     /**
      * Flag indicating whether the cache is dirty and needs to be updated.
      */
-    bool cache_dirty = true;
+    mutable bool cache_dirty = true;
 
     /**
      * @brief Update the sorted cache if it is dirty.
@@ -102,13 +102,8 @@ class Cell {
      * @return Iterator to the beginning of the sorted particle indices.
      */
     std::vector<size_t>::iterator stableIteratorBegin() {
-        #ifdef _OPENMP
-        #pragma omp critical (A)
-        #endif
-        {
         if (cache_dirty) {
             updateCache();
-        }
         }
         return sorted_cache.begin();
     }
@@ -119,13 +114,8 @@ class Cell {
      * @return Iterator to the end of the sorted particle indices.
      */
     std::vector<size_t>::iterator stableIteratorEnd() {
-        #ifdef _OPENMP
-        #pragma omp critical (B)
-        #endif
-        {
         if (cache_dirty) {
             updateCache();
-        }
         }
         return sorted_cache.end();
     }
@@ -136,13 +126,8 @@ class Cell {
      * @return Iterator to the beginning of the sorted particle indices.
      */
     [[nodiscard]] std::vector<size_t>::const_iterator stableIteratorBegin() const {
-        #ifdef _OPENMP
-        #pragma omp critical (C)
-        #endif
-        {
         if (cache_dirty) {
             const_cast<Cell*>(this)->updateCache();
-        }
         }
         return sorted_cache.begin();
     }
@@ -153,13 +138,8 @@ class Cell {
      * @return Iterator to the end of the sorted particle indices.
      */
     [[nodiscard]] std::vector<size_t>::const_iterator stableIteratorEnd() const {
-        #ifdef _OPENMP
-        #pragma omp critical (D)
-        #endif
-        {
         if (cache_dirty) {
             const_cast<Cell*>(this)->updateCache();
-        }
         }
         return sorted_cache.end();
     }

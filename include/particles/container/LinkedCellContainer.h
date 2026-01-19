@@ -629,6 +629,13 @@ class LinkedCellContainer {
         const std::set<BoundaryLocation>& boundary_types = {BoundaryLocation::UPPER, BoundaryLocation::LOWER,
                                                             BoundaryLocation::FRONT, BoundaryLocation::BACK,
                                                             BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
+
+    /**
+     * @brief Prepare all cell caches for thread-safe iteration.
+     * 
+     * Must be called before parallel force calculation to avoid race conditions.
+     */
+    void prepareForParallelIteration() const;
 };
 static_assert(ParticleContainer<LinkedCellContainer>);
 

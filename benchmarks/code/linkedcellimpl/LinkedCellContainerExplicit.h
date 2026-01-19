@@ -234,6 +234,8 @@ class LinkedCellContainerExplicit {
                                                             BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
 
     [[nodiscard]] R3 getDomainSize();
+
+    void prepareForParallelIteration() const {}  // No-op for benchmark container
 };
 static_assert(ParticleContainer<LinkedCellContainerExplicit>);
 

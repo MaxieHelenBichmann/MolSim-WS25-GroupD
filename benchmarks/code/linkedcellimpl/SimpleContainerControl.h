@@ -279,6 +279,8 @@ class SimpleContainerControl : public std::vector<Particle> {
                                                                      BoundaryLocation::FRONT, BoundaryLocation::BACK,
                                                                      BoundaryLocation::LEFT,
                                                                      BoundaryLocation::RIGHT}) const;
+
+    void prepareForParallelIteration() const {}  // No-op for benchmark container
 };
 static_assert(ParticleContainer<SimpleContainerControl>);
 

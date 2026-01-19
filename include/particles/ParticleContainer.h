@@ -78,6 +78,10 @@ concept ParticleContainer = requires(C c) {
     { (*static_cast<const C*>(&c)).boundaryBegin(std::set<BoundaryLocation>{}) } -> std::forward_iterator;
     { c.boundaryEnd(std::set<BoundaryLocation>{}) } -> std::forward_iterator;
     { (*static_cast<const C*>(&c)).boundaryEnd(std::set<BoundaryLocation>{}) } -> std::forward_iterator;
+
+    // parallel iteration preparation
+    { c.prepareForParallelIteration() };
+    { (*static_cast<const C*>(&c)).prepareForParallelIteration() };
 };
 
 }  // namespace mol_sim

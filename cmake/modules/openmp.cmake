@@ -1,6 +1,6 @@
-option(_OPENMP "Enable parallelization with OpenMP" OFF)
+option(ENABLE_OPENMP "Enable parallelization with OpenMP" OFF)
 
-if(_OPENMP)
+if(ENABLE_OPENMP)
     message(STATUS "Parallelization with OpenMP enabled")
     find_package(OpenMP REQUIRED)
 

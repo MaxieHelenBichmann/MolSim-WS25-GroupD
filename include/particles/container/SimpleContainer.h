@@ -479,6 +479,11 @@ class SimpleContainer : public std::vector<Particle> {
                                                                      BoundaryLocation::FRONT, BoundaryLocation::BACK,
                                                                      BoundaryLocation::LEFT,
                                                                      BoundaryLocation::RIGHT}) const;
+
+    /**
+     * @brief No-op for SimpleContainer. Only needed for LinkedCellContainer compatibility.
+     */
+    void prepareForParallelIteration() const {}
 };
 static_assert(ParticleContainer<SimpleContainer>);
 
