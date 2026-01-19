@@ -377,22 +377,10 @@ class Vector {
      */
     void atomicSubtract(const Vector<T, N>& other) {
         #ifdef _OPENMP
-        if constexpr (N == 3) {
-            const T v0 = other.data_[0];
-            const T v1 = other.data_[1];
-            const T v2 = other.data_[2];
+        for (size_t i = 0; i < N; ++i) {
+            const T val = other.data_[i];
             #pragma omp atomic
-            data_[0] -= v0;
-            #pragma omp atomic
-            data_[1] -= v1;
-            #pragma omp atomic
-            data_[2] -= v2;
-        } else {
-            for (size_t i = 0; i < N; ++i) {
-                const T val = other.data_[i];
-                #pragma omp atomic
-                data_[i] -= val;
-            }
+            data_[i] -= val;
         }
         #else
         *this -= other;
@@ -409,22 +397,10 @@ class Vector {
      */
     void atomicAdd(const Vector<T, N>& other) {
         #ifdef _OPENMP
-        if constexpr (N == 3) {
-            const T v0 = other.data_[0];
-            const T v1 = other.data_[1];
-            const T v2 = other.data_[2];
+        for (size_t i = 0; i < N; ++i) {
+            const T val = other.data_[i];
             #pragma omp atomic
-            data_[0] += v0;
-            #pragma omp atomic
-            data_[1] += v1;
-            #pragma omp atomic
-            data_[2] += v2;
-        } else {
-            for (size_t i = 0; i < N; ++i) {
-                const T val = other.data_[i];
-                #pragma omp atomic
-                data_[i] += val;
-            }
+            data_[i] += val;
         }
         #else
         *this += other;
