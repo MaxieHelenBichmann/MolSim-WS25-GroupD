@@ -299,21 +299,24 @@ class SimpleContainer : public std::vector<Particle> {
             ++(*this);
             return tmp;
         }
+        
+        //here to satisfy std::random_access_iterator (required for OpenMP)
+        proximity_iterator<P>& operator+=(long int n) {
+            for (long int i = 0; i < n; i++) {
+                ++(*this);
+            }
+            return *this;
+        }
 
         //here to satisfy std::random_access_iterator (required for OpenMP)
-        friend auto operator- ([[maybe_unused]] const proximity_iterator<P>& a, [[maybe_unused]] const proximity_iterator<P>& b) {
-            throw ContainerException("OpenMP not supported for SimpleContainer!");
-            return 0;
+        friend auto operator- (const proximity_iterator<P>& a, const proximity_iterator<P>& b) {
+            return a.cur - b.cur;
         } 
+        //here to satisfy std::random_access_iterator (required for OpenMP)
         friend auto operator-= ([[maybe_unused]] const proximity_iterator<P>& a, [[maybe_unused]] long int n) {
-            throw ContainerException("OpenMP not supported for SimpleContainer!");
+            throw ContainerException("Operator -= not yet implemented for SimpleContainer::proximity_iterator!");
             return 0;
         }
-        friend auto operator+= ([[maybe_unused]] const proximity_iterator<P>& a, [[maybe_unused]] long int n) {
-            throw ContainerException("OpenMP not supported for SimpleContainer!");
-            return 0;
-        }
-
         friend bool operator==(const proximity_iterator<P>& a, const proximity_iterator<P>& b) noexcept {
             return a.cur == b.cur;
         }

@@ -5,6 +5,9 @@
 #include <cstdint>
 #include <unordered_set>
 #include <vector>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 #include "utils/Vector.h"
 
@@ -99,8 +102,13 @@ class Cell {
      * @return Iterator to the beginning of the sorted particle indices.
      */
     std::vector<size_t>::iterator stableIteratorBegin() {
+        #ifdef _OPENMP
+        #pragma omp critical (A)
+        #endif
+        {
         if (cache_dirty) {
             updateCache();
+        }
         }
         return sorted_cache.begin();
     }
@@ -111,8 +119,13 @@ class Cell {
      * @return Iterator to the end of the sorted particle indices.
      */
     std::vector<size_t>::iterator stableIteratorEnd() {
+        #ifdef _OPENMP
+        #pragma omp critical (B)
+        #endif
+        {
         if (cache_dirty) {
             updateCache();
+        }
         }
         return sorted_cache.end();
     }
@@ -123,8 +136,13 @@ class Cell {
      * @return Iterator to the beginning of the sorted particle indices.
      */
     [[nodiscard]] std::vector<size_t>::const_iterator stableIteratorBegin() const {
+        #ifdef _OPENMP
+        #pragma omp critical (C)
+        #endif
+        {
         if (cache_dirty) {
             const_cast<Cell*>(this)->updateCache();
+        }
         }
         return sorted_cache.begin();
     }
@@ -135,8 +153,13 @@ class Cell {
      * @return Iterator to the end of the sorted particle indices.
      */
     [[nodiscard]] std::vector<size_t>::const_iterator stableIteratorEnd() const {
+        #ifdef _OPENMP
+        #pragma omp critical (D)
+        #endif
+        {
         if (cache_dirty) {
             const_cast<Cell*>(this)->updateCache();
+        }
         }
         return sorted_cache.end();
     }

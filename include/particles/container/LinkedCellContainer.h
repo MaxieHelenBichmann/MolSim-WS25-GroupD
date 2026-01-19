@@ -356,23 +356,27 @@ class LinkedCellContainer {
         size_t last_cell_idx;
         std::vector<size_t>::const_iterator last_cell_end;
 
+
         void inc() {
             SPDLOG_DEBUG("Incrementing proximity iterator");
+            cur_cell_end = cells[curr_cell_idx]->stableIteratorEnd();
             if (cur != cur_cell_end) {
                 ++cur;
                 ++cur_idx;
             }
-            while (cur == cur_cell_end && curr_cell_idx < last_cell_idx) {
+            while (cur == cur_cell_end &&
+                   curr_cell_idx < cells.size() - 1) {  // reached end of current cell
                 curr_cell_idx++;
                 cur = cells[curr_cell_idx]->stableIteratorBegin();
                 ++cur_idx;
-                cur_cell_end = cells[curr_cell_idx]->stableIteratorEnd();
             }
         }
         void satisfy() {
-            while (cur != last_cell_end &&
-                   (cur == cur_cell_end || !((center - container_data[*cur].getX()).sqrEuclidNorm() <= radius_sqr) ||
-                    (curr_cell_idx == last_cell_idx && *cur <= center_idx && center_idx != container_data.size()))) {
+            //*always* needs to be called *after* inc() (so cur_cell_end is set correctly)
+            while (cur != cells.back()->stableIteratorEnd() &&
+                   (cur == cur_cell_end ||
+                    !((center - container_data[*cur].getX()).sqrEuclidNorm() <= radius_sqr) ||
+                    (curr_cell_idx == cells.size() - 1 && *cur <= center_idx && center_idx != container_data.size()))) {
                 inc();
             }
         }
@@ -393,7 +397,7 @@ class LinkedCellContainer {
         }
         void satisfyDec() { //always needs to be called AFTER dec(). Don't call this on its own.
             while (cur != cells.begin()->stableIteratorBegin() &&
-                   (!((center - container_data[*cur].getX()).sqrEuclidNorm() <= radius * radius) ||
+                   (!((center - container_data[*cur].getX()).sqrEuclidNorm() <= radius_sqr) ||
                     (curr_cell_idx == cells.size() - 1 && *cur <= center_idx && center_idx != container_data.size()))) {
                 dec();
             }
