@@ -3,6 +3,9 @@
 
 #include <particles/Particle.h>
 #include <spdlog/spdlog.h>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 #include <array>
 #include <cstddef>
@@ -417,8 +420,11 @@ class LinkedCellContainer {
         pointer operator->() const noexcept { return &container_data[*cur]; }
 
         proximity_iterator<P, C>& operator++() {
+            //SPDLOG_INFO("Thread {}: Incrementing cur which is currently: {}", omp_get_thread_num(), *cur);
             inc();
+            //SPDLOG_INFO("Thread {}: Incremented cur which is now: {}", omp_get_thread_num(), *cur);
             satisfy();
+            //SPDLOG_INFO("Thread {}: After satisfy cur is now: {}", omp_get_thread_num(), *cur);
             return *this;
         }
 

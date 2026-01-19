@@ -190,7 +190,7 @@ class Simulation {
         // Collect indices of particles to remove using halo iterator
         SPDLOG_DEBUG("Container has currently {} particles before erase", particles.size());
         std::vector<size_t> to_remove;
-        #pragma omp parallel for 
+        //#pragma omp parallel for 
         for (auto it = particles.haloBegin(); it != particles.haloEnd(); ++it) {
             size_t idx = &(*it) - &particles[0];
             to_remove.push_back(idx);
@@ -244,7 +244,7 @@ class Simulation {
 
             LinkedCellContainer::proximity_iterator<Particle, Cell> it_prox;
             LinkedCellContainer::proximity_iterator<Particle, Cell> it_prox_end;
-            #pragma omp critical
+            #pragma omp critical (BB)
             {
             it_prox = particles.proximityBegin(p1.getX(), it - particles.begin());
             it_prox_end = particles.proximityEnd(p1.getX());
@@ -253,14 +253,15 @@ class Simulation {
             //#pragma omp parallel for 
             //(disabled for now cause of parallelization overhead)
             //could be changed to #pragma omp parallel for if (cutoff > some_value) or smn like that
-            for (; it_prox != it_prox_end; ++it_prox) {
+            for (; it_prox != it_prox_end;) {
                 // Apply force directly (Newton's 3rd law: equal and opposite)
-                #pragma omp critical
+                #pragma omp critical (CC)
                 {
                 Particle& p2 = *it_prox;
                 Vector<double, 3> force = force_source.applyForce(p1, p2);
                 p1.getF() += force;
                 p2.getF() -= force;
+                ++it_prox;
                 }   
             }
         }
