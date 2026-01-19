@@ -9,17 +9,19 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
-#include <type_traits>
 #include <vector>
 
 #include "exceptions/SimulationException.h"
 #include "io/CheckpointWriter.h"
 #include "io/OutputWriter.h"
+#include "io/StatsWriter.h"
 #include "particles/Particle.h"
 #include "particles/ParticleContainer.h"
-#include "particles/container/LinkedCellContainer.h"
 #include "particles/container/domain/Domain.h"
-#include "physics/ForceSource.h"
+#include "physics/pairwiseforces/PairwiseForceSource.h"
+#include "physics/singleforces/HarmonicForce.h"
+#include "physics/singleforces/SingleForceSource.h"
+#include "physics/targettedforces/TargetForceSource.h"
 #include "utils/Settings.h"
 #include "utils/Vector.h"
 
@@ -52,13 +54,14 @@ class Simulation {
     containerType& particles;
 
     /**
-     * @brief Force source for calculating particle interactions.
+     * @brief Force sources for calculating particle interactions.
      */
-    const ForceSource& force_source;
-    /**
-     * @brief Force type, used in checkpointing.
-     */
-    Force force;
+    const std::vector<std::unique_ptr<PairwiseForceSource>>& pairwise_force_sources;
+
+    const std::vector<std::unique_ptr<SingleForceSource>>& single_force_sources;
+
+    std::vector<PairwiseForce> pairwise_forces;
+    std::vector<SingleForce> single_forces;
     /**
      * @brief Writer used for output.
      */
@@ -67,6 +70,11 @@ class Simulation {
      * @brief Writer used for output.
      */
     const CheckpointWriter& cp_writer;
+    /**
+     * @brief Writer used for statistics.
+     */
+    const StatsWriter& stats_writer;
+
     /**
      * @brief Time step of simulation.
      */
@@ -91,6 +99,15 @@ class Simulation {
      * @brief Frequency of checkpoint writing.
      */
     size_t frequency_checkpoint;
+
+    /**
+     * @brief Frequency of statistics writing.
+     */
+    size_t frequency_stats_diff;
+    /**
+     * @brief Frequency of statistics writing.
+     */
+    size_t frequency_stats_rdf;
 
     /**
      * @brief Base name for output files.
@@ -121,13 +138,7 @@ class Simulation {
      * @brief Frequency with which the thermostat is applied.
      */
     size_t thermostat_freq;
-    /**
-     * @brief Graviational constant to be used for simulating gravity in the simulation.
-     * Will be used to apply a force m * g_grav (y-axis) to each particle.
-     * Make sure it's 0 if you do NOT want to simulate gravitational pull along y-axis.
-     * Make sure it's NEGATIVE if you want the particle to be pulled DOWN the y-axis.
-     */
-    double g_grav;
+
     /**
      * @brief Flag if thermostat is enabled for this simulation.
      */
@@ -137,6 +148,25 @@ class Simulation {
      */
     std::vector<Particle> new_particles;
 
+    bool target_force_enabled = false;
+
+    TargetForceSource target_force;
+
+    /**
+     * @brief Gravitational acceleration vector for single GRAV force.
+     */
+    R3 g_grav_vec;
+
+    /**
+     * @brief Spring constant for HARMONIC force.
+     */
+    double k;
+
+    /**
+     * @brief Equilibrium distance for HARMONIC force.
+     */
+    double r_0;
+
    public:
     /**
      * @brief Construct a new Simulation object and prepare for run() call.
@@ -145,27 +175,39 @@ class Simulation {
      * @param force_source Force source to be used in the simulation.
      * @param settings Simulation parameters.
      */
-    Simulation(containerType& particles, const ForceSource& force_source, SettingsParam& settings,
-               const OutputWriter& writer, const CheckpointWriter& cp_writer)
+    Simulation(containerType& particles,
+               const std::vector<std::unique_ptr<PairwiseForceSource>>& pairwise_force_sources,
+               const std::vector<std::unique_ptr<SingleForceSource>>& single_force_sources, SettingsParam& settings,
+               const OutputWriter& writer, const CheckpointWriter& cp_writer, const StatsWriter& stats_writer)
         : domain(std::move(settings.domain)),
           particles(particles),
-          force_source(force_source),
-          force(settings.force),
+          pairwise_force_sources(pairwise_force_sources),
+          single_force_sources(single_force_sources),
+          pairwise_forces(settings.pairwise_forces),
+          single_forces(settings.single_forces),
           writer(writer),
           cp_writer(cp_writer),
+          stats_writer(stats_writer),
           delta_t(settings.delta_t),
           start_time(settings.start_time),
           end_time(settings.end_time),
           frequency_output(settings.frequency_output),
           frequency_checkpoint(settings.frequency_checkpoint),
+          frequency_stats_diff(settings.stats_freq_diffusion),
+          frequency_stats_rdf(settings.stats_freq_rdf),
           base_name(settings.base_name),
           dimensions(settings.dimensions),
           cutoff_radius(settings.cutoff),
           target_temp(settings.target_temp),
           delta_temp(settings.delta_temp),
           thermostat_freq(settings.thermostat_freq),
-          g_grav(settings.g_grav),
-          thermo(settings.thermo) {
+          thermo(settings.thermo),
+          target_force_enabled(settings.target_force_enabled),
+          target_force(settings.target_force_direction, settings.target_force_magnitude,
+                       settings.target_force_max_iterations),
+          g_grav_vec(settings.g_grav_vec),
+          k(settings.k),
+          r_0(settings.r_0) {
         #pragma omp parallel for
         for (auto it = particles.begin(); it != particles.end(); ++it) {
             Particle& p = (*it);
@@ -218,13 +260,8 @@ class Simulation {
             (*it).getOldF() = (*it).getF();
             (*it).getF() = Vector<double, 3>();
             // TODO: Optimization to only call this for relevant particles
-            //std::vector<Particle> tmp = domain.applyBoundary(*it, force_source);
-            //#pragma omp parallel for
-            for (auto& p : domain.applyBoundary(*it, force_source)) {
-                new_particles.push_back(p);
-            }
+            domain.applyBoundary(*it);
             (*it).getMirrorLocations() = 0;
-            // TODO: bit of an ugly workaround for now.
             R3 new_position = (*it).getX();
             (*it).getX() = (*it).getOldX();
             it = particles.updateParticlePosition(
@@ -240,23 +277,21 @@ class Simulation {
         #pragma omp parallel for
         for (auto it = particles.begin(); it != particles.end(); ++it) {
             Particle& p1 = *it;
-            p1.getF()[1] += p1.getM() * g_grav;  // add gravitational pull along y-axis
-
+            for (const auto& force_source : single_force_sources) {
+                p1.getF() += force_source->applyForce(p1);
+            }
             LinkedCellContainer::proximity_iterator<Particle, Cell> it_prox;
             LinkedCellContainer::proximity_iterator<Particle, Cell> it_prox_end;
             #pragma omp critical (BB)
             {
-            it_prox = particles.proximityBegin(p1.getX(), it - particles.begin());
-            it_prox_end = particles.proximityEnd(p1.getX());
+            auto it_prox = particles.proximityBegin(p1.getX(), idx);
+            auto it_prox_end = particles.proximityEnd(p1.getX());
             }
 
-            //#pragma omp parallel for 
-            //(disabled for now cause of parallelization overhead)
-            //could be changed to #pragma omp parallel for if (cutoff > some_value) or smn like that
             for (; it_prox != it_prox_end;) {
-                // Apply force directly (Newton's 3rd law: equal and opposite)
-                #pragma omp critical (CC)
+                #pragma omp critical
                 {
+                // Apply force directly (Newton's 3rd law: equal and opposite)
                 Particle& p2 = *it_prox;
                 Vector<double, 3> force = force_source.applyForce(p1, p2);
                 p1.getF() += force;
@@ -277,41 +312,44 @@ class Simulation {
                 R3 domain_size = domain.getDimension();
                 constexpr double epsilon = 1e-6;  // Small offset to stay inside domain
                 for (size_t dim = 0; dim < 3; ++dim) {
-                    // Mirror slightly left of domain (x < 0) → clamp to just inside left boundary
                     if (lookup_pos[dim] < 0) {
                         lookup_pos[dim] = epsilon;
-                    }
-                    // Mirror slightly right of domain (x > domain) → clamp to just inside right boundary
-                    else if (lookup_pos[dim] > domain_size[dim]) {
+                    } else if (lookup_pos[dim] > domain_size[dim]) {
                         lookup_pos[dim] = domain_size[dim] - epsilon;
                     }
                 }
-            }
+                auto it_prox = particles.proximityBegin(lookup_pos, particles.size());
+                auto it_prox_end = particles.proximityEnd(lookup_pos);
 
-            auto it_prox = particles.proximityBegin(lookup_pos, particles.size());
-            auto it_prox_end = particles.proximityEnd(lookup_pos);
-            //#pragma omp parallel for 
+                //#pragma omp parallel for 
             //(disabled for now cause of parallelization overhead)
             //could be changed to #pragma omp parallel for if (cutoff > some_value) or smn like that
             for (; it_prox != it_prox_end; ++it_prox) {
-                Particle& p2 = *it_prox;
-                Vector<double, 3> force = force_source.applyForce(p2, p1);
-                p2.getF() = p2.getF() + force;
+                    Particle& p2 = *it_prox;
+                    for (const auto& force_source : pairwise_force_sources) {
+                        p2.getF() += force_source->applyForce(p2, p1);
+                    }
+                }
             }
+            p1.getX() = actual_pos;
         }
-        new_particles.clear();
     }
 
     /**
      * @brief Calculates the forces of every particle for the next time step.
      */
-    void calculateF() {
+
+    void calculateF(const size_t iteration) {
+
         for (auto it = particles.begin(); it != particles.end(); ++it) {
             Particle& p1 = *it;
-            p1.getF()[1] += p1.getM() * g_grav;  // add gravitational pull along y-axis
+            for (const auto& force_source : single_force_sources) {
+                p1.getF() += force_source->applyForce(p1);
+            }
 
-            auto it_prox = particles.proximityBegin(p1.getX(), it - particles.begin());
-            auto it_prox_end = particles.proximityEnd(p1.getX());   
+            const R3& p1_pos = p1.getX();
+            auto it_prox = particles.proximityBegin(p1_pos, it - particles.begin());
+            auto it_prox_end = particles.proximityEnd(p1_pos);   
 
             //#pragma omp parallel for 
             //(disabled for now cause of parallelization overhead)
@@ -319,45 +357,45 @@ class Simulation {
             for (; it_prox != it_prox_end; ++it_prox) {
                 // Apply force directly (Newton's 3rd law: equal and opposite)
                 Particle& p2 = *it_prox;
-                Vector<double, 3> force = force_source.applyForce(p1, p2);
-                p1.getF() += force;
-                p2.getF() -= force;
-            }   
-        }
-        // Calculate forces from mirrored/ghost particles
-        for (const Particle& p1 : new_particles) {
-            R3 lookup_pos = p1.getX();
+                for (const auto& force_source : pairwise_force_sources) {
+                    const Vector<double, 3> force = force_source->applyForce(p1, p2);
+                    p1.getF() += force;
+                    p2.getF() -= force;
+                }
+            }
+            if (target_force_enabled && iteration < target_force.getMaxIterations()) {
+                p1.getF() += target_force.applyForce(p1);
+            }
+            R3 actual_pos = p1.getX();
+            const R3& domain_size = domain.getDimension();
+            // Applying forces between Mirror Particles and normal particles
+            for (const R3& mirr_pos : p1.getMirrorPositions()) {
+                p1.getX() = mirr_pos;
+                R3 lookup_pos = mirr_pos;
 
-            // For mirrored particles from periodic boundaries (type==1), their position is slightly
-            // outside the domain. We need to clamp it to just inside the boundary region to find
-            // the correct neighbors while preserving the actual position for force calculation.
-            if (p1.getType() == 1) {  // Mirrored particle from periodic boundary
-                R3 domain_size = domain.getDimension();
                 constexpr double epsilon = 1e-6;  // Small offset to stay inside domain
                 for (size_t dim = 0; dim < 3; ++dim) {
-                    // Mirror slightly left of domain (x < 0) → clamp to just inside left boundary
                     if (lookup_pos[dim] < 0) {
                         lookup_pos[dim] = epsilon;
-                    }
-                    // Mirror slightly right of domain (x > domain) → clamp to just inside right boundary
-                    else if (lookup_pos[dim] > domain_size[dim]) {
+                    } else if (lookup_pos[dim] > domain_size[dim]) {
                         lookup_pos[dim] = domain_size[dim] - epsilon;
                     }
                 }
-            }
+                auto it_prox = particles.proximityBegin(lookup_pos, particles.size());
+                auto it_prox_end = particles.proximityEnd(lookup_pos);
 
-            auto it_prox = particles.proximityBegin(lookup_pos, particles.size());
-            auto it_prox_end = particles.proximityEnd(lookup_pos);
-            //#pragma omp parallel for 
+                //#pragma omp parallel for 
             //(disabled for now cause of parallelization overhead)
             //could be changed to #pragma omp parallel for if (cutoff > some_value) or smn like that
             for (; it_prox != it_prox_end; ++it_prox) {
-                Particle& p2 = *it_prox;
-                Vector<double, 3> force = force_source.applyForce(p2, p1);
-                p2.getF() = p2.getF() + force;
+                    Particle& p2 = *it_prox;
+                    for (const auto& force_source : pairwise_force_sources) {
+                        p2.getF() += force_source->applyForce(p2, p1);
+                    }
+                }
             }
+            p1.getX() = actual_pos;
         }
-        new_particles.clear();
     }
 
     /**
@@ -366,6 +404,7 @@ class Simulation {
     void calculateX() {
         #pragma omp parallel for
         for (auto& p : particles) {
+            p.getMirrorPositions().clear();
             p.getOldX() = p.getX();
             p.getX() += (delta_t * p.getV()) + ((0.5 * delta_t * delta_t / p.getM()) * p.getF());
         }
@@ -403,9 +442,15 @@ class Simulation {
      * @brief Performs a full simulation run.
      * @throws SimulationException if an error occurs during output writing.
      */
+    // NOLINTNEXTLINE(readability-function-cognitive-complexity)
     void run() {
         double current_time = start_time;
         [[maybe_unused]] int iteration = 0;
+        for (const auto& source : single_force_sources) {
+            if (source->getType() == SingleForce::HARMONIC) {
+                static_cast<HarmonicForce*>(source.get())->setContainer(particles);
+            }
+        }
 
 #ifdef ENABLE_CHECKPOINTING
         SettingsParam cp_settings;
@@ -413,7 +458,11 @@ class Simulation {
         cp_settings.end_time = end_time;
         cp_settings.start_time = current_time;
         cp_settings.base_name = base_name;
-        cp_settings.force = force;
+        cp_settings.pairwise_forces = pairwise_forces;
+        cp_settings.single_forces = single_forces;
+        cp_settings.g_grav_vec = g_grav_vec;
+        cp_settings.k = k;
+        cp_settings.r_0 = r_0;
         if constexpr (std::is_same_v<std::remove_cvref_t<containerType>, LinkedCellContainer>) {
             cp_settings.container_type = "LINKED";
         } else {
@@ -426,8 +475,13 @@ class Simulation {
         cp_settings.delta_temp = delta_temp;
         cp_settings.thermostat_freq = thermostat_freq;
         cp_settings.dimensions = dimensions;
-        cp_settings.g_grav = g_grav;
         cp_settings.thermo = thermo;
+        cp_settings.target_force_enabled = target_force_enabled;
+        if (target_force_enabled) {
+            cp_settings.target_force_direction = target_force.getDirection();
+            cp_settings.target_force_magnitude = target_force.getMagnitude();
+            cp_settings.target_force_max_iterations = target_force.getMaxIterations();
+        }
         auto cp_n = static_cast<size_t>(std::ceil((end_time - start_time) / delta_t));
 #endif
 
@@ -451,13 +505,12 @@ class Simulation {
             if constexpr (std::is_same_v<std::remove_cvref_t<containerType>, LinkedCellContainer>) {
                 calculateF_LCC();
             } else {
-                calculateF();
+                calculateF(iteration);
             }
 
             // 5. Calculate thermostat factor
             double thermo_factor = 1.0;
-            // TODO: Iteration > 0 is a fix for the tests, discussion needed.
-            if (thermo && iteration > 0 && iteration % thermostat_freq == 0) {
+            if (thermo && iteration % thermostat_freq == 0) {
                 thermo_factor = calculateThermostatFactor();
             }
             // 6. Calculate new velocities
@@ -465,6 +518,7 @@ class Simulation {
 
             iteration++;
 #ifdef ENABLE_IO
+            // 7. Write output (optional)
             if (iteration % frequency_output == 0) {
                 try {
                     std::string out_name = base_name;
@@ -476,6 +530,7 @@ class Simulation {
             }
 #endif
 #ifdef ENABLE_CHECKPOINTING
+            // 8. Write checkpoint (optional)
             if (iteration % frequency_checkpoint == 0) {
                 try {
                     cp_settings.start_time = current_time;
@@ -486,12 +541,31 @@ class Simulation {
                 }
             }
 #endif
+#ifdef ENABLE_STATS
+            // 9. Write diffusion statistics (optional)
+            if (iteration % frequency_stats_diff == 0) {
+                try {
+                    stats_writer.plotDiffusion(particles, iteration);
+                } catch (const std::runtime_error& e) {
+                    SPDLOG_ERROR("Failed to plot diffusion at iteration {}: {}", iteration, e.what());
+                }
+            }
+            // 10. Write RDF statistics (optional)
+            if (iteration % frequency_stats_rdf == 0) {
+                try {
+                    stats_writer.plotRDF(particles, iteration);
+                } catch (const std::runtime_error& e) {
+                    SPDLOG_ERROR("Failed to plot RDF at iteration {}: {}", iteration, e.what());
+                }
+            }
+#endif
 
             SPDLOG_DEBUG("Iteration {} finished, {} particles remaining", iteration, particles.size());
             current_time += delta_t;
         }
         SPDLOG_INFO("Simulation completed: {} iterations, {} particles remaining", iteration, particles.size());
 #ifdef ENABLE_CHECKPOINTING
+        // Final checkpoint at end of simulation (optional)
         try {
             cp_settings.start_time = current_time;
             cp_writer.createCheckpoint(cp_settings, domain, particles, iteration, cp_n);

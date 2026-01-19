@@ -1,8 +1,8 @@
-#ifndef GRAV_FORCE_H
-#define GRAV_FORCE_H
+#ifndef PAIR_GRAV_FORCE_H
+#define PAIR_GRAV_FORCE_H
 
 #include "particles/Particle.h"
-#include "physics/ForceSource.h"
+#include "physics/pairwiseforces/PairwiseForceSource.h"
 #include "utils/Vector.h"
 
 namespace mol_sim {
@@ -13,7 +13,7 @@ namespace mol_sim {
  * Class to calculate gravitational forces between two different objects.
  * Implements the ForceSource concept.
  */
-class GravitationalForce : public ForceSource {
+class GravitationalForce : public PairwiseForceSource {
    public:
     /**
      * @brief Calculates the gravitational force a particle p2 exerts on a different particle p1.

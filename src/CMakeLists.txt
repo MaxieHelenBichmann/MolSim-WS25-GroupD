@@ -34,7 +34,9 @@ endif()
 if(ENABLE_CHECKPOINTS)
     target_compile_definitions(MolSim PRIVATE ENABLE_CHECKPOINTING)
 endif()
-
+if(ENABLE_STATS)
+    target_compile_definitions(MolSim PRIVATE ENABLE_STATS)
+endif()
 
 if(COVERAGE)
     include(GenerateCoverage)

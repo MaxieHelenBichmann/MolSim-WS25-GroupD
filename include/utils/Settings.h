@@ -4,9 +4,11 @@
 #include <cstddef>
 #include <limits>
 #include <string>
+#include <vector>
 
 #include "particles/container/domain/Domain.h"
-#include "physics/ForceSource.h"
+#include "physics/pairwiseforces/PairwiseForceSource.h"
+#include "physics/singleforces/SingleForceSource.h"
 
 namespace mol_sim {
 /**
@@ -40,7 +42,8 @@ class SettingsParam {
     /**
      * @brief Default force type of the simulation.
      */
-    static constexpr Force FORCE_DEFAULT = LENNARDJONES;
+    inline static const std::vector<PairwiseForce> PAIRWISE_FORCE_DEFAULT = {LENNARDJONES};
+    inline static const std::vector<SingleForce> SINGLE_FORCE_DEFAULT = {};
     /**
      * @brief Default write frequency of the simulation.
      */
@@ -50,9 +53,29 @@ class SettingsParam {
      */
     static constexpr size_t FREQUENCY_CHECKPOINT_DEFAULT = 5000;
     /**
+     * @brief Default frequency for thermodynamical statistics (Diffusion).
+     */
+    static constexpr size_t FREQUENCY_STATS_DEFAULT_DIFF = 1000;
+    /**
+     * @brief Default frequency for thermodynamical statistics (RDF).
+     */
+    static constexpr size_t FREQUENCY_STATS_DEFAULT_RDF = 7000;
+    /**
+     * @brief Default sample width for the radial distribution function.
+     */
+    static constexpr double RDF_DEFAULT = 1.0;
+    /**
+     * @brief Default window size for the radial distribution function.
+     */
+    static constexpr double RDF_SIZE_DEFAULT = 10.0;
+    /**
      * @brief Default cutoff radius for the linked cells.
      */
     static constexpr double CUTOFF_DEFAULT = std::numeric_limits<double>::infinity();
+    /**
+     * @brief Default smoothing radius for the linked cells.
+     */
+    static constexpr double SMOOTHING_DEFAULT = std::numeric_limits<double>::infinity();
     /**
      * @brief Default initial temperature for the system.
      */
@@ -69,10 +92,10 @@ class SettingsParam {
      * @brief Default dimensions of the simulation..
      */
     static constexpr size_t DIMENSIONS_DEFAULT = 3;
-    /**
-     * @brief Default value for g_grav used to simulate gravitational pull in simulation.
-     */
-    static constexpr double G_GRAV_DEFAULT = 0.0;
+
+    static constexpr double K_DEFAULT = 300.0;
+
+    static constexpr double R_0_DEFAULT = 2.2;
     /**
      * @brief delta_t of the simulation.
      */
@@ -100,7 +123,9 @@ class SettingsParam {
     /**
      * @brief Type of force used in the simulation.
      */
-    Force force = FORCE_DEFAULT;
+    std::vector<PairwiseForce> pairwise_forces = PAIRWISE_FORCE_DEFAULT;
+
+    std::vector<SingleForce> single_forces = SINGLE_FORCE_DEFAULT;
     /**
      * @brief Frequency of output files being written.
      * Output is written every *frequency* iterations.
@@ -120,6 +145,10 @@ class SettingsParam {
      * @brief Cutoff radius for the linked cells algorithm.
      */
     double cutoff = CUTOFF_DEFAULT;
+    /**
+     * @brief Smoothing radius for the linked cells algorithm.
+     */
+    double smoothing = SMOOTHING_DEFAULT;
     /**
      * @brief The type in string format of the particle container.
      *
@@ -150,14 +179,66 @@ class SettingsParam {
      * @brief Frequency with which the thermostat gets applied.
      */
     size_t thermostat_freq = THERMOSTAT_FREQ_DEFAULT;
+
+    /**
+     * @brief Frequency for thermodynamical statistics (Diffusion).
+     */
+    size_t stats_freq_diffusion = FREQUENCY_STATS_DEFAULT_DIFF;
+    /**
+     * @brief Frequency for thermodynamical statistics (RDF).
+     */
+    size_t stats_freq_rdf = FREQUENCY_STATS_DEFAULT_RDF;
+    /**
+     * @brief Toggles if data collection for the radial distribution function is enabled for this simulation.
+     *
+     */
+    bool rdf = false;
+    /**
+     * @brief Toggles if data collection for the diffusion is enabled for this simulation.
+     *
+     */
+    bool diff = false;
+    /**
+     * @brief Sample width for the radial distribution function.
+     */
+    double sample_radius = RDF_DEFAULT;
+    /**
+     * @brief Size of the window for the radial distribution function.
+     */
+    double window_size = RDF_SIZE_DEFAULT;
     /**
      * @brief Maximum allowed temperature change of the system with one thermostat application.
      */
     double delta_temp = DELTA_TEMP_DEFAULT;
+
+    double k = K_DEFAULT;
+
+    double r_0 = R_0_DEFAULT;
+
     /**
-     * @brief Used to simulate of gravitational pull in simulation.
+     * @brief g_grav vector for GRAV single force (gravitational acceleration vector).
      */
-    double g_grav = G_GRAV_DEFAULT;
+    R3 g_grav_vec = {0.0, -9.81, 0.0};
+
+    /**
+     * @brief Enable target force.
+     */
+    bool target_force_enabled = false;
+
+    /**
+     * @brief Target force direction vector.
+     */
+    R3 target_force_direction = {0.0, 1.0, 0.0};
+
+    /**
+     * @brief Target force magnitude.
+     */
+    double target_force_magnitude = 0.0;
+
+    /**
+     * @brief Maximum iterations for target force.
+     */
+    size_t target_force_max_iterations = 0;
 
     /**
      * @brief Construct new SettingsParam with default values.

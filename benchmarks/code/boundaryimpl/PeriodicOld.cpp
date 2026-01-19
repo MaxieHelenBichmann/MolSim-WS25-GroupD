@@ -41,17 +41,13 @@ PeriodicOld::PeriodicOld(BoundaryLocation location, R3 domain_size, double cutof
  * types of the other boundaries) and not overcomplicating this code (unless really necessary)
  * I will leave this behavior in for now.
  */
-std::optional<std::vector<Particle>> PeriodicOld::applyBoundary(  // NOLINT
-    Particle& p, [[maybe_unused]] const ForceSource& force) noexcept {
+void PeriodicOld::applyBoundary(  // NOLINT
+    Particle& p, [[maybe_unused]] const PairwiseForceSource& force) noexcept {
     teleportParticleIfOOB(p);
     if (!isOnBoundary(p.getX(), getAxis(), getSign())) {  // only mirror particles in correct boundary region
-        return std::nullopt;
+        return;
     }
-    auto mirrored_particles = mirrorParticle(p);
-    if (mirrored_particles.empty()) {
-        return std::nullopt;
-    }
-    return mirrored_particles;
+    mirrorParticle(p);
 }
 
 void PeriodicOld::teleportParticleIfOOB(Particle& p) {
@@ -89,9 +85,7 @@ std::vector<Particle> PeriodicOld::mirrorParticle(Particle& p) {
         // add mirror particle if necessary
         if (i != 13 && isInHalo(p.getX() + offset) && (p.getMirrorLocations() & (1 << i)) == 0) {
             Particle p_prime(p);
-            p_prime.getX() = p.getX() + offset;
-            p_prime.getType() = 1;
-            mirrored_particles.push_back(p_prime);
+            p.getMirrorPositions().emplace_back(p.getX() + offset);
             p.getMirrorLocations() |= (1 << i);
         }
 

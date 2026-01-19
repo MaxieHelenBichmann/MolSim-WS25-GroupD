@@ -19,7 +19,7 @@
 #include "particles/container/LinkedCellContainer.h"
 #include "particles/container/SimpleContainer.h"
 #include "particles/generators/CuboidGenerator.h"
-#include "physics/LennardJonesForce.h"
+#include "physics/pairwiseforces/LennardJonesForce.h"
 #include "utils/Settings.h"
 #include "utils/Simulation.h"
 
@@ -40,8 +40,8 @@ void bmSimulationComplexityLinkedCell(benchmark::State& state) {
     LinkedCellContainer part_container(domain_size, 3.0);
     ContainerRef particles(part_container);
 
-    CuboidGenerator generator({margin, margin, 0.0}, {0.0, 0.0, 0.0}, {n, n, static_cast<size_t>(1)}, 1.0, spacing, 0.3,
-                              5.0, 1.0, 0.01);
+    CuboidGenerator generator({margin, margin, 0.0}, {0.0, 0.0, 0.0}, {n, n, static_cast<size_t>(1)}, {}, 1.0, spacing,
+                              0.3, 5.0, 1.0, 0.01);
     SettingsParam settings;
     settings.delta_t = 0.0005;
     settings.start_time = 0;
@@ -57,11 +57,15 @@ void bmSimulationComplexityLinkedCell(benchmark::State& state) {
         std::make_unique<Outflow>(BoundaryLocation::UPPER, domain_size),
         std::make_unique<Outflow>(BoundaryLocation::LOWER, domain_size)};
     settings.domain = Domain(domain_size, std::move(boundaries));
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto cp_writer = std::make_unique<XVMWriterCP>();
     auto writer = std::make_unique<XYZWriter>();
+    auto stat_writer = std::make_unique<StatsWriter>();
 
-    Simulation<LinkedCellContainer> simulation(part_container, *force_source, settings, *writer, *cp_writer);
+    Simulation<LinkedCellContainer> simulation(part_container, pairwise_forces, single_forces, settings, *writer,
+                                               *cp_writer, *stat_writer);
     for ([[maybe_unused]] auto _ : state) {
         particles.clear();
         generator.generateParticles(particles);
@@ -85,8 +89,8 @@ void bmSimulationComplexityDirectSum(benchmark::State& state) {
     R3 domain_size = {grid_size + (2 * margin), grid_size + (2 * margin), 1.};
     SimpleContainer part_container;
     ContainerRef particles(part_container);
-    CuboidGenerator generator({margin, margin, 0.0}, {0., 0., 0.}, {n, n, static_cast<size_t>(1)}, 1.0, spacing, 0.3,
-                              5.0, 1.0, 0.01);
+    CuboidGenerator generator({margin, margin, 0.0}, {0., 0., 0.}, {n, n, static_cast<size_t>(1)}, {}, 1.0, spacing,
+                              0.3, 5.0, 1.0, 0.01);
     SettingsParam settings;
     settings.delta_t = 0.0005;
     settings.start_time = 0;
@@ -101,10 +105,14 @@ void bmSimulationComplexityDirectSum(benchmark::State& state) {
         std::make_unique<Outflow>(BoundaryLocation::UPPER, domain_size),
         std::make_unique<Outflow>(BoundaryLocation::LOWER, domain_size)};
     settings.domain = Domain(domain_size, std::move(boundaries));
-    auto force_source = std::make_unique<LennardJonesForce>();
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<XVMWriterCP>();
-    Simulation<SimpleContainer> simulation(part_container, *force_source, settings, *writer, *cp_writer);
+    auto stat_writer = std::make_unique<StatsWriter>();
+    Simulation<SimpleContainer> simulation(part_container, pairwise_forces, single_forces, settings, *writer,
+                                           *cp_writer, *stat_writer);
     for ([[maybe_unused]] auto _ : state) {
         particles.clear();
         generator.generateParticles(particles);

@@ -3,14 +3,17 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <io/outputWriter/XYZWriter.h>
+#include <particles/container/ContainerRef.h>
 #include <particles/container/domain/Domain.h>
-#include <physics/GravitationalForce.h>
-#include <physics/LennardJonesForce.h>
+#include <physics/pairwiseforces/GravitationalForce.h>
+#include <physics/pairwiseforces/LennardJonesForce.h>
 
 #include <limits>
+#include <memory>
 
 #include "io/CheckpointWriter.h"
 #include "io/OutputWriter.h"
+#include "io/StatsWriter.h"
 #include "particles/Particle.h"
 #include "particles/container/LinkedCellContainer.h"
 #include "particles/container/SimpleContainer.h"
@@ -24,7 +27,7 @@ namespace mol_sim {
 /**
  * @brief Mocks ForceSource.applyForce so we use better test values.
  */
-class ForceMock : public ForceSource {
+class ForceMock : public PairwiseForceSource {
    public:
     // NOLINTNEXTLINE(bugprone-exception-escape)
     MOCK_METHOD(R3, applyForce, (const Particle& p1, const Particle& p2), (const, noexcept, override));
@@ -48,6 +51,16 @@ class CheckpointWriterMock : public CheckpointWriter {
     MOCK_METHOD(void, createCheckpoint,
                 (SettingsParam & settings, const Domain& domain, ContainerRef particles, int iteration, size_t N),
                 (const, override));
+};
+
+/**
+ * @brief Mocks StatsWriter for testing without file I/O.
+ *
+ */
+class StatsWriterMock : public StatsWriter {
+   public:
+    MOCK_METHOD(void, plotDiffusion, (ContainerRef particles, int iteration), (const));
+    MOCK_METHOD(void, plotRDF, (ContainerRef particles, int iteration, const std::vector<Particle>& mirrored), (const));
 };
 
 // ==================== Container Traits ====================
@@ -82,6 +95,8 @@ class SimulationTestBase : public testing::Test {
     void SetUp() override {
         settings.cutoff = std::numeric_limits<double>::infinity();
         settings.thermostat_freq = std::numeric_limits<size_t>::max();
+        settings.thermo = false;
+        settings.target_force_enabled = false;
         particles.clear();
     }
 };
@@ -118,10 +133,14 @@ TYPED_TEST(CalculateXTest, calculateX_dt) {
     R3 x = {0.0, 0.0, 0.0};
     R3 v = {10.0, -20.0, 0.0};
     this->particles.addParticle(x, v, 1.0, 5., 1.);
-    GravitationalForce force_source;
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<GravitationalForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     OutputWriterMock writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, force_source, this->settings, writer, checkpoint_writer);
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, pairwise_forces, single_forces, this->settings, writer,
+                                     checkpoint_writer, stat_writer);
     simulation.calculateX();
     R3 expected = {5.0, -10.0, 0.0};
     EXPECT_EQ(this->particles[0].getX(), expected);
@@ -139,10 +158,14 @@ TYPED_TEST(CalculateXTest, calculateX_force) {
     Particle p(x, v, 1.0, 5., 1.);
     p.getF() = f;
     this->particles.addParticle(p);
-    GravitationalForce force_source;
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<GravitationalForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     OutputWriterMock writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, force_source, this->settings, writer, checkpoint_writer);
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, pairwise_forces, single_forces, this->settings, writer,
+                                     checkpoint_writer, stat_writer);
     simulation.calculateX();
     R3 expected = {10.0, 5.0, 0.0};
     EXPECT_EQ(this->particles[0].getX(), expected);
@@ -157,10 +180,14 @@ TYPED_TEST(CalculateVTest, calculateV_no_force) {
     R3 x = {0.0, 0.0, 0.0};
     R3 v = {10.0, -20.0, 30.0};
     this->particles.addParticle(x, v, 1.0, 5., 1.);
-    GravitationalForce force_source;
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<GravitationalForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     OutputWriterMock writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, force_source, this->settings, writer, checkpoint_writer);
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, pairwise_forces, single_forces, this->settings, writer,
+                                     checkpoint_writer, stat_writer);
     simulation.calculateV(1.);
     EXPECT_EQ(this->particles[0].getV(), v);
 }
@@ -177,10 +204,14 @@ TYPED_TEST(CalculateVTest, calculateV_simple) {
     Particle p(x, v, 1.0, 5., 1.);
     p.getF() = f;
     this->particles.addParticle(p);
-    GravitationalForce force_source;
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<GravitationalForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     OutputWriterMock writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, force_source, this->settings, writer, checkpoint_writer);
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, pairwise_forces, single_forces, this->settings, writer,
+                                     checkpoint_writer, stat_writer);
     simulation.calculateV(1.);
     R3 expected = {10.5, -19.5, 30.5};
     EXPECT_EQ(this->particles[0].getV(), expected);
@@ -200,10 +231,14 @@ TYPED_TEST(CalculateVTest, calculateV_complex) {
     p.getF() = f;
     p.getOldF() = old_f;
     this->particles.addParticle(p);
-    GravitationalForce force_source;
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<GravitationalForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     OutputWriterMock writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, force_source, this->settings, writer, checkpoint_writer);
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, pairwise_forces, single_forces, this->settings, writer,
+                                     checkpoint_writer, stat_writer);
     simulation.calculateV(1.);
     R3 expected = {11.0625, -19.375, 39.9375};
     EXPECT_EQ(this->particles[0].getV(), expected);
@@ -220,12 +255,17 @@ TYPED_TEST(CalculateFTest, calculateF_simple2_pairwise) {
     R3 f12 = {10.0, 0.0, 0.0};
     this->particles.addParticle(p1);
     this->particles.addParticle(p2);
-    ForceMock mock;
-    EXPECT_CALL(mock, applyForce(p1, p2)).Times(1).WillOnce(testing::Return(f12));
+    auto mock = std::make_unique<ForceMock>();
+    EXPECT_CALL(*mock, applyForce(p1, p2)).Times(1).WillOnce(testing::Return(f12));
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.push_back(std::move(mock));
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     OutputWriterMock writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, mock, this->settings, writer, checkpoint_writer);
-    simulation.calculateF();
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, pairwise_forces, single_forces, this->settings, writer,
+                                     checkpoint_writer, stat_writer);
+    simulation.calculateF(0);
     EXPECT_EQ(this->particles[0].getF(), f12);
     EXPECT_EQ(this->particles[1].getF(), -1.0 * f12);
 }
@@ -241,12 +281,17 @@ TYPED_TEST(CalculateFTest, calculateF_complex2_pairwise) {
     R3 f12 = {102.52, -51.3, 135.711};
     this->particles.addParticle(p1);
     this->particles.addParticle(p2);
-    ForceMock mock;
-    EXPECT_CALL(mock, applyForce(p1, p2)).Times(1).WillOnce(testing::Return(f12));
+    auto mock = std::make_unique<ForceMock>();
+    EXPECT_CALL(*mock, applyForce(p1, p2)).Times(1).WillOnce(testing::Return(f12));
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.push_back(std::move(mock));
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     OutputWriterMock writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, mock, this->settings, writer, checkpoint_writer);
-    simulation.calculateF();
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, pairwise_forces, single_forces, this->settings, writer,
+                                     checkpoint_writer, stat_writer);
+    simulation.calculateF(0);
     EXPECT_EQ(this->particles[0].getF(), f12);
     EXPECT_EQ(this->particles[1].getF(), -1.0 * f12);
 }
@@ -268,14 +313,19 @@ TYPED_TEST(CalculateFTest, calculateF_simple3_pairwise) {
     this->particles.addParticle(p1);
     this->particles.addParticle(p2);
     this->particles.addParticle(p3);
-    ForceMock mock;
-    EXPECT_CALL(mock, applyForce(p1, p2)).Times(1).WillOnce(testing::Return(f12));
-    EXPECT_CALL(mock, applyForce(p12, p3)).Times(1).WillOnce(testing::Return(f13));
-    EXPECT_CALL(mock, applyForce(p22, p32)).Times(1).WillOnce(testing::Return(f23));
+    auto mock = std::make_unique<ForceMock>();
+    EXPECT_CALL(*mock, applyForce(p1, p2)).Times(1).WillOnce(testing::Return(f12));
+    EXPECT_CALL(*mock, applyForce(p12, p3)).Times(1).WillOnce(testing::Return(f13));
+    EXPECT_CALL(*mock, applyForce(p22, p32)).Times(1).WillOnce(testing::Return(f23));
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.push_back(std::move(mock));
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     OutputWriterMock writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, mock, this->settings, writer, checkpoint_writer);
-    simulation.calculateF();
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, pairwise_forces, single_forces, this->settings, writer,
+                                     checkpoint_writer, stat_writer);
+    simulation.calculateF(0);
     R3 expected1 = {30.0, 0.0, 0.0};
     R3 expected2 = {-20.0, 0.0, 0.0};
     R3 expected3 = {-10.0, 0.0, 0.0};
@@ -301,14 +351,19 @@ TYPED_TEST(CalculateFTest, calculateF_complex3_pairwise) {
     this->particles.addParticle(p1);
     this->particles.addParticle(p2);
     this->particles.addParticle(p3);
-    ForceMock mock;
-    EXPECT_CALL(mock, applyForce(p1, p2)).Times(1).WillOnce(testing::Return(f12));
-    EXPECT_CALL(mock, applyForce(p12, p3)).Times(1).WillOnce(testing::Return(f13));
-    EXPECT_CALL(mock, applyForce(p22, p32)).Times(1).WillOnce(testing::Return(f23));
+    auto mock = std::make_unique<ForceMock>();
+    EXPECT_CALL(*mock, applyForce(p1, p2)).Times(1).WillOnce(testing::Return(f12));
+    EXPECT_CALL(*mock, applyForce(p12, p3)).Times(1).WillOnce(testing::Return(f13));
+    EXPECT_CALL(*mock, applyForce(p22, p32)).Times(1).WillOnce(testing::Return(f23));
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.push_back(std::move(mock));
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     OutputWriterMock writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, mock, this->settings, writer, checkpoint_writer);
-    simulation.calculateF();
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, pairwise_forces, single_forces, this->settings, writer,
+                                     checkpoint_writer, stat_writer);
+    simulation.calculateF(0);
     R3 expected1 = {30.0, 15.0, 13.0};
     R3 expected2 = {-20.0, -10.0, -10.0};
     R3 expected3 = {-10.0, -5.0, -3.0};
@@ -324,10 +379,14 @@ TYPED_TEST(CalculateFTest, calculateF_complex3_pairwise) {
 TYPED_TEST(CalculateThermostatTest, test_total_energy_0) {
     const Particle p{{1., 1., 0.}, {0., 0., 0.}, {0., 0., 0.}, 1., 5., 1.};
     this->particles.addParticle(p);
-    LennardJonesForce force;
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     XYZWriter writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, force, this->settings, writer, checkpoint_writer);
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, pairwise_forces, single_forces, this->settings, writer,
+                                     checkpoint_writer, stat_writer);
     simulation.getTotalEnergy() = 0;
     EXPECT_EQ(simulation.calculateThermostatFactor(), 1.);
 }
@@ -347,10 +406,14 @@ TYPED_TEST(CalculateThermostatTest, test_factor_without_delta) {
     this->particles.addParticle(p3);
     this->settings.target_temp = 50;
     this->settings.delta_temp = std::numeric_limits<double>::infinity();
-    LennardJonesForce force;
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     XYZWriter writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, force, this->settings, writer, checkpoint_writer);
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, pairwise_forces, single_forces, this->settings, writer,
+                                     checkpoint_writer, stat_writer);
     simulation.getTotalEnergy() = 175;
     EXPECT_NEAR(simulation.calculateThermostatFactor(), expected, this->precision);
 }
@@ -367,10 +430,14 @@ TYPED_TEST(CalculateThermostatTest, test_factor_at_target_temp) {
     this->particles.addParticle(p1);
     this->particles.addParticle(p2);
     this->settings.target_temp = 125. / 3.;
-    LennardJonesForce force;
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     XYZWriter writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, force, this->settings, writer, checkpoint_writer);
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, pairwise_forces, single_forces, this->settings, writer,
+                                     checkpoint_writer, stat_writer);
     simulation.getTotalEnergy() = 125;
     EXPECT_NEAR(simulation.calculateThermostatFactor(), 1., this->precision);
 }
@@ -389,10 +456,14 @@ TYPED_TEST(CalculateThermostatTest, test_delta_temp) {
     this->particles.addParticle(p3);
     this->settings.target_temp = 50;
     this->settings.delta_temp = 1.;
-    LennardJonesForce force;
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     XYZWriter writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, force, this->settings, writer, checkpoint_writer);
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, pairwise_forces, single_forces, this->settings, writer,
+                                     checkpoint_writer, stat_writer);
     simulation.getTotalEnergy() = 175;
     double b = simulation.calculateThermostatFactor();
 
@@ -421,10 +492,14 @@ TYPED_TEST(SimulationRunTest, run_gravitational_timestep) {
     Particle p2({1.0, 1.0, 1.0}, {10.0, .0, .0}, {.0, .0, .0}, 0.5, 5., 1.);
     this->particles.addParticle(p1);
     this->particles.addParticle(p2);
-    GravitationalForce force_source;
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<GravitationalForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     OutputWriterMock writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, force_source, this->settings, writer, checkpoint_writer);
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, pairwise_forces, single_forces, this->settings, writer,
+                                     checkpoint_writer, stat_writer);
     simulation.run();
     // After 1 timestep: positions update first (with old_f=0), then forces calculated, then velocities
     R3 p1_x_expect = {2.0, 1.0, 1.0};
@@ -450,10 +525,14 @@ TYPED_TEST(SimulationRunTest, run_lennardjones_timestep) {
     Particle p2({4.0, 1.0, 1.0}, {.0, .0, .0}, {.0, .0, .0}, 1.0, 5., 1.);
     this->particles.addParticle(p1);
     this->particles.addParticle(p2);
-    LennardJonesForce force_source;
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
     OutputWriterMock writer;
     CheckpointWriterMock checkpoint_writer;
-    Simulation<TypeParam> simulation(this->particles, force_source, this->settings, writer, checkpoint_writer);
+    StatsWriterMock stat_writer;
+    Simulation<TypeParam> simulation(this->particles, pairwise_forces, single_forces, this->settings, writer,
+                                     checkpoint_writer, stat_writer);
     simulation.run();
     // At distance=1 with sigma=1, epsilon=5: F = -24*5*(1-2)*direction = 120*direction
     // p1-p2 = (1,0,0), so F on p1 = (120,0,0), F on p2 = (-120,0,0)

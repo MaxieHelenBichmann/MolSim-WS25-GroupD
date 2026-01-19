@@ -44,7 +44,8 @@ TEST_F(MultiFileReaderTest, SettingsOverrideFromMultipleFiles) {
     EXPECT_DOUBLE_EQ(settings.delta_t, 0.005);
     EXPECT_DOUBLE_EQ(settings.end_time, 200.0);
     EXPECT_EQ(settings.base_name, "OVERRIDE");
-    EXPECT_EQ(settings.force, LENNARDJONES);
+    EXPECT_EQ(settings.pairwise_forces.size(), 1);
+    EXPECT_EQ(settings.pairwise_forces[0], LENNARDJONES);
 
     EXPECT_DOUBLE_EQ(settings.start_time, 0.0);
     EXPECT_EQ(settings.frequency_output, 5);
@@ -95,7 +96,8 @@ TEST_F(MultiFileReaderTest, CheckpointAndInputFileWorkflow) {
     EXPECT_DOUBLE_EQ(settings.delta_t, 0.005);
     EXPECT_DOUBLE_EQ(settings.end_time, 200.0);
     EXPECT_EQ(settings.base_name, "OVERRIDE");
-    EXPECT_EQ(settings.force, LENNARDJONES);
+    EXPECT_EQ(settings.pairwise_forces.size(), 1);
+    EXPECT_EQ(settings.pairwise_forces[0], LENNARDJONES);
     EXPECT_EQ(part_container.size(), 3);
 }
 

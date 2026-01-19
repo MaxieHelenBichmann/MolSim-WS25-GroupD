@@ -1,44 +1,16 @@
-
 planets:
-    format: XVM
-    num_particles: 4
-    particles:
-      - coordinates:
-          x: 0.0
-          y: 0.0
-          z: 0.0
-        velocity:
-          vx: 0.0
-          vy: 0.0
-          vz: 0.0
-        mass: 1.0
-
-      - coordinates:
-          x: 0.0
-          y: 1.0
-          z: 0.0
-        velocity:
-          vx: -1.0
-          vy: 0.0
-          vz: 0.0
-        mass: 3.0e-6
-
-      - coordinates:
-          x: 0.0
-          y: 5.36
-          z: 0.0
-        velocity:
-          vx: -0.425
-          vy: 0.0
-          vz: 0.0
-        mass: 9.55e-4
-
-      - coordinates:
-          x: 34.75
-          y: 0.0
-          z: 0.0
-        velocity:
-          vx: 0.0
-          vy: 0.0296
-          vz: 0.0
-        mass: 1.0e-14
+  format: XVM
+  num_particles: 4
+  particles: 
+    - coordinates: [0.0, 0.0, 0.0]
+      velocity: [0.0, 0.0, 0.0]
+      mass: 1.0 
+    - coordinates: [0.0, 1.0, 0.0]
+      velocity: [-1.0, 0.0, 0.0]
+      mass: 3.0e-06 
+    - coordinates: [0.0, 5.36, 0.0]
+      velocity: [-0.425, 0.0, 0.0]
+      mass: 0.000955
+    - coordinates: [34.75, 0.0, 0.0]
+      velocity: [0.0, 0.0296, 0.0]
+      mass: 1.0e-14

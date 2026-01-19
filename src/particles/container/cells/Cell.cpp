@@ -45,42 +45,6 @@ void Cell::updateParticleIndex(size_t old_idx, size_t new_idx) {
     }
     }   
 }
-std::vector<size_t>::iterator Cell::stableIteratorBegin() {
-    #pragma omp critical (A)
-    {
-    if (cache_dirty) {
-        updateCache();
-    }
-    }   
-    return sorted_cache.begin();
-}
-std::vector<size_t>::iterator Cell::stableIteratorEnd() {
-    #pragma omp critical (B)
-    {
-    if (cache_dirty) {
-        updateCache();
-    }
-    }   
-    return sorted_cache.end();
-}
-std::vector<size_t>::const_iterator Cell::stableIteratorBegin() const {
-    #pragma omp critical (C)
-    {
-    if (cache_dirty) {
-        const_cast<Cell*>(this)->updateCache();
-    }
-    }   
-    return sorted_cache.begin();
-}
-std::vector<size_t>::const_iterator Cell::stableIteratorEnd() const {
-    #pragma omp critical (D)
-    {
-    if (cache_dirty) {
-        const_cast<Cell*>(this)->updateCache();
-    }
-    }   
-    return sorted_cache.end();
-}
 
 void Cell::clear() noexcept { indices.clear(); }
 bool Cell::fits(R3 x) const noexcept {

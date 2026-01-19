@@ -1,0 +1,10 @@
+settings:
+  format: Settings
+  delta_t: 0.01
+  end_time: 100.0
+  single_forces:
+    - type: GRAV
+      g_grav: [0.0, -9.81, 0.0]
+    - type: HARMONIC
+      k: 300.0
+      r0: 2.2
