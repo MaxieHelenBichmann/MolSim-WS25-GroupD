@@ -1,6 +1,8 @@
 settings:
   format: Settings
   end_time: 250
+  start_time: 0
+  enable_brownian: false
   pairwise_forces:
     - SMOOTHLENNARDJONES
 
