@@ -15,6 +15,7 @@
 module load slurm_setup
 module load intel-oneapi-vtune/2024.2.1 
 module load intel-oneapi-advisor/2024.2.1
+module load gcc/15.2.0
 
 # Set OpenMP threads to match the allocated CPUs
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
