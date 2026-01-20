@@ -8,8 +8,8 @@
 #SBATCH --clusters=serial
 #SBATCH --partition=serial_std
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=16
-#SBATCH --time=01:00:00
+#SBATCH --cpus-per-task=8
+#SBATCH --time=00:10:00
 
 # Load necessary modules for profiling
 module load slurm_setup
@@ -27,5 +27,5 @@ echo "CPUs per task: $SLURM_CPUS_PER_TASK"
 echo "OMP_NUM_THREADS: $OMP_NUM_THREADS"
 
 mkdir -p results/intel
-make -C MolSim-WS25-GroupD/build intel-profile-all
-
+make -C MolSim-WS25-GroupD/build vtune-hotspots
+tar -czf MolSim-WS25-GroupD/build/profiling-results.tar.gz -C MolSim-WS25-GroupD/build vtune/hotspots
