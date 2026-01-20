@@ -209,7 +209,7 @@ class Simulation {
           k(settings.k),
           r_0(settings.r_0) {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) reduction(+ : total_energy)
+#pragma omp parallel for reduction(+ : total_energy)
 #endif
         for (auto it = particles.begin(); it != particles.end(); ++it) {
             Particle& p = (*it);
@@ -253,20 +253,23 @@ class Simulation {
      * @brief Applies the necessary boundary conditions to the particles.
      */
     void applyBoundaries() {
+        
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic, 64)
+#pragma omp parallel for schedule(dynamic)
 #endif
         for (auto& p : particles) {
             p.getOldF() = p.getF();
             p.getF() = Vector<double, 3>();
+            // TODO: Optimization to only call this for relevant particles
             domain.applyBoundary(p);
             p.getMirrorLocations() = 0;
         }
-
+        
         for (auto it = particles.begin(); it != particles.end();) {
             R3 new_position = (*it).getX();
             (*it).getX() = (*it).getOldX();
-            it = particles.updateParticlePosition(it, new_position);
+            it = particles.updateParticlePosition(it, new_position);  
+            // for now SimpleContainer + Periodic (and also Reflecting) needs this here
         }
     }
     /**
@@ -279,17 +282,9 @@ class Simulation {
         const R3& domain_size = domain.getDimension();
 
 #ifdef _OPENMP
-        // Thread-local force accumulation to eliminate atomic contention
-        std::vector<std::vector<R3>> thread_forces;
-        const int num_threads = omp_get_max_threads();
-        thread_forces.resize(num_threads);
-        for (int t = 0; t < num_threads; ++t) {
-            thread_forces[t].resize(num_particles, R3{});
-        }
-
 #pragma omp parallel for schedule(dynamic)
+#endif
         for (size_t i = 0; i < num_particles; ++i) {
-            const int tid = omp_get_thread_num();
             Particle& p1 = particles[i];
             Vector<double, 3> f1_accumulated{};
 
@@ -303,23 +298,23 @@ class Simulation {
                 f1_accumulated += target_force.applyForce(p1);
             }
 
-            // 3. Normal Pairwise Forces (accumulate in thread-local storage)
+            // 3. Normal Pairwise Forces (Push to p2, Add to p1)
             const R3& p1_pos = p1.getX();
             auto it_prox = particles.proximityBegin(p1_pos, i);
             auto it_prox_end = particles.proximityEnd(p1_pos);
 
             for (; it_prox != it_prox_end; ++it_prox) {
                 Particle& p2 = *it_prox;
-                const size_t j = &p2 - &particles[0];
                 for (const auto& force_source : pairwise_force_sources) {
                     const Vector<double, 3> force = force_source->applyForce(p1, p2);
                     f1_accumulated += force;
-                    thread_forces[tid][j] -= force;
+                    p2.getF().atomicSubtract(force);
                 }
             }
 
             // 4. Mirror Pairwise Forces (Gather to p1)
             for (const R3& mirr_pos : p1.getMirrorPositions()) {
+                // Create a local ghost particle to avoid modifying p1's position in shared memory
                 Particle p1_ghost = p1;
                 p1_ghost.getX() = mirr_pos;
                 R3 lookup_pos = mirr_pos;
@@ -339,81 +334,16 @@ class Simulation {
                     Particle& p2 = *it_prox_mirror;
                     for (const auto& force_source : pairwise_force_sources) {
                         const Vector<double, 3> force = force_source->applyForce(p2, p1_ghost);
+                        // Newton's 3rd Law: Force on p1 is -Force on p2.
+                        // We gather the force on p1 instead of scattering to p2 to avoid atomic ops on p2.
                         f1_accumulated -= force;
                     }
                 }
             }
 
-            thread_forces[tid][i] += f1_accumulated;
+            // Final Apply to p1
+            p1.getF().atomicAdd(f1_accumulated);
         }
-
-        // Reduction phase: combine thread-local forces into particles
-#pragma omp parallel for schedule(static)
-        for (size_t i = 0; i < num_particles; ++i) {
-            R3 total_force{};
-            for (int t = 0; t < num_threads; ++t) {
-                total_force += thread_forces[t][i];
-            }
-            particles[i].getF() += total_force;
-        }
-#else
-        for (size_t i = 0; i < num_particles; ++i) {
-            Particle& p1 = particles[i];
-            Vector<double, 3> f1_accumulated{};
-
-            // 1. Single Forces
-            for (const auto& force_source : single_force_sources) {
-                f1_accumulated += force_source->applyForce(p1);
-            }
-
-            // 2. Target Forces
-            if (target_force_enabled && iteration < target_force.getMaxIterations()) {
-                f1_accumulated += target_force.applyForce(p1);
-            }
-
-            // 3. Normal Pairwise Forces
-            const R3& p1_pos = p1.getX();
-            auto it_prox = particles.proximityBegin(p1_pos, i);
-            auto it_prox_end = particles.proximityEnd(p1_pos);
-
-            for (; it_prox != it_prox_end; ++it_prox) {
-                Particle& p2 = *it_prox;
-                for (const auto& force_source : pairwise_force_sources) {
-                    const Vector<double, 3> force = force_source->applyForce(p1, p2);
-                    f1_accumulated += force;
-                    p2.getF() -= force;
-                }
-            }
-
-            // 4. Mirror Pairwise Forces
-            for (const R3& mirr_pos : p1.getMirrorPositions()) {
-                Particle p1_ghost = p1;
-                p1_ghost.getX() = mirr_pos;
-                R3 lookup_pos = mirr_pos;
-
-                constexpr double epsilon = 1e-6;
-                for (size_t dim = 0; dim < 3; ++dim) {
-                    if (lookup_pos[dim] < 0) {
-                        lookup_pos[dim] = epsilon;
-                    } else if (lookup_pos[dim] > domain_size[dim]) {
-                        lookup_pos[dim] = domain_size[dim] - epsilon;
-                    }
-                }
-                auto it_prox_mirror = particles.proximityBegin(lookup_pos, particles.size());
-                auto it_prox_mirror_end = particles.proximityEnd(lookup_pos);
-
-                for (; it_prox_mirror != it_prox_mirror_end; ++it_prox_mirror) {
-                    Particle& p2 = *it_prox_mirror;
-                    for (const auto& force_source : pairwise_force_sources) {
-                        const Vector<double, 3> force = force_source->applyForce(p2, p1_ghost);
-                        f1_accumulated -= force;
-                    }
-                }
-            }
-
-            p1.getF() += f1_accumulated;
-        }
-#endif
     }
 
     /**
@@ -421,7 +351,7 @@ class Simulation {
      */
     void calculateX() {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for
 #endif
         for (auto& p : particles) {
             p.getMirrorPositions().clear();
@@ -436,7 +366,7 @@ class Simulation {
     void calculateV(double scalar_factor) {
         double curr_energy = 0;
 #ifdef _OPENMP
-#pragma omp parallel for reduction(+ : curr_energy) schedule(static)
+#pragma omp parallel for reduction(+ : curr_energy)
 #endif
         for (auto& p : particles) {
             R3 new_v = scalar_factor * (p.getV() + ((0.5 * delta_t / p.getM()) * (p.getOldF() + p.getF())));
