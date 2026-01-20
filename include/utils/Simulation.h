@@ -209,7 +209,7 @@ class Simulation {
           k(settings.k),
           r_0(settings.r_0) {
 #ifdef _OPENMP
-#pragma omp parallel for reduction(+ : total_energy)
+#pragma omp parallel for schedule(static) reduction(+ : total_energy)
 #endif
         for (auto it = particles.begin(); it != particles.end(); ++it) {
             Particle& p = (*it);
@@ -253,7 +253,6 @@ class Simulation {
      * @brief Applies the necessary boundary conditions to the particles.
      */
     void applyBoundaries() {
-        
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
@@ -264,11 +263,11 @@ class Simulation {
             domain.applyBoundary(p);
             p.getMirrorLocations() = 0;
         }
-        
+
         for (auto it = particles.begin(); it != particles.end();) {
             R3 new_position = (*it).getX();
             (*it).getX() = (*it).getOldX();
-            it = particles.updateParticlePosition(it, new_position);  
+            it = particles.updateParticlePosition(it, new_position);
             // for now SimpleContainer + Periodic (and also Reflecting) needs this here
         }
     }
@@ -351,7 +350,7 @@ class Simulation {
      */
     void calculateX() {
 #ifdef _OPENMP
-#pragma omp parallel for
+#pragma omp parallel for schedule(static)
 #endif
         for (auto& p : particles) {
             p.getMirrorPositions().clear();
@@ -366,7 +365,7 @@ class Simulation {
     void calculateV(double scalar_factor) {
         double curr_energy = 0;
 #ifdef _OPENMP
-#pragma omp parallel for reduction(+ : curr_energy)
+#pragma omp parallel for schedule(static) reduction(+ : curr_energy)
 #endif
         for (auto& p : particles) {
             R3 new_v = scalar_factor * (p.getV() + ((0.5 * delta_t / p.getM()) * (p.getOldF() + p.getF())));
