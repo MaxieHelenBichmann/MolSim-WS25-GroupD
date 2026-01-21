@@ -345,7 +345,7 @@ class Simulation {
             p1.getF().atomicAdd(f1_accumulated);
         }
     }
-
+#ifdef _OPENMP
     /**
      * @brief Calculates forces using cell coloring to avoid atomic operations.
      *
@@ -447,7 +447,7 @@ class Simulation {
             }
         }
     }
-
+#endif
     /**
      * @brief Calculates the positions of every particle for the next time step.
      */
@@ -557,7 +557,7 @@ class Simulation {
             SPDLOG_DEBUG("Iteration {}: Calculating forces for {} particles", iteration + 1, particles.size());
 #if (defined _OPENMP && defined ENABLE_DOMAIN_COLORING)
             calculateFColored(iteration);
-#else 
+#else
             calculateF(iteration);
 #endif
 
