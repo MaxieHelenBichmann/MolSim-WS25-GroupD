@@ -254,7 +254,7 @@ class Simulation {
      */
     void applyBoundaries() {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(dynamic, 100)
 #endif
         for (auto& p : particles) {
             p.getOldF() = p.getF();
@@ -283,6 +283,7 @@ class Simulation {
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic, 100)
 #endif
+
         for (size_t i = 0; i < num_particles; ++i) {
             Particle& p1 = particles[i];
             Vector<double, 3> f1_accumulated{};
