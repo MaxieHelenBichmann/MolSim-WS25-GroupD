@@ -270,6 +270,70 @@ static void bmThreadScalingForceOnly(benchmark::State& state) {
     state.counters["Particles"] = static_cast<double>(container.size());
 }
 
+/**
+ * @brief Benchmark force calculation phase only (most parallel part).
+ */
+static void bmThreadScalingForceColoredOnly(benchmark::State& state) {
+    spdlog::set_level(spdlog::level::off);
+
+#ifdef _OPENMP
+    const int num_threads = static_cast<int>(state.range(0));
+    omp_set_num_threads(num_threads);
+#else
+    if (state.range(0) != 1) {
+        state.SkipWithError("OpenMP not enabled, skipping multi-threaded benchmark");
+        return;
+    }
+#endif
+
+    const R3 domain_size = {180.0, 90.0, 1.0};
+    const double cutoff = 3.0;
+    const size_t num_particles_per_dim = 100;
+
+    LinkedCellContainer container(domain_size, cutoff);
+    CuboidGenerator generator({10.0, 10.0, 0.0}, {0.0, 0.0, 0.0}, {num_particles_per_dim, num_particles_per_dim, 1U},
+                              {}, 1.0, 1.1225, 0.1, 1.0, 1.0, 0.01);
+    ContainerRef particles(container);
+    generator.generateParticles(particles, true);
+
+    SettingsParam settings;
+    settings.delta_t = 0.0005;
+    settings.start_time = 0.0;
+    settings.end_time = 0.0005;
+    settings.cutoff = cutoff;
+    settings.dimensions = 2;
+    settings.pairwise_forces = {PairwiseForce::LENNARDJONES};
+    settings.domain = createFluidDomain(domain_size, cutoff);
+
+    std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
+    pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
+    std::vector<std::unique_ptr<SingleForceSource>> single_forces;
+    auto writer = std::make_unique<XYZWriter>();
+    auto cp_writer = std::make_unique<YAMLWriterCP>();
+    auto stat_writer = std::make_unique<StatsWriter>();
+
+    Simulation<LinkedCellContainer> simulation(container, pairwise_forces, single_forces, settings, *writer, *cp_writer,
+                                               *stat_writer);
+
+    // Warm up and prepare simulation state
+    container.prepareForParallelIteration();
+
+    for ([[maybe_unused]] auto _ : state) {
+        // Reset forces
+        for (auto& p : container) {
+            p.getF() = R3{};
+        }
+
+        // Benchmark only force calculation
+        benchmark::DoNotOptimize(container);
+        simulation.calculateFColored(0);
+        benchmark::ClobberMemory();
+    }
+
+    state.counters["Threads"] = static_cast<double>(num_threads);
+    state.counters["Particles"] = static_cast<double>(container.size());
+}
+
 // Register benchmarks with thread counts: 1, 2, 4, 8, 16
 BENCHMARK(bmThreadScalingStrong)
     ->Name("ThreadScaling/Strong/10kParticles")
@@ -295,6 +359,15 @@ BENCHMARK(bmThreadScalingWeak)
 
 BENCHMARK(bmThreadScalingForceOnly)
     ->Name("ThreadScaling/ForceCalc/10kParticles")
+    ->Arg(1)
+    ->Arg(2)
+    ->Arg(4)
+    ->Arg(8)
+    ->Unit(benchmark::kMicrosecond)
+    ->Repetitions(10)
+    ->ReportAggregatesOnly(true);
+BENCHMARK(bmThreadScalingForceColoredOnly)
+    ->Name("ThreadScaling/ForceCalc/Colored")
     ->Arg(1)
     ->Arg(2)
     ->Arg(4)
