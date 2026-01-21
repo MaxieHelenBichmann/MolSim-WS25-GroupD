@@ -25,7 +25,6 @@
 
 #ifdef _OPENMP
 #include <omp.h>
-#endif
 
 #include <memory>
 #include <vector>
@@ -377,3 +376,4 @@ BENCHMARK(bmThreadScalingForceColoredOnly)
     ->ReportAggregatesOnly(true);
 
 }  // namespace mol_sim
+#endif
