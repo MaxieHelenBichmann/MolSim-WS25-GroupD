@@ -356,6 +356,7 @@ class Simulation {
      * @param iteration Current simulation iteration number
      */
     void calculateFColored(const size_t iteration) {
+        SPDLOG_ERROR("colored!");
         if constexpr (!std::is_same_v<containerType, LinkedCellContainer>) {
             SPDLOG_WARN("calculateFColored only works with LinkedCellContainer, falling back to calculateF");
             calculateF(iteration);
@@ -370,7 +371,8 @@ class Simulation {
 #pragma omp parallel
             {
                 // 8-color 3D checkerboard: process each color sequentially, parallelize within color
-                for (size_t color = 0; color < 8; ++color) {
+                size_t num_colors = dimensions == 3 ? 8 : 4;
+                for (size_t color = 0; color < num_colors; ++color) {
                     const size_t color_i = color & 1;         // bit 0
                     const size_t color_j = (color >> 1) & 1;  // bit 1
                     const size_t color_k = (color >> 2) & 1;  // bit 2
@@ -554,7 +556,11 @@ class Simulation {
 
             // 4. Calculate forces (including ghost interactions)
             SPDLOG_DEBUG("Iteration {}: Calculating forces for {} particles", iteration + 1, particles.size());
+#if (defined _OPENMP && defined ENABLE_DOMAIN_COLORING)
+            calculateFColored(iteration);
+#else 
             calculateF(iteration);
+#endif
 
             // 5. Calculate thermostat factor
             double thermo_factor = 1.0;
