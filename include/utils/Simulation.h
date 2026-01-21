@@ -281,7 +281,7 @@ class Simulation {
         const R3& domain_size = domain.getDimension();
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(dynamic, 100)
 #endif
         for (size_t i = 0; i < num_particles; ++i) {
             Particle& p1 = particles[i];

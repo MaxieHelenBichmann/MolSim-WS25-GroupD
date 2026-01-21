@@ -262,12 +262,7 @@ static void bmThreadScalingForceOnly(benchmark::State& state) {
 
         // Benchmark only force calculation
         benchmark::DoNotOptimize(container);
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
-        {
-            simulation.calculateF(0);
-        }
+        simulation.calculateF(0);
         benchmark::ClobberMemory();
     }
 
@@ -304,7 +299,6 @@ BENCHMARK(bmThreadScalingForceOnly)
     ->Arg(2)
     ->Arg(4)
     ->Arg(8)
-    ->Arg(16)
     ->Unit(benchmark::kMicrosecond)
     ->Repetitions(10)
     ->ReportAggregatesOnly(true);
