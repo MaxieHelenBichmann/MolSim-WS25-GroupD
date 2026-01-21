@@ -356,7 +356,6 @@ class Simulation {
      * @param iteration Current simulation iteration number
      */
     void calculateFColored(const size_t iteration) {
-        SPDLOG_ERROR("colored!");
         if constexpr (!std::is_same_v<containerType, LinkedCellContainer>) {
             SPDLOG_WARN("calculateFColored only works with LinkedCellContainer, falling back to calculateF");
             calculateF(iteration);
