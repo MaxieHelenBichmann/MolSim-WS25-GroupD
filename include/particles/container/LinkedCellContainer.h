@@ -636,6 +636,37 @@ class LinkedCellContainer {
      * Must be called before parallel force calculation to avoid race conditions.
      */
     void prepareForParallelIteration() const;
+
+    // Cell coloring support methods
+    
+    /**
+     * @brief Get number of cells in each dimension (including halo cells).
+     * 
+     * @return Array containing number of cells in x, y, z dimensions
+     */
+    [[nodiscard]] const std::array<size_t, 3>& getNumCells() const noexcept { return num_cells; }
+    
+    /**
+     * @brief Compute linear cell index from 3D coordinates.
+     * 
+     * @param ci Cell index in x dimension
+     * @param cj Cell index in y dimension  
+     * @param ck Cell index in z dimension
+     * @return Linear index into cells vector
+     */
+    [[nodiscard]] size_t cellIndex(size_t ci, size_t cj, size_t ck) const noexcept {
+        return ci + cj * num_cells[0] + ck * num_cells[0] * num_cells[1];
+    }
+    
+    /**
+     * @brief Get particle indices in a specific cell.
+     * 
+     * @param cell_idx Linear index of the cell
+     * @return Span of particle indices in this cell
+     */
+    [[nodiscard]] const Cell& getCell(size_t cell_idx) const noexcept {
+        return cells[cell_idx];
+    }
 };
 static_assert(ParticleContainer<LinkedCellContainer>);
 

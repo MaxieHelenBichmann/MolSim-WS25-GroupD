@@ -254,7 +254,7 @@ class Simulation {
      */
     void applyBoundaries() {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(dynamic, 100)
 #endif
         for (auto& p : particles) {
             p.getOldF() = p.getF();
@@ -281,8 +281,9 @@ class Simulation {
         const R3& domain_size = domain.getDimension();
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(dynamic, 100)
 #endif
+
         for (size_t i = 0; i < num_particles; ++i) {
             Particle& p1 = particles[i];
             Vector<double, 3> f1_accumulated{};
@@ -342,6 +343,107 @@ class Simulation {
 
             // Final Apply to p1
             p1.getF().atomicAdd(f1_accumulated);
+        }
+    }
+
+    /**
+     * @brief Calculates forces using cell coloring to avoid atomic operations.
+     *
+     * Uses 8-color 3D checkerboard pattern where cells of same color never interact.
+     * This eliminates all atomic operations, enabling perfect parallel scaling.
+     * Only works with LinkedCellContainer.
+     *
+     * @param iteration Current simulation iteration number
+     */
+    void calculateFColored(const size_t iteration) {
+        if constexpr (!std::is_same_v<containerType, LinkedCellContainer>) {
+            SPDLOG_WARN("calculateFColored only works with LinkedCellContainer, falling back to calculateF");
+            calculateF(iteration);
+        } else {
+            particles.prepareForParallelIteration();
+            const R3& domain_size = domain.getDimension();
+
+            // Get cell grid dimensions from LinkedCellContainer
+            auto& lcc = static_cast<LinkedCellContainer&>(particles);
+            const auto& num_cells = lcc.getNumCells();
+
+#pragma omp parallel
+            {
+                // 8-color 3D checkerboard: process each color sequentially, parallelize within color
+                for (size_t color = 0; color < 8; ++color) {
+                    const size_t color_i = color & 1;         // bit 0
+                    const size_t color_j = (color >> 1) & 1;  // bit 1
+                    const size_t color_k = (color >> 2) & 1;  // bit 2
+
+#pragma omp for schedule(dynamic) collapse(3)
+                    for (size_t ci = color_i; ci < num_cells[0]; ci += 2) {
+                        for (size_t cj = color_j; cj < num_cells[1]; cj += 2) {
+                            for (size_t ck = color_k; ck < num_cells[2]; ck += 2) {
+                                const size_t cell_idx = lcc.cellIndex(ci, cj, ck);
+                                const Cell& cell = lcc.getCell(cell_idx);
+
+                                // Process all particles in this cell
+                                auto it = cell.stableIteratorBegin();
+                                auto it_end = cell.stableIteratorEnd();
+                                for (; it != it_end; ++it) {
+                                    const size_t p1_idx = *it;
+                                    Particle& p1 = particles[p1_idx];
+
+                                    // 1. Single Forces
+                                    for (const auto& force_source : single_force_sources) {
+                                        p1.getF() += force_source->applyForce(p1);
+                                    }
+
+                                    // 2. Target Forces
+                                    if (target_force_enabled && iteration < target_force.getMaxIterations()) {
+                                        p1.getF() += target_force.applyForce(p1);
+                                    }
+
+                                    // 3. Normal Pairwise Forces
+                                    const R3& p1_pos = p1.getX();
+                                    auto it_prox = particles.proximityBegin(p1_pos, p1_idx);
+                                    auto it_prox_end = particles.proximityEnd(p1_pos);
+
+                                    for (; it_prox != it_prox_end; ++it_prox) {
+                                        Particle& p2 = *it_prox;
+                                        for (const auto& force_source : pairwise_force_sources) {
+                                            const Vector<double, 3> force = force_source->applyForce(p1, p2);
+                                            p1.getF() += force;
+                                            p2.getF() -= force;
+                                        }
+                                    }
+
+                                    // 4. Mirror Pairwise Forces
+                                    for (const R3& mirr_pos : p1.getMirrorPositions()) {
+                                        Particle p1_ghost = p1;
+                                        p1_ghost.getX() = mirr_pos;
+                                        R3 lookup_pos = mirr_pos;
+
+                                        constexpr double epsilon = 1e-6;
+                                        for (size_t dim = 0; dim < 3; ++dim) {
+                                            if (lookup_pos[dim] < 0) {
+                                                lookup_pos[dim] = epsilon;
+                                            } else if (lookup_pos[dim] > domain_size[dim]) {
+                                                lookup_pos[dim] = domain_size[dim] - epsilon;
+                                            }
+                                        }
+                                        auto it_prox_mirror = particles.proximityBegin(lookup_pos, particles.size());
+                                        auto it_prox_mirror_end = particles.proximityEnd(lookup_pos);
+
+                                        for (; it_prox_mirror != it_prox_mirror_end; ++it_prox_mirror) {
+                                            Particle& p2 = *it_prox_mirror;
+                                            for (const auto& force_source : pairwise_force_sources) {
+                                                const Vector<double, 3> force = force_source->applyForce(p1_ghost, p2);
+                                                p1.getF() += force;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
