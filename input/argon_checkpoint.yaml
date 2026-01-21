@@ -36,18 +36,9 @@ settings:
 
 liquid:
   format: Cuboid
-  coordinates:
-      x: 0.575
-      y: 0.575
-      z: 0.575
-  velocity:
-      vx: 0.0
-      vy: 0.0
-      vz: 0.0
-  particleNum:
-      nx: 8
-      ny: 8
-      nz: 8
+  coordinates: [0.575, 0.575, 0.575]
+  velocity: [0.0, 0.0, 0.0]
+  particleNum: [8, 8, 8]
   mass: 1.0
   distance: 1.15
   epsilon: 1.0
