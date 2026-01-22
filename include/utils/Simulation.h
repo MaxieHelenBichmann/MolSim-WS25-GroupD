@@ -420,7 +420,6 @@ class Simulation {
             // 6. Calculate new velocities
             calculateV(thermo_factor);
 
-            iteration++;
 #ifdef ENABLE_IO
             // 7. Write output (optional)
             if (iteration % frequency_output == 0) {
@@ -466,6 +465,7 @@ class Simulation {
 
             SPDLOG_DEBUG("Iteration {} finished, {} particles remaining", iteration, particles.size());
             current_time += delta_t;
+            iteration++;
         }
         SPDLOG_INFO("Simulation completed: {} iterations, {} particles remaining", iteration, particles.size());
 #ifdef ENABLE_CHECKPOINTING
