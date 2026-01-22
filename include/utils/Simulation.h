@@ -339,10 +339,12 @@ class Simulation {
      */
     double calculateThermostatFactor() {
         double curr_temp = (2.0 * total_energy) / (dimensions * particles.size());
+        SPDLOG_INFO("Temperature in Iteration {} is: {}", iteration, curr_temp);
         if (curr_temp == 0) {
             return 1;
         }
         double clamped_target = curr_temp + std::clamp((target_temp - curr_temp), -delta_temp, delta_temp);
+        SPDLOG_INFO("Applying Scaling Factor in Iteration {}: {}", iteration, clamped_target);
         return sqrt(clamped_target / curr_temp);
     }
 
