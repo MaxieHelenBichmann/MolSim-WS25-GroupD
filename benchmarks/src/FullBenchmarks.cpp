@@ -23,6 +23,7 @@
 #include "particles/container/LinkedCellContainer.h"
 #include "physics/pairwiseforces/LennardJonesForce.h"
 #include "physics/pairwiseforces/PairwiseForceSource.h"
+#include "physics/singleforces/GravForce.h"
 #include "physics/singleforces/SingleForceSource.h"
 #include "utils/MaxwellBoltzmannDistribution.h"
 #include "utils/Settings.h"
@@ -97,6 +98,7 @@ SettingsParam createContestSettings() {
     settings.dimensions = 2;
     settings.base_name = "contest";
     settings.pairwise_forces = {PairwiseForce::LENNARDJONES};
+    settings.single_forces = {GRAV};
     settings.thermo = true;
     settings.init_temp = 40;
     settings.target_temp = 40.;
@@ -164,16 +166,16 @@ static void bmSimulationFullBenchmark(benchmark::State& state) {
 
 static void bmSimulationFullContest(benchmark::State& state) {
     spdlog::set_level(spdlog::level::warn);
-
+    SettingsParam settings = createContestSettings();
     std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
     pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
     std::vector<std::unique_ptr<SingleForceSource>> single_forces;
+    single_forces.emplace_back(std::make_unique<GravForce>(settings.g_grav_vec));
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<YAMLWriterCP>();
     auto stat_writer = std::make_unique<StatsWriter>();
 
     for ([[maybe_unused]] auto _ : state) {
-        SettingsParam settings = createContestSettings();
         state.PauseTiming();
         LinkedCellContainer container(settings.domain.getDimension(), settings.cutoff);
 
