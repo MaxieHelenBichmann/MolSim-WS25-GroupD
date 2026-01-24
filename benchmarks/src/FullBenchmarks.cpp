@@ -39,9 +39,8 @@ namespace mol_sim {
 template <ParticleContainer Container>
 void generateCuboid(Container& particles, R3 position, R3 velocity, Vector<size_t, 3> num_particles, double mass,
                     double distance, double avg_velo, double epsilon, double sigma) {
-    particles.reserve(particles.size() + (num_particles[0] * num_parti    particles.reserve(particles.size() + (num_particles[0] * num_particles[1] * num_particles[2]));
     particles.reserve(particles.size() + (num_particles[0] * num_particles[1] * num_particles[2]));
-cles[1] * num_particles[2]));
+    particles.reserve(particles.size() + (num_particles[0] * num_particles[1] * num_particles[2]));
     for (size_t i = 0; i < num_particles[2]; i++) {
         for (size_t j = 0; j < num_particles[1]; j++) {
             for (size_t k = 0; k < num_particles[0]; k++) {
