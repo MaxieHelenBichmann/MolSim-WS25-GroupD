@@ -13,7 +13,8 @@
 
 #include <array>
 #include <memory>
-#include <vector>
+#include <vector>   
+
 
 #include "io/checkpointWriter/YAMLWriterCP.h"
 #include "io/outputWriter/XYZWriter.h"
@@ -28,6 +29,7 @@
 #include "utils/MaxwellBoltzmannDistribution.h"
 #include "utils/Settings.h"
 #include "utils/Simulation.h"
+#include "BenchmarkingUtils.h"
 
 namespace mol_sim {
 
@@ -37,7 +39,9 @@ namespace mol_sim {
 template <ParticleContainer Container>
 void generateCuboid(Container& particles, R3 position, R3 velocity, Vector<size_t, 3> num_particles, double mass,
                     double distance, double avg_velo, double epsilon, double sigma) {
+    particles.reserve(particles.size() + (num_particles[0] * num_parti    particles.reserve(particles.size() + (num_particles[0] * num_particles[1] * num_particles[2]));
     particles.reserve(particles.size() + (num_particles[0] * num_particles[1] * num_particles[2]));
+cles[1] * num_particles[2]));
     for (size_t i = 0; i < num_particles[2]; i++) {
         for (size_t j = 0; j < num_particles[1]; j++) {
             for (size_t k = 0; k < num_particles[0]; k++) {
@@ -85,37 +89,7 @@ SettingsParam createBenchmarkSettings(R3 domain_size, double cutoff, double delt
     return settings;
 }
 
-/**
- * @brief Creates simulation settings for large-scale benchmark.
- * 2D domain with periodic boundaries on left/right and reflecting boundaries on top/bottom.
- */
-SettingsParam createContestSettings() {
-    SettingsParam settings;
-    settings.delta_t = 0.0005;
-    settings.start_time = 0.0;
-    settings.end_time = 0.5;
-    settings.cutoff = 3;
-    settings.dimensions = 2;
-    settings.base_name = "contest";
-    settings.pairwise_forces = {PairwiseForce::LENNARDJONES};
-    settings.single_forces = {GRAV};
-    settings.thermo = true;
-    settings.init_temp = 40;
-    settings.target_temp = 40.;
-    settings.thermostat_freq = 1000;
-    settings.g_grav_vec = {0.0, -12.44, 0.0};
-    R3 domain_size = {300., 54., 1.};
-    std::array<std::unique_ptr<Boundary>, 6> boundaries;
-    boundaries[0] = std::make_unique<Periodic>(BoundaryLocation::LEFT, domain_size, 3, 2);
-    boundaries[1] = std::make_unique<Periodic>(BoundaryLocation::RIGHT, domain_size, 3, 2);
-    boundaries[2] = std::make_unique<Reflecting>(BoundaryLocation::FRONT, domain_size, false);
-    boundaries[3] = std::make_unique<Reflecting>(BoundaryLocation::BACK, domain_size, false);
-    boundaries[4] = std::make_unique<Outflow>(BoundaryLocation::UPPER, domain_size);
-    boundaries[5] = std::make_unique<Outflow>(BoundaryLocation::LOWER, domain_size);
 
-    settings.domain = Domain(domain_size, std::move(boundaries));
-    return settings;
-}
 
 /**
  * @brief Benchmarks full simulation loop with LinkedCellContainer (10000+ particles).

@@ -235,10 +235,11 @@ class Simulation {
 #endif
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) reduction(+ : total_energy)
+#pragma omp parallel for schedule(static) reduction(+ : total_energy) default(none) shared(particles)
 #endif
         for (auto it = particles.begin(); it != particles.end(); ++it) {
             Particle& p = (*it);
+            // NOLINTNEXTLINE
             total_energy += p.getM() * R3::scalarProduct(p.getV(), p.getV());
         }
         total_energy *= 0.5;
@@ -280,7 +281,7 @@ class Simulation {
      */
     void applyBoundaries() {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic, 100)
+#pragma omp parallel for schedule(dynamic, 100) default(none) shared(particles, domain)
 #endif
         for (auto& p : particles) {
             p.getOldF() = p.getF();
@@ -307,7 +308,9 @@ class Simulation {
         const R3& domain_size = domain.getDimension();
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic, 100)
+#pragma omp parallel for schedule(dynamic, 100) default(none)                                                          \
+    shared(particles, single_force_sources, target_force, pairwise_force_sources, num_particles, target_force_enabled, \
+               iteration, domain_size)
 #endif
 
         for (size_t i = 0; i < num_particles; ++i) {
@@ -393,7 +396,9 @@ class Simulation {
             auto& lcc = static_cast<LinkedCellContainer&>(particles);
             const auto& num_cells = lcc.getNumCells();
 
-#pragma omp parallel
+#pragma omp parallel default(none)                                                                            \
+    shared(particles, single_force_sources, target_force, pairwise_force_sources, dimensions, lcc, num_cells, \
+               target_force_enabled, iteration, domain_size)
             {
                 // 8-color 3D checkerboard: process each color sequentially, parallelize within color
                 size_t num_colors = dimensions == 3 ? 8 : 4;
@@ -479,7 +484,7 @@ class Simulation {
      */
     void calculateX() {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(static) default(none) shared(particles, delta_t)
 #endif
         for (auto& p : particles) {
             p.getMirrorPositions().clear();
@@ -491,10 +496,11 @@ class Simulation {
     /**
      * @brief Calculates the velocities of every particle for the next time step.
      */
-    void calculateV(double scalar_factor) {
+    void calculateV(const double scalar_factor) {
         double curr_energy = 0;
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) reduction(+ : curr_energy)
+#pragma omp parallel for schedule(static) reduction(+ : curr_energy) default(none) \
+    shared(particles, scalar_factor, delta_t)
 #endif
         for (auto& p : particles) {
             R3 new_v = scalar_factor * (p.getV() + ((0.5 * delta_t / p.getM()) * (p.getOldF() + p.getF())));

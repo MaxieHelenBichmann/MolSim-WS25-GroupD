@@ -30,6 +30,7 @@
 
 #include "physics/singleforces/GravForce.h"
 #include "physics/singleforces/SingleForceSource.h"
+#include "BenchmarkingUtils.h"
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -116,8 +117,9 @@ static void bmThreadScalingStrong(benchmark::State& state) {
     for ([[maybe_unused]] auto _ : state) {
         state.PauseTiming();
         LinkedCellContainer container(domain_size, cutoff);
-        CuboidGenerator generator_1({0.6, 0.6, 0.6}, {0.0, 0.0, 0.0}, {50, 20, 50}, {}, 1.0, 1.2, 0.1, 1.0, 1.2, 40);
-        CuboidGenerator generator_2({0.6, 24.6, 0.6}, {0.0, 0.0, 0.0}, {50, 20, 50}, {}, 2.0, 1.2, 0.1, 1.0, 1.1, 40);
+        CuboidGenerator generator_1({0.6, 0.6, 0.6}, {0.0, 0.0, 0.0}, {50U, 20U, 50U}, {}, 1.0, 1.2, 0.1, 1.0, 1.2, 40);
+        CuboidGenerator generator_2({0.6, 24.6, 0.6}, {0.0, 0.0, 0.0}, {50U, 20U, 50U}, {}, 2.0, 1.2, 0.1, 1.0, 1.1,
+                                    40);
 
         ContainerRef particles(container);
         generator_1.generateParticles(particles, true, true);
@@ -138,38 +140,6 @@ static void bmThreadScalingStrong(benchmark::State& state) {
             benchmark::Counter(static_cast<double>(total_updates), benchmark::Counter::kIsRate);
         state.ResumeTiming();
     }
-}
-
-/**
- * @brief Creates simulation settings for large-scale benchmark.
- * 2D domain with periodic boundaries on left/right and reflecting boundaries on top/bottom.
- */
-SettingsParam createContestSettings() {
-    SettingsParam settings;
-    settings.delta_t = 0.0005;
-    settings.start_time = 0.0;
-    settings.end_time = 0.5;
-    settings.cutoff = 3;
-    settings.dimensions = 2;
-    settings.base_name = "contest";
-    settings.pairwise_forces = {PairwiseForce::LENNARDJONES};
-    settings.single_forces = {SingleForce::GRAV};
-    settings.thermo = true;
-    settings.init_temp = 40;
-    settings.target_temp = 40.;
-    settings.thermostat_freq = 1000;
-    settings.g_grav_vec = {0.0, -12.44, 0.0};
-    R3 domain_size = {300., 54., 1.};
-    std::array<std::unique_ptr<Boundary>, 6> boundaries;
-    boundaries[0] = std::make_unique<Periodic>(BoundaryLocation::LEFT, domain_size, 3, 2);
-    boundaries[1] = std::make_unique<Periodic>(BoundaryLocation::RIGHT, domain_size, 3, 2);
-    boundaries[2] = std::make_unique<Reflecting>(BoundaryLocation::FRONT, domain_size, false);
-    boundaries[3] = std::make_unique<Reflecting>(BoundaryLocation::BACK, domain_size, false);
-    boundaries[4] = std::make_unique<Outflow>(BoundaryLocation::UPPER, domain_size);
-    boundaries[5] = std::make_unique<Outflow>(BoundaryLocation::LOWER, domain_size);
-
-    settings.domain = Domain(domain_size, std::move(boundaries));
-    return settings;
 }
 
 static void bmThreadScalingContest1(benchmark::State& state) {
