@@ -226,12 +226,12 @@ class Simulation {
 #ifdef _OPENMP
         // Set function pointer based on strategy to avoid runtime checks every iteration
         if (strategy == ParallelizationStrategy::COLORING) {
-            calculate_forces = &Simulation::calculateFColored;
+            calculate_forces = [this](const size_t iteration) { this->calculateFColored(iteration); };
         } else {
-            calculate_forces = &Simulation::calculateF;
+            calculate_forces = [this](const size_t iteration) { this->calculateF(iteration); };
         }
 #else
-        calculate_forces = &Simulation::calculateF;
+        calculate_forces = [this](const size_t iteration) { this->calculateF(iteration); };
 #endif
 
 #ifdef _OPENMP
