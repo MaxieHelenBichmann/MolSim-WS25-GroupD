@@ -3,16 +3,20 @@ settings:
   delta_t: 0.0005
   end_time: 100
   start_time: 0.0
-  force: "Lennard Jones"
   frequency: 10
   cutoff: 3.6
   container: LINKED
-  initial_temp: 40
-  n_thermostat: 1000
+  pairwise_forces:
+    - LENNARDJONES
+  single_forces:
+    - type: GRAV
+      g_grav: [0.0, -12.44, 0.0]
+  thermostat:
+    initial_temp: 40
+    n_thermostat: 1000
 
   domain:
     coordinates: [60, 60, 60]
-    g_grav: -12.44
     dimensions: 3
     boundaries:
       left:
