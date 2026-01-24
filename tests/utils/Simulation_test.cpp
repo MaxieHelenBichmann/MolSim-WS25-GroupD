@@ -304,9 +304,8 @@ TYPED_TEST(CalculateFTest, calculateF_simple3_pairwise) {
     Particle p1({1.0, 1.0, 1.0}, {.0, .0, .0}, {0., 0., 0.}, 1.0, 5., 1.);
     Particle p2({2.0, 1.0, 1.0}, {.0, .0, .0}, {0., 0., 0.}, 1.0, 5., 1.);
     Particle p3({3.0, 1.0, 1.0}, {.0, .0, .0}, {0., 0., 0.}, 1.0, 5., 1.);
-    Particle p12({1.0, 1.0, 1.0}, {.0, .0, .0}, {10.0, 0.0, 0.0}, 1.0, 5., 1.);
-    Particle p22({2.0, 1.0, 1.0}, {.0, .0, .0}, {-10.0, 0.0, 0.0}, 1.0, 5., 1.);
-    Particle p32({3.0, 1.0, 1.0}, {.0, .0, .0}, {-20.0, 0.0, 0.0}, 1.0, 5., 1.);
+    Particle p2_after_p1({2.0, 1.0, 1.0}, {.0, .0, .0}, {-10.0, 0.0, 0.0}, 1.0, 5., 1.);
+    Particle p3_after_p1({3.0, 1.0, 1.0}, {.0, .0, .0}, {-20.0, 0.0, 0.0}, 1.0, 5., 1.);
     R3 f12 = {10.0, 0.0, 0.0};
     R3 f13 = {20.0, 0.0, 0.0};
     R3 f23 = {-10.0, 0.0, 0.0};
@@ -315,8 +314,8 @@ TYPED_TEST(CalculateFTest, calculateF_simple3_pairwise) {
     this->particles.addParticle(p3);
     auto mock = std::make_unique<ForceMock>();
     EXPECT_CALL(*mock, applyForce(p1, p2)).Times(1).WillOnce(testing::Return(f12));
-    EXPECT_CALL(*mock, applyForce(p12, p3)).Times(1).WillOnce(testing::Return(f13));
-    EXPECT_CALL(*mock, applyForce(p22, p32)).Times(1).WillOnce(testing::Return(f23));
+    EXPECT_CALL(*mock, applyForce(p1, p3)).Times(1).WillOnce(testing::Return(f13));
+    EXPECT_CALL(*mock, applyForce(p2_after_p1, p3_after_p1)).Times(1).WillOnce(testing::Return(f23));
     std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
     pairwise_forces.push_back(std::move(mock));
     std::vector<std::unique_ptr<SingleForceSource>> single_forces;
@@ -342,9 +341,8 @@ TYPED_TEST(CalculateFTest, calculateF_complex3_pairwise) {
     const Particle p1({1.0, 1.0, 1.0}, {.0, .0, .0}, {.0, .0, .0}, 1.0, 5., 1.);
     const Particle p2({2.0, 1.0, 1.0}, {.0, .0, .0}, {.0, .0, .0}, 1.0, 5., 1.);
     const Particle p3({3.0, 1.0, 1.0}, {.0, .0, .0}, {.0, .0, .0}, 1.0, 5., 1.);
-    Particle p12({1.0, 1.0, 1.0}, {.0, .0, .0}, {10.0, 5.0, 6.0}, 1.0, 5., 1.);
-    Particle p22({2.0, 1.0, 1.0}, {.0, .0, .0}, {-10.0, -5.0, -6.0}, 1.0, 5., 1.);
-    Particle p32({3.0, 1.0, 1.0}, {.0, .0, .0}, {-20.0, -10.0, -7.0}, 1.0, 5., 1.);
+    Particle p2_after_p1({2.0, 1.0, 1.0}, {.0, .0, .0}, {-10.0, -5.0, -6.0}, 1.0, 5., 1.);
+    Particle p3_after_p1({3.0, 1.0, 1.0}, {.0, .0, .0}, {-20.0, -10.0, -7.0}, 1.0, 5., 1.);
     R3 f12 = {10.0, 5.0, 6.0};
     R3 f13 = {20.0, 10.0, 7.0};
     R3 f23 = {-10.0, -5.0, -4.0};
@@ -353,8 +351,8 @@ TYPED_TEST(CalculateFTest, calculateF_complex3_pairwise) {
     this->particles.addParticle(p3);
     auto mock = std::make_unique<ForceMock>();
     EXPECT_CALL(*mock, applyForce(p1, p2)).Times(1).WillOnce(testing::Return(f12));
-    EXPECT_CALL(*mock, applyForce(p12, p3)).Times(1).WillOnce(testing::Return(f13));
-    EXPECT_CALL(*mock, applyForce(p22, p32)).Times(1).WillOnce(testing::Return(f23));
+    EXPECT_CALL(*mock, applyForce(p1, p3)).Times(1).WillOnce(testing::Return(f13));
+    EXPECT_CALL(*mock, applyForce(p2_after_p1, p3_after_p1)).Times(1).WillOnce(testing::Return(f23));
     std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
     pairwise_forces.push_back(std::move(mock));
     std::vector<std::unique_ptr<SingleForceSource>> single_forces;
