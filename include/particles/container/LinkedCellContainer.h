@@ -356,31 +356,27 @@ class LinkedCellContainer {
         size_t last_cell_idx;
         std::vector<size_t>::const_iterator last_cell_end;
 
-
         void inc() {
             SPDLOG_DEBUG("Incrementing proximity iterator");
-            cur_cell_end = cells[curr_cell_idx]->stableIteratorEnd();
             if (cur != cur_cell_end) {
                 ++cur;
                 ++cur_idx;
             }
-            while (cur == cur_cell_end &&
-                   curr_cell_idx < cells.size() - 1) {  // reached end of current cell
+            while (cur == cur_cell_end && curr_cell_idx < last_cell_idx) {
                 curr_cell_idx++;
                 cur = cells[curr_cell_idx]->stableIteratorBegin();
                 ++cur_idx;
+                cur_cell_end = cells[curr_cell_idx]->stableIteratorEnd();
             }
         }
         void satisfy() {
-            //*always* needs to be called *after* inc() (so cur_cell_end is set correctly)
-            while (cur != cells.back()->stableIteratorEnd() &&
-                   (cur == cur_cell_end ||
-                    !((center - container_data[*cur].getX()).sqrEuclidNorm() <= radius_sqr) ||
-                    (curr_cell_idx == cells.size() - 1 && *cur <= center_idx && center_idx != container_data.size()))) {
+            while (cur != last_cell_end &&
+                   (cur == cur_cell_end || !((center - container_data[*cur].getX()).sqrEuclidNorm() <= radius_sqr) ||
+                    (curr_cell_idx == last_cell_idx && *cur <= center_idx && center_idx != container_data.size()))) {
                 inc();
             }
         }
-        //needed here to satisfy std::random_access_iterator (required for OpenMP)
+        // needed here to satisfy std::random_access_iterator (required for OpenMP)
         void dec() {
             SPDLOG_DEBUG("Decrementing proximity iterator");
             if (cur != cells[curr_cell_idx]->stableIteratorBegin()) {
@@ -395,7 +391,7 @@ class LinkedCellContainer {
                 --cur_idx;
             }
         }
-        void satisfyDec() { //always needs to be called AFTER dec(). Don't call this on its own.
+        void satisfyDec() {  // always needs to be called AFTER dec(). Don't call this on its own.
             while (cur != cells.begin()->stableIteratorBegin() &&
                    (!((center - container_data[*cur].getX()).sqrEuclidNorm() <= radius_sqr) ||
                     (curr_cell_idx == cells.size() - 1 && *cur <= center_idx && center_idx != container_data.size()))) {
@@ -434,11 +430,11 @@ class LinkedCellContainer {
         pointer operator->() const noexcept { return &container_data[*cur]; }
 
         proximity_iterator<P, C>& operator++() {
-            //SPDLOG_INFO("Thread {}: Incrementing cur which is currently: {}", omp_get_thread_num(), *cur);
+            // SPDLOG_INFO("Thread {}: Incrementing cur which is currently: {}", omp_get_thread_num(), *cur);
             inc();
-            //SPDLOG_INFO("Thread {}: Incremented cur which is now: {}", omp_get_thread_num(), *cur);
+            // SPDLOG_INFO("Thread {}: Incremented cur which is now: {}", omp_get_thread_num(), *cur);
             satisfy();
-            //SPDLOG_INFO("Thread {}: After satisfy cur is now: {}", omp_get_thread_num(), *cur);
+            // SPDLOG_INFO("Thread {}: After satisfy cur is now: {}", omp_get_thread_num(), *cur);
             return *this;
         }
 
@@ -448,21 +444,21 @@ class LinkedCellContainer {
             return tmp;
         }
 
-        //here to satisfy std::random_access_iterator (required for OpenMP)
+        // here to satisfy std::random_access_iterator (required for OpenMP)
         proximity_iterator<P, C>& operator--() {
             dec();
             satisfyDec();
             return *this;
         }
 
-        //here to satisfy std::random_access_iterator (required for OpenMP)
+        // here to satisfy std::random_access_iterator (required for OpenMP)
         proximity_iterator<P, C> operator--(int) {
             proximity_iterator<P, C> tmp = *this;
             --(*this);
             return tmp;
         }
 
-        //here to satisfy std::random_access_iterator (required for OpenMP)
+        // here to satisfy std::random_access_iterator (required for OpenMP)
         proximity_iterator<P, C>& operator+=(long int n) {
             for (long int i = 0; i < n; i++) {
                 ++(*this);
@@ -470,7 +466,7 @@ class LinkedCellContainer {
             return *this;
         }
 
-        //here to satisfy std::random_access_iterator (required for OpenMP)
+        // here to satisfy std::random_access_iterator (required for OpenMP)
         proximity_iterator<P, C>& operator-=(long int n) {
             for (long int i = 0; i < n; i++) {
                 --(*this);
@@ -478,10 +474,10 @@ class LinkedCellContainer {
             return *this;
         }
 
-        //here to satisfy std::random_access_iterator (required for OpenMP)
-        friend auto operator- (const proximity_iterator<P, C>& a, const proximity_iterator<P, C>& b) {
+        // here to satisfy std::random_access_iterator (required for OpenMP)
+        friend auto operator-(const proximity_iterator<P, C>& a, const proximity_iterator<P, C>& b) {
             return b.cur_idx - a.cur_idx;
-        } 
+        }
 
         friend bool operator==(const proximity_iterator<P, C>& a, const proximity_iterator<P, C>& b) noexcept {
             return a.cur == b.cur;
@@ -632,41 +628,39 @@ class LinkedCellContainer {
 
     /**
      * @brief Prepare all cell caches for thread-safe iteration.
-     * 
+     *
      * Must be called before parallel force calculation to avoid race conditions.
      */
     void prepareForParallelIteration() const;
 
     // Cell coloring support methods
-    
+
     /**
      * @brief Get number of cells in each dimension (including halo cells).
-     * 
+     *
      * @return Array containing number of cells in x, y, z dimensions
      */
     [[nodiscard]] const std::array<size_t, 3>& getNumCells() const noexcept { return num_cells; }
-    
+
     /**
      * @brief Compute linear cell index from 3D coordinates.
-     * 
+     *
      * @param ci Cell index in x dimension
-     * @param cj Cell index in y dimension  
+     * @param cj Cell index in y dimension
      * @param ck Cell index in z dimension
      * @return Linear index into cells vector
      */
     [[nodiscard]] size_t cellIndex(size_t ci, size_t cj, size_t ck) const noexcept {
-        return ci + cj * num_cells[0] + ck * num_cells[0] * num_cells[1];
+        return ci + (cj * num_cells[0]) + (ck * num_cells[0] * num_cells[1]);
     }
-    
+
     /**
      * @brief Get particle indices in a specific cell.
-     * 
+     *
      * @param cell_idx Linear index of the cell
      * @return Span of particle indices in this cell
      */
-    [[nodiscard]] const Cell& getCell(size_t cell_idx) const noexcept {
-        return cells[cell_idx];
-    }
+    [[nodiscard]] const Cell& getCell(size_t cell_idx) const noexcept { return cells[cell_idx]; }
 };
 static_assert(ParticleContainer<LinkedCellContainer>);
 
