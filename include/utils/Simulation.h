@@ -14,7 +14,6 @@
 #include <cstddef>
 #include <vector>
 
-#include "exceptions/SimulationException.h"
 #include "io/CheckpointWriter.h"
 #include "io/OutputWriter.h"
 #include "io/StatsWriter.h"

@@ -3,9 +3,6 @@
 
 #include <particles/Particle.h>
 #include <spdlog/spdlog.h>
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 
 #include <array>
 #include <cstddef>

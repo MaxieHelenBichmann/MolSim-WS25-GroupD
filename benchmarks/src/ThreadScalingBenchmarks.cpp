@@ -28,9 +28,9 @@
 #include <benchmark/benchmark.h>
 #include <spdlog/spdlog.h>
 
+#include "BenchmarkingUtils.h"
 #include "physics/singleforces/GravForce.h"
 #include "physics/singleforces/SingleForceSource.h"
-#include "BenchmarkingUtils.h"
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -41,7 +41,6 @@
 #include "io/StatsWriter.h"
 #include "io/checkpointWriter/YAMLWriterCP.h"
 #include "io/outputWriter/XYZWriter.h"
-#include "particles/boundaries/Outflow.h"
 #include "particles/boundaries/Periodic.h"
 #include "particles/boundaries/Reflecting.h"
 #include "particles/container/LinkedCellContainer.h"

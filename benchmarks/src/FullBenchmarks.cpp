@@ -13,9 +13,9 @@
 
 #include <array>
 #include <memory>
-#include <vector>   
+#include <vector>
 
-
+#include "BenchmarkingUtils.h"
 #include "io/checkpointWriter/YAMLWriterCP.h"
 #include "io/outputWriter/XYZWriter.h"
 #include "particles/boundaries/Outflow.h"
@@ -29,7 +29,6 @@
 #include "utils/MaxwellBoltzmannDistribution.h"
 #include "utils/Settings.h"
 #include "utils/Simulation.h"
-#include "BenchmarkingUtils.h"
 
 namespace mol_sim {
 
@@ -87,8 +86,6 @@ SettingsParam createBenchmarkSettings(R3 domain_size, double cutoff, double delt
     settings.domain = Domain(domain_size, std::move(boundaries));
     return settings;
 }
-
-
 
 /**
  * @brief Benchmarks full simulation loop with LinkedCellContainer (10000+ particles).
