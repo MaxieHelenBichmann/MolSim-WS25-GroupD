@@ -740,7 +740,7 @@ LinkedCellContainer::proximity_iterator<const Particle, const Cell> LinkedCellCo
 }
 
 void LinkedCellContainer::prepareForParallelIteration() const {
-    for (auto& cell : cells) {
-        (void)(void)cell.stableIteratorBegin();  // Discard return value, just update cache  // Discard return value, just update cache
+    for (const auto& cell : cells) {
+        ((void)cell.stableIteratorBegin());
     }
 }
