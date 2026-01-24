@@ -410,7 +410,7 @@ class Simulation {
                                         for (const auto& force_source : pairwise_force_sources) {
                                             const Vector<double, 3> force = force_source->applyForce(p1, p2);
                                             p1.getF() += force;
-                                            p2.getF() -= force;
+                                            p2.getF().atomicSubtract(force);
                                         }
                                     }
 
