@@ -24,9 +24,7 @@ void Cell::addParticle(size_t idx) {
     cache_dirty = inserted || cache_dirty;
 }
 
-void Cell::removeParticle(size_t idx) noexcept { 
-    cache_dirty = indices.erase(idx) != 0 || cache_dirty; 
-}
+void Cell::removeParticle(size_t idx) noexcept { cache_dirty = indices.erase(idx) != 0 || cache_dirty; }
 
 void Cell::updateParticleIndex(size_t old_idx, size_t new_idx) {
     auto it = indices.find(old_idx);

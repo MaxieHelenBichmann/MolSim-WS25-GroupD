@@ -46,7 +46,6 @@
 #include "particles/container/LinkedCellContainer.h"
 #include "particles/generators/CuboidGenerator.h"
 #include "physics/pairwiseforces/LennardJonesForce.h"
-#include "utils/MaxwellBoltzmannDistribution.h"
 #include "utils/Settings.h"
 #include "utils/Simulation.h"
 
@@ -84,15 +83,9 @@ Domain createFluidDomain(R3 domain_size, double cutoff) {
 static void bmThreadScalingStrong(benchmark::State& state) {
     spdlog::set_level(spdlog::level::off);
 
-#ifdef _OPENMP
     const int num_threads = static_cast<int>(state.range(0));
     omp_set_num_threads(num_threads);
-#else
-    if (state.range(0) != 1) {
-        state.SkipWithError("OpenMP not enabled, skipping multi-threaded benchmark");
-        return;
-    }
-#endif
+
     const R3 domain_size = {60.0, 60.0, 60.0};
     const double cutoff = 3.6;
     const size_t num_iterations = 1000;
@@ -181,16 +174,9 @@ SettingsParam createContestSettings() {
 
 static void bmThreadScalingContest1(benchmark::State& state) {
     spdlog::set_level(spdlog::level::off);
-
-#ifdef _OPENMP
     const int num_threads = static_cast<int>(state.range(0));
     omp_set_num_threads(num_threads);
-#else
-    if (state.range(0) != 1) {
-        state.SkipWithError("OpenMP not enabled, skipping multi-threaded benchmark");
-        return;
-    }
-#endif
+
     const R3 domain_size = {60.0, 60.0, 60.0};
     const double cutoff = 3.6;
     const size_t num_iterations = 1000;
@@ -249,15 +235,8 @@ static void bmThreadScalingContest1(benchmark::State& state) {
 static void bmThreadScalingWeak(benchmark::State& state) {
     spdlog::set_level(spdlog::level::off);
 
-#ifdef _OPENMP
     const int num_threads = static_cast<int>(state.range(0));
     omp_set_num_threads(num_threads);
-#else
-    if (state.range(0) != 1) {
-        state.SkipWithError("OpenMP not enabled, skipping multi-threaded benchmark");
-        return;
-    }
-#endif
 
     // Problem size scales with threads: ~1250 particles per thread
     const size_t particles_per_thread = 1250;
@@ -325,15 +304,8 @@ static void bmThreadScalingWeak(benchmark::State& state) {
 static void bmThreadScalingForceOnly(benchmark::State& state) {
     spdlog::set_level(spdlog::level::off);
 
-#ifdef _OPENMP
     const int num_threads = static_cast<int>(state.range(0));
     omp_set_num_threads(num_threads);
-#else
-    if (state.range(0) != 1) {
-        state.SkipWithError("OpenMP not enabled, skipping multi-threaded benchmark");
-        return;
-    }
-#endif
 
     const R3 domain_size = {180.0, 90.0, 1.0};
     const double cutoff = 3.0;

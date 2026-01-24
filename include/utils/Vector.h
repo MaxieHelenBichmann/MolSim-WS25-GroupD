@@ -369,42 +369,42 @@ class Vector {
 
     /**
      * @brief Atomic subtraction of another vector from this vector (OpenMP thread-safe)
-     * 
+     *
      * Performs component-wise atomic subtraction. Each component is updated atomically
      * to avoid race conditions in parallel code. Only works when _OPENMP is defined.
-     * 
+     *
      * @param other Vector to subtract from this vector
      */
     void atomicSubtract(const Vector<T, N>& other) {
-        #ifdef _OPENMP
+#ifdef _OPENMP
         for (size_t i = 0; i < N; ++i) {
             const T val = other.data_[i];
-            #pragma omp atomic
+#pragma omp atomic
             data_[i] -= val;
         }
-        #else
+#else
         *this -= other;
-        #endif
+#endif
     }
 
     /**
      * @brief Atomic addition of another vector to this vector (OpenMP thread-safe)
-     * 
+     *
      * Performs component-wise atomic addition. Each component is updated atomically
      * to avoid race conditions in parallel code. Only works when _OPENMP is defined.
-     * 
+     *
      * @param other Vector to add to this vector
      */
     void atomicAdd(const Vector<T, N>& other) {
-        #ifdef _OPENMP
+#ifdef _OPENMP
         for (size_t i = 0; i < N; ++i) {
             const T val = other.data_[i];
-            #pragma omp atomic
+#pragma omp atomic
             data_[i] += val;
         }
-        #else
+#else
         *this += other;
-        #endif
+#endif
     }
 
     // output

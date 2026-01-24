@@ -424,14 +424,14 @@ class ContainerRef {
 
     /**
      * @brief Prepare all container caches for thread-safe parallel iteration.
-     * 
+     *
      * Delegates to the underlying container's prepareForParallelIteration method.
      */
     void prepareForParallelIteration();
 
     /**
      * @brief Prepare all container caches for thread-safe parallel iteration (const version).
-     * 
+     *
      * Delegates to the underlying container's prepareForParallelIteration method.
      */
     void prepareForParallelIteration() const;
