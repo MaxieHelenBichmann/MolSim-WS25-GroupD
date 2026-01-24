@@ -36,7 +36,7 @@ namespace {
  * @param[in]  settings
  * @throws ValidationException when bad values are read.
  */
-void validateSettings(const SettingsParam& settings) {
+void validateSettings(SettingsParam& settings) {
     if (settings.delta_t <= 0) {
         SPDLOG_ERROR("delta_t must be positive, got: " + std::to_string(settings.delta_t));
         throw ValidationException("delta_t must be positive, got: " + std::to_string(settings.delta_t));
@@ -83,6 +83,17 @@ void validateSettings(const SettingsParam& settings) {
     if (settings.pairwise_forces.empty()) {
         SPDLOG_ERROR("At least one pairwise force has to be specified");
         throw ValidationException("At least one pairwise force has to be specified");
+    }
+    if (settings.strategy == ParallelizationStrategy::COLORING) {
+#ifndef _OPENMP
+        SPDLOG_WARN("COLORING strategy requires OpenMP, falling back to NAIVE");
+        settings.strategy = ParallelizationStrategy::NAIVE;
+#else
+        if (settings.container_type != "LINKED") {
+            SPDLOG_WARN("COLORING strategy only works with LINKED container, falling back to NAIVE");
+            settings.strategy = ParallelizationStrategy::NAIVE;
+        }
+#endif
     }
 }
 /**
@@ -147,6 +158,17 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
                 throw ValidationException("Unknown container type: " + container_str + " (expected SIMPLE or LINKED)");
             }
             settings.container_type = container_str;
+        }
+        if (node["strategy"]) {
+            auto strategy_str = node["strategy"].as<std::string>();
+            if (strategy_str == "NAIVE") {
+                settings.strategy = ParallelizationStrategy::NAIVE;
+            } else if (strategy_str == "COLORING") {
+                settings.strategy = ParallelizationStrategy::COLORING;
+            } else {
+                throw ValidationException("Unknown parallelization strategy: " + strategy_str +
+                                          " (expected NAIVE or COLORING)");
+            }
         }
         if (node["frequency"]) {
             settings.frequency_output = node["frequency"].as<size_t>();

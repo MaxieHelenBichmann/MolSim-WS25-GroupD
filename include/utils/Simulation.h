@@ -2,6 +2,9 @@
 #define SIMULATION_H
 
 #include <spdlog/spdlog.h>
+
+#include <functional>
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -167,6 +170,17 @@ class Simulation {
      */
     double r_0;
 
+    /**
+     * @brief Parallelization strategy for force calculation.
+     */
+    ParallelizationStrategy strategy;
+
+    /**
+     * @brief Function pointer to the selected force calculation method.
+     * Set once during construction to avoid runtime checks every iteration.
+     */
+    std::function<void(const size_t)> calculate_forces;
+
    public:
     /**
      * @brief Construct a new Simulation object and prepare for run() call.
@@ -207,7 +221,19 @@ class Simulation {
                        settings.target_force_max_iterations),
           g_grav_vec(settings.g_grav_vec),
           k(settings.k),
-          r_0(settings.r_0) {
+          r_0(settings.r_0),
+          strategy(settings.strategy) {
+#ifdef _OPENMP
+        // Set function pointer based on strategy to avoid runtime checks every iteration
+        if (strategy == ParallelizationStrategy::COLORING) {
+            calculate_forces = &Simulation::calculateFColored;
+        } else {
+            calculate_forces = &Simulation::calculateF;
+        }
+#else
+        calculate_forces = &Simulation::calculateF;
+#endif
+
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) reduction(+ : total_energy)
 #endif
@@ -529,6 +555,7 @@ class Simulation {
         cp_settings.thermostat_freq = thermostat_freq;
         cp_settings.dimensions = dimensions;
         cp_settings.thermo = thermo;
+        cp_settings.strategy = strategy;
         cp_settings.target_force_enabled = target_force_enabled;
         if (target_force_enabled) {
             cp_settings.target_force_direction = target_force.getDirection();
@@ -555,11 +582,7 @@ class Simulation {
 
             // 4. Calculate forces (including ghost interactions)
             SPDLOG_DEBUG("Iteration {}: Calculating forces for {} particles", iteration + 1, particles.size());
-#if (defined _OPENMP && defined ENABLE_DOMAIN_COLORING)
-            calculateFColored(iteration);
-#else
-            calculateF(iteration);
-#endif
+            calculate_forces(iteration);
 
             // 5. Calculate thermostat factor
             double thermo_factor = 1.0;

@@ -122,6 +122,7 @@ TEST_F(YAMLWriterCPTest, testWritesSimpleSettingsAndParticleData) {  // NOLINT
     EXPECT_EQ("LENNARDJONES", pairwise_forces[0].as<std::string>());
     
     EXPECT_EQ("SIMPLE", settings_node["container"].as<std::string>());
+    EXPECT_EQ("NAIVE", settings_node["strategy"].as<std::string>());
     EXPECT_EQ(frequency_output, settings_node["frequency"].as<size_t>());
     EXPECT_EQ(frequency_checkpoint, settings_node["checkpoint"].as<size_t>());
     EXPECT_DOUBLE_EQ(cutoff_radius, settings_node["cutoff"].as<double>());

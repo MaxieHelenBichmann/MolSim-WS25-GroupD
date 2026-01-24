@@ -11,6 +11,12 @@
 #include "physics/singleforces/SingleForceSource.h"
 
 namespace mol_sim {
+
+/**
+ * @brief Parallelization strategy for force calculation.
+ */
+enum class ParallelizationStrategy : uint8_t { NAIVE, COLORING };
+
 /**
  * @brief Provides a wrapper for settings of the simulation set during config
  *
@@ -244,6 +250,11 @@ class SettingsParam {
      * @brief Maximum iterations for target force.
      */
     size_t target_force_max_iterations = 0;
+
+    /**
+     * @brief Parallelization strategy for force calculation.
+     */
+    ParallelizationStrategy strategy = ParallelizationStrategy::NAIVE;
 
     /**
      * @brief Construct new SettingsParam with default values.

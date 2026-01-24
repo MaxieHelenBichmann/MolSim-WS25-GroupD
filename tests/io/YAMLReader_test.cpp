@@ -235,6 +235,8 @@ TEST_F(YAMLReaderTest, ReadFullConfigFile) {
 
     EXPECT_EQ(settings.container_type, "LINKED");
 
+    EXPECT_EQ(settings.strategy, ParallelizationStrategy::NAIVE);
+
     EXPECT_DOUBLE_EQ(settings.target_temp, 10.);
 
     EXPECT_DOUBLE_EQ(settings.init_temp, 7.);
@@ -415,6 +417,7 @@ TEST_F(YAMLReaderTest, ReadCheckpointFile) {
     EXPECT_DOUBLE_EQ(settings.target_temp, 10.);
     EXPECT_EQ(settings.thermostat_freq, 5);
     EXPECT_DOUBLE_EQ(settings.delta_temp, 0.2);
+    EXPECT_EQ(settings.strategy, ParallelizationStrategy::NAIVE);
 
     R3 expected_domain = {10., 10., 10.};
     const Boundary& upper = settings.domain.getBoundary(BoundaryLocation::UPPER);

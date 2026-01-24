@@ -14,8 +14,3 @@ if(ENABLE_OPENMP)
             OpenMP::OpenMP_CXX
     )
 endif()
-
-option(ENABLE_DOMAIN_COLORING "Enable the domain coloring optimization for multithreading" OFF)
-if(ENABLE_DOMAIN_COLORING) 
-    target_compile_definitions(MolSim PRIVATE ENABLE_DOMAIN_COLORING)
-endif()
