@@ -21,6 +21,8 @@ namespace mol_sim {
  * Linked-Cell-Implementations. Implements all methods of the SimpleContainer (so documentation is analogous), but only
  * used for benchmarking.
  *
+ * @deprecated Not needed, as per now, all ParticleContainers will support implementations without Newton's Third Law
+ * optimization.
  *
  */
 class SimpleContainerControl : public std::vector<Particle> {
@@ -239,6 +241,11 @@ class SimpleContainerControl : public std::vector<Particle> {
     [[nodiscard]] proximity_iterator<const Particle> proximityBegin(R3 center, size_t offset = 0) const;
     [[nodiscard]] proximity_iterator<Particle> proximityEnd(R3 center);
     [[nodiscard]] proximity_iterator<const Particle> proximityEnd(R3 center) const;
+
+    [[nodiscard]] proximity_iterator<Particle> proximityBegin_no_N3L(R3 center);              // NOLINT
+    [[nodiscard]] proximity_iterator<const Particle> proximityBegin_no_N3L(R3 center) const;  // NOLINT
+    [[nodiscard]] proximity_iterator<Particle> proximityEnd_no_N3L(R3 center);                // NOLINT
+    [[nodiscard]] proximity_iterator<const Particle> proximityEnd_no_N3L(R3 center) const;    // NOLINT
 
     // boundary and halo iterators
 

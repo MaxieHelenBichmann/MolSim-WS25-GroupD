@@ -295,8 +295,8 @@ class Simulation {
                         lookup_pos[dim] = domain_size[dim] - epsilon;
                     }
                 }
-                auto it_prox = particles.proximityBegin(lookup_pos, particles.size());
-                auto it_prox_end = particles.proximityEnd(lookup_pos);
+                auto it_prox = particles.proximityBegin_no_N3L(lookup_pos);
+                auto it_prox_end = particles.proximityEnd_no_N3L(lookup_pos);
 
                 for (; it_prox != it_prox_end; ++it_prox) {
                     Particle& p2 = *it_prox;

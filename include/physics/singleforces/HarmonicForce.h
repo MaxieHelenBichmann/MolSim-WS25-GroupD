@@ -2,6 +2,7 @@
 #define HARMONIC_FORCE_H
 
 #include <cstddef>
+#include <numbers>
 
 #include "particles/Particle.h"
 #include "particles/container/ContainerRef.h"

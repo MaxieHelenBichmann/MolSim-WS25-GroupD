@@ -115,6 +115,31 @@ ContainerRef::proximity_iterator<const Particle, const Cell> ContainerRef::proxi
         instance);
 }
 
+ContainerRef::proximity_iterator<Particle, Cell> ContainerRef::proximityBegin_no_N3L(R3 center) {
+    return std::visit(
+        [center](auto& c) { return proximity_iterator<Particle, Cell>{c->proximityBegin_no_N3L(center)}; }, instance);
+}
+
+ContainerRef::proximity_iterator<Particle, Cell> ContainerRef::proximityEnd_no_N3L(R3 center) {
+    return std::visit([center](auto& c) { return proximity_iterator<Particle, Cell>{c->proximityEnd_no_N3L(center)}; },
+                      instance);
+}
+
+ContainerRef::proximity_iterator<const Particle, const Cell> ContainerRef::proximityBegin_no_N3L(R3 center) const {
+    return std::visit(
+        [center](const auto& c) {
+            return proximity_iterator<const Particle, const Cell>{std::as_const(*c).proximityBegin_no_N3L(center)};
+        },
+        instance);
+}
+ContainerRef::proximity_iterator<const Particle, const Cell> ContainerRef::proximityEnd_no_N3L(R3 center) const {
+    return std::visit(
+        [center](const auto& c) {
+            return proximity_iterator<const Particle, const Cell>{std::as_const(*c).proximityEnd_no_N3L(center)};
+        },
+        instance);
+}
+
 // boundary and halo iterators
 ContainerRef::proximity_iterator<Particle, Cell> ContainerRef::haloBegin(const std::set<BoundaryLocation>& locations) {
     return std::visit([locations](auto& c) { return proximity_iterator<Particle, Cell>{c->haloBegin(locations)}; },

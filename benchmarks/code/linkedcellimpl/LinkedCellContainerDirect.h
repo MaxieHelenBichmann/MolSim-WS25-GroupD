@@ -352,6 +352,12 @@ class LinkedCellContainerDirect {
                                                                                       size_t offset = 0) const;
     [[nodiscard]] proximity_iterator<const Particle, const CellDirect> proximityEnd(R3 center) const;
 
+    [[nodiscard]] proximity_iterator<Particle, CellDirect> proximityBegin_no_N3L(R3 center);   // NOLINT
+    [[nodiscard]] proximity_iterator<Particle, CellDirect> proximityEnd_no_N3L(R3 center);     // NOLINT
+    [[nodiscard]] proximity_iterator<const Particle, const CellDirect> proximityBegin_no_N3L(  // NOLINT
+        R3 center) const;
+    [[nodiscard]] proximity_iterator<const Particle, const CellDirect> proximityEnd_no_N3L(R3 center) const;  // NOLINT
+
     // boundary and halo iterators
 
     [[nodiscard]] proximity_iterator<Particle, CellDirect> haloBegin(

@@ -67,6 +67,24 @@ SimpleContainerControl::proximity_iterator<const Particle> SimpleContainerContro
     return proximity_iterator<const Particle>{center, cutoff_radius, data() + size(), data() + size(), 0};  // NOLINT
 };
 
+SimpleContainerControl::proximity_iterator<Particle> SimpleContainerControl::proximityBegin_no_N3L(R3 center) {
+    return proximityBegin(center);
+};
+
+SimpleContainerControl::proximity_iterator<const Particle> SimpleContainerControl::proximityBegin_no_N3L(
+    R3 center) const {
+    return proximityBegin(center);
+};
+
+SimpleContainerControl::proximity_iterator<Particle> SimpleContainerControl::proximityEnd_no_N3L(R3 center) {
+    return proximityEnd(center);
+};
+
+SimpleContainerControl::proximity_iterator<const Particle> SimpleContainerControl::proximityEnd_no_N3L(
+    R3 center) const {
+    return proximityEnd(center);
+};
+
 // boundary and halo iterators
 SimpleContainerControl::proximity_iterator<Particle> SimpleContainerControl::haloBegin(
     const std::set<BoundaryLocation>& locations) {
