@@ -240,6 +240,26 @@ pip install requirements.txt
 
 python benchmarks/data/analyse_data.py <path/to/outputfile>
 ```
+
+## Analyzing the Project
+This project being a Molecular Dynamics Simulator, with `ENABLE_STATS` set and configured via the input file, you can additionally collect thermodynamical statistics to further analyze the simulation.
+
+### Collecting Data
+There are two supported statistics - the Diffusion and Radial Distribution Function. The required configurations can be seen in input/formats/SettingsFormat.md. While running, the Simulator will collect the necessary statistics in `diffusion.csv` or `rdf.csv`.
+
+### Python Analysis
+You can use the plot_diffusion.py or plot_rdf.py file in scripts/statistics to visualize the collected data. MatPlotLib is required for this -> see scripts/statistics/requirements.txt
+```bash
+cd ./scripts/statistics
+
+pip install -r requirements.txt
+
+# Plot data collected for Diffusion
+python plot_diffusion.py <path/to/diffusion.csv> --delta-t <DELTA_T> --start-time <START_TIME> --out <FILE>.png
+
+# Plot data of Radial Distribution Function
+python plot_rdf.py <path/to/rdf.csv> --delta-t <DELTA_T> --start-time <START_TIME> --out <FILE>.png --y0
+```
 ---
 
 ## Optional Tools
