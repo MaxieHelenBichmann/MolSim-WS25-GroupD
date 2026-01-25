@@ -8,7 +8,7 @@ Legend labels can show:
 t = iteration * delta_t + start_time
 
 Use command (matplotlib required):
-python plot_rdf.py <FILE>.csv --delta-t <DELTA_T> --start-time <START_TIME> --out <FILE>.png --y0
+python plot_rdf.py <FILE>.csv --delta-t <DELTA_T> --start-time <START_TIME> --out <FILE>.png
 """
 
 from __future__ import annotations
@@ -74,23 +74,22 @@ def parse_float_list(s: str) -> List[float]:
     return [float(x.strip()) for x in s.split(",") if x.strip()]
 
 
-def choose_evenly_spaced(values: List[float], k: int) -> List[float]:
-    if k <= 0:
-        return []
-    if len(values) <= k:
-        return values
-    idxs = [round(i * (len(values) - 1) / (k - 1)) for i in range(k)]
-    return sorted({values[i] for i in idxs})
-
-
 def main() -> None:
     p = argparse.ArgumentParser(description="Plot RDF/density curves from CSV.")
-    p.add_argument("csv", type=Path, help="Input CSV file (<iteration>,<distance>,<density>)")
-
-    p.add_argument("--delta-t", type=float, default=1.0, help="Δt for time labels (default: 1.0)")
-    p.add_argument("--start-time", type=float, default=0.0, help="Start time offset t0 (default: 0.0)")
     p.add_argument(
-        "--label",
+        "csv", type=Path, help="Input CSV file (<iteration>,<distance>,<density>)"
+    )
+    p.add_argument(
+        "--delta-t", type=float, default=1.0, help="Δt for time labels (default: 1.0)"
+    )
+    p.add_argument(
+        "--start-time",
+        type=float,
+        default=0.0,
+        help="Start time offset t0",
+    )
+    p.add_argument(
+        "--x",
         choices=["time", "iteration"],
         default="time",
         help="Legend labels show computed time or iteration (default: time)",
@@ -100,20 +99,17 @@ def main() -> None:
         "--iterations",
         type=str,
         default=None,
-        help="Comma-separated iterations to plot (e.g. '5,25,45,65,85,100')",
+        help="Comma-separated iterations to plot (default: all)",
     )
     p.add_argument(
-        "--max-curves",
-        type=int,
-        default=6,
-        help="If --iterations not given, plot up to this many evenly spaced iterations (default: 6)",
+        "--out",
+        type=Path,
+        default=None,
+        help="Output image path (png/pdf). If omitted, shows window.",
     )
-
-    p.add_argument("--title", default="Radial Distribution Function", help="Plot title")
-    p.add_argument("--ylabel", default="RDF", help="Y-axis label (default: RDF)")
-    p.add_argument("--out", type=Path, default=None, help="Output image path (png/pdf). If omitted, shows window.")
-    p.add_argument("--dpi", type=int, default=200, help="DPI for saved images (default: 200)")
-    p.add_argument("--y0", action="store_true", help="Force y-axis to start at 0")
+    p.add_argument(
+        "--dpi", type=int, default=200, help="DPI for saved images (default: 200)"
+    )
     args = p.parse_args()
 
     data = read_iter_dist_density_csv(args.csv)
@@ -126,7 +122,7 @@ def main() -> None:
             raise ValueError(f"These iterations are not present in the CSV: {missing}")
         selected_iterations = selected
     else:
-        selected_iterations = choose_evenly_spaced(all_iterations, args.max_curves)
+        selected_iterations = all_iterations
 
     plt.figure(figsize=(9, 4.8))
 
@@ -135,7 +131,7 @@ def main() -> None:
         dists = [d for d, _ in pts]
         dens = [y for _, y in pts]
 
-        if args.label == "time":
+        if args.x == "time":
             t = it * args.delta_t + args.start_time
             lbl = f"Time {t:g}"
         else:
@@ -143,14 +139,14 @@ def main() -> None:
 
         plt.plot(dists, dens, linewidth=1.5, label=lbl)
 
-    plt.title(args.title)
-    plt.xlabel(f"Distance\n RDF with i ∈ [0,{max(dists):.2f}] and δr = {(dists[1]-dists[0]):.2f}")
-    plt.ylabel(args.ylabel)
+    plt.title("Radial Distribution Function")
+    plt.xlabel(
+        f"Distance\n RDF with i ∈ [0,{max(dists):.2f}] and δr = {(dists[1]-dists[0]):.2f}"
+    )
+    plt.ylabel("Local Density")
     plt.grid(True, which="both", linestyle="--", linewidth=0.5, alpha=0.6)
     plt.legend()
-
-    if args.y0:
-        plt.ylim(bottom=0)
+    plt.ylim(bottom=0)
 
     plt.tight_layout()
 

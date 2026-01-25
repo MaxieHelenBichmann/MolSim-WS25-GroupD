@@ -280,7 +280,7 @@ pip install -r requirements.txt
 python plot_diffusion.py <path/to/diffusion.csv> --delta-t <DELTA_T> --start-time <START_TIME> --out <FILE>.png
 
 # Plot data of Radial Distribution Function
-python plot_rdf.py <path/to/rdf.csv> --delta-t <DELTA_T> --start-time <START_TIME> --out <FILE>.png --y0
+python plot_rdf.py <path/to/rdf.csv> --delta-t <DELTA_T> --start-time <START_TIME> --out <FILE>.png
 ```
 ---
 
