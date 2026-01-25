@@ -13,6 +13,7 @@
 #include "particles/ParticleContainer.h"
 #include "particles/container/cells/Cell.h"
 #include "utils/Vector.h"
+
 namespace mol_sim {
 
 /**
@@ -20,6 +21,9 @@ namespace mol_sim {
  *
  * Implemented with std::vector to be comparable with CellExplicit.
  * Implements all methods of the Cell (so documentation is analogous), but only used for benchmarking.
+ *
+ * @note Certain optimizations and additions (dated after Worksheet 3) that were being made to the real
+ * LinkedCellContainer NOT included.
  */
 class CellDirect {
     /**
