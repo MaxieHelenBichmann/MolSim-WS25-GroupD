@@ -294,8 +294,8 @@ class Simulation {
                         lookup_pos[dim] = domain_size[dim] - epsilon;
                     }
                 }
-                auto it_prox = particles.proximityBegin(lookup_pos, particles.size());
-                auto it_prox_end = particles.proximityEnd(lookup_pos);
+                auto it_prox = particles.proximityBegin_no_N3L(lookup_pos);
+                auto it_prox_end = particles.proximityEnd_no_N3L(lookup_pos);
 
                 for (; it_prox != it_prox_end; ++it_prox) {
                     Particle& p2 = *it_prox;
@@ -339,12 +339,12 @@ class Simulation {
      */
     double calculateThermostatFactor() {
         double curr_temp = (2.0 * total_energy) / (dimensions * particles.size());
-        //SPDLOG_DEBUG("Temperature in Iteration {} is: {}", iteration, curr_temp);
+        SPDLOG_DEBUG("Current Temperature: {}", curr_temp);
         if (curr_temp == 0) {
             return 1;
         }
         double clamped_target = curr_temp + std::clamp((target_temp - curr_temp), -delta_temp, delta_temp);
-        //SPDLOG_DEBUG("Applying Scaling Factor in Iteration {}: {}", iteration, clamped_target);
+        SPDLOG_DEBUG("Applying Scaling Factor: {}", clamped_target);
         return sqrt(clamped_target / curr_temp);
     }
 

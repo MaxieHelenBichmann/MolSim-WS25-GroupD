@@ -62,6 +62,24 @@ class LinkedCellContainer {
     void findNonEmptyAdjacentCellsN3L(size_t cell_idx, std::vector<const Cell*>& adjacent_cells) const;
 
     /**
+     * @brief Find the non-empty adjacent cells of a cell, but not using the N3L. [HELPER FUNCTION]
+     *
+     * @param cell_idx Index of the cell.
+     * @param adjacent_cells Vector in which to store pointers to the non-empty adjacent cells, including the cell
+     * itself.
+     */
+    void findNonEmptyAdjacentCells(size_t cell_idx, std::vector<Cell*>& adjacent_cells);
+
+    /**
+     * @brief Find the non-empty adjacent cells of a cell, but not using the N3L. [HELPER FUNCTION]
+     *
+     * @param cell_idx Index of the cell.
+     * @param adjacent_cells Vector in which to store pointers to the non-empty adjacent cells, including the cell
+     * itself.
+     */
+    void findNonEmptyAdjacentCells(size_t cell_idx, std::vector<const Cell*>& adjacent_cells) const;
+
+    /**
      * @brief Find the boundary or halo cells. [HELPER FUNCTION]
      *
      * @param type Type of the boundary.
@@ -461,6 +479,42 @@ class LinkedCellContainer {
      * @return Const iterator after the last particle within the given radius of the center.
      */
     [[nodiscard]] proximity_iterator<const Particle, const Cell> proximityEnd(R3 center) const;
+
+    /**
+     * @brief Mutable Iterator over particles in proximity, but does not use the N3L optimization.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     *
+     * @return Mutable iterator to the first particle within the given radius of the center.
+     */
+    [[nodiscard]] proximity_iterator<Particle, Cell> proximityBegin_no_N3L(R3 center);  // NOLINT
+
+    /**
+     * @brief Mutable Iterator over particles in proximity, but does not use the N3L optimization.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     *
+     * @return Mutable iterator after the last particle within the given radius of the center.
+     */
+    [[nodiscard]] proximity_iterator<Particle, Cell> proximityEnd_no_N3L(R3 center);  // NOLINT
+
+    /**
+     * @brief Const Iterator over particles in proximity, but does not use the N3L optimization.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     *
+     * @return Const iterator to the first particle within the given radius of the center.
+     */
+    [[nodiscard]] proximity_iterator<const Particle, const Cell> proximityBegin_no_N3L(R3 center) const;  // NOLINT
+
+    /**
+     * @brief Const Iterator over particles in proximity, but does not use the N3L optimization.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     *
+     * @return Const iterator after the last particle within the given radius of the center.
+     */
+    [[nodiscard]] proximity_iterator<const Particle, const Cell> proximityEnd_no_N3L(R3 center) const;  // NOLINT
 
     // boundary and halo iterators
 

@@ -21,6 +21,7 @@
 - [Documentation](#documentation)
 - [Testing the Project](#testing-the-project)
 - [Benchmarking the Project](#benchmarking-the-project)
+- [Analyzing the Project](#analyzing-the-project)
 - [Optional Tools](#optional-tools)
 - [Profiling](#profiling)
 
@@ -90,6 +91,10 @@ MolSim-WS25-GroupD/
 - Perf
 - Valgrind
 - Intel oneAPI toolkit
+
+### Data Analysis
+- Python 3.9+
+- pip
 
 ---
 
@@ -234,11 +239,48 @@ ctest -V --test-dir ./build/tests
 ### Python Analysis
 You can use the analyse_data.py file in benchmarks/data to quickly get an overview of the data produced by the benchmarks. MatPlotLib and Pandas are required for this -> see benchmarks/data/requirements.txt
 ```bash
-pip install requirements.txt
+cd benchmarks/data
 
-./build/benchmarks/MolSimBench --benchmark_filter=<filter> --benchmark_out_format=json --benchmark_out=<path/to/outputfile>
+# Optional but recommended: create a virtual environment
+python -m venv venv
+source venv/bin/activate
 
-python benchmarks/data/analyse_data.py <path/to/outputfile>
+# Install Requirements
+pip install -r requirements.txt
+
+# Run Benchmarks
+../../build/benchmarks/MolSimBench --benchmark_filter=<filter> --benchmark_out_format=json --benchmark_out=<path/to/outputfile>
+
+# Visualize Data
+python ./analyse_data.py <path/to/outputfile>
+```
+
+## Analyzing the Project
+
+> **Note:** Ensure `ENABLE_STATS` is enabled in CMake configuration.
+
+This project being a Molecular Dynamics Simulator, you can additionally collect thermodynamical statistics to further analyze the simulation.
+
+### Collecting Data
+There are two supported statistics - the Diffusion and Radial Distribution Function. The required configurations can be seen in input/formats/SettingsFormat.md. While running, the Simulator will collect the necessary statistics in `diffusion.csv` or `rdf.csv` in the build directory.
+
+### Python Analysis
+You can use the plot_diffusion.py or plot_rdf.py file in scripts/statistics to visualize the collected data. MatPlotLib is required for this -> see scripts/statistics/requirements.txt
+```bash
+cd scripts/statistics
+
+# Optional but recommended: create a virtual environment
+python -m venv venv
+source venv/bin/activate
+
+# Install Requirements
+pip install -r requirements.txt
+
+# Plot data collected for Diffusion
+python plot_diffusion.py <path/to/diffusion.csv> --delta-t <DELTA_T> --start-time <START_TIME> --out <FILE>.png
+
+# Plot data of Radial Distribution Function
+python plot_rdf.py <path/to/rdf.csv> --delta-t <DELTA_T> --start-time <START_TIME> --out <FILE>.png
 ```
 ---
 
