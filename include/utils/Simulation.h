@@ -287,7 +287,6 @@ class Simulation {
             p.getF() = Vector<double, 3>();
             // TODO: Optimization to only call this for relevant particles
             domain.applyBoundary(p);
-            p.getMirrorLocations() = 0;
         }
 
         for (auto it = particles.begin(); it != particles.end();) {
@@ -458,8 +457,8 @@ class Simulation {
                                                 lookup_pos[dim] = domain_size[dim] - epsilon;
                                             }
                                         }
-                                        auto it_prox_mirror = particles.proximityBegin(lookup_pos, particles.size());
-                                        auto it_prox_mirror_end = particles.proximityEnd(lookup_pos);
+                                        auto it_prox_mirror = particles.proximityBegin_no_N3L(lookup_pos);
+                                        auto it_prox_mirror_end = particles.proximityEnd_no_N3L(lookup_pos);
 
                                         for (; it_prox_mirror != it_prox_mirror_end; ++it_prox_mirror) {
                                             Particle& p2 = *it_prox_mirror;
