@@ -13,6 +13,7 @@ add_clang_tidy_support(LibMolSim)
 include(vtk)
 
 add_executable(MolSim MolSim.cpp)
+include(openmp)
 
 target_link_libraries(MolSim PRIVATE LibMolSim)
 add_clang_tidy_support(MolSim)

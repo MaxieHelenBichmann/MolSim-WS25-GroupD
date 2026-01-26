@@ -89,7 +89,7 @@ class DiscGenerator : public Generator {
           avg_velo(avg_velo),
           epsilon(epsilon),
           sigma(sigma),
-          init_temp(init_temp) {};
+          init_temp(init_temp){};
 };
 }  // namespace mol_sim
 

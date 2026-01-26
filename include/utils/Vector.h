@@ -367,6 +367,46 @@ class Vector {
      */
     const std::array<T, 3>& operator*() const { return data_; };
 
+    /**
+     * @brief Atomic subtraction of another vector from this vector (OpenMP thread-safe)
+     *
+     * Performs component-wise atomic subtraction. Each component is updated atomically
+     * to avoid race conditions in parallel code. Only works when _OPENMP is defined.
+     *
+     * @param other Vector to subtract from this vector
+     */
+    void atomicSubtract(const Vector<T, N>& other) {
+#ifdef _OPENMP
+        for (size_t i = 0; i < N; ++i) {
+            const T val = other.data_[i];
+#pragma omp atomic
+            data_[i] -= val;
+        }
+#else
+        *this -= other;
+#endif
+    }
+
+    /**
+     * @brief Atomic addition of another vector to this vector (OpenMP thread-safe)
+     *
+     * Performs component-wise atomic addition. Each component is updated atomically
+     * to avoid race conditions in parallel code. Only works when _OPENMP is defined.
+     *
+     * @param other Vector to add to this vector
+     */
+    void atomicAdd(const Vector<T, N>& other) {
+#ifdef _OPENMP
+        for (size_t i = 0; i < N; ++i) {
+            const T val = other.data_[i];
+#pragma omp atomic
+            data_[i] += val;
+        }
+#else
+        *this += other;
+#endif
+    }
+
     // output
 
     /**

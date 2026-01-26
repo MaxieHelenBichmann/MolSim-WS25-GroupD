@@ -191,3 +191,11 @@ ContainerRef::proximity_iterator<const Particle, const Cell> ContainerRef::bound
         },
         instance);
 };
+
+void ContainerRef::prepareForParallelIteration() {
+    std::visit([](auto& c) { c->prepareForParallelIteration(); }, instance);
+}
+
+void ContainerRef::prepareForParallelIteration() const {
+    std::visit([](const auto& c) { c->prepareForParallelIteration(); }, instance);
+}

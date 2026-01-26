@@ -457,6 +457,20 @@ class ContainerRef {
         const std::set<BoundaryLocation>& locations = {BoundaryLocation::UPPER, BoundaryLocation::LOWER,
                                                        BoundaryLocation::FRONT, BoundaryLocation::BACK,
                                                        BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
+
+    /**
+     * @brief Prepare all container caches for thread-safe parallel iteration.
+     *
+     * Delegates to the underlying container's prepareForParallelIteration method.
+     */
+    void prepareForParallelIteration();
+
+    /**
+     * @brief Prepare all container caches for thread-safe parallel iteration (const version).
+     *
+     * Delegates to the underlying container's prepareForParallelIteration method.
+     */
+    void prepareForParallelIteration() const;
 };
 static_assert(ParticleContainer<ContainerRef>);
 

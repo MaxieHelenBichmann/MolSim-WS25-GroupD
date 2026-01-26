@@ -15,6 +15,7 @@
 #include <memory>
 #include <vector>
 
+#include "BenchmarkingUtils.h"
 #include "io/checkpointWriter/YAMLWriterCP.h"
 #include "io/outputWriter/XYZWriter.h"
 #include "particles/boundaries/Outflow.h"
@@ -23,6 +24,7 @@
 #include "particles/container/LinkedCellContainer.h"
 #include "physics/pairwiseforces/LennardJonesForce.h"
 #include "physics/pairwiseforces/PairwiseForceSource.h"
+#include "physics/singleforces/GravForce.h"
 #include "physics/singleforces/SingleForceSource.h"
 #include "utils/MaxwellBoltzmannDistribution.h"
 #include "utils/Settings.h"
@@ -36,6 +38,7 @@ namespace mol_sim {
 template <ParticleContainer Container>
 void generateCuboid(Container& particles, R3 position, R3 velocity, Vector<size_t, 3> num_particles, double mass,
                     double distance, double avg_velo, double epsilon, double sigma) {
+    particles.reserve(particles.size() + (num_particles[0] * num_particles[1] * num_particles[2]));
     particles.reserve(particles.size() + (num_particles[0] * num_particles[1] * num_particles[2]));
     for (size_t i = 0; i < num_particles[2]; i++) {
         for (size_t j = 0; j < num_particles[1]; j++) {
@@ -75,37 +78,6 @@ SettingsParam createBenchmarkSettings(R3 domain_size, double cutoff, double delt
     std::array<std::unique_ptr<Boundary>, 6> boundaries;
     boundaries[0] = std::make_unique<Periodic>(BoundaryLocation::LEFT, domain_size, cutoff, 2);
     boundaries[1] = std::make_unique<Periodic>(BoundaryLocation::RIGHT, domain_size, cutoff, 2);
-    boundaries[2] = std::make_unique<Reflecting>(BoundaryLocation::FRONT, domain_size, false);
-    boundaries[3] = std::make_unique<Reflecting>(BoundaryLocation::BACK, domain_size, false);
-    boundaries[4] = std::make_unique<Outflow>(BoundaryLocation::UPPER, domain_size);
-    boundaries[5] = std::make_unique<Outflow>(BoundaryLocation::LOWER, domain_size);
-
-    settings.domain = Domain(domain_size, std::move(boundaries));
-    return settings;
-}
-
-/**
- * @brief Creates simulation settings for large-scale benchmark.
- * 2D domain with periodic boundaries on left/right and reflecting boundaries on top/bottom.
- */
-SettingsParam createContestSettings() {
-    SettingsParam settings;
-    settings.delta_t = 0.0005;
-    settings.start_time = 0.0;
-    settings.end_time = 0.5;
-    settings.cutoff = 3;
-    settings.dimensions = 2;
-    settings.base_name = "contest";
-    settings.pairwise_forces = {PairwiseForce::LENNARDJONES};
-    settings.thermo = true;
-    settings.init_temp = 40;
-    settings.target_temp = 40.;
-    settings.thermostat_freq = 1000;
-    settings.g_grav_vec = {0.0, -12.44, 0.0};
-    R3 domain_size = {300., 54., 1.};
-    std::array<std::unique_ptr<Boundary>, 6> boundaries;
-    boundaries[0] = std::make_unique<Periodic>(BoundaryLocation::LEFT, domain_size, 3, 2);
-    boundaries[1] = std::make_unique<Periodic>(BoundaryLocation::RIGHT, domain_size, 3, 2);
     boundaries[2] = std::make_unique<Reflecting>(BoundaryLocation::FRONT, domain_size, false);
     boundaries[3] = std::make_unique<Reflecting>(BoundaryLocation::BACK, domain_size, false);
     boundaries[4] = std::make_unique<Outflow>(BoundaryLocation::UPPER, domain_size);
@@ -164,16 +136,16 @@ static void bmSimulationFullBenchmark(benchmark::State& state) {
 
 static void bmSimulationFullContest(benchmark::State& state) {
     spdlog::set_level(spdlog::level::warn);
-
+    SettingsParam settings = createContestSettings();
     std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
     pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
     std::vector<std::unique_ptr<SingleForceSource>> single_forces;
+    single_forces.emplace_back(std::make_unique<GravForce>(settings.g_grav_vec));
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<YAMLWriterCP>();
     auto stat_writer = std::make_unique<StatsWriter>();
 
     for ([[maybe_unused]] auto _ : state) {
-        SettingsParam settings = createContestSettings();
         state.PauseTiming();
         LinkedCellContainer container(settings.domain.getDimension(), settings.cutoff);
 

@@ -849,3 +849,9 @@ LinkedCellContainer::proximity_iterator<const Particle, const Cell> LinkedCellCo
                                                           {static_cast<const Particle*>(data.data()), data.size()},
                                                           data.size()};
 }
+
+void LinkedCellContainer::prepareForParallelIteration() const {
+    for (const auto& cell : cells) {
+        ((void)cell.stableIteratorBegin());
+    }
+}

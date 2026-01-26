@@ -3,12 +3,17 @@
 
 #include <spdlog/spdlog.h>
 
+#include <functional>
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <vector>
 
-#include "exceptions/SimulationException.h"
 #include "io/CheckpointWriter.h"
 #include "io/OutputWriter.h"
 #include "io/StatsWriter.h"
@@ -164,6 +169,17 @@ class Simulation {
      */
     double r_0;
 
+    /**
+     * @brief Parallelization strategy for force calculation.
+     */
+    ParallelizationStrategy strategy;
+
+    /**
+     * @brief Function pointer to the selected force calculation method.
+     * Set once during construction to avoid runtime checks every iteration.
+     */
+    std::function<void(const size_t)> calculate_forces;
+
    public:
     /**
      * @brief Construct a new Simulation object and prepare for run() call.
@@ -204,12 +220,35 @@ class Simulation {
                        settings.target_force_max_iterations),
           g_grav_vec(settings.g_grav_vec),
           k(settings.k),
-          r_0(settings.r_0) {
-        for (const Particle& p : particles) {
+          r_0(settings.r_0),
+          strategy(settings.strategy) {
+#ifdef _OPENMP
+        // Set function pointer based on strategy to avoid runtime checks every iteration
+        if (strategy == ParallelizationStrategy::COLORING) {
+            calculate_forces = [this](const size_t iteration) { this->calculateFColored(iteration); };
+        } else {
+            calculate_forces = [this](const size_t iteration) { this->calculateF(iteration); };
+        }
+#else
+        calculate_forces = [this](const size_t iteration) { this->calculateF(iteration); };
+#endif
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) reduction(+ : total_energy) default(none) shared(particles)
+#endif
+        for (auto it = particles.begin(); it != particles.end(); ++it) {
+            Particle& p = (*it);
+            // NOLINTNEXTLINE
             total_energy += p.getM() * R3::scalarProduct(p.getV(), p.getV());
         }
         total_energy *= 0.5;
     }
+    /**
+     * TODO:
+     * maybe take into account the relation between creation and #iterations per thread
+     * e.g. at 1400 particles and 50 bigger overhead for thread creation than thread
+     * computing. In that case sweet spot at lower number of threads
+     */
 
     double& getTotalEnergy() { return total_energy; }
 
@@ -230,7 +269,6 @@ class Simulation {
         // Sort in descending order to remove from end first (avoids index shifting issues that cause segfaults)
         std::sort(to_remove.begin(), to_remove.end(), std::greater<size_t>());  // NOLINT
 
-        // Remove particles using the standard vector iterator version
         for (size_t idx : to_remove) {
             particles.eraseParticle(particles.begin() + static_cast<std::ptrdiff_t>(idx));
         }
@@ -241,52 +279,74 @@ class Simulation {
      * @brief Applies the necessary boundary conditions to the particles.
      */
     void applyBoundaries() {
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 100) default(none) shared(particles, domain)
+#endif
+        for (auto& p : particles) {
+            p.getOldF() = p.getF();
+            p.getF() = Vector<double, 3>();
+            // TODO: Optimization to only call this for relevant particles
+            domain.applyBoundary(p);
+        }
+
         for (auto it = particles.begin(); it != particles.end();) {
-            (*it).getOldF() = (*it).getF();
-            (*it).getF() = Vector<double, 3>();
-            domain.applyBoundary(*it);
             R3 new_position = (*it).getX();
             (*it).getX() = (*it).getOldX();
-            it = particles.updateParticlePosition(
-                it, new_position);  // for now SimpleContainer + Periodic (and also Reflecting) needs this here
+            it = particles.updateParticlePosition(it, new_position);
+            // for now SimpleContainer + Periodic (and also Reflecting) needs this here
         }
     }
-
     /**
      * @brief Calculates the forces of every particle for the next time step.
      */
-
     void calculateF(const size_t iteration) {
-        size_t idx = 0;
+        particles.prepareForParallelIteration();
 
-        for (auto it = particles.begin(); it != particles.end(); ++it, idx++) {
-            Particle& p1 = *it;
+        const size_t num_particles = particles.size();
+        const R3& domain_size = domain.getDimension();
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 100) default(none)                                                          \
+    shared(particles, single_force_sources, target_force, pairwise_force_sources, num_particles, target_force_enabled, \
+               iteration, domain_size)
+#endif
+
+        for (size_t i = 0; i < num_particles; ++i) {
+            Particle& p1 = particles[i];
+            Vector<double, 3> f1_accumulated{};
+
+            // 1. Single Forces
             for (const auto& force_source : single_force_sources) {
-                p1.getF() += force_source->applyForce(p1);
+                f1_accumulated += force_source->applyForce(p1);
             }
 
+            // 2. Target Forces
+            if (target_force_enabled && iteration < target_force.getMaxIterations()) {
+                f1_accumulated += target_force.applyForce(p1);
+            }
+
+            // 3. Normal Pairwise Forces (Push to p2, Add to p1)
             const R3& p1_pos = p1.getX();
-            auto it_prox = particles.proximityBegin(p1_pos, idx);
+            auto it_prox = particles.proximityBegin(p1_pos, i);
             auto it_prox_end = particles.proximityEnd(p1_pos);
+
             for (; it_prox != it_prox_end; ++it_prox) {
                 Particle& p2 = *it_prox;
                 for (const auto& force_source : pairwise_force_sources) {
                     const Vector<double, 3> force = force_source->applyForce(p1, p2);
-                    p1.getF() += force;
-                    p2.getF() -= force;
+                    f1_accumulated += force;
+                    p2.getF().atomicSubtract(force);
                 }
             }
-            if (target_force_enabled && iteration < target_force.getMaxIterations()) {
-                p1.getF() += target_force.applyForce(p1);
-            }
-            R3 actual_pos = p1.getX();
-            const R3& domain_size = domain.getDimension();
-            // Applying forces between Mirror Particles and normal particles
+
+            // 4. Mirror Pairwise Forces (Gather to p1)
             for (const R3& mirr_pos : p1.getMirrorPositions()) {
-                p1.getX() = mirr_pos;
+                // Create a local ghost particle to avoid modifying p1's position in shared memory
+                Particle p1_ghost = p1;
+                p1_ghost.getX() = mirr_pos;
                 R3 lookup_pos = mirr_pos;
 
-                constexpr double epsilon = 1e-6;  // Small offset to stay inside domain
+                constexpr double epsilon = 1e-6;
                 for (size_t dim = 0; dim < 3; ++dim) {
                     if (lookup_pos[dim] < 0) {
                         lookup_pos[dim] = epsilon;
@@ -294,24 +354,136 @@ class Simulation {
                         lookup_pos[dim] = domain_size[dim] - epsilon;
                     }
                 }
-                auto it_prox = particles.proximityBegin_no_N3L(lookup_pos);
-                auto it_prox_end = particles.proximityEnd_no_N3L(lookup_pos);
+                auto it_prox_mirror = particles.proximityBegin_no_N3L(lookup_pos);
+                auto it_prox_mirror_end = particles.proximityEnd_no_N3L(lookup_pos);
 
-                for (; it_prox != it_prox_end; ++it_prox) {
-                    Particle& p2 = *it_prox;
+                for (; it_prox_mirror != it_prox_mirror_end; ++it_prox_mirror) {
+                    Particle& p2 = *it_prox_mirror;
                     for (const auto& force_source : pairwise_force_sources) {
-                        p2.getF() += force_source->applyForce(p2, p1);
+                        const Vector<double, 3> force = force_source->applyForce(p2, p1_ghost);
+                        // Newton's 3rd Law: Force on p1 is -Force on p2.
+                        // We gather the force on p1 instead of scattering to p2 to avoid atomic ops on p2.
+                        f1_accumulated -= force;
                     }
                 }
             }
-            p1.getX() = actual_pos;
+
+            // Final Apply to p1
+            p1.getF().atomicAdd(f1_accumulated);
         }
     }
+#ifdef _OPENMP
+    /**
+     * @brief Calculates forces using cell coloring to avoid atomic operations.
+     *
+     * Uses 8-color 3D checkerboard pattern where cells of same color never interact.
+     * This eliminates all atomic operations, enabling perfect parallel scaling.
+     * Only works with LinkedCellContainer.
+     *
+     * @param iteration Current simulation iteration number
+     */
+    void calculateFColored(const size_t iteration) {
+        if constexpr (!std::is_same_v<containerType, LinkedCellContainer>) {
+            SPDLOG_WARN("calculateFColored only works with LinkedCellContainer, falling back to calculateF");
+            calculateF(iteration);
+        } else {
+            particles.prepareForParallelIteration();
+            const R3& domain_size = domain.getDimension();
 
+            // Get cell grid dimensions from LinkedCellContainer
+            auto& lcc = static_cast<LinkedCellContainer&>(particles);
+            const auto& num_cells = lcc.getNumCells();
+
+#pragma omp parallel default(none)                                                                            \
+    shared(particles, single_force_sources, target_force, pairwise_force_sources, dimensions, lcc, num_cells, \
+               target_force_enabled, iteration, domain_size)
+            {
+                // 8-color 3D checkerboard: process each color sequentially, parallelize within color
+                size_t num_colors = dimensions == 3 ? 8 : 4;
+                for (size_t color = 0; color < num_colors; ++color) {
+                    const size_t color_i = color & 1;         // bit 0
+                    const size_t color_j = (color >> 1) & 1;  // bit 1
+                    const size_t color_k = (color >> 2) & 1;  // bit 2
+
+#pragma omp for schedule(dynamic) collapse(3)
+                    for (size_t ci = color_i; ci < num_cells[0]; ci += 2) {
+                        for (size_t cj = color_j; cj < num_cells[1]; cj += 2) {
+                            for (size_t ck = color_k; ck < num_cells[2]; ck += 2) {
+                                const size_t cell_idx = lcc.cellIndex(ci, cj, ck);
+                                const Cell& cell = lcc.getCell(cell_idx);
+
+                                // Process all particles in this cell
+                                auto it = cell.stableIteratorBegin();
+                                auto it_end = cell.stableIteratorEnd();
+                                for (; it != it_end; ++it) {
+                                    const size_t p1_idx = *it;
+                                    Particle& p1 = particles[p1_idx];
+
+                                    // 1. Single Forces
+                                    for (const auto& force_source : single_force_sources) {
+                                        p1.getF() += force_source->applyForce(p1);
+                                    }
+
+                                    // 2. Target Forces
+                                    if (target_force_enabled && iteration < target_force.getMaxIterations()) {
+                                        p1.getF() += target_force.applyForce(p1);
+                                    }
+
+                                    // 3. Normal Pairwise Forces
+                                    const R3& p1_pos = p1.getX();
+                                    auto it_prox = particles.proximityBegin(p1_pos, p1_idx);
+                                    auto it_prox_end = particles.proximityEnd(p1_pos);
+
+                                    for (; it_prox != it_prox_end; ++it_prox) {
+                                        Particle& p2 = *it_prox;
+                                        for (const auto& force_source : pairwise_force_sources) {
+                                            const Vector<double, 3> force = force_source->applyForce(p1, p2);
+                                            p1.getF() += force;
+                                            p2.getF().atomicSubtract(force);
+                                        }
+                                    }
+
+                                    // 4. Mirror Pairwise Forces
+                                    for (const R3& mirr_pos : p1.getMirrorPositions()) {
+                                        Particle p1_ghost = p1;
+                                        p1_ghost.getX() = mirr_pos;
+                                        R3 lookup_pos = mirr_pos;
+
+                                        constexpr double epsilon = 1e-6;
+                                        for (size_t dim = 0; dim < 3; ++dim) {
+                                            if (lookup_pos[dim] < 0) {
+                                                lookup_pos[dim] = epsilon;
+                                            } else if (lookup_pos[dim] > domain_size[dim]) {
+                                                lookup_pos[dim] = domain_size[dim] - epsilon;
+                                            }
+                                        }
+                                        auto it_prox_mirror = particles.proximityBegin_no_N3L(lookup_pos);
+                                        auto it_prox_mirror_end = particles.proximityEnd_no_N3L(lookup_pos);
+
+                                        for (; it_prox_mirror != it_prox_mirror_end; ++it_prox_mirror) {
+                                            Particle& p2 = *it_prox_mirror;
+                                            for (const auto& force_source : pairwise_force_sources) {
+                                                const Vector<double, 3> force = force_source->applyForce(p1_ghost, p2);
+                                                p1.getF() += force;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+#endif
     /**
      * @brief Calculates the positions of every particle for the next time step.
      */
     void calculateX() {
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) shared(particles, delta_t)
+#endif
         for (auto& p : particles) {
             p.getMirrorPositions().clear();
             p.getMirrorLocations() = 0;
@@ -323,8 +495,12 @@ class Simulation {
     /**
      * @brief Calculates the velocities of every particle for the next time step.
      */
-    void calculateV(double scalar_factor) {
+    void calculateV(const double scalar_factor) {
         double curr_energy = 0;
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) reduction(+ : curr_energy) default(none) \
+    shared(particles, scalar_factor, delta_t)
+#endif
         for (auto& p : particles) {
             R3 new_v = scalar_factor * (p.getV() + ((0.5 * delta_t / p.getM()) * (p.getOldF() + p.getF())));
             p.getV() = new_v;
@@ -332,6 +508,7 @@ class Simulation {
         }
         total_energy = 0.5 * curr_energy;
     }
+
     /**
      * @brief      Calculates the thermostat factor used to modulate velocity.
      *
@@ -352,7 +529,6 @@ class Simulation {
      * @brief Performs a full simulation run.
      * @throws SimulationException if an error occurs during output writing.
      */
-    // NOLINTNEXTLINE(readability-function-cognitive-complexity)
     void run() {
         double current_time = start_time;
         [[maybe_unused]] int iteration = 0;
@@ -386,6 +562,7 @@ class Simulation {
         cp_settings.thermostat_freq = thermostat_freq;
         cp_settings.dimensions = dimensions;
         cp_settings.thermo = thermo;
+        cp_settings.strategy = strategy;
         cp_settings.target_force_enabled = target_force_enabled;
         if (target_force_enabled) {
             cp_settings.target_force_direction = target_force.getDirection();
@@ -412,7 +589,7 @@ class Simulation {
 
             // 4. Calculate forces (including ghost interactions)
             SPDLOG_DEBUG("Iteration {}: Calculating forces for {} particles", iteration + 1, particles.size());
-            calculateF(iteration);
+            calculate_forces(iteration);
 
             // 5. Calculate thermostat factor
             double thermo_factor = 1.0;

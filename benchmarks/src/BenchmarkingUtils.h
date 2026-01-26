@@ -1,9 +1,15 @@
 #ifndef BENCHMARK_UTILS_H
 #define BENCHMARK_UTILS_H
 #include <array>
+#include <memory>
 #include <random>
 
 #include "particles/Particle.h"
+#include "particles/boundaries/Boundary.h"
+#include "particles/boundaries/Outflow.h"
+#include "particles/boundaries/Periodic.h"
+#include "particles/boundaries/Reflecting.h"
+#include "utils/Settings.h"
 
 namespace mol_sim {
 inline std::mt19937& getGenerator() {
@@ -44,6 +50,37 @@ inline Particle randomParticle() {
     std::normal_distribution<double> dist{};
     auto& gen = getGenerator();
     return {randomR3(), randomR3(), dist(gen), dist(gen), dist(gen)};
+}
+
+/**
+ * 2D domain with periodic boundaries on left/right and reflecting boundaries on top/bottom.
+ */
+inline SettingsParam createContestSettings() {
+    SettingsParam settings;
+    settings.delta_t = 0.0005;
+    settings.start_time = 0.0;
+    settings.end_time = 0.5;
+    settings.cutoff = 3;
+    settings.dimensions = 2;
+    settings.base_name = "contest";
+    settings.pairwise_forces = {PairwiseForce::LENNARDJONES};
+    settings.single_forces = {SingleForce::GRAV};
+    settings.thermo = true;
+    settings.init_temp = 40;
+    settings.target_temp = 40.;
+    settings.thermostat_freq = 1000;
+    settings.g_grav_vec = {0.0, -12.44, 0.0};
+    R3 domain_size = {300., 54., 1.};
+    std::array<std::unique_ptr<Boundary>, 6> boundaries;
+    boundaries[0] = std::make_unique<Periodic>(BoundaryLocation::LEFT, domain_size, 3, 2);
+    boundaries[1] = std::make_unique<Periodic>(BoundaryLocation::RIGHT, domain_size, 3, 2);
+    boundaries[2] = std::make_unique<Reflecting>(BoundaryLocation::FRONT, domain_size, false);
+    boundaries[3] = std::make_unique<Reflecting>(BoundaryLocation::BACK, domain_size, false);
+    boundaries[4] = std::make_unique<Outflow>(BoundaryLocation::UPPER, domain_size);
+    boundaries[5] = std::make_unique<Outflow>(BoundaryLocation::LOWER, domain_size);
+
+    settings.domain = Domain(domain_size, std::move(boundaries));
+    return settings;
 }
 
 }  // namespace mol_sim

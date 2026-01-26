@@ -5,6 +5,7 @@ settings:
   start_time: 0.0
   base_name: MD
   container: SIMPLE
+  strategy: NAIVE
   frequency: 10
   checkpoint: 100
   cutoff: 1.0

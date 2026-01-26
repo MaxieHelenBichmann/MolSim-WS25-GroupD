@@ -38,11 +38,11 @@ class Cell {
     /**
      * Cache for sorted particle indices to provide stable iteration.
      */
-    std::vector<size_t> sorted_cache;
+    mutable std::vector<size_t> sorted_cache;
     /**
      * Flag indicating whether the cache is dirty and needs to be updated.
      */
-    bool cache_dirty = true;
+    mutable bool cache_dirty = true;
 
     /**
      * @brief Update the sorted cache if it is dirty.

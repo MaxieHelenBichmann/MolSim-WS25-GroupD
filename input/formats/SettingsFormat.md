@@ -29,6 +29,7 @@ The settings block has the following keys, with every key except format being op
 - `smooth`: A floating-point number specifying the smoothing radius of the Smooth Lennard-Jones Force.
 - `enable_brownian`: A boolean toggling the generation of particles using brownian motion.
 - `container`: Container type, either `"SIMPLE"` or `"LINKED"` (default: `"LINKED"`).
+- `strategy`: Parallelization strategy used for force calculation, either `"NAIVE"` or `"COLORING"` (default: `"NAIVE"`, `"COLORING"` only available with OpenMP enabled and LinkedCell Container)
 - `pairwise_forces`: A sequence containing all desired pairwise forces (forces applied between particle pairs).
   - Available forces: `"GRAVITATIONAL"`, `"LENNARDJONES"`, `"TRUNCLENNARDJONES"`, `"SMOOTHLENNARDJONES"`
   - Multiple forces can be specified and will all be applied
