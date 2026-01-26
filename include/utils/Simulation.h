@@ -125,6 +125,10 @@ class Simulation {
      */
     double cutoff_radius;
     /**
+     * @brief Smoothing radius for SmoothLennardJonesForce.
+     */
+    double smoothing_radius;
+    /**
      * @brief Total energy of the current system.
      */
     double total_energy;
@@ -211,6 +215,7 @@ class Simulation {
           base_name(settings.base_name),
           dimensions(settings.dimensions),
           cutoff_radius(settings.cutoff),
+          smoothing_radius(settings.smoothing),
           target_temp(settings.target_temp),
           delta_temp(settings.delta_temp),
           thermostat_freq(settings.thermostat_freq),
@@ -557,6 +562,7 @@ class Simulation {
         cp_settings.frequency_output = frequency_output;
         cp_settings.frequency_checkpoint = frequency_checkpoint;
         cp_settings.cutoff = cutoff_radius;
+        cp_settings.smoothing = smoothing_radius;
         cp_settings.target_temp = target_temp;
         cp_settings.delta_temp = delta_temp;
         cp_settings.thermostat_freq = thermostat_freq;
