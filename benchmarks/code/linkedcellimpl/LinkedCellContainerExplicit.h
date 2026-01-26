@@ -19,6 +19,9 @@ namespace mol_sim {
  *
  * Implemented with std::vector to be comparable with CellDirect.
  * Implements all methods of the Cell (so documentation is analogous), but only used for benchmarking.
+ *
+ * @note Certain optimizations and additions (dated after Worksheet 3) that were being made to the real
+ * LinkedCellContainer NOT included.
  */
 class CellExplicit {
     /**
@@ -196,6 +199,13 @@ class LinkedCellContainerExplicit {
     [[nodiscard]] proximity_iterator<const Particle, const CellExplicit> proximityBegin(R3 center,
                                                                                         size_t offset = 0) const;
     [[nodiscard]] proximity_iterator<const Particle, const CellExplicit> proximityEnd(R3 center) const;
+
+    [[nodiscard]] proximity_iterator<Particle, CellExplicit> proximityBegin_no_N3L(R3 center);   // NOLINT
+    [[nodiscard]] proximity_iterator<Particle, CellExplicit> proximityEnd_no_N3L(R3 center);     // NOLINT
+    [[nodiscard]] proximity_iterator<const Particle, const CellExplicit> proximityBegin_no_N3L(  // NOLINT
+        R3 center) const;
+    [[nodiscard]] proximity_iterator<const Particle, const CellExplicit> proximityEnd_no_N3L(  // NOLINT
+        R3 center) const;
 
     // boundary and halo iterators
 

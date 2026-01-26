@@ -54,24 +54,6 @@ void Periodic::setShiftLookup(R3 domain_size) {
 }
 // NOLINTEND
 
-/**
- * TODO: Edge case:
- * Imagine a situation where we have say a 2D simulation where LEFT and RIGHT are periodic
- * and the other boundaries aren't. Inside the iteration in Domain.cpp:applyBoundary either the left
- * boundary or the right boundary will execute their applyBoundary() before the other. I.e. either
- * its left->applyBoundary then right->applyBoundary or vice versa. Let's say the order is LEFT->RIGHT.
- * Particles that are teleported from the left halo to the right boundary will be mirrored (if necessary)
- * by the right boundary in the subsequent call to right->applyBoundary in Domain.cpp:applyBoundary.
- * However, the same does NOT hold for the right boundary. That is: in general particles that are teleported
- * from the right halo to the left boundary will NOT be mirrored in that same timestep (unless the particle
- * is in an edge or a corner). They will be mirrored (if necessary) in the next timestep.
- * This *could* lead to instabilitiees in the simulation. Assuming reasonably sized simulation parameters
- * in particular delta_t, sigma and epsilon of the relevant particles, the missing of these mirror particles
- * in the one timestep may not be critical. In the interest of not entangling this code even more
- * (we would need to pass in a SettingsParam& to the constructor here + have to check for the
- * types of the other boundaries) and not overcomplicating this code (unless really necessary)
- * I will leave this behavior in for now.
- */
 void Periodic::applyBoundary(  // NOLINT
     Particle& p, [[maybe_unused]] const PairwiseForceSource& force) noexcept {
     teleportParticleIfOOB(p);
@@ -85,7 +67,7 @@ void Periodic::teleportParticleIfOOB(Particle& p) {
     R3 position_shift = {.0, .0, .0};
     size_t axis = getAxis();
     int sign = getSign();
-    for (size_t i = 0; i < dimensions; i++, axis = (axis + 1) % 3) {
+    for (size_t i = 0; i < dimensions; i++, axis = (axis + 1) % dimensions) {
         if ((i == 0 ? sign < 0 : true) && p.getX()[axis] < 0) {
             position_shift[axis] = domain_size[axis];
         } else if ((i == 0 ? sign > 0 : true) && p.getX()[axis] > domain_size[axis]) {
@@ -187,7 +169,7 @@ size_t Periodic::getIdx(Particle& p) {
 
 bool Periodic::isOnBoundary(R3 x, size_t axis, int sign) const noexcept {
     bool result = true;
-    for (size_t i = 0; i < dimensions; i++, axis = (axis + 1) % 3) {
+    for (size_t i = 0; i < dimensions; i++, axis = (axis + 1) % dimensions) {
         if (i == 0) {
             result &= (sign < 0)
                           ? (x[axis] >= 0 && x[axis] <= halo_dimension[axis])

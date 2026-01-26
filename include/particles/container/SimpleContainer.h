@@ -368,6 +368,42 @@ class SimpleContainer : public std::vector<Particle> {
      */
     [[nodiscard]] proximity_iterator<const Particle> proximityEnd(R3 center) const;
 
+    /**
+     * @brief Mutable Iterator over particles in proximity, but does not use the N3L optimization.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     *
+     * @return Mutable iterator to the first particle within the given radius of the center.
+     */
+    [[nodiscard]] proximity_iterator<Particle> proximityBegin_no_N3L(R3 center);  // NOLINT
+
+    /**
+     * @brief Mutable Iterator over particles in proximity, but does not use the N3L optimization.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     *
+     * @return Mutable iterator after the last particle within the given radius of the center.
+     */
+    [[nodiscard]] proximity_iterator<Particle> proximityEnd_no_N3L(R3 center);  // NOLINT
+
+    /**
+     * @brief Const Iterator over particles in proximity, but does not use the N3L optimization.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     *
+     * @return Const iterator to the first particle within the given radius of the center.
+     */
+    [[nodiscard]] proximity_iterator<const Particle> proximityBegin_no_N3L(R3 center) const;  // NOLINT
+
+    /**
+     * @brief Const Iterator over particles in proximity, but does not use the N3L optimization.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     *
+     * @return Const iterator after the last particle within the given radius of the center.
+     */
+    [[nodiscard]] proximity_iterator<const Particle> proximityEnd_no_N3L(R3 center) const;  // NOLINT
+
     // boundary and halo iterators
 
     /**

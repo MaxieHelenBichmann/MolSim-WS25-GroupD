@@ -8,7 +8,7 @@
 #include "io/OutputWriter.h"
 #include "particles/ParticleContainer.h"
 #include "particles/container/domain/Domain.h"
-#include "physics/ForceSource.h"
+#include "physics/pairwiseforces/PairwiseForceSource.h"
 #include "utils/Settings.h"
 
 namespace mol_sim {
@@ -19,14 +19,14 @@ namespace mol_sim {
  * Implements all methods of the Simulation (so documentation is analogous), but only used for benchmarking.
  * It updates the particle positions in a different way and does not use the N3L optimization for force calculations.
  *
- * Only used for benchmarking SimpleContainerControl, LinkedCellContainerDirect and LinkedCellContainerExplicit.
+ * Only used for benchmarking LinkedCellContainerDirect and LinkedCellContainerExplicit.
  */
 template <ParticleContainer containerType>
 class SimulationBenchmark {
    private:
     Domain domain;
     containerType& particles;
-    const ForceSource& force_source;
+    const PairwiseForceSource& force_source;
     double delta_t;
     double start_time;
     double end_time;
@@ -34,7 +34,7 @@ class SimulationBenchmark {
     double cutoff_radius;
 
    public:
-    SimulationBenchmark(containerType& particles, const ForceSource& force_source, SettingsParam& settings,
+    SimulationBenchmark(containerType& particles, const PairwiseForceSource& force_source, SettingsParam& settings,
                         [[maybe_unused]] const OutputWriter& writer)
         : domain(std::move(settings.domain)),
           particles(particles),

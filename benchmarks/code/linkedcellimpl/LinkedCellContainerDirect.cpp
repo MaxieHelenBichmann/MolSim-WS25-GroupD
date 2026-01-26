@@ -631,6 +631,25 @@ LinkedCellContainerDirect::proximity_iterator<const Particle, const CellDirect> 
         nonempty_adjacent_cells.size()};
 }
 
+LinkedCellContainerDirect::proximity_iterator<Particle, CellDirect> LinkedCellContainerDirect::proximityBegin_no_N3L(
+    R3 center) {
+    return proximityBegin(center);
+}
+
+LinkedCellContainerDirect::proximity_iterator<Particle, CellDirect> LinkedCellContainerDirect::proximityEnd_no_N3L(
+    R3 center) {
+    return proximityEnd(center);
+}
+
+LinkedCellContainerDirect::proximity_iterator<const Particle, const CellDirect>
+LinkedCellContainerDirect::proximityBegin_no_N3L(R3 center) const {
+    return proximityBegin(center);
+}
+LinkedCellContainerDirect::proximity_iterator<const Particle, const CellDirect>
+LinkedCellContainerDirect::proximityEnd_no_N3L(R3 center) const {
+    return proximityEnd(center);
+}
+
 // boundary and halo iterators
 LinkedCellContainerDirect::proximity_iterator<Particle, CellDirect> LinkedCellContainerDirect::haloBegin(
     const std::set<BoundaryLocation>& boundary_types) {

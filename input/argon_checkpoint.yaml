@@ -6,7 +6,7 @@ settings:
   pairwise_forces:
     - SMOOTHLENNARDJONES
   frequency: 1000
-  checkpoint: 50000
+  checkpoint: 50000 
   cutoff: 2.3
   smooth: 1.9
   container: LINKED

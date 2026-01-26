@@ -355,8 +355,8 @@ class Simulation {
                         lookup_pos[dim] = domain_size[dim] - epsilon;
                     }
                 }
-                auto it_prox_mirror = particles.proximityBegin(lookup_pos, particles.size());
-                auto it_prox_mirror_end = particles.proximityEnd(lookup_pos);
+                auto it_prox_mirror = particles.proximityBegin_no_N3L(lookup_pos);
+                auto it_prox_mirror_end = particles.proximityEnd_no_N3L(lookup_pos);
 
                 for (; it_prox_mirror != it_prox_mirror_end; ++it_prox_mirror) {
                     Particle& p2 = *it_prox_mirror;
@@ -487,6 +487,7 @@ class Simulation {
 #endif
         for (auto& p : particles) {
             p.getMirrorPositions().clear();
+            p.getMirrorLocations() = 0;
             p.getOldX() = p.getX();
             p.getX() += (delta_t * p.getV()) + ((0.5 * delta_t * delta_t / p.getM()) * p.getF());
         }
@@ -516,10 +517,12 @@ class Simulation {
      */
     double calculateThermostatFactor() {
         double curr_temp = (2.0 * total_energy) / (dimensions * particles.size());
+        SPDLOG_DEBUG("Current Temperature: {}", curr_temp);
         if (curr_temp == 0) {
             return 1;
         }
         double clamped_target = curr_temp + std::clamp((target_temp - curr_temp), -delta_temp, delta_temp);
+        SPDLOG_DEBUG("Applying Scaling Factor: {}", clamped_target);
         return sqrt(clamped_target / curr_temp);
     }
 
@@ -597,7 +600,6 @@ class Simulation {
             // 6. Calculate new velocities
             calculateV(thermo_factor);
 
-            iteration++;
 #ifdef ENABLE_IO
             // 7. Write output (optional)
             if (iteration % frequency_output == 0) {
@@ -643,6 +645,7 @@ class Simulation {
 
             SPDLOG_DEBUG("Iteration {} finished, {} particles remaining", iteration, particles.size());
             current_time += delta_t;
+            iteration++;
         }
         SPDLOG_INFO("Simulation completed: {} iterations, {} particles remaining", iteration, particles.size());
 #ifdef ENABLE_CHECKPOINTING
