@@ -4,6 +4,7 @@
 
 #include "exceptions/BoundaryException.h"
 #include "particles/boundaries/Outflow.h"
+#include "particles/boundaries/Periodic.h"
 #include "physics/pairwiseforces/LennardJonesForce.h"
 
 namespace mol_sim {
@@ -75,6 +76,20 @@ void Domain::applyBoundary(Particle& p) const noexcept {  // NOLINT
         if (boundary) {
             boundary->applyBoundary(p, force);
         }
+    }
+
+    // handle edge case (which can potentially cause instabilities relating to periodic boundaries)
+    if (typeid(boundaries[0]) == typeid(std::unique_ptr<Periodic>)
+     && typeid(boundaries[1]) == typeid(std::unique_ptr<Periodic>)) {
+        boundaries[0]->applyBoundary(p, force);
+    }
+    if (typeid(boundaries[2]) == typeid(std::unique_ptr<Periodic>)
+     && typeid(boundaries[3]) == typeid(std::unique_ptr<Periodic>)) {
+        boundaries[2]->applyBoundary(p, force);
+    }
+    if (typeid(boundaries[4]) == typeid(std::unique_ptr<Periodic>)
+     && typeid(boundaries[5]) == typeid(std::unique_ptr<Periodic>)) {
+        boundaries[4]->applyBoundary(p, force);
     }
 }
 

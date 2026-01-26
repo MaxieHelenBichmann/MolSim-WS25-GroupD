@@ -357,7 +357,9 @@ void YAMLReader::readParticles(ContainerRef particles, const SettingsParam& sett
             // Skip Settings and unknown formats silently in phase 2
         }
 
-        if (!has_particle_definition) {
+        //this assumes that all files that contain particles (namely in the case of checkpoint files) have already been
+        //parsed before this one.
+        if (!has_particle_definition && particles.size() == 0) {
             throw YAMLReaderException("No particle definitions (XVM, Cuboid, or Disc) found in the input file");
         }
     } catch (const YAML::Exception& e) {

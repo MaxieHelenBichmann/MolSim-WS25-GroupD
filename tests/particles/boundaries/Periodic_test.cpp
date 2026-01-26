@@ -22,6 +22,7 @@ namespace mol_sim {
 class PeriodicTest : public testing::Test {
    protected:
     R3 dimension{10.0, 10.0, 10.0};
+    R3 dimension2D{10.0, 10.0, 0.0};
     R3 zero{.0, .0, .0};
     double cutoff = 1.0;
     const PairwiseForceSource& force_source = *(new LennardJonesForce());
@@ -31,10 +32,10 @@ class PeriodicTest : public testing::Test {
     Periodic lower_boundary{BoundaryLocation::LOWER, dimension, cutoff, 3};
     Periodic front_boundary{BoundaryLocation::FRONT, dimension, cutoff, 3};
     Periodic back_boundary{BoundaryLocation::BACK, dimension, cutoff, 3};
-    Periodic left_boundary2_d{BoundaryLocation::LEFT, dimension, cutoff, 2};
-    Periodic right_boundary2_d{BoundaryLocation::RIGHT, dimension, cutoff, 2};
-    Periodic front_boundary2_d{BoundaryLocation::FRONT, dimension, cutoff, 2};
-    Periodic back_boundary2_d{BoundaryLocation::BACK, dimension, cutoff, 2};
+    Periodic left_boundary2_d{BoundaryLocation::LEFT, dimension2D, cutoff, 2};
+    Periodic right_boundary2_d{BoundaryLocation::RIGHT, dimension2D, cutoff, 2};
+    Periodic front_boundary2_d{BoundaryLocation::FRONT, dimension2D, cutoff, 2};
+    Periodic back_boundary2_d{BoundaryLocation::BACK, dimension2D, cutoff, 2};
 
     PeriodicTest() = default;
     void TearDown() override { delete &force_source; }
@@ -934,5 +935,31 @@ TEST_F(PeriodicTest, ParticleOn2DBack2Mirror) {
     EXPECT_TRUE(p.getMirrorPositions().size() == 2);
     EXPECT_TRUE(std::ranges::find(p.getMirrorPositions(), p1.getX()) != p.getMirrorPositions().end());
     EXPECT_TRUE(std::ranges::find(p.getMirrorPositions(), p2.getX()) != p.getMirrorPositions().end());
+}
+
+TEST_F(PeriodicTest, Particle2DTeleport3) {
+    R3 x = {-1.0, 11.0, .0};
+    Particle p = Particle(x, zero, 1.0, 1.0, 1.0, 0);
+    R3 expectedPosition = {9.0, 1.0, .0};
+    Particle p1(p);
+    Particle p2(p);
+    Particle p3(p);
+    p1.getX() = {-1.0, 11.0, .0};
+    p2.getX() = {-1.0, 1.0, .0};
+    p3.getX() = {9.0, 11.0, .0};
+    p1.getType() = 1;
+    p2.getType() = 1;
+    p3.getType() = 1;
+    left_boundary2_d.applyBoundary(p, force_source);
+    right_boundary2_d.applyBoundary(p, force_source);
+    front_boundary2_d.applyBoundary(p, force_source);
+    back_boundary2_d.applyBoundary(p, force_source);
+    left_boundary2_d.applyBoundary(p, force_source);
+    front_boundary2_d.applyBoundary(p, force_source);
+    EXPECT_TRUE(p.getMirrorPositions().size() == 3);
+    EXPECT_TRUE(p.getX() == expectedPosition);
+    EXPECT_TRUE(std::ranges::find(p.getMirrorPositions(), p1.getX()) != p.getMirrorPositions().end());
+    EXPECT_TRUE(std::ranges::find(p.getMirrorPositions(), p2.getX()) != p.getMirrorPositions().end());
+    EXPECT_TRUE(std::ranges::find(p.getMirrorPositions(), p3.getX()) != p.getMirrorPositions().end());
 }
 }  // namespace mol_sim

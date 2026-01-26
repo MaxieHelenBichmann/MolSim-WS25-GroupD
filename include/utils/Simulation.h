@@ -245,7 +245,6 @@ class Simulation {
             (*it).getOldF() = (*it).getF();
             (*it).getF() = Vector<double, 3>();
             domain.applyBoundary(*it);
-            (*it).getMirrorLocations() = 0;
             R3 new_position = (*it).getX();
             (*it).getX() = (*it).getOldX();
             it = particles.updateParticlePosition(
@@ -315,6 +314,7 @@ class Simulation {
     void calculateX() {
         for (auto& p : particles) {
             p.getMirrorPositions().clear();
+            p.getMirrorLocations() = 0;
             p.getOldX() = p.getX();
             p.getX() += (delta_t * p.getV()) + ((0.5 * delta_t * delta_t / p.getM()) * p.getF());
         }
@@ -339,12 +339,12 @@ class Simulation {
      */
     double calculateThermostatFactor() {
         double curr_temp = (2.0 * total_energy) / (dimensions * particles.size());
-        SPDLOG_DEBUG("Temperature in Iteration {} is: {}", iteration, curr_temp);
+        //SPDLOG_DEBUG("Temperature in Iteration {} is: {}", iteration, curr_temp);
         if (curr_temp == 0) {
             return 1;
         }
         double clamped_target = curr_temp + std::clamp((target_temp - curr_temp), -delta_temp, delta_temp);
-        SPDLOG_DEBUG("Applying Scaling Factor in Iteration {}: {}", iteration, clamped_target);
+        //SPDLOG_DEBUG("Applying Scaling Factor in Iteration {}: {}", iteration, clamped_target);
         return sqrt(clamped_target / curr_temp);
     }
 
