@@ -128,7 +128,7 @@ void YAMLWriterCP::createCheckpoint(SettingsParam& settings, const Domain& domai
     if (settings.rdf || settings.diff) {
         out << YAML::Key << "statistics" << YAML::Value << YAML::BeginMap;
         if (settings.diff) {
-            out << YAML::Key << "diffusion" << YAML::Value << settings.stats_freq_diffusion;
+            out << YAML::Key << "data" << YAML::Value << settings.stats_freq_diffusion;
         }
         if (settings.rdf) {
             out << YAML::Key << "rdf" << YAML::Value << settings.stats_freq_rdf;

@@ -14,7 +14,7 @@ namespace mol_sim {
  */
 class StatsWriter {
     bool compute_rdf = false;
-    bool compute_diffusion = false;
+    bool compute_diff_temp = false;
     double sample_radius = 1.0;
     double window_size = 10.0;
 
@@ -25,7 +25,7 @@ class StatsWriter {
    public:
     StatsWriter() = default;
 
-    StatsWriter(bool compute_rdf, bool compute_diffusion, double sample_radius, double window_size);
+    StatsWriter(bool compute_rdf, bool compute_diff_temp, double sample_radius, double window_size);
 
     ~StatsWriter() = default;
 
@@ -65,7 +65,7 @@ class StatsWriter {
     void plotRDF(ContainerRef particles, int iteration) const;
     /**
      * @brief Writes the temperature data into the temp.csv file. Each row has the format: <iteration>,<temperature>
-     * Only used for debugging purposes, thus no extra frequency variable.
+     * Mainly used for debugging purposes.
      *
      * @param total_energy Total energy of the system.
      * @param dimension Dimension of the system.

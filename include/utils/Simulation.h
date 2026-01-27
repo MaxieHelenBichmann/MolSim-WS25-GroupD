@@ -626,20 +626,13 @@ class Simulation {
             }
 #endif
 #ifdef ENABLE_STATS
-            // 9. Write diffusion statistics (optional)
+            // 9. Write diffusion and temperature statistics (optional)
             if (iteration % frequency_stats_diff == 0) {
                 try {
                     stats_writer.plotDiffusion(particles, iteration);
-                } catch (const std::runtime_error& e) {
-                    SPDLOG_ERROR("Failed to plot diffusion at iteration {}: {}", iteration, e.what());
-                }
-            }
-            // 9. Write temperature statistics (optional)
-            if (iteration % frequency_stats_diff == 0) {
-                try {
                     stats_writer.plotTemp(total_energy, dimensions, particles.size(), iteration);
                 } catch (const std::runtime_error& e) {
-                    SPDLOG_ERROR("Failed to plot temperature at iteration {}: {}", iteration, e.what());
+                    SPDLOG_ERROR("Failed to plot statistical data at iteration {}: {}", iteration, e.what());
                 }
             }
             // 10. Write RDF statistics (optional)

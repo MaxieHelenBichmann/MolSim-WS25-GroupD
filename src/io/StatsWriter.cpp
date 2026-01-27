@@ -8,9 +8,9 @@
 
 using namespace mol_sim;
 
-StatsWriter::StatsWriter(bool compute_rdf, bool compute_diffusion, double sample_radius, double window_size)
+StatsWriter::StatsWriter(bool compute_rdf, bool compute_diff_temp, double sample_radius, double window_size)
     : compute_rdf(compute_rdf),
-      compute_diffusion(compute_diffusion),
+      compute_diff_temp(compute_diff_temp),
       sample_radius(sample_radius),
       window_size(window_size) {
     auto remove_if_exists = [](const std::string& filename) {
@@ -25,7 +25,7 @@ StatsWriter::StatsWriter(bool compute_rdf, bool compute_diffusion, double sample
         }
     };
 
-    if (this->compute_diffusion) {
+    if (this->compute_diff_temp) {
         remove_if_exists(filename_diffusion);
         remove_if_exists(filename_temp);
     }
@@ -66,7 +66,7 @@ void StatsWriter::computeRDF(ContainerRef particles, std::vector<double>& result
 }
 
 void StatsWriter::plotDiffusion(ContainerRef particles, int iteration) const {
-    if (compute_diffusion) {
+    if (compute_diff_temp) {
         double diffusion = computeDiffusion(particles);
 
         std::ofstream diffusion_file(filename_diffusion, std::ios::app);
@@ -99,15 +99,17 @@ void StatsWriter::plotRDF(ContainerRef particles, int iteration) const {
 }
 
 void StatsWriter::plotTemp(double total_energy, size_t dimension, size_t N, int iteration) const {
-    double temperature = 0.0;
-    if (N != 0 && dimension != 0) {
-        temperature = (2.0 * total_energy) / (static_cast<double>(dimension) * static_cast<double>(N));
-    }
-    std::ofstream temp_file(filename_temp, std::ios::app);
-    if (temp_file.is_open()) {
-        temp_file << iteration << "," << temperature << "\n";
-        temp_file.close();
-    } else {
-        SPDLOG_ERROR("Failed to open temp.csv for writing.");
+    if (compute_diff_temp) {
+        double temperature = 0.0;
+        if (N != 0 && dimension != 0) {
+            temperature = (2.0 * total_energy) / (static_cast<double>(dimension) * static_cast<double>(N));
+        }
+        std::ofstream temp_file(filename_temp, std::ios::app);
+        if (temp_file.is_open()) {
+            temp_file << iteration << "," << temperature << "\n";
+            temp_file.close();
+        } else {
+            SPDLOG_ERROR("Failed to open temp.csv for writing.");
+        }
     }
 }

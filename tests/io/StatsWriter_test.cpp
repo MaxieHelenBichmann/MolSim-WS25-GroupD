@@ -189,6 +189,51 @@ TEST_F(DiffusionWriterTest, testOutput) {
 // ----------------------------------------------------------------------------------------------------
 
 /**
+ * @brief Tests collecting and writing Temperature data.
+ */
+class TemperatureWriterTest : public StatsWriterTest {
+   protected:
+    void SetUp() override { StatsWriterTest::SetUp(); }
+    void TearDown() override { StatsWriterTest::TearDown(); }
+    /**
+     * @brief Writes the data for temperature file using the StatsWriter and returns the path to the created file, as
+     * well as tracks the created files for cleanup.
+     */
+    std::filesystem::path writeTemp(const StatsWriter& w, double total_energy, size_t dimension, size_t N,
+                                    int iteration) {
+        std::filesystem::path path = std::filesystem::current_path() / "temp.csv";
+        {
+            std::error_code ec;
+            std::filesystem::remove(path, ec);
+        }
+
+        ContainerRef particles(container);
+        w.plotTemp(total_energy, dimension, N, iteration);
+        created_files.push_back(path);
+
+        return path;
+    }
+};
+
+/**
+ * @brief Tests writing temperature data to file.
+ */
+TEST_F(TemperatureWriterTest, testOutput) {
+    writer = StatsWriter(false, true, 1.0, 10.0);
+
+    const std::filesystem::path path = writeTemp(writer, 100.0, 3, 2, 7);
+
+    const auto lines = readAllLines(path);
+    ASSERT_EQ(lines.size(), 1U);
+    const auto parts = splitCsvLine(lines[0]);
+    ASSERT_EQ(parts.size(), 2U);
+    EXPECT_EQ(std::stoi(parts[0]), 7);
+    EXPECT_NEAR(std::stod(parts[1]), (2 * 100.0) / (3.0 * 2.0), 1e-4);
+}
+
+// ----------------------------------------------------------------------------------------------------
+
+/**
  * @brief Tests collecting and writing RDF data.
  */
 class RDFWriterTtest : public StatsWriterTest {
