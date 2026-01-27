@@ -2,6 +2,7 @@ settings:
   format: Settings
   delta_t: 0.01
   end_time: 100.0
+  pairwise_forces: [LENNARDJONES]
   single_forces:
     - type: GRAV
       g_grav: [0.0, -9.81, 0.0]

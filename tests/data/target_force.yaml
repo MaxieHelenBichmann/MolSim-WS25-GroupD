@@ -2,6 +2,7 @@ settings:
   format: Settings
   delta_t: 0.01
   end_time: 100.0
+  pairwise_forces: [LENNARDJONES]
   target_force:
     direction: [1.0, 0.0, 0.0]
     magnitude: 50.0

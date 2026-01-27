@@ -2,6 +2,7 @@ settings:
   format: Settings
   delta_t: 0.005
   end_time: 500.0
+  pairwise_forces: [LENNARDJONES]
 cuboid_1:
   format: Cuboid
   coordinates: [0.0, 0.0, 0.0]

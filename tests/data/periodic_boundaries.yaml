@@ -1,5 +1,6 @@
 settings:
   format: Settings
+  pairwise_forces: [LENNARDJONES]
   domain:
     coordinates: [100.0, 100.0, 100.0]
     dimensions: 3
