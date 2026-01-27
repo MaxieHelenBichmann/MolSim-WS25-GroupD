@@ -1,6 +1,7 @@
 #ifndef STATS_WRITER_H
 #define STATS_WRITER_H
 
+#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -19,6 +20,7 @@ class StatsWriter {
 
     std::string filename_diffusion = "diffusion.csv";
     std::string filename_rdf = "rdf.csv";
+    std::string filename_temp = "temp.csv";
 
    public:
     StatsWriter() = default;
@@ -61,6 +63,16 @@ class StatsWriter {
      * @param iteration Current iteration of the simulation.
      */
     void plotRDF(ContainerRef particles, int iteration) const;
+    /**
+     * @brief Writes the temperature data into the temp.csv file. Each row has the format: <iteration>,<temperature>
+     * Only used for debugging purposes, thus no extra frequency variable.
+     *
+     * @param total_energy Total energy of the system.
+     * @param dimension Dimension of the system.
+     * @param N Number of particles.
+     * @param iteration Current iteration of the simulation.
+     */
+    void plotTemp(double total_energy, size_t dimension, size_t N, int iteration) const;
 };
 
 }  // namespace mol_sim

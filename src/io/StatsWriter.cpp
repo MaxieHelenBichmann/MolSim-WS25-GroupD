@@ -27,6 +27,7 @@ StatsWriter::StatsWriter(bool compute_rdf, bool compute_diffusion, double sample
 
     if (this->compute_diffusion) {
         remove_if_exists(filename_diffusion);
+        remove_if_exists(filename_temp);
     }
     if (this->compute_rdf) {
         remove_if_exists(filename_rdf);
@@ -94,5 +95,19 @@ void StatsWriter::plotRDF(ContainerRef particles, int iteration) const {
         } else {
             SPDLOG_ERROR("Failed to open rdf.csv for writing.");
         }
+    }
+}
+
+void StatsWriter::plotTemp(double total_energy, size_t dimension, size_t N, int iteration) const {
+    double temperature = 0.0;
+    if (N != 0 && dimension != 0) {
+        temperature = (2.0 * total_energy) / (static_cast<double>(dimension) * static_cast<double>(N));
+    }
+    std::ofstream temp_file(filename_temp, std::ios::app);
+    if (temp_file.is_open()) {
+        temp_file << iteration << "," << temperature << "\n";
+        temp_file.close();
+    } else {
+        SPDLOG_ERROR("Failed to open temp.csv for writing.");
     }
 }
