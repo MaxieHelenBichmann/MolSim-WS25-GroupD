@@ -149,10 +149,6 @@ class Simulation {
      * @brief Flag if thermostat is enabled for this simulation.
      */
     bool thermo;
-    /**
-     * @brief Temporary storage for new particles created during boundary application.
-     */
-    std::vector<Particle> new_particles;
 
     bool target_force_enabled = false;
 
