@@ -221,7 +221,7 @@ class SettingsParam {
     /**
      * @brief Types of pairwise forces used this simulation
      */
-    std::vector<PairwiseForce> pairwise_forces = PAIRWISE_FORCE_DEFAULT;
+    std::vector<PairwiseForce> pairwise_forces;
 
     /**
      * @brief Types of single forces used this simulation
