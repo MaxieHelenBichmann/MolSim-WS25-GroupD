@@ -15,4 +15,4 @@
 module load slurm_setup
 
 mkdir -p results/benchmark
-./build/benchmarks/MolSimBench --benchmark_filter=ThreadScaling --benchmark_out=results/benchmark/thread_scaling_${SLURM_JOB_ID}.json --benchmark_out_format=json
+./MolSim-WS25-GroupD/build/benchmarks/MolSimBench --benchmark_filter=ThreadScaling --benchmark_out=results/benchmark/thread_scaling_${SLURM_JOB_ID}.json --benchmark_out_format=json
