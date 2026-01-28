@@ -12,7 +12,7 @@
 namespace mol_sim {
 
 /**
- * @brief Simple Container for Particles
+ * @brief Simple (Direct Sum) Container for Particles
  *
  * This container implements the concept ParticleContainer.
  * It essentially uses a simple std::vector<Particle> to store the Particles.
@@ -21,8 +21,19 @@ namespace mol_sim {
  *
  */
 class SimpleContainer : public std::vector<Particle> {
+    /**
+     * @brief Vector storing the global bounds of the domain of this container.
+     * The SimpleContainer assumes a cuboidal domain from (0,0,0) to domain_size.
+     *
+     * NOTE: All components specified here must be positive!
+     */
     R3 domain_size = R3{std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(),
                         std::numeric_limits<double>::infinity()};
+
+    /**
+     * @brief Cutoff radius with which the Container is initialized.
+     * Used for proximity queries. Particles further apart than this radius are not considered, bur still iterated over.
+     */
     double cutoff_radius = std::numeric_limits<double>::infinity();
 
    public:
@@ -37,7 +48,6 @@ class SimpleContainer : public std::vector<Particle> {
      *
      * @param v The position to be checked.
      * @return true if the position lies within the domain + halo region
-     * @return false else
      */
     inline bool fitsContainer(R3 v);
 

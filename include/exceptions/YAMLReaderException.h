@@ -8,12 +8,12 @@
 namespace mol_sim {
 
 /**
- * @brief Exception thrown by the YAMLReader;
+ * @brief Exception thrown by the YAMLReader.
  *
  */
 class YAMLReaderException : public InputException {
    public:
-    explicit YAMLReaderException(const std::string& message) : InputException(message){};
+    explicit YAMLReaderException(const std::string& message) : InputException(message) {};
 };
 }  // namespace mol_sim
 

@@ -7,7 +7,7 @@
 
 namespace mol_sim {
 /**
- * @brief Exception thrown by the Program;
+ * @brief Exception thrown by the Program.
  *
  */
 class SimulationException : public MolSimException {

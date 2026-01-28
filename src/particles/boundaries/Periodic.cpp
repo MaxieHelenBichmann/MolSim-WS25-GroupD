@@ -7,7 +7,7 @@ namespace mol_sim {
 Periodic::Periodic(BoundaryLocation location, R3 domain_size, double cutoff, size_t dimensions) noexcept
     : Boundary(location, BoundaryType::PERIODIC, domain_size), dimensions(dimensions) {
     /**
-     * TODO: Optimization possible
+     * @note: Optimization possible
      *
      * Doing it this way introduces additional performance overhead
      * if used with a SimpleContainer if the domain_size is not divisible
@@ -82,7 +82,7 @@ void Periodic::teleportParticleIfOOB(Particle& p) {
 }
 
 /**
- * TODO: make this work with an std::array<Particle, 4>
+ * @note: possibly make this work with an std::array<Particle, 4>
  */
 void Periodic::mirrorParticle(Particle& p) {
     size_t location_idx = getBoundaryLocationIdx();

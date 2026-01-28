@@ -14,8 +14,8 @@ namespace mol_sim {
 /**
  * @brief Class to calculate harmonic spring forces for membrane particles.
  *
- * Calculates forces based on harmonic potential between neighboring particles in a membrane structure.
- * Only applies to membrane particles (types 2 and 4).
+ * A SingleForceSource that calculates forces based on harmonic potential between neighboring particles in a membrane
+ * structure. Only applies to membrane particles (types 2 and 4).
  */
 class HarmonicForce : public SingleForceSource {
    private:

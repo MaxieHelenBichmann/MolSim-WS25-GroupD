@@ -10,7 +10,7 @@ namespace mol_sim {
 /**
  * @brief Class to calculate constant gravitational force on particles.
  *
- * Applies a uniform gravitational field to all particles based on mass.
+ * A SingleForceSource that applies a uniform gravitational field to all particles based on mass.
  */
 class GravForce : public SingleForceSource {
    private:

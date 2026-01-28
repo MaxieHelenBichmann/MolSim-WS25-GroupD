@@ -7,7 +7,7 @@
 namespace mol_sim {
 
 /**
- * @brief Writes the whole state of a simulation with all particle data into a .txt file
+ * @brief Writes the whole state of a simulation with all particle data into a .yaml file
  *
  * The filename will consist of cp_<iteration>.yaml
  */

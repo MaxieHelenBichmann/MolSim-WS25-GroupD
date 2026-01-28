@@ -15,7 +15,10 @@ namespace mol_sim {
  */
 class TruncLennardJonesForce : public PairwiseForceSource {
    private:
-    // For squared distance comparison: r_cutoff^2 = (2^(1/6))^2 * sigma^2 = 2^(1/3) * sigma^2
+    /**
+     * @brief For squared distance comparison: r_cutoff^2 = (2^(1/6))^2 * sigma^2 = 2^(1/3) * sigma^2
+     *
+     */
     static constexpr double CUTOFF_FACTOR_SQUARED = 1.2599210498948731906665443602832965552806854248046875;  // 2^(1/3)
 
    public:

@@ -20,8 +20,8 @@ namespace mol_sim {
  * @brief Linked-Cell Container for Particles
  *
  * This container implements the concept ParticleContainer.
- * It stored the Particles in linked cells to optimize proximity queries. However,
- * it is also possible to simply iterate over all Particles, because they are stored in a linearized vector.
+ * It stored the Particles in linked cells to optimize proximity queries and uses a N3L optimization per default.
+ * However, it is also possible to simply iterate over all Particles, because they are stored in a linearized vector.
  *
  */
 class LinkedCellContainer {
@@ -105,23 +105,23 @@ class LinkedCellContainer {
     void decreaseCellIndices(size_t starting_idx);
 
     /**
-     * std::vector storing all Particles in the container.
+     * @brief std::vector storing all Particles in the container.
      */
     std::vector<Particle> data;
 
     /**
-     * std::vector storing all cells of the container.
+     * @brief std::vector storing all cells of the container.
      */
     std::vector<Cell> cells;
 
     /**
-     * Cutoff radius with which the Container is initialized.
+     * @brief Cutoff radius with which the Container is initialized.
      * Used for proximity queries. Particles further apart than this radius are not considered.
      */
     double cutoff_radius;
 
     /**
-     * Vector storing the global bounds of the domain of this container.
+     * @brief Vector storing the global bounds of the domain of this container.
      * The Linked-Cell container assumes a cuboidal domain from (0,0,0) to domain_size.
      *
      * NOTE: All components specified here must be positive!
@@ -129,12 +129,12 @@ class LinkedCellContainer {
     R3 domain_size;
 
     /**
-     * Number of cells in each dimension, including halo cells.
+     * @brief Number of cells in each dimension, including halo cells.
      */
     std::array<size_t, 3> num_cells;
 
     /**
-     * Effective edge length of a single cell in each spatial dimension.
+     * @brief Effective edge length of a single cell in each spatial dimension.
      * At least as big as the given cutoff radius, to still only check the immediate neighbors.
      */
     std::array<double, 3> cell_length{};

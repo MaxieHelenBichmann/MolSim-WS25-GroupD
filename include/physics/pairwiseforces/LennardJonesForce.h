@@ -8,10 +8,9 @@
 namespace mol_sim {
 
 /**
- * @brief Class to calculate Lennard-Jones forces between two different objects. Implements the ForceSource Concept.
+ * @brief Class to calculate Lennard-Jones forces between two different objects.
  *
- * Class to calculate Lennard-Jones forces between two different objects.
- * Implements the ForceSource concept.
+ * A PairwiseForceSource that calculates the Lennard-Jones force between two particles.
  */
 class LennardJonesForce : public PairwiseForceSource {
    public:

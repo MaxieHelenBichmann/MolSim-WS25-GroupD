@@ -14,6 +14,14 @@ namespace mol_sim {
 class OutputWriter {
    public:
     virtual ~OutputWriter() = default;
+
+    /**
+     * @brief Plots the particles to a file to be able to visualize the simulation state.
+     *
+     * @param particles The particles to plot.
+     * @param filename The base filename to use.
+     * @param iteration The current iteration of the simulation.
+     */
     virtual void plotParticles(ContainerRef particles, const std::string& filename, int iteration) const = 0;
 };
 

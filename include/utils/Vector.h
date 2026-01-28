@@ -24,7 +24,7 @@ template <class T, size_t N>
     requires std::integral<T> || std::floating_point<T>
 class Vector {
     /**
-     * Data of the Vector
+     * @brief Data of the Vector
      */
     std::array<T, N> data_;  // NOLINT
 
@@ -39,7 +39,7 @@ class Vector {
      *
      * @param init array of fitting type and size, copied to the data of the Vector
      */
-    Vector(std::array<T, N> init) : data_(init){};
+    Vector(std::array<T, N> init) : data_(init) {};
 
     /**
      * @brief Constructor copies N given values into the components of a Vector

@@ -60,9 +60,18 @@ class Simulation {
      */
     const std::vector<std::unique_ptr<PairwiseForceSource>>& pairwise_force_sources;
 
+    /**
+     * @brief Single Force sources for calculating particle interactions.
+     */
     const std::vector<std::unique_ptr<SingleForceSource>>& single_force_sources;
 
+    /**
+     * @brief Pairwise Force applied in particle interactions.
+     */
     std::vector<PairwiseForce> pairwise_forces;
+    /**
+     * @brief Single Force applied in particle interactions.
+     */
     std::vector<SingleForce> single_forces;
     /**
      * @brief Writer used for output.
@@ -150,8 +159,14 @@ class Simulation {
      */
     bool thermo;
 
+    /**
+     * @brief Flag if a target force is enabled for this simulation.
+     */
     bool target_force_enabled = false;
 
+    /**
+     * @brief Target forces applied in this simulation.
+     */
     TargetForceSource target_force;
 
     /**
@@ -245,7 +260,7 @@ class Simulation {
         total_energy *= 0.5;
     }
     /**
-     * TODO:
+     * @note:
      * maybe take into account the relation between creation and #iterations per thread
      * e.g. at 1400 particles and 50 bigger overhead for thread creation than thread
      * computing. In that case sweet spot at lower number of threads
@@ -286,7 +301,7 @@ class Simulation {
         for (auto& p : particles) {
             p.getOldF() = p.getF();
             p.getF() = Vector<double, 3>();
-            // TODO: Optimization to only call this for relevant particles
+            // possible optimization to only call this for relevant particles
             domain.applyBoundary(p);
         }
 

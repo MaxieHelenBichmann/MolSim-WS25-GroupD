@@ -59,7 +59,7 @@ class SettingsParam {
      */
     static constexpr size_t FREQUENCY_CHECKPOINT_DEFAULT = 5000;
     /**
-     * @brief Default frequency for thermodynamical statistics (Diffusion).
+     * @brief Default frequency for thermodynamical statistics (Diffusion and Temperature).
      */
     static constexpr size_t FREQUENCY_STATS_DEFAULT_DIFF = 1000;
     /**
@@ -99,8 +99,14 @@ class SettingsParam {
      */
     static constexpr size_t DIMENSIONS_DEFAULT = 3;
 
+    /**
+     * @brief Default stiffness constant of the simulation..
+     */
     static constexpr double K_DEFAULT = 300.0;
 
+    /**
+     * @brief Default average bond length of the simulation..
+     */
     static constexpr double R_0_DEFAULT = 2.2;
 
     /**
@@ -142,7 +148,7 @@ class SettingsParam {
 
     /**
      * @brief Dimensions of the simulation.
-     * TODO: use this for 2D optimizations.
+     * @note: could use this for 2D optimizations.
      */
     size_t dimensions = DIMENSIONS_DEFAULT;
 

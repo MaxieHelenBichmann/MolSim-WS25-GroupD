@@ -12,11 +12,18 @@ namespace mol_sim {
 /**
  * @brief Class to calculate smooth Lennard-Jones forces between two different objects.
  *
- * Class to calculate smooth Lennard-Jones forces between two different objects.
+ * A PairwiseForceSource that calculates the smooth Lennard-Jones force between two particles.
+ * It smoothens the force to zero between a smoothing radius rl and a cutoff radius rc.
  */
 class SmoothLennardJonesForce : public PairwiseForceSource {
-    double rc = std::numeric_limits<double>::infinity();  ///< Cutoff radius
-    double rl = std::numeric_limits<double>::infinity();  ///< Smoothing radius
+    /**
+     * @brief Cutoff radius, beyond which no force is applied.
+     */
+    double rc = std::numeric_limits<double>::infinity();
+    /**
+     * @brief Smoothing radius, beyond which the force is smoothly reduced to zero.
+     */
+    double rl = std::numeric_limits<double>::infinity();
 
    public:
     /**

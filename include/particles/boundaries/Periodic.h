@@ -41,7 +41,7 @@ class Periodic : public Boundary {
      * to get to the coordinates of the i-th mirror location of p.
      *
      * For examples p.getX() + shift_lookup[i] = location of i-th mirror location of p.
-     * TODO: make this static const
+     * @note: make this static const
      */
     std::array<R3, 27> shift_lookup;
 

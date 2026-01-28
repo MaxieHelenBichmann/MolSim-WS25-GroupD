@@ -13,13 +13,37 @@ namespace mol_sim {
  * @brief Writes the diffusion and RDF of the given set of particles into a corresponding .csv file
  */
 class StatsWriter {
+    /**
+     * @brief Flag whether to compute the RDF or not.
+     */
     bool compute_rdf = false;
+
+    /**
+     * @brief Flag whether to compute the Diffusion and Temperature or not.
+     */
     bool compute_diff_temp = false;
+
+    /**
+     * @brief Sample radius for the RDF computation.
+     */
     double sample_radius = 1.0;
+
+    /**
+     * @brief Maximal radius that is considered for the RDF computation.
+     */
     double window_size = 10.0;
 
+    /**
+     * @brief Filename for diffusion output.
+     */
     std::string filename_diffusion = "diffusion.csv";
+    /**
+     * @brief Filename for RDF output.
+     */
     std::string filename_rdf = "rdf.csv";
+    /**
+     * @brief Filename for temperature output.
+     */
     std::string filename_temp = "temp.csv";
 
    public:

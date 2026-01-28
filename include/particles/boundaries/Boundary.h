@@ -42,7 +42,7 @@ class Boundary {
      */
     BoundaryLocation location;
     /**
-     * @brief The type of the boundary (OUTFLOW, REFLECTING, VELOCITYREF)
+     * @brief The type of the boundary (OUTFLOW, REFLECTING, VELOCITYREFLECT, PERIODIC)
      */
     BoundaryType type;
     /**

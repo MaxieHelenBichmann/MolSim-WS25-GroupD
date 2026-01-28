@@ -5,7 +5,7 @@
 #include <string>
 namespace mol_sim {
 /**
- * @brief Exception thrown by the Program;
+ * @brief Exception thrown by the Program.
  *
  */
 class MolSimException : public std::runtime_error {
