@@ -3,6 +3,7 @@ settings:
   end_time: 400
   start_time: 0
   enable_brownian: false
+  frequency: 100
   pairwise_forces:
     - SMOOTHLENNARDJONES
 
