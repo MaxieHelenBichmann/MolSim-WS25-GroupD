@@ -276,35 +276,39 @@ static void bmThreadScalingForceOnly(benchmark::State& state) {
     const int num_threads = static_cast<int>(state.range(0));
     omp_set_num_threads(num_threads);
 
-    const R3 domain_size = {180.0, 90.0, 1.0};
-    const double cutoff = 3.0;
-    const size_t num_particles_per_dim = 100;
-
-    LinkedCellContainer container(domain_size, cutoff);
-    CuboidGenerator generator({10.0, 10.0, 0.0}, {0.0, 0.0, 0.0}, {num_particles_per_dim, num_particles_per_dim, 1U},
-                              {}, 1.0, 1.1225, 0.1, 1.0, 1.0, 0.01);
-    ContainerRef particles(container);
-    generator.generateParticles(particles, true);
+    const R3 domain_size = {60.0, 60.0, 60.0};
+    const double cutoff = 3.6;
+    const size_t num_iterations = 1000;
 
     const auto strategy = static_cast<ParallelizationStrategy>(state.range(1));
 
     SettingsParam settings;
     settings.delta_t = 0.0005;
     settings.start_time = 0.0;
-    settings.end_time = 0.0005;
+    settings.end_time = settings.delta_t * num_iterations;
     settings.cutoff = cutoff;
-    settings.dimensions = 2;
+    settings.dimensions = 3;
     settings.pairwise_forces = {PairwiseForce::LENNARDJONES};
     settings.strategy = strategy;
+    settings.single_forces = {SingleForce::GRAV};
+    settings.g_grav_vec = {0.0, -12.44, 0.0};
+
     settings.domain = createFluidDomain(domain_size, cutoff);
 
     std::vector<std::unique_ptr<PairwiseForceSource>> pairwise_forces;
     pairwise_forces.emplace_back(std::make_unique<LennardJonesForce>());
     std::vector<std::unique_ptr<SingleForceSource>> single_forces;
+    single_forces.emplace_back(std::make_unique<GravForce>(settings.g_grav_vec));
     auto writer = std::make_unique<XYZWriter>();
     auto cp_writer = std::make_unique<YAMLWriterCP>();
     auto stat_writer = std::make_unique<StatsWriter>();
+    LinkedCellContainer container(domain_size, cutoff);
+    CuboidGenerator generator_1({0.6, 0.6, 0.6}, {0.0, 0.0, 0.0}, {50U, 20U, 50U}, {}, 1.0, 1.2, 0.1, 1.0, 1.2, 40);
+    CuboidGenerator generator_2({0.6, 24.6, 0.6}, {0.0, 0.0, 0.0}, {50U, 20U, 50U}, {}, 2.0, 1.2, 0.1, 1.0, 1.1, 40);
 
+    ContainerRef particles(container);
+    generator_1.generateParticles(particles, true, true);
+    generator_2.generateParticles(particles, true, true);
     Simulation<LinkedCellContainer> simulation(container, pairwise_forces, single_forces, settings, *writer, *cp_writer,
                                                *stat_writer);
 
