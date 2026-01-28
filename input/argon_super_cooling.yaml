@@ -3,10 +3,11 @@ settings:
   end_time: 100
   start_time: 0
   enable_brownian: false
+  frequency: 100
   pairwise_forces:
     - SMOOTHLENNARDJONES
 
-  thermostat: 
+  thermostat:
     initial_temp: 3.0
     target_temp: 0.02
     n_thermostat: 25
