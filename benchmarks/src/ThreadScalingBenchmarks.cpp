@@ -477,13 +477,11 @@ BENCHMARK(bmThreadScalingContest1)
     ->Name("Simulation/Full/Contest_2/2D")
     ->Args({56, 0})
     ->Unit(benchmark::kMillisecond)
-    ->Repetitions(5)
-    ->ReportAggregatesOnly(true);
+    ->Repetitions(5);
 BENCHMARK(bmThreadScalingStrong)
     ->Name("Simulation/Full/Contest_2/3D")
     ->Args({112, 1})
     ->Unit(benchmark::kMillisecond)
-    ->Repetitions(5)
-    ->ReportAggregatesOnly(true);
+    ->Repetitions(5);
 }  // namespace mol_sim
 #endif
