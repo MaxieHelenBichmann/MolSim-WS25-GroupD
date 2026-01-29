@@ -388,7 +388,7 @@ BENCHMARK(bmThreadScalingContest1)
     ->Repetitions(5)
     ->ReportAggregatesOnly(true);
 
-BENCHMARK(bmThreadScalingStrong)
+BENCHMARK(bmThreadScalingContest1)
     ->Name("ThreadScaling/Strong/Contest_1/Coloring")
     ->Args({1, 1})
     ->Args({2, 1})
