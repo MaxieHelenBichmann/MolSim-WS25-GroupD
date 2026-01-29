@@ -146,7 +146,7 @@ static void bmThreadScalingContest1(benchmark::State& state) {
     const int num_threads = static_cast<int>(state.range(0));
     omp_set_num_threads(num_threads);
 
-    const R3 domain_size = {300, 54., 1.};
+    const R3 domain_size = {300., 54., 1.};
     const double cutoff = 3.0;
     const size_t num_iterations = 1000;
 
