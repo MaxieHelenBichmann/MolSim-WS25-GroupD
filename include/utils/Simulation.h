@@ -415,7 +415,8 @@ class Simulation {
                target_force_enabled, iteration, domain_size)
             {
                 // 8-color 3D checkerboard: process each color sequentially, parallelize within color
-                size_t num_colors = dimensions == 3 ? 8 : 4;
+                // Always use 8 colors to ensure all Z-layers are covered (e.g. for 2D sims with particles at z=1)
+                size_t num_colors = 8;
                 for (size_t color = 0; color < num_colors; ++color) {
                     const size_t color_i = color & 1;         // bit 0
                     const size_t color_j = (color >> 1) & 1;  // bit 1
