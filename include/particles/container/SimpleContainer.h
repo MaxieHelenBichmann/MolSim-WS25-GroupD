@@ -5,13 +5,14 @@
 #include <set>
 #include <vector>
 
+#include "exceptions/ContainerException.h"
 #include "particles/ParticleContainer.h"
 #include "particles/boundaries/Boundary.h"
 
 namespace mol_sim {
 
 /**
- * @brief Simple Container for Particles
+ * @brief Simple (Direct Sum) Container for Particles
  *
  * This container implements the concept ParticleContainer.
  * It essentially uses a simple std::vector<Particle> to store the Particles.
@@ -20,8 +21,19 @@ namespace mol_sim {
  *
  */
 class SimpleContainer : public std::vector<Particle> {
+    /**
+     * @brief Vector storing the global bounds of the domain of this container.
+     * The SimpleContainer assumes a cuboidal domain from (0,0,0) to domain_size.
+     *
+     * NOTE: All components specified here must be positive!
+     */
     R3 domain_size = R3{std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(),
                         std::numeric_limits<double>::infinity()};
+
+    /**
+     * @brief Cutoff radius with which the Container is initialized.
+     * Used for proximity queries. Particles further apart than this radius are not considered, bur still iterated over.
+     */
     double cutoff_radius = std::numeric_limits<double>::infinity();
 
    public:
@@ -36,7 +48,6 @@ class SimpleContainer : public std::vector<Particle> {
      *
      * @param v The position to be checked.
      * @return true if the position lies within the domain + halo region
-     * @return false else
      */
     inline bool fitsContainer(R3 v);
 
@@ -299,6 +310,21 @@ class SimpleContainer : public std::vector<Particle> {
             return tmp;
         }
 
+        // here to satisfy std::random_access_iterator (required for OpenMP)
+        proximity_iterator<P>& operator+=(long int n) {
+            for (long int i = 0; i < n; i++) {
+                ++(*this);
+            }
+            return *this;
+        }
+
+        // here to satisfy std::random_access_iterator (required for OpenMP)
+        friend auto operator-(const proximity_iterator<P>& a, const proximity_iterator<P>& b) { return a.cur - b.cur; }
+        // here to satisfy std::random_access_iterator (required for OpenMP)
+        friend auto operator-=([[maybe_unused]] const proximity_iterator<P>& a, [[maybe_unused]] long int n) {
+            throw ContainerException("Operator -= not yet implemented for SimpleContainer::proximity_iterator!");
+            return 0;
+        }
         friend bool operator==(const proximity_iterator<P>& a, const proximity_iterator<P>& b) noexcept {
             return a.cur == b.cur;
         }
@@ -351,6 +377,42 @@ class SimpleContainer : public std::vector<Particle> {
      * @return Const iterator after the last particle within the given radius of the center.
      */
     [[nodiscard]] proximity_iterator<const Particle> proximityEnd(R3 center) const;
+
+    /**
+     * @brief Mutable Iterator over particles in proximity, but does not use the N3L optimization.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     *
+     * @return Mutable iterator to the first particle within the given radius of the center.
+     */
+    [[nodiscard]] proximity_iterator<Particle> proximityBegin_no_N3L(R3 center);  // NOLINT
+
+    /**
+     * @brief Mutable Iterator over particles in proximity, but does not use the N3L optimization.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     *
+     * @return Mutable iterator after the last particle within the given radius of the center.
+     */
+    [[nodiscard]] proximity_iterator<Particle> proximityEnd_no_N3L(R3 center);  // NOLINT
+
+    /**
+     * @brief Const Iterator over particles in proximity, but does not use the N3L optimization.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     *
+     * @return Const iterator to the first particle within the given radius of the center.
+     */
+    [[nodiscard]] proximity_iterator<const Particle> proximityBegin_no_N3L(R3 center) const;  // NOLINT
+
+    /**
+     * @brief Const Iterator over particles in proximity, but does not use the N3L optimization.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     *
+     * @return Const iterator after the last particle within the given radius of the center.
+     */
+    [[nodiscard]] proximity_iterator<const Particle> proximityEnd_no_N3L(R3 center) const;  // NOLINT
 
     // boundary and halo iterators
 
@@ -461,6 +523,11 @@ class SimpleContainer : public std::vector<Particle> {
                                                                      BoundaryLocation::FRONT, BoundaryLocation::BACK,
                                                                      BoundaryLocation::LEFT,
                                                                      BoundaryLocation::RIGHT}) const;
+
+    /**
+     * @brief No-op for SimpleContainer. Only needed for LinkedCellContainer compatibility.
+     */
+    void prepareForParallelIteration() const {}
 };
 static_assert(ParticleContainer<SimpleContainer>);
 

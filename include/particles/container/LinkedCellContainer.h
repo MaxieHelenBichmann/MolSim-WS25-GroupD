@@ -20,8 +20,8 @@ namespace mol_sim {
  * @brief Linked-Cell Container for Particles
  *
  * This container implements the concept ParticleContainer.
- * It stored the Particles in linked cells to optimize proximity queries. However,
- * it is also possible to simply iterate over all Particles, because they are stored in a linearized vector.
+ * It stored the Particles in linked cells to optimize proximity queries and uses a N3L optimization per default.
+ * However, it is also possible to simply iterate over all Particles, because they are stored in a linearized vector.
  *
  */
 class LinkedCellContainer {
@@ -62,6 +62,24 @@ class LinkedCellContainer {
     void findNonEmptyAdjacentCellsN3L(size_t cell_idx, std::vector<const Cell*>& adjacent_cells) const;
 
     /**
+     * @brief Find the non-empty adjacent cells of a cell, but not using the N3L. [HELPER FUNCTION]
+     *
+     * @param cell_idx Index of the cell.
+     * @param adjacent_cells Vector in which to store pointers to the non-empty adjacent cells, including the cell
+     * itself.
+     */
+    void findNonEmptyAdjacentCells(size_t cell_idx, std::vector<Cell*>& adjacent_cells);
+
+    /**
+     * @brief Find the non-empty adjacent cells of a cell, but not using the N3L. [HELPER FUNCTION]
+     *
+     * @param cell_idx Index of the cell.
+     * @param adjacent_cells Vector in which to store pointers to the non-empty adjacent cells, including the cell
+     * itself.
+     */
+    void findNonEmptyAdjacentCells(size_t cell_idx, std::vector<const Cell*>& adjacent_cells) const;
+
+    /**
      * @brief Find the boundary or halo cells. [HELPER FUNCTION]
      *
      * @param type Type of the boundary.
@@ -87,23 +105,23 @@ class LinkedCellContainer {
     void decreaseCellIndices(size_t starting_idx);
 
     /**
-     * std::vector storing all Particles in the container.
+     * @brief std::vector storing all Particles in the container.
      */
     std::vector<Particle> data;
 
     /**
-     * std::vector storing all cells of the container.
+     * @brief std::vector storing all cells of the container.
      */
     std::vector<Cell> cells;
 
     /**
-     * Cutoff radius with which the Container is initialized.
+     * @brief Cutoff radius with which the Container is initialized.
      * Used for proximity queries. Particles further apart than this radius are not considered.
      */
     double cutoff_radius;
 
     /**
-     * Vector storing the global bounds of the domain of this container.
+     * @brief Vector storing the global bounds of the domain of this container.
      * The Linked-Cell container assumes a cuboidal domain from (0,0,0) to domain_size.
      *
      * NOTE: All components specified here must be positive!
@@ -111,12 +129,12 @@ class LinkedCellContainer {
     R3 domain_size;
 
     /**
-     * Number of cells in each dimension, including halo cells.
+     * @brief Number of cells in each dimension, including halo cells.
      */
     std::array<size_t, 3> num_cells;
 
     /**
-     * Effective edge length of a single cell in each spatial dimension.
+     * @brief Effective edge length of a single cell in each spatial dimension.
      * At least as big as the given cutoff radius, to still only check the immediate neighbors.
      */
     std::array<double, 3> cell_length{};
@@ -342,31 +360,57 @@ class LinkedCellContainer {
                  (std::is_same_v<P, const Particle> && std::is_same_v<C, const Cell>))
     class proximity_iterator {
         std::vector<size_t>::const_iterator cur;
+        std::vector<size_t>::const_iterator cur_cell_end;
         std::vector<C*> cells;
         size_t curr_cell_idx = 0;
         std::span<P> container_data;
-        double radius;
+        double radius_sqr;
         R3 center;
         size_t center_idx;
+        long int cur_idx = 0;
+        size_t last_cell_idx;
+        std::vector<size_t>::const_iterator last_cell_end;
 
         void inc() {
             SPDLOG_DEBUG("Incrementing proximity iterator");
-            if (cur != cells[curr_cell_idx]->stableIteratorEnd()) {
+            if (cur != cur_cell_end) {
                 ++cur;
+                ++cur_idx;
             }
-            while (cur == cells[curr_cell_idx]->stableIteratorEnd() &&
-                   curr_cell_idx < cells.size() - 1) {  // reached end of current cell
+            while (cur == cur_cell_end && curr_cell_idx < last_cell_idx) {
                 curr_cell_idx++;
                 cur = cells[curr_cell_idx]->stableIteratorBegin();
+                ++cur_idx;
+                cur_cell_end = cells[curr_cell_idx]->stableIteratorEnd();
             }
         }
-
         void satisfy() {
-            while (cur != cells.back()->stableIteratorEnd() &&
-                   (cur == cells[curr_cell_idx]->stableIteratorEnd() ||
-                    !((center - container_data[*cur].getX()).sqrEuclidNorm() <= radius * radius) ||
-                    (curr_cell_idx == cells.size() - 1 && *cur <= center_idx && center_idx != container_data.size()))) {
+            while (cur != last_cell_end &&
+                   (cur == cur_cell_end || !((center - container_data[*cur].getX()).sqrEuclidNorm() <= radius_sqr) ||
+                    (curr_cell_idx == last_cell_idx && *cur <= center_idx && center_idx != container_data.size()))) {
                 inc();
+            }
+        }
+        // needed here to satisfy std::random_access_iterator (required for OpenMP)
+        void dec() {
+            SPDLOG_DEBUG("Decrementing proximity iterator");
+            if (cur != cells[curr_cell_idx]->stableIteratorBegin()) {
+                --cur;
+                --cur_idx;
+            }
+            while (cur == cells[curr_cell_idx]->stableIteratorBegin() &&
+                   curr_cell_idx > 0) {  // reached start of current cell
+                curr_cell_idx--;
+                cur = cells[curr_cell_idx]->stableIteratorEnd();
+                --cur;
+                --cur_idx;
+            }
+        }
+        void satisfyDec() {  // always needs to be called AFTER dec(). Don't call this on its own.
+            while (cur != cells.begin()->stableIteratorBegin() &&
+                   (!((center - container_data[*cur].getX()).sqrEuclidNorm() <= radius_sqr) ||
+                    (curr_cell_idx == cells.size() - 1 && *cur <= center_idx && center_idx != container_data.size()))) {
+                dec();
             }
         }
 
@@ -377,15 +421,23 @@ class LinkedCellContainer {
         using pointer = P*;
         using reference = P&;
 
-        proximity_iterator() noexcept : radius(0.0) {}
+        proximity_iterator() noexcept : radius_sqr(0.0), last_cell_idx(0) {}
         proximity_iterator(R3 center, double radius, std::vector<size_t>::const_iterator cur, std::vector<C*>&& cells,
                            std::span<P> data, size_t center_idx)
             : cur(cur),
               cells(std::move(cells)),
               container_data(data),
-              radius(radius),
+              radius_sqr(radius * radius),
               center(center),
-              center_idx(center_idx) {
+              center_idx(center_idx),
+              last_cell_idx(this->cells.size() - 1) {
+            if (!this->cells.empty()) {
+                cur_cell_end = this->cells[0]->stableIteratorEnd();
+                last_cell_end = this->cells.back()->stableIteratorEnd();
+            } else {
+                cur_cell_end = cur;
+                last_cell_end = cur;
+            }
             satisfy();
         }
 
@@ -393,8 +445,11 @@ class LinkedCellContainer {
         pointer operator->() const noexcept { return &container_data[*cur]; }
 
         proximity_iterator<P, C>& operator++() {
+            // SPDLOG_INFO("Thread {}: Incrementing cur which is currently: {}", omp_get_thread_num(), *cur);
             inc();
+            // SPDLOG_INFO("Thread {}: Incremented cur which is now: {}", omp_get_thread_num(), *cur);
             satisfy();
+            // SPDLOG_INFO("Thread {}: After satisfy cur is now: {}", omp_get_thread_num(), *cur);
             return *this;
         }
 
@@ -404,18 +459,47 @@ class LinkedCellContainer {
             return tmp;
         }
 
+        // here to satisfy std::random_access_iterator (required for OpenMP)
+        proximity_iterator<P, C>& operator--() {
+            dec();
+            satisfyDec();
+            return *this;
+        }
+
+        // here to satisfy std::random_access_iterator (required for OpenMP)
+        proximity_iterator<P, C> operator--(int) {
+            proximity_iterator<P, C> tmp = *this;
+            --(*this);
+            return tmp;
+        }
+
+        // here to satisfy std::random_access_iterator (required for OpenMP)
+        proximity_iterator<P, C>& operator+=(long int n) {
+            for (long int i = 0; i < n; i++) {
+                ++(*this);
+            }
+            return *this;
+        }
+
+        // here to satisfy std::random_access_iterator (required for OpenMP)
+        proximity_iterator<P, C>& operator-=(long int n) {
+            for (long int i = 0; i < n; i++) {
+                --(*this);
+            }
+            return *this;
+        }
+
+        // here to satisfy std::random_access_iterator (required for OpenMP)
+        friend auto operator-(const proximity_iterator<P, C>& a, const proximity_iterator<P, C>& b) {
+            return b.cur_idx - a.cur_idx;
+        }
+
         friend bool operator==(const proximity_iterator<P, C>& a, const proximity_iterator<P, C>& b) noexcept {
             return a.cur == b.cur;
         }
         friend bool operator!=(const proximity_iterator<P, C>& a, const proximity_iterator<P, C>& b) noexcept {
             return !(a == b);
         }
-
-        [[nodiscard]] std::vector<C*> getCells() const { return cells; }
-        [[nodiscard]] double getRadius() const noexcept { return radius; }
-        [[nodiscard]] R3 getCenter() const { return center; }
-        [[nodiscard]] size_t getCenterIdx() const noexcept { return center_idx; }
-        [[nodiscard]] size_t getIdx() const noexcept { return *cur; }
     };
     static_assert(std::forward_iterator<proximity_iterator<Particle, Cell>>);
     static_assert(std::forward_iterator<proximity_iterator<const Particle, const Cell>>);
@@ -457,6 +541,42 @@ class LinkedCellContainer {
      * @return Const iterator after the last particle within the given radius of the center.
      */
     [[nodiscard]] proximity_iterator<const Particle, const Cell> proximityEnd(R3 center) const;
+
+    /**
+     * @brief Mutable Iterator over particles in proximity, but does not use the N3L optimization.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     *
+     * @return Mutable iterator to the first particle within the given radius of the center.
+     */
+    [[nodiscard]] proximity_iterator<Particle, Cell> proximityBegin_no_N3L(R3 center);  // NOLINT
+
+    /**
+     * @brief Mutable Iterator over particles in proximity, but does not use the N3L optimization.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     *
+     * @return Mutable iterator after the last particle within the given radius of the center.
+     */
+    [[nodiscard]] proximity_iterator<Particle, Cell> proximityEnd_no_N3L(R3 center);  // NOLINT
+
+    /**
+     * @brief Const Iterator over particles in proximity, but does not use the N3L optimization.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     *
+     * @return Const iterator to the first particle within the given radius of the center.
+     */
+    [[nodiscard]] proximity_iterator<const Particle, const Cell> proximityBegin_no_N3L(R3 center) const;  // NOLINT
+
+    /**
+     * @brief Const Iterator over particles in proximity, but does not use the N3L optimization.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     *
+     * @return Const iterator after the last particle within the given radius of the center.
+     */
+    [[nodiscard]] proximity_iterator<const Particle, const Cell> proximityEnd_no_N3L(R3 center) const;  // NOLINT
 
     // boundary and halo iterators
 
@@ -556,6 +676,42 @@ class LinkedCellContainer {
         const std::set<BoundaryLocation>& boundary_types = {BoundaryLocation::UPPER, BoundaryLocation::LOWER,
                                                             BoundaryLocation::FRONT, BoundaryLocation::BACK,
                                                             BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
+
+    /**
+     * @brief Prepare all cell caches for thread-safe iteration.
+     *
+     * Must be called before parallel force calculation to avoid race conditions.
+     */
+    void prepareForParallelIteration() const;
+
+    // Cell coloring support methods
+
+    /**
+     * @brief Get number of cells in each dimension (including halo cells).
+     *
+     * @return Array containing number of cells in x, y, z dimensions
+     */
+    [[nodiscard]] const std::array<size_t, 3>& getNumCells() const noexcept { return num_cells; }
+
+    /**
+     * @brief Compute linear cell index from 3D coordinates.
+     *
+     * @param ci Cell index in x dimension
+     * @param cj Cell index in y dimension
+     * @param ck Cell index in z dimension
+     * @return Linear index into cells vector
+     */
+    [[nodiscard]] size_t cellIndex(size_t ci, size_t cj, size_t ck) const noexcept {
+        return ci + (cj * num_cells[0]) + (ck * num_cells[0] * num_cells[1]);
+    }
+
+    /**
+     * @brief Get particle indices in a specific cell.
+     *
+     * @param cell_idx Linear index of the cell
+     * @return Span of particle indices in this cell
+     */
+    [[nodiscard]] const Cell& getCell(size_t cell_idx) const noexcept { return cells[cell_idx]; }
 };
 static_assert(ParticleContainer<LinkedCellContainer>);
 

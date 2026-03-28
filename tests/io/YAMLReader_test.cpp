@@ -1,7 +1,6 @@
 #include "io/fileReader/YAMLReader.h"
 
 #include <gtest/gtest.h>
-#include <physics/ForceSource.h>
 #include <spdlog/spdlog.h>
 
 #include <mutex>
@@ -95,7 +94,7 @@ TEST_F(YAMLReaderTest, ReadSimpleCuboid) {
     ASSERT_EQ(cuboids.size(), 1);
     R3 expected_pos = {0., 0., 0.};
     R3 expected_velo = {0., 0., 0.};
-    auto cube = cuboids[0];
+    const auto& cube = cuboids[0];
     EXPECT_EQ(cube.position, expected_pos);
     EXPECT_EQ(cube.velocity, expected_pos);
     EXPECT_EQ(cube.num_particles[0], 2);
@@ -118,7 +117,7 @@ TEST_F(YAMLReaderTest, ReadSimpleDisc) {
     ASSERT_EQ(discs.size(), 1);
     R3 expected_pos = {0., 0., 0.};
     R3 expected_velo = {0., 0., 0.};
-    auto disc = discs[0];
+    const auto& disc = discs[0];
     EXPECT_EQ(disc.position, expected_pos);
     EXPECT_EQ(disc.velocity, expected_pos);
     EXPECT_EQ(disc.radius, 2);
@@ -225,7 +224,8 @@ TEST_F(YAMLReaderTest, ReadFullConfigFile) {
 
     EXPECT_EQ(settings.base_name, "MD");
 
-    EXPECT_EQ(settings.force, LENNARDJONES);
+    EXPECT_EQ(settings.pairwise_forces.size(), 1);
+    EXPECT_EQ(settings.pairwise_forces[0], LENNARDJONES);
 
     EXPECT_EQ(settings.frequency_output, 10);
 
@@ -234,6 +234,8 @@ TEST_F(YAMLReaderTest, ReadFullConfigFile) {
     EXPECT_DOUBLE_EQ(settings.cutoff, 1.);
 
     EXPECT_EQ(settings.container_type, "LINKED");
+
+    EXPECT_EQ(settings.strategy, ParallelizationStrategy::NAIVE);
 
     EXPECT_DOUBLE_EQ(settings.target_temp, 10.);
 
@@ -360,9 +362,9 @@ TEST_F(YAMLReaderTest, ReadDomainAndBoundaries) {
     const auto* left_reflecting = dynamic_cast<const Reflecting*>(&left);
     ASSERT_NE(left_reflecting, nullptr);
     ASSERT_TRUE(left_reflecting->getBoundarySigma().has_value());
-    EXPECT_DOUBLE_EQ(left_reflecting->getBoundarySigma().value(), 1.2); //NOLINT
+    EXPECT_DOUBLE_EQ(left_reflecting->getBoundarySigma().value(), 1.2);  // NOLINT
     ASSERT_TRUE(left_reflecting->getBoundaryEpsilon().has_value());
-    EXPECT_DOUBLE_EQ(left_reflecting->getBoundaryEpsilon().value(), 5.0); //NOLINT
+    EXPECT_DOUBLE_EQ(left_reflecting->getBoundaryEpsilon().value(), 5.0);  // NOLINT
 
     // Verify RIGHT boundary (REFLECTING without custom sigma/epsilon)
     const Boundary& right = settings.domain.getBoundary(BoundaryLocation::RIGHT);
@@ -382,9 +384,9 @@ TEST_F(YAMLReaderTest, ReadDomainAndBoundaries) {
     const auto* upper_reflecting = dynamic_cast<const Reflecting*>(&upper);
     ASSERT_NE(upper_reflecting, nullptr);
     ASSERT_TRUE(upper_reflecting->getBoundarySigma().has_value());
-    EXPECT_DOUBLE_EQ(upper_reflecting->getBoundarySigma().value(), 2.0); //NOLINT
+    EXPECT_DOUBLE_EQ(upper_reflecting->getBoundarySigma().value(), 2.0);  // NOLINT
     ASSERT_TRUE(upper_reflecting->getBoundaryEpsilon().has_value());
-    EXPECT_DOUBLE_EQ(upper_reflecting->getBoundaryEpsilon().value(), 10.0); //NOLINT
+    EXPECT_DOUBLE_EQ(upper_reflecting->getBoundaryEpsilon().value(), 10.0);  // NOLINT
 
     // Verify LOWER boundary (OUTFLOW)
     const Boundary& lower = settings.domain.getBoundary(BoundaryLocation::LOWER);
@@ -408,12 +410,14 @@ TEST_F(YAMLReaderTest, ReadCheckpointFile) {
     EXPECT_DOUBLE_EQ(settings.end_time, 500.0);
     EXPECT_DOUBLE_EQ(settings.start_time, 0.0);
     EXPECT_EQ(settings.base_name, "MD");
-    EXPECT_EQ(settings.force, LENNARDJONES);
+    EXPECT_EQ(settings.pairwise_forces.size(), 1);
+    EXPECT_EQ(settings.pairwise_forces[0], LENNARDJONES);
     EXPECT_EQ(settings.frequency_output, 10);
     EXPECT_EQ(settings.frequency_checkpoint, 100);
     EXPECT_DOUBLE_EQ(settings.target_temp, 10.);
     EXPECT_EQ(settings.thermostat_freq, 5);
     EXPECT_DOUBLE_EQ(settings.delta_temp, 0.2);
+    EXPECT_EQ(settings.strategy, ParallelizationStrategy::NAIVE);
 
     R3 expected_domain = {10., 10., 10.};
     const Boundary& upper = settings.domain.getBoundary(BoundaryLocation::UPPER);
@@ -434,9 +438,9 @@ TEST_F(YAMLReaderTest, ReadCheckpointFile) {
     const auto* lower_reflecting = dynamic_cast<const Reflecting*>(&lower);
     ASSERT_NE(lower_reflecting, nullptr);
     ASSERT_TRUE(lower_reflecting->getBoundarySigma().has_value());
-    EXPECT_DOUBLE_EQ(lower_reflecting->getBoundarySigma().value(), 1.2); //NOLINT
+    EXPECT_DOUBLE_EQ(lower_reflecting->getBoundarySigma().value(), 1.2);  // NOLINT
     ASSERT_TRUE(lower_reflecting->getBoundaryEpsilon().has_value());
-    EXPECT_DOUBLE_EQ(lower_reflecting->getBoundaryEpsilon().value(), 5.0); //NOLINT
+    EXPECT_DOUBLE_EQ(lower_reflecting->getBoundaryEpsilon().value(), 5.0);  // NOLINT
 
     // Verify particle data
     EXPECT_EQ(particles.size(), 1);
@@ -458,6 +462,161 @@ TEST_F(YAMLReaderTest, ReadCheckpointFile) {
     EXPECT_EQ(particles[0].getType(), 42);
 
     EXPECT_EQ(output.find("Error"), std::string::npos);
+}
+
+/**
+ * @brief Tests the YAML Readers Membrane Format support.
+ * Tests basic membrane parsing.
+ */
+TEST_F(YAMLReaderTest, ReadSimpleMembrane) {
+    YAMLReader reader;
+    YAML::Node root = YAML::LoadFile(test_data_dir + "/simple_membrane.yaml");
+    auto membranes = reader.parseMembranes(root["simple_membrane"]);
+    ASSERT_EQ(membranes.size(), 1);
+    R3 expected_pos = {0., 0., 0.};
+    R3 expected_velo = {0., 0., 0.};
+    const auto& membrane = membranes[0];
+    EXPECT_EQ(membrane.position, expected_pos);
+    EXPECT_EQ(membrane.velocity, expected_velo);
+    EXPECT_EQ(membrane.num_particles[0], 3);
+    EXPECT_EQ(membrane.num_particles[1], 2);
+    EXPECT_DOUBLE_EQ(membrane.avg_velo, 0.);
+    EXPECT_DOUBLE_EQ(membrane.mass, 1.);
+    EXPECT_DOUBLE_EQ(membrane.distance, 1.5);
+    EXPECT_DOUBLE_EQ(membrane.epsilon, 5.);
+    EXPECT_DOUBLE_EQ(membrane.sigma, 1.);
+}
+
+/**
+ * @brief Tests the YAML Readers ability to parse membranes with targets.
+ */
+TEST_F(YAMLReaderTest, ReadMembraneWithTargets) {
+    YAMLReader reader;
+    YAML::Node root = YAML::LoadFile(test_data_dir + "/membrane_with_targets.yaml");
+    auto membranes = reader.parseMembranes(root["membrane_targets"]);
+    ASSERT_EQ(membranes.size(), 1);
+    const auto& membrane = membranes[0];
+    R3 expected_pos = {1., 2., 3.};
+    R3 expected_velo = {0.5, 0., 0.};
+    EXPECT_EQ(membrane.position, expected_pos);
+    EXPECT_EQ(membrane.velocity, expected_velo);
+    EXPECT_EQ(membrane.num_particles[0], 4);
+    EXPECT_EQ(membrane.num_particles[1], 3);
+    EXPECT_DOUBLE_EQ(membrane.mass, 2.);
+    EXPECT_DOUBLE_EQ(membrane.distance, 1.2);
+    EXPECT_DOUBLE_EQ(membrane.avg_velo, 0.1);
+    EXPECT_DOUBLE_EQ(membrane.epsilon, 10.);
+    EXPECT_DOUBLE_EQ(membrane.sigma, 2.);
+    ASSERT_EQ(membrane.targets.size(), 2);
+    EXPECT_EQ(membrane.targets[0][0], 0);
+    EXPECT_EQ(membrane.targets[0][1], 0);
+    EXPECT_EQ(membrane.targets[1][0], 3);
+    EXPECT_EQ(membrane.targets[1][1], 2);
+}
+
+/**
+ * @brief Tests the YAML Readers ability to parse cuboids with targets.
+ */
+TEST_F(YAMLReaderTest, ReadCuboidWithTargets) {
+    YAMLReader reader;
+    YAML::Node root = YAML::LoadFile(test_data_dir + "/cuboid_with_targets.yaml");
+    auto cuboids = reader.parseCuboids(root["cuboid_targets"]);
+    ASSERT_EQ(cuboids.size(), 1);
+    const auto& cube = cuboids[0];
+    ASSERT_EQ(cube.targets.size(), 2);
+    EXPECT_EQ(cube.targets[0][0], 0);
+    EXPECT_EQ(cube.targets[0][1], 0);
+    EXPECT_EQ(cube.targets[0][2], 0);
+    EXPECT_EQ(cube.targets[1][0], 1);
+    EXPECT_EQ(cube.targets[1][1], 1);
+    EXPECT_EQ(cube.targets[1][2], 1);
+}
+
+/**
+ * @brief Tests the YAML Readers ability to parse single forces.
+ */
+TEST_F(YAMLReaderTest, ReadSingleForces) {
+    YAMLReader reader;
+    reader.readSettings(settings, test_data_dir + "/single_forces.yaml");
+
+    ASSERT_EQ(settings.single_forces.size(), 2);
+    EXPECT_EQ(settings.single_forces[0], SingleForce::GRAV);
+    EXPECT_EQ(settings.single_forces[1], SingleForce::HARMONIC);
+
+    R3 expected_grav = {0., -9.81, 0.};
+    EXPECT_R3_EQ(settings.g_grav_vec, expected_grav);
+
+    EXPECT_DOUBLE_EQ(settings.k, 300.0);
+    EXPECT_DOUBLE_EQ(settings.r_0, 2.2);
+}
+
+/**
+ * @brief Tests the YAML Readers ability to parse target force configuration.
+ */
+TEST_F(YAMLReaderTest, ReadTargetForce) {
+    YAMLReader reader;
+    reader.readSettings(settings, test_data_dir + "/target_force.yaml");
+
+    EXPECT_TRUE(settings.target_force_enabled);
+    R3 expected_direction = {1., 0., 0.};
+    EXPECT_R3_EQ(settings.target_force_direction, expected_direction);
+    EXPECT_DOUBLE_EQ(settings.target_force_magnitude, 50.0);
+    EXPECT_EQ(settings.target_force_max_iterations, 1000);
+}
+
+/**
+ * @brief Tests the YAML Readers ability to parse periodic boundaries.
+ */
+TEST_F(YAMLReaderTest, ReadPeriodicBoundaries) {
+    YAMLReader reader;
+    reader.readSettings(settings, test_data_dir + "/periodic_boundaries.yaml");
+
+    R3 expected_domain = {100., 100., 100.};
+    EXPECT_R3_EQ(settings.domain.getDimension(), expected_domain);
+
+    const Boundary& upper = settings.domain.getBoundary(BoundaryLocation::UPPER);
+    const Boundary& lower = settings.domain.getBoundary(BoundaryLocation::LOWER);
+    const Boundary& left = settings.domain.getBoundary(BoundaryLocation::LEFT);
+    const Boundary& right = settings.domain.getBoundary(BoundaryLocation::RIGHT);
+    const Boundary& front = settings.domain.getBoundary(BoundaryLocation::FRONT);
+    const Boundary& back = settings.domain.getBoundary(BoundaryLocation::BACK);
+
+    EXPECT_EQ(upper.getType(), BoundaryType::PERIODIC);
+    EXPECT_EQ(lower.getType(), BoundaryType::PERIODIC);
+    EXPECT_EQ(left.getType(), BoundaryType::PERIODIC);
+    EXPECT_EQ(right.getType(), BoundaryType::PERIODIC);
+    EXPECT_EQ(front.getType(), BoundaryType::PERIODIC);
+    EXPECT_EQ(back.getType(), BoundaryType::PERIODIC);
+}
+
+/**
+ * @brief Tests that reading membrane particles creates the correct number of particles.
+ */
+TEST_F(YAMLReaderTest, ReadMembraneParticles) {
+    YAMLReader reader;
+    reader.readParticles(particles, settings, test_data_dir + "/simple_membrane.yaml");
+
+    EXPECT_EQ(particles.size(), 6);
+
+    for (const auto& p : particles) {
+        EXPECT_DOUBLE_EQ(p.getM(), 1.0);
+        EXPECT_DOUBLE_EQ(p.getEpsilon(), 5.0);
+        EXPECT_DOUBLE_EQ(p.getSigma(), 1.0);
+    }
+}
+
+/**
+ * @brief Tests that checkpoint files with single_forces are read correctly.
+ */
+TEST_F(YAMLReaderTest, ReadCheckpointSingleForces) {
+    YAMLReader reader;
+    reader.readSettings(settings, test_data_dir + "/checkpoint.yaml");
+
+    ASSERT_EQ(settings.single_forces.size(), 1);
+    EXPECT_EQ(settings.single_forces[0], SingleForce::GRAV);
+
+    R3 expected_grav = {0., -9.81, 0.};
+    EXPECT_R3_EQ(settings.g_grav_vec, expected_grav);
 }
 
 }  // namespace mol_sim

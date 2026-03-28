@@ -8,7 +8,7 @@
 namespace mol_sim {
 
 /**
- * @brief Exception thrown by Input handling;
+ * @brief Exception thrown by Input handling.
  *
  */
 class InputException : public MolSimException {

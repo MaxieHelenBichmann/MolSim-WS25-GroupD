@@ -2,6 +2,8 @@
 #define CUBOID_GENERATOR_H
 
 #include <cstddef>
+#include <utility>
+#include <vector>
 
 #include "particles/Generator.h"
 #include "utils/Vector.h"
@@ -30,6 +32,12 @@ class CuboidGenerator : public Generator {
      *
      */
     N3 num_particles;
+
+    /**
+     * @brief List of particle coordinates that should be marked with special types (3 or 4).
+     *
+     */
+    std::vector<N3> targets;
     /**
      * @brief Mass of the particles.
      *
@@ -65,25 +73,30 @@ class CuboidGenerator : public Generator {
      * @brief Function to generate Particles.
      *
      * @param particles Container to place Particles in.
+     * @param use_brownian_motion If true, apply Brownian motion to particle velocities.
+     * @param use_init_temp If true, use init_temp to calculate avg_velo based on temperature.
      */
-    void generateParticles(ContainerRef particles, bool use_init_temp = false) override;
+    void generateParticles(ContainerRef particles, bool use_brownian_motion, bool use_init_temp = false) override;
     /**
      * @brief Construct a new Cuboid Generator object, setting all necessary parameters for generation.
      *
      * @param position Postion of the lower left corner of the cube of particles.
      * @param velocity Initial velocity of the cube of particles.
      * @param num_particles Number of particles per dimension.
+     * @param targets List of particle coordinates to mark with special types.
      * @param mass Mass of the particles.
      * @param distance Mesh width of the grid of particles.
      * @param avg_velo Mean value of velocity of the Brownian Motion.
      * @param epsilon Epsilon value of the generated particles.
      * @param sigma Sigma value of the generated particles.
+     * @param init_temp Target initial temperature of the system.
      */
-    CuboidGenerator(R3 position, R3 velocity, N3 num_particles, double mass, double distance, double avg_velo,
-                    double epsilon, double sigma, double init_temp)
+    CuboidGenerator(R3 position, R3 velocity, N3 num_particles, const std::vector<N3>& targets, double mass,
+                    double distance, double avg_velo, double epsilon, double sigma, double init_temp)
         : position(position),
           velocity(velocity),
           num_particles(num_particles),
+          targets(targets),
           mass(mass),
           distance(distance),
           avg_velo(avg_velo),

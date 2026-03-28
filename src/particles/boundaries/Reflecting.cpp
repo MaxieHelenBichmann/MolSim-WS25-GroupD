@@ -13,7 +13,7 @@ Reflecting::Reflecting(BoundaryLocation location, R3 domain_size, bool ghost_on_
       boundary_epsilon(epsilon),
       boundary_sigma(sigma) {}
 
-std::optional<std::vector<Particle>> Reflecting::applyBoundary(Particle& p, const ForceSource& force) noexcept {
+void Reflecting::applyBoundary(Particle& p, const PairwiseForceSource& force) noexcept {
     /**
      * Note that we spawn the ghost particle with either the specified sigma or the sigma of the passed particle,
      * BUT: we check whether or not the boundary condition applies with sigma_check. We do this because in the
@@ -52,8 +52,8 @@ std::optional<std::vector<Particle>> Reflecting::applyBoundary(Particle& p, cons
 
         SPDLOG_TRACE("Creating ghost particle at ({}, {}, {}) for particle at ({}, {}, {})", ghost_pos[0], ghost_pos[1],
                      ghost_pos[2], p.getX()[0], p.getX()[1], p.getX()[2]);
-        p.getF() =
-            p.getF() + force.applyForce(p, Particle(ghost_pos, {0.0, 0.0, 0.0}, p.getM(), epsilon, sigma_ghost, -1));
+        p.getF() = p.getF() + force.applyForce(
+                                  p, Particle(ghost_pos, {0.0, 0.0, 0.0}, p.getM(), epsilon, sigma_ghost, p.getType()));
     }
 
     return std::nullopt;

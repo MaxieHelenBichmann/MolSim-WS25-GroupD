@@ -2,18 +2,17 @@
 #define LJ_FORCE_H
 
 #include "particles/Particle.h"
-#include "physics/ForceSource.h"
+#include "physics/pairwiseforces/PairwiseForceSource.h"
 #include "utils/Vector.h"
 
 namespace mol_sim {
 
 /**
- * @brief Class to calculate Lennard-Jones forces between two different objects. Implements the ForceSource Concept.
+ * @brief Class to calculate Lennard-Jones forces between two different objects.
  *
- * Class to calculate Lennard-Jones forces between two different objects.
- * Implements the ForceSource concept.
+ * A PairwiseForceSource that calculates the Lennard-Jones force between two particles.
  */
-class LennardJonesForce : public ForceSource {
+class LennardJonesForce : public PairwiseForceSource {
    public:
     /**
      * @brief Calculates the Lennard-Jones force a particle p2 exerts on a different particle p1.
@@ -30,7 +29,7 @@ class LennardJonesForce : public ForceSource {
         const auto difference = p1.getX() - p2.getX();
         const double sqr_distance = difference.sqrEuclidNorm();
 
-        // Guard against very small distances that would cause overflow (TODO still correct with squared distance?)
+        // Guard against very small distances that would cause overflow
         constexpr double sqr_min_distance = 1e-20;
         if (sqr_distance < sqr_min_distance) {
             return {0.0, 0.0, 0.0};

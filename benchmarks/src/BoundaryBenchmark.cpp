@@ -18,7 +18,7 @@
 #include "particles/boundaries/Reflecting.h"
 #include "particles/boundaries/VelocityReflect.h"
 #include "particles/container/LinkedCellContainer.h"
-#include "physics/LennardJonesForce.h"
+#include "physics/pairwiseforces/LennardJonesForce.h"
 #include "utils/MaxwellBoltzmannDistribution.h"
 
 namespace mol_sim {

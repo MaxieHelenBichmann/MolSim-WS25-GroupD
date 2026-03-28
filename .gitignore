@@ -40,6 +40,8 @@
 .gdbinit
 .github/*copilot*
 CMakePresets.json
+.clangd
+
 
 # Build folders.
 # This rule ignores any folder in the project root that contains "build"
@@ -64,3 +66,8 @@ perf.data.old
 *.vtune
 *.advixeproj
 valgrind/
+
+# Python
+__pycache__/
+**/venv/
+**/.venv/

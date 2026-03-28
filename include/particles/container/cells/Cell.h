@@ -38,11 +38,11 @@ class Cell {
     /**
      * Cache for sorted particle indices to provide stable iteration.
      */
-    std::vector<size_t> sorted_cache;
+    mutable std::vector<size_t> sorted_cache;
     /**
      * Flag indicating whether the cache is dirty and needs to be updated.
      */
-    bool cache_dirty = true;
+    mutable bool cache_dirty = true;
 
     /**
      * @brief Update the sorted cache if it is dirty.
@@ -98,28 +98,48 @@ class Cell {
      *
      * @return Iterator to the beginning of the sorted particle indices.
      */
-    std::vector<size_t>::iterator stableIteratorBegin();
+    std::vector<size_t>::iterator stableIteratorBegin() {
+        if (cache_dirty) {
+            updateCache();
+        }
+        return sorted_cache.begin();
+    }
 
     /**
      * @brief Stable iterator to the end of the sorted particle indices.
      *
      * @return Iterator to the end of the sorted particle indices.
      */
-    std::vector<size_t>::iterator stableIteratorEnd();
+    std::vector<size_t>::iterator stableIteratorEnd() {
+        if (cache_dirty) {
+            updateCache();
+        }
+        return sorted_cache.end();
+    }
 
     /**
      * @brief Stable iterator to the beginning of the sorted particle indices.
      *
      * @return Iterator to the beginning of the sorted particle indices.
      */
-    [[nodiscard]] std::vector<size_t>::const_iterator stableIteratorBegin() const;
+    [[nodiscard]] std::vector<size_t>::const_iterator stableIteratorBegin() const {
+        if (cache_dirty) {
+            const_cast<Cell*>(this)->updateCache();
+        }
+        return sorted_cache.begin();
+    }
 
     /**
      * @brief Stable iterator to the end of the sorted particle indices.
      *
      * @return Iterator to the end of the sorted particle indices.
      */
-    [[nodiscard]] std::vector<size_t>::const_iterator stableIteratorEnd() const;
+    [[nodiscard]] std::vector<size_t>::const_iterator stableIteratorEnd() const {
+        if (cache_dirty) {
+            const_cast<Cell*>(this)->updateCache();
+        }
+        return sorted_cache.end();
+    }
 
     /**
      * @brief Check whether a Particle fits into the cell boundaries.

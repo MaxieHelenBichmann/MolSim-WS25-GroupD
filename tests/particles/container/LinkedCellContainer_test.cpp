@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
+#include <optional>
 #include <set>
 #include <vector>
 
@@ -242,6 +243,122 @@ TEST_F(LinkedCellContainerSpecificTest, ProximityIteratorN3L) {
     }
     // only one particle is within the radius AND considered with the Newton's third law optimization
     EXPECT_EQ(count, 1U);
+}
+
+/**
+ * @brief Tests that particle neighbors are correctly invalidated after eraseParticle.
+ * This is critical for membrane simulations to avoid dangling pointers.
+ */
+TEST_F(LinkedCellContainerSpecificTest, EraseParticleInvalidatesNeighbors) {
+    LinkedCellContainer particles({10.0, 10.0, 10.0}, 5.0);
+
+    R3 v{0.0, 0.0, 0.0};
+    // Create a simple 2x2 membrane-like structure with neighbors
+    particles.addParticle(R3{1.0, 1.0, 0.0}, v, 1.0, 1.0, 1.0, 2);  // idx 0
+    particles.addParticle(R3{2.0, 1.0, 0.0}, v, 1.0, 1.0, 1.0, 2);  // idx 1
+    particles.addParticle(R3{1.0, 2.0, 0.0}, v, 1.0, 1.0, 1.0, 2);  // idx 2
+    particles.addParticle(R3{2.0, 2.0, 0.0}, v, 1.0, 1.0, 1.0, 2);  // idx 3
+
+    ASSERT_EQ(particles.size(), 4);
+
+    // Set up ONLY reciprocal neighbor relationships for a 2x2 grid:
+    //   2  3   (top row)
+    //   0  1   (bottom row)
+
+    // Particle 0 (bottom-left) ↔ Particle 1 (bottom-right): horizontal
+    particles[0].getNeighbors()[1] = 1;  // 0's right = 1
+    particles[1].getNeighbors()[0] = 0;  // 1's left = 0
+
+    // Particle 0 (bottom-left) ↔ Particle 2 (top-left): vertical
+    particles[0].getNeighbors()[3] = 2;  // 0's top = 2
+    particles[2].getNeighbors()[2] = 0;  // 2's bottom = 0
+
+    // Particle 1 (bottom-right) ↔ Particle 3 (top-right): vertical
+    particles[1].getNeighbors()[3] = 3;  // 1's top = 3
+    particles[3].getNeighbors()[2] = 1;  // 3's bottom = 1
+
+    // Particle 2 (top-left) ↔ Particle 3 (top-right): horizontal
+    particles[2].getNeighbors()[1] = 3;  // 2's right = 3
+    particles[3].getNeighbors()[0] = 2;  // 3's left = 2
+
+    // Diagonal: Particle 0 (bottom-left) ↔ Particle 3 (top-right)
+    particles[0].getNeighbors()[7] = 3;  // 0's top-right diagonal = 3
+    particles[3].getNeighbors()[4] = 0;  // 3's bottom-left diagonal = 0
+
+    // Diagonal: Particle 1 (bottom-right) ↔ Particle 2 (top-left)
+    particles[1].getNeighbors()[6] = 2;  // 1's top-left diagonal = 2
+    particles[2].getNeighbors()[5] = 1;  // 2's bottom-right diagonal = 1
+
+    // Verify initial setup
+    EXPECT_EQ(particles[0].getNeighbors()[1], 1);
+    EXPECT_EQ(particles[1].getNeighbors()[0], 0);
+
+    // Erase particle 1 (bottom-right)
+    auto it = particles.begin();
+    ++it;  // Move to particle 1
+    particles.eraseParticle(it);
+
+    EXPECT_EQ(particles.size(), 3);
+
+    // Check that all remaining neighbor indices are valid (< 3)
+    // Particle 0 should have: right=nullopt (was 1, erased), top=2, top-right diagonal=1 (was 3, swapped to 1)
+    EXPECT_EQ(std::nullopt, particles[0].getNeighbors()[1]);
+    EXPECT_EQ(2, particles[0].getNeighbors()[3]);
+    EXPECT_EQ(1, particles[0].getNeighbors()[7]);
+
+    // Particle 1 (was Particle 3, swapped) should have: left=2, bottom=nullopt (was 1, erased), bottom-left=0
+    EXPECT_EQ(2, particles[1].getNeighbors()[0]);
+    EXPECT_EQ(std::nullopt, particles[1].getNeighbors()[2]);
+    EXPECT_EQ(0, particles[1].getNeighbors()[4]);
+
+    // Particle 2 should have: bottom=0, right=1 (was 3, swapped to position 1), bottom-right=nullopt (was 1, erased)
+    EXPECT_EQ(1, particles[2].getNeighbors()[1]);
+    EXPECT_EQ(0, particles[2].getNeighbors()[2]);
+    EXPECT_EQ(std::nullopt, particles[2].getNeighbors()[5]);
+}
+
+/**
+ * @brief Tests that after erasing multiple membrane particles, remaining neighbors are valid.
+ */
+TEST_F(LinkedCellContainerSpecificTest, EraseMultipleMembraneParticles) {
+    LinkedCellContainer particles({10.0, 10.0, 10.0}, 5.0);
+
+    R3 v{0.0, 0.0, 0.0};
+    // Create a 3x3 membrane
+    for (size_t j = 0; j < 3; j++) {
+        for (size_t k = 0; k < 3; k++) {
+            particles.addParticle(R3{static_cast<double>(k), static_cast<double>(j), 0.0}, v, 1.0, 1.0, 1.0, 2);
+        }
+    }
+
+    ASSERT_EQ(particles.size(), 9);
+
+    // Set up some neighbor relationships for particles 3, 4, 5 (middle row)
+    // Particle 4 (center): left=3, right=5
+    particles[4].getNeighbors()[0] = 3;
+    particles[4].getNeighbors()[1] = 5;
+    particles[3].getNeighbors()[1] = 4;
+    particles[5].getNeighbors()[0] = 4;
+
+    // Erase center particle (index 4)
+    auto it = particles.begin();
+    std::advance(it, 4);
+    particles.eraseParticle(it);
+
+    EXPECT_EQ(particles.size(), 8);
+
+    // After erase, particle 4's neighbors should be nullopt
+    EXPECT_EQ(particles[3].getNeighbors()[1], std::nullopt);  // was pointing to index 4
+    EXPECT_EQ(particles[5].getNeighbors()[0], std::nullopt);  // was pointing to index 4
+
+    // Verify all neighbor indices are valid (< size)
+    for (size_t i = 0; i < particles.size(); i++) {
+        for (const auto& neighbor : particles[i].getNeighbors()) {
+            if (neighbor.has_value()) {
+                EXPECT_LT(neighbor.value(), particles.size()) << "Particle " << i << " has invalid neighbor index";
+            }
+        }
+    }
 }
 
 }  // namespace mol_sim

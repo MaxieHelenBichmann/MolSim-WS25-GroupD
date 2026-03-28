@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "particles/Particle.h"
-#include "physics/GravitationalForce.h"
+#include "physics/pairwiseforces/GravitationalForce.h"
 
 namespace mol_sim {
 /**

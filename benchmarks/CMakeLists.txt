@@ -3,6 +3,10 @@ if(ENABLE_BENCHMARK)
 
     add_executable(MolSimBench ${BENCHMARK_SOURCES})
 
+    if(DEFINED benchmark_SOURCE_DIR)
+        target_include_directories(MolSimBench PRIVATE ${benchmark_SOURCE_DIR}/include)
+    endif()
+
     target_link_libraries(MolSimBench PRIVATE
     LibMolSim
     benchmark::benchmark

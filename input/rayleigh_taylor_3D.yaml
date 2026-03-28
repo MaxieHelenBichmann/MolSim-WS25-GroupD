@@ -1,0 +1,53 @@
+settings:
+  format: Settings
+  delta_t: 0.0005
+  end_time: 100
+  start_time: 0.0
+  frequency: 10
+  cutoff: 3.6
+  container: LINKED
+  pairwise_forces:
+    - LENNARDJONES
+  single_forces:
+    - type: GRAV
+      g_grav: [0.0, -12.44, 0.0]
+  thermostat:
+    initial_temp: 40
+    n_thermostat: 1000
+
+  domain:
+    coordinates: [60, 60, 60]
+    dimensions: 3
+    boundaries:
+      left:
+        type: Periodic
+      right:
+        type: Periodic
+      front:
+        type: Reflecting
+      back:
+        type: Reflecting
+      upper:
+        type: Periodic
+      lower:
+        type: Periodic
+
+liquid_1:
+  format: Cuboid
+  coordinates: [0.6, 0.6, 0.6]
+  velocity: [0.0, 0.0, 0.0]
+  particleNum: [50, 20, 50]
+  mass: 1.0
+  distance: 1.2
+  epsilon: 1.0
+  sigma: 1.2
+
+liquid_2:
+  format: Cuboid
+  coordinates: [0.6, 24.6, 0.6]
+  velocity: [0.0, 0.0, 0.0]
+  particleNum: [50, 20, 50]
+  mass: 2.0
+  distance: 1.2
+  epsilon: 1.0
+  sigma: 1.1
