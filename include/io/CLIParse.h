@@ -9,6 +9,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "exceptions/CLIException.h"
 #include "io/FileReader.h"
@@ -24,10 +25,11 @@ namespace mol_sim {
  * @param argsv Array of arguments
  * @throws CLIException if CLI parsing or file reading fails
  */
-std::string cliParse(int argc, char** argv) {
+std::vector<std::string> cliParse(int argc, char** argv) {
     SPDLOG_INFO("Hello from MolSim for PSE!");
     CLI::App app{"MolSim - Molecular Dynamics Simulator"};
     argv = app.ensure_utf8(argv);
+    std::vector<std::string> files;
 
     // Customize help formatting
     app.get_formatter()->column_width(40);
@@ -35,6 +37,7 @@ std::string cliParse(int argc, char** argv) {
     app.get_formatter()->label("TEXT", "");
     std::unique_ptr<FileReader> file_reader;
     std::filesystem::path filepath;
+    std::filesystem::path checkpoint_filepath;
     std::string log_level = "Default";  // NOLINT
 
     // Define custom validator for file extensions
@@ -47,8 +50,15 @@ std::string cliParse(int argc, char** argv) {
         return "";
     };
 
+    // Add files with least settings priority
+
     app.add_option("filepath,-f,--file", filepath, "Input file path (.txt or .yaml)")
         ->required()
+        ->check(CLI::ExistingFile.description(""))
+        ->check(CLI::Validator(file_ext_validator, ""));
+
+    app.add_option("checkpoint,-c,--checkpoint", checkpoint_filepath,
+                   "Input file path for checkpoint file (.txt or .yaml)")
         ->check(CLI::ExistingFile.description(""))
         ->check(CLI::Validator(file_ext_validator, ""));
 
@@ -87,8 +97,14 @@ std::string cliParse(int argc, char** argv) {
 #if SPDLOG_ACTIVE_LEVEL == SPDLOG_LEVEL_TRACE
     logInit(log_level);
 #endif
+    // Only add checkpoint file if it was provided
+    if (!checkpoint_filepath.empty()) {
+        files.push_back(checkpoint_filepath);
+    }
 
-    return filepath;
+    files.push_back(filepath);
+
+    return files;
 }
 }  // namespace mol_sim
 

@@ -23,11 +23,20 @@ The settings block has the following keys, with every key except format being op
 - `end_time`: A floating-point number specifying the end time of the simulation.
 - `start_time`: A floating-point number specifying the start time of the simulation.
 - `base_name`: A string specifying the base name of the output files of the simulation.
-- `force`: A string specifying the force type, either "Lennard Jones" or "Gravitational" (default:`"Lennard Jones"`),  of the simulation.
+- `force`: A string specifying the force type, either "Lennard Jones" or "Gravitational" (default:`"Lennard Jones"`), of the simulation.
 - `frequency`: A whole number specifying the frequency of the output files of the simulation.
+- `checkpoint`: A whole number specifying the frequency of the checkpoint files of the simulation.
 - `cutoff`: A floating-point number specifying the cutoff radius of the Linked Cells of the simulation.
 - `container`: Container type, either `"SIMPLE"` or `"LINKED"` (default: `"LINKED"`).
 - `domain`: A map defining the domain of the simulation (see Domain Configuration below).
+- `thermostat`: A map defining the thermostat of the simulation
+
+## Thermostat Configuration
+The thermostat is only activated when the `thermostat` key is provided. It can contain the following subkeys:  
+- `initial_temp`: A floating-point number specifying the initial target temperature of the simulation.
+- `target_temp`: A floating-point number specifying the normal target temperature of the simulation.
+- `n_thermostat`: A whole point number specifying the frequency with which the thermostat gets applied.
+- `delta_temp`: A floating-point number specifying the maximum allowed change of temperature with one application of the thermostat.
 
 ## Domain Configuration
 
@@ -35,6 +44,8 @@ The `domain` key contains the following sub-keys:
 - `x`: The x-dimension of the domain (default: 1.0).
 - `y`: The y-dimension of the domain (default: 1.0).
 - `z`: The z-dimension of the domain (default: 1.0).
+- `g_grav`: The gravitational force present in the simulation domain (default: 0.0).
+- `dimensions`: The number of dimensions the domain has. Supported values: 2, 3.
 - `boundaries`: A map defining boundary conditions for each of the 6 domain faces.
 
 ### Boundary Conditions
@@ -50,7 +61,7 @@ The `boundaries` key can contain up to 6 boundary specifications:
 
 Each boundary can have the following keys:
 
-- `type`: The boundary type, either `"OUTFLOW"` or `"REFLECTING"` (default: `"OUTFLOW"`).
+- `type`: The boundary type, either `"OUTFLOW"` or `"REFLECTING"` or `"VELOCITYREFLECT"` or `"PERIODIC"` (default: `"OUTFLOW"`).
 - `sigma`: (REFLECTING only) Optional sigma value for ghost particle interactions.
 - `epsilon`: (REFLECTING only) Optional epsilon value for ghost particle interactions.
 - `ghost_on_boundary`: (REFLECTING only) Optional boolean to place ghost particles on the boundary (default: `false`).
@@ -119,6 +130,7 @@ settings:
       x: 50.0
       y: 50.0
       z: 50.0
+      g_grav: -9.81
       boundaries:
         left:
           type: REFLECTING

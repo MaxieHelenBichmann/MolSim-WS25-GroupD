@@ -1,0 +1,55 @@
+# Benchmark input file for performance profiling
+# 10000 particles in 2D with periodic (left/right) and reflecting (top/bottom) boundaries
+# Corresponds to FullBenchmarks.cpp settings
+# Run with: ./build/project/MolSim ./input/benchmark_10k.yaml
+
+settings:
+  format: Settings
+  delta_t: 0.0005
+  start_time: 0.0
+  end_time: 3.0
+  force: "Lennard Jones"
+  frequency: 10
+  cutoff: 3.0
+  container: LINKED
+  initial_temp: 20.
+  target_temp: 40. 
+  max_delta_temp: 0.1
+  n_thermostat: 1000
+  
+  domain:
+    x: 150.0
+    y: 150.0
+    z: 1.0
+    g_grav: -12.44
+    dimensions: 2
+    boundaries:
+      left:
+        type: Periodic
+      right:
+        type: Periodic
+      front:
+        type: Reflecting
+      back:
+        type: Reflecting
+
+particles_lower:
+  format: Cuboid
+  coordinates:
+    x: 5.0
+    y: 0.5
+    z: 0.0
+  velocity:
+    vx: 0.0
+    vy: -25.0
+    vz: 0.0
+  particleNum:
+    nx: 100
+    ny: 100
+    nz: 1
+  mass: 1.0
+  distance: 1.2
+  mean_velo: 0.1
+  epsilon: 1.0
+  sigma: 1.0
+

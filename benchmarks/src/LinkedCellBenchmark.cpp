@@ -124,6 +124,7 @@ void bmLinkedCellProximityDirect(benchmark::State& state) {
     LinkedCellContainerDirect container(domain_size, cutoff);
     for (size_t i = 0; i < n; i++) {
         R3 pos = randomR3(bounds);
+        SPDLOG_DEBUG("Adding particle at position: [{}, {}, {}]", pos[0], pos[1], pos[2]);
         R3 vel = randomR3();
         container.addParticle(pos, vel, 1.0, 1.0, 1.0);
     }
@@ -132,10 +133,19 @@ void bmLinkedCellProximityDirect(benchmark::State& state) {
     size_t count = 0;
 
     for ([[maybe_unused]] auto _ : state) {
+        SPDLOG_DEBUG("make begin");
         auto it = container.proximityBegin(center);
+        SPDLOG_DEBUG("begin: cur = {}, cur_cell = {}, cells size = {}", it.getCur(), it.getCurCell(),
+                     it.getCells().size());
+
+        SPDLOG_DEBUG("make end");
         auto end = container.proximityEnd(center);
+        SPDLOG_DEBUG("end: cur = {}, cur_cell = {}, cells size = {}", end.getCur(), end.getCurCell(),
+                     end.getCells().size());
+        SPDLOG_DEBUG("begin iteration");
         for (; it != end; ++it) {
             count += it->getType();
+            SPDLOG_DEBUG("iteration");
         }
         benchmark::ClobberMemory();
     }
@@ -191,10 +201,12 @@ void bmLinkedCellUpdateDirect(benchmark::State& state) {
     }
 
     for ([[maybe_unused]] auto _ : state) {
-        for (auto it = container.begin(); it != container.end(); ++it) {
+        for (auto it = container.begin(); it != container.end();) {
             R3 new_pos = it->getX() + R3{1.5, 1.5, 1.5};
             if (container.fitsContainer(new_pos)) {
-                container.updateParticlePosition(it, new_pos);
+                it = container.updateParticlePosition(it, new_pos);
+            } else {
+                ++it;
             }
         }
         benchmark::DoNotOptimize(container);
@@ -429,16 +441,14 @@ BENCHMARK(bmLinkedCellAddDirect)
     ->Range(128, 8192)
     ->Repetitions(5)
     ->DisplayAggregatesOnly(true)
-    ->Unit(benchmark::kMillisecond)
-    ->Complexity();
+    ->Unit(benchmark::kMillisecond);
 BENCHMARK(bmLinkedCellAddExplicit)
     ->Name("LinkedCell/Add/Explicit")
     ->RangeMultiplier(2)
     ->Range(128, 8192)
     ->Repetitions(5)
     ->DisplayAggregatesOnly(true)
-    ->Unit(benchmark::kMillisecond)
-    ->Complexity();
+    ->Unit(benchmark::kMillisecond);
 
 BENCHMARK(bmLinkedCellIteratorDirect)
     ->Name("LinkedCell/Iterator/Direct")
@@ -446,35 +456,29 @@ BENCHMARK(bmLinkedCellIteratorDirect)
     ->Range(128, 8192)
     ->Repetitions(5)
     ->DisplayAggregatesOnly(true)
-    ->Unit(benchmark::kMicrosecond)
-    ->Complexity();
+    ->Unit(benchmark::kMicrosecond);
 BENCHMARK(bmLinkedCellIteratorExplicit)
     ->Name("LinkedCell/Iterator/Explicit")
     ->RangeMultiplier(2)
     ->Range(128, 8192)
     ->Repetitions(5)
     ->DisplayAggregatesOnly(true)
-    ->Unit(benchmark::kMicrosecond)
-    ->Complexity();
+    ->Unit(benchmark::kMicrosecond);
 
-// there seems to be be a problem with the direct proximity iterators immediately returning
 BENCHMARK(bmLinkedCellProximityDirect)
     ->Name("LinkedCell/Proximity/Direct")
     ->RangeMultiplier(2)
     ->Range(128, 8192)
     ->Repetitions(5)
     ->DisplayAggregatesOnly(true)
-    ->Unit(benchmark::kMicrosecond)
-    ->Complexity();
-// there seems to be be a problem with the explicit proximity iterators causing segfaults
+    ->Unit(benchmark::kMicrosecond);
 BENCHMARK(bmLinkedCellProximityExplicit)
     ->Name("LinkedCell/Proximity/Explicit")
     ->RangeMultiplier(2)
     ->Range(128, 8192)
     ->Repetitions(5)
     ->DisplayAggregatesOnly(true)
-    ->Unit(benchmark::kMicrosecond)
-    ->Complexity();
+    ->Unit(benchmark::kMicrosecond);
 
 BENCHMARK(bmLinkedCellUpdateDirect)
     ->Name("LinkedCell/Update/Direct")

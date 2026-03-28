@@ -53,14 +53,18 @@ class DiscGenerator : public Generator {
      *
      */
     double sigma;
+    /**
+     * @brief Target initial temperature of the system.
+     */
+    double init_temp;
 
    public:
     /**
-     * @brief Function to generate Particles.
+     * @brief      Function to generate Particles.
      *
-     * @param particles Container to place Particles in.
+     * @param      particles  Container to place Particles in.
      */
-    void generateParticles(ContainerRef particles) override;
+    void generateParticles(ContainerRef particles, bool use_init_temp = false) override;
     /**
      * @brief Construct a new Cuboid Generator object, setting all necessary parameters for generation.
      *
@@ -74,7 +78,7 @@ class DiscGenerator : public Generator {
      * @param sigma Sigma value of the generated particles.
      */
     DiscGenerator(R3 position, R3 velocity, size_t radius, double mass, double distance, double avg_velo,
-                  double epsilon, double sigma)
+                  double epsilon, double sigma, double init_temp)
         : position(position),
           velocity(velocity),
           radius(radius),
@@ -82,7 +86,8 @@ class DiscGenerator : public Generator {
           distance(distance),
           avg_velo(avg_velo),
           epsilon(epsilon),
-          sigma(sigma){};
+          sigma(sigma),
+          init_temp(init_temp){};
 };
 }  // namespace mol_sim
 

@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 
+option(COVERAGE "Enable generation of LLVM coverage artifacts" OFF)
+option(ENABLE_UBSAN "Enable undefined behavior sanitizer (debug only)" OFF)
+
 # Enable C++20. You may raise the standard if you want
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -11,19 +14,36 @@ project(MolSim_GroupD VERSION 0.0.1 LANGUAGES CXX)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
-# let ccmake and cmake-gui offer the default build type options
-set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug;Release;RelWithDebInfo;MinSizeRel")
-
-# set Release as the default build type if it is not yet set.
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Release" CACHE STRING
+# let ccmake and cmake-gui offer the default build type options (single-config generators only)
+if(NOT CMAKE_CONFIGURATION_TYPES)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "RelWithDebInfo" "MinSizeRel")
+    if(NOT CMAKE_BUILD_TYPE)
+        set(default_build_type "Release")
+        message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
+        set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE STRING
             "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
-endif(NOT CMAKE_BUILD_TYPE)
+    endif()
+endif()
 
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    add_compile_options(-O0)
-else()
-    add_compile_options(-O3)
+# -march=native and -Ofast did not yield better results in benchmarks on Rechnerhalle, try again on Cluster
+add_compile_options(
+    $<$<CONFIG:Debug>:-O0>
+    $<$<CONFIG:Release>:-O3>
+    $<$<CONFIG:Release>:-flto>
+    $<$<CONFIG:RelWithDebInfo>:-O3>
+    $<$<CONFIG:MinSizeRel>:-O3>
+    $<$<CONFIG:MinSizeRel>:-flto>
+)
+
+# Add corresponding linker flags for LTO
+add_link_options(
+    $<$<CONFIG:Release>:-flto>
+    $<$<CONFIG:MinSizeRel>:-flto>
+)
+
+if(ENABLE_UBSAN)
+    add_compile_options($<$<CONFIG:Debug>:-fsanitize=undefined>)
+    add_link_options($<$<CONFIG:Debug>:-fsanitize=undefined>)
 endif()
 
 add_compile_definitions(
@@ -38,19 +58,21 @@ add_compile_definitions(
 # add additional modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
+
 include(CTest)
 include(doxygen)
-include(gtest)
+include(clang-tidy)
 include(clang-format)
+include(gtest)
 include(yaml-cpp)
 include(spdlog)
 include(benchmark)
 include(cli11)
-include(clang-tidy)
 
 
 option(COVERAGE "Enable generation of LLVM coverage artifacts" OFF)
-
+option(ENABLE_IO "Enable file input/output operations for result files" ON)
+option(ENABLE_CHECKPOINTS "Enable creating checkpoints" ON)
 
 add_subdirectory(src project)
 add_subdirectory(tests)

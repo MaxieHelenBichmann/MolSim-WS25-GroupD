@@ -31,6 +31,16 @@ class SimpleContainer : public std::vector<Particle> {
     SimpleContainer(R3 domain_size_arg, double cutoff_radius_arg);
 
     /**
+     * @brief Checks that a given position fits within the domain + the halo region (1 cutoff radius)
+     * around the domain.
+     *
+     * @param v The position to be checked.
+     * @return true if the position lies within the domain + halo region
+     * @return false else
+     */
+    inline bool fitsContainer(R3 v);
+
+    /**
      * @brief Adding an already existing Particle to the container by copying it.
      *
      * @param value Already constructed Particle.
@@ -69,6 +79,23 @@ class SimpleContainer : public std::vector<Particle> {
     void addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type);
 
     /**
+     * @brief Directly constructing a Particle with its required parameters, including type, in-place.
+     * Only used for checkpointing.
+     *
+     * @param x_arg Initial coordinates of the Particle.
+     * @param old_x_arg Old coordinates of the Particle (only used when restoring from checkpoint).
+     * @param v_arg Initial velocities of the Particle.
+     * @param f_arg Forces on the Particle (only used when restoring from checkpoint).
+     * @param old_f_arg Old forces on the Particle (only used when restoring from checkpoint).
+     * @param m_arg Mass of the Particle.
+     * @param epsilon_arg Epsilon of the Particle.
+     * @param sigma_arg Sigma of the Particle.
+     * @param type Type of the Particle.
+     */
+    void addParticle(R3 x_arg, R3 old_x_arg, R3 v_arg, R3 f_arg, R3 old_f_arg, double m_arg, double epsilon_arg,
+                     double sigma_arg, int type);
+
+    /**
      * @brief Update the position of a given Particle in the Container.
      *
      * @param p Iterator to the Particle to update.
@@ -88,204 +115,12 @@ class SimpleContainer : public std::vector<Particle> {
     std::vector<Particle>::iterator eraseParticle(std::vector<Particle>::iterator p);
 
     /**
-     * @brief Const iterator that iterates over all particles that apply a force on a given particle.
+     * @brief Iterator template that iterates over all particles that apply a force on a given particle.
      *
      * Satisfies the forward iterator concept.
-     * Only iterates over particles within the given radius of the center, or all if the radius is infinite.
-     * Or is used for the iteration over halo and boundary particles.
+     * Can be instantiated as mutable and const iterator with P = (const) Particle.
+     * @tparam P Either Particle or const Particle
      *
-     * Enables cutoff radius, BUT still iterates over ALL particles when checking proximity/boundary/halo.
-     * To optimize that behavior and enable optimizations, use the LinkedCellContainer.
-     * Can be used for the N3L optimization via the offset.
-     *
-     * This class is mainly used to fulfill the interface with the calculateF() function in Simulation.
-     */
-    class const_proximity_iterator {
-        const Particle* cur;
-        const Particle* end;
-        double radius;
-        R3 center_or_domain;
-        bool prox;
-        std::set<BoundaryLocation> locations;
-
-        bool fitBoundary() {  // NOLINT
-            double effective_radius = -radius;
-            if (cur->getX()[0] > center_or_domain[0] || cur->getX()[1] > center_or_domain[1] ||
-                cur->getX()[2] > center_or_domain[2] || cur->getX()[0] < 0.0 || cur->getX()[1] < 0.0 ||
-                cur->getX()[2] < 0.0) {
-                return false;
-            }
-            for (auto location : locations) {
-                switch (location) {
-                    case BoundaryLocation::UPPER: {
-                        if (cur->getX()[2] >= center_or_domain[2] - effective_radius &&
-                            cur->getX()[2] <= center_or_domain[2]) {
-                            return true;
-                        }
-                        break;
-                    }
-                    case BoundaryLocation::LOWER: {
-                        if (cur->getX()[2] >= 0.0 && cur->getX()[2] <= effective_radius) {
-                            return true;
-                        }
-                        break;
-                    }
-                    case BoundaryLocation::FRONT: {
-                        if (cur->getX()[1] >= 0.0 && cur->getX()[1] <= effective_radius) {
-                            return true;
-                        }
-                        break;
-                    }
-                    case BoundaryLocation::BACK: {
-                        if (cur->getX()[1] >= center_or_domain[1] - effective_radius &&
-                            cur->getX()[1] <= center_or_domain[1]) {
-                            return true;
-                        }
-                        break;
-                    }
-                    case BoundaryLocation::LEFT: {
-                        if (cur->getX()[0] >= 0.0 && cur->getX()[0] <= effective_radius) {
-                            return true;
-                        }
-                        break;
-                    }
-                    case BoundaryLocation::RIGHT: {
-                        if (cur->getX()[0] >= center_or_domain[0] - effective_radius &&
-                            cur->getX()[0] <= center_or_domain[0]) {
-                            return true;
-                        }
-                        break;
-                    }
-                    default:
-                        break;
-                }
-            }
-            return false;
-        }
-        bool fitHalo() {  // NOLINT
-            if (cur->getX()[0] > center_or_domain[0] + radius || cur->getX()[1] > center_or_domain[1] + radius ||
-                cur->getX()[2] > center_or_domain[2] + radius || cur->getX()[0] < -radius || cur->getX()[1] < -radius ||
-                cur->getX()[2] < -radius) {
-                return false;
-            }
-            for (auto location : locations) {
-                switch (location) {
-                    case BoundaryLocation::UPPER: {
-                        if (cur->getX()[2] > center_or_domain[2] && cur->getX()[2] <= center_or_domain[2] + radius) {
-                            return true;
-                        }
-                        break;
-                    }
-                    case BoundaryLocation::LOWER: {
-                        if (cur->getX()[2] >= -radius && cur->getX()[2] < 0.0) {
-                            return true;
-                        }
-                        break;
-                    }
-                    case BoundaryLocation::FRONT: {
-                        if (cur->getX()[1] >= -radius && cur->getX()[1] < 0.0) {
-                            return true;
-                        }
-                        break;
-                    }
-                    case BoundaryLocation::BACK: {
-                        if (cur->getX()[1] > center_or_domain[1] && cur->getX()[1] <= center_or_domain[1] + radius) {
-                            return true;
-                        }
-                        break;
-                    }
-                    case BoundaryLocation::LEFT: {
-                        if (cur->getX()[0] >= -radius && cur->getX()[0] < 0.0) {
-                            return true;
-                        }
-                        break;
-                    }
-                    case BoundaryLocation::RIGHT: {
-                        if (cur->getX()[0] > center_or_domain[0] && cur->getX()[0] <= center_or_domain[0] + radius) {
-                            return true;
-                        }
-                        break;
-                    }
-                    default:
-                        break;
-                }
-            }
-            return false;
-        }
-
-        void satisfy() {
-            if (prox) {  // proximity check
-                if (std::isinf(radius)) {
-                    return;
-                }
-                while (cur != end && !((center_or_domain - cur->getX()).euclidNorm() <= radius)) {
-                    ++cur;
-                }
-            } else {
-                if (radius < 0.0) {  // boundary check
-                    while (cur != end && !(fitBoundary())) {
-                        ++cur;
-                    }
-                } else {  // halo check
-                    while (cur != end && !(fitHalo())) {
-                        ++cur;
-                    }
-                }
-            }
-        }
-
-       public:
-        using iterator_category = std::forward_iterator_tag;
-        using value_type = Particle;
-        using difference_type = std::ptrdiff_t;
-        using pointer = const Particle*;
-        using reference = const Particle&;
-
-        const_proximity_iterator() noexcept : cur(nullptr), end(nullptr), radius(0.0), prox(true) {}
-        const_proximity_iterator(R3 center_or_domain, double radius, const Particle* cur, const Particle* end,
-                                 size_t offset, bool prox = true, std::set<BoundaryLocation> locations = {})
-            : cur(cur + offset),
-              end(end),
-              radius(radius),
-              center_or_domain(center_or_domain),
-              prox(prox),
-              locations(std::move(locations)) {  // NOLINT
-            satisfy();
-        }
-
-        reference operator*() const noexcept { return *cur; }
-        pointer operator->() const noexcept { return cur; }
-
-        const_proximity_iterator& operator++() {
-            ++cur;  // NOLINT
-            satisfy();
-            return *this;
-        }
-
-        const_proximity_iterator operator++(int) {
-            const_proximity_iterator tmp = *this;
-            ++(*this);
-            return tmp;
-        }
-
-        friend bool operator==(const const_proximity_iterator& a, const const_proximity_iterator& b) noexcept {
-            return a.cur == b.cur;
-        }
-        friend bool operator!=(const const_proximity_iterator& a, const const_proximity_iterator& b) noexcept {
-            return !(a == b);
-        }
-
-        [[nodiscard]] R3 getCenter() const noexcept { return center_or_domain; }
-        [[nodiscard]] double getRadius() const noexcept { return radius; }
-        [[nodiscard]] bool isProximity() const noexcept { return prox; }
-        [[nodiscard]] std::set<BoundaryLocation> getLocations() const noexcept { return locations; }
-    };
-    static_assert(std::forward_iterator<const_proximity_iterator>);
-
-    /**
-     * @brief Iterator that iterates over all particles that apply a force on a given particle.
-     *
-     * Satisfies the forward iterator concept.
      * Only iterates over particles within the given radius of the center, or all if the radius is infinite.
      * Or is used for the iteration over halo and boundary particles.
      *
@@ -295,9 +130,11 @@ class SimpleContainer : public std::vector<Particle> {
      *
      * This class is mainly used to fulfill the interface with the calculateF() function in Simulation.
      */
+    template <typename P>
+        requires(std::is_same_v<P, Particle> || std::is_same_v<P, const Particle>)
     class proximity_iterator {
-        Particle* cur;
-        Particle* end;
+        P* cur;
+        P* end;
         double radius;
         R3 center_or_domain;
         bool prox;
@@ -430,59 +267,52 @@ class SimpleContainer : public std::vector<Particle> {
 
        public:
         using iterator_category = std::forward_iterator_tag;
-        using value_type = Particle;
+        using value_type = P;
         using difference_type = std::ptrdiff_t;
-        using pointer = Particle*;
-        using reference = Particle&;
+        using pointer = P*;
+        using reference = P&;
 
         proximity_iterator() noexcept : cur(nullptr), end(nullptr), radius(0.0), prox(true) {}
-        proximity_iterator(R3 center_or_domain, double radius, Particle* cur, Particle* end, size_t offset,
-                           bool prox = true, std::set<BoundaryLocation> locations = {})
+        proximity_iterator(R3 center_or_domain, double radius, P* cur, P* end, size_t offset, bool prox = true,
+                           const std::set<BoundaryLocation>& locations = {})
             : cur(cur + offset),
               end(end),
               radius(radius),
               center_or_domain(center_or_domain),
               prox(prox),
-              locations(std::move(locations)) {
+              locations(locations) {
             satisfy();
         }
 
         reference operator*() const noexcept { return *cur; }
         pointer operator->() const noexcept { return cur; }
 
-        proximity_iterator& operator++() {
+        proximity_iterator<P>& operator++() {
             ++cur;  // NOLINT
             satisfy();
             return *this;
         }
 
-        proximity_iterator operator++(int) {
+        proximity_iterator<P> operator++(int) {
             proximity_iterator tmp = *this;
             ++(*this);
             return tmp;
         }
 
-        friend bool operator==(const proximity_iterator& a, const proximity_iterator& b) noexcept {
+        friend bool operator==(const proximity_iterator<P>& a, const proximity_iterator<P>& b) noexcept {
             return a.cur == b.cur;
         }
-        friend bool operator!=(const proximity_iterator& a, const proximity_iterator& b) noexcept { return !(a == b); }
+        friend bool operator!=(const proximity_iterator<P>& a, const proximity_iterator<P>& b) noexcept {
+            return !(a == b);
+        }
 
         [[nodiscard]] R3 getCenter() const noexcept { return center_or_domain; }
         [[nodiscard]] double getRadius() const noexcept { return radius; }
         [[nodiscard]] bool isProximity() const noexcept { return prox; }
         [[nodiscard]] std::set<BoundaryLocation> getLocations() const noexcept { return locations; }
     };
-    static_assert(std::forward_iterator<proximity_iterator>);
-
-    /**
-     * @brief Removes a given particle from the container. Used when iterating with proximity_iterator, not used yet
-     * (thus not tested), but could be useful.
-     *
-     * @param p Proximity iterator to the Particle to be removed.
-     *
-     * @return Proximity iterator to the next Particle after the removed one.
-     */
-    proximity_iterator eraseParticle(const proximity_iterator& p);
+    static_assert(std::forward_iterator<proximity_iterator<Particle>>);
+    static_assert(std::forward_iterator<proximity_iterator<const Particle>>);
 
     /**
      * @brief Mutable Iterator over particles in proximity.
@@ -492,7 +322,7 @@ class SimpleContainer : public std::vector<Particle> {
      *
      * @return Mutable iterator to the first particle within the given radius of the center.
      */
-    [[nodiscard]] proximity_iterator proximityBegin(R3 center, size_t offset = 0);
+    [[nodiscard]] proximity_iterator<Particle> proximityBegin(R3 center, size_t offset = 0);
 
     /**
      * @brief Const Iterator over particles in proximity.
@@ -502,7 +332,7 @@ class SimpleContainer : public std::vector<Particle> {
      *
      * @return Const iterator to the first particle within the given radius of the center.
      */
-    [[nodiscard]] const_proximity_iterator proximityBegin(R3 center, size_t offset = 0) const;
+    [[nodiscard]] proximity_iterator<const Particle> proximityBegin(R3 center, size_t offset = 0) const;
 
     /**
      * @brief Mutable Iterator over particles in proximity.
@@ -511,7 +341,7 @@ class SimpleContainer : public std::vector<Particle> {
      *
      * @return Mutable iterator after the last particle within the given radius of the center.
      */
-    [[nodiscard]] proximity_iterator proximityEnd(R3 center);
+    [[nodiscard]] proximity_iterator<Particle> proximityEnd(R3 center);
 
     /**
      * @brief Const Iterator over particles in proximity.
@@ -520,7 +350,7 @@ class SimpleContainer : public std::vector<Particle> {
      *
      * @return Const iterator after the last particle within the given radius of the center.
      */
-    [[nodiscard]] const_proximity_iterator proximityEnd(R3 center) const;
+    [[nodiscard]] proximity_iterator<const Particle> proximityEnd(R3 center) const;
 
     // boundary and halo iterators
 
@@ -532,10 +362,10 @@ class SimpleContainer : public std::vector<Particle> {
      *
      * @return Iterator to the first particle within the given halo.
      */
-    [[nodiscard]] proximity_iterator haloBegin(const std::set<BoundaryLocation>& locations = {
-                                                   BoundaryLocation::UPPER, BoundaryLocation::LOWER,
-                                                   BoundaryLocation::FRONT, BoundaryLocation::BACK,
-                                                   BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+    [[nodiscard]] proximity_iterator<Particle> haloBegin(const std::set<BoundaryLocation>& locations = {
+                                                             BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                             BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                             BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
 
     /**
      * @brief Const Iterator over particles in halo, which is the same region around the domain as the halo cells in the
@@ -545,10 +375,11 @@ class SimpleContainer : public std::vector<Particle> {
      *
      * @return Const iterator to the first particle within the given halo.
      */
-    [[nodiscard]] const_proximity_iterator haloBegin(const std::set<BoundaryLocation>& locations = {
-                                                         BoundaryLocation::UPPER, BoundaryLocation::LOWER,
-                                                         BoundaryLocation::FRONT, BoundaryLocation::BACK,
-                                                         BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
+    [[nodiscard]] proximity_iterator<const Particle> haloBegin(const std::set<BoundaryLocation>& locations = {
+                                                                   BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                                   BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                                   BoundaryLocation::LEFT,
+                                                                   BoundaryLocation::RIGHT}) const;
 
     /**
      * @brief Iterator over particles in halo, which is the same region around the domain as the halo cells in the
@@ -558,10 +389,10 @@ class SimpleContainer : public std::vector<Particle> {
      *
      * @return Iterator after the last particle within the given halo.
      */
-    [[nodiscard]] proximity_iterator haloEnd(const std::set<BoundaryLocation>& locations = {
-                                                 BoundaryLocation::UPPER, BoundaryLocation::LOWER,
-                                                 BoundaryLocation::FRONT, BoundaryLocation::BACK,
-                                                 BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+    [[nodiscard]] proximity_iterator<Particle> haloEnd(const std::set<BoundaryLocation>& locations = {
+                                                           BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                           BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                           BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
 
     /**
      * @brief Const Iterator over particles in halo, which is the same region around the domain as the halo cells in
@@ -571,10 +402,11 @@ class SimpleContainer : public std::vector<Particle> {
      *
      * @return Const iterator after the last particle within the given halo.
      */
-    [[nodiscard]] const_proximity_iterator haloEnd(const std::set<BoundaryLocation>& locations = {
-                                                       BoundaryLocation::UPPER, BoundaryLocation::LOWER,
-                                                       BoundaryLocation::FRONT, BoundaryLocation::BACK,
-                                                       BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
+    [[nodiscard]] proximity_iterator<const Particle> haloEnd(const std::set<BoundaryLocation>& locations = {
+                                                                 BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                                 BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                                 BoundaryLocation::LEFT,
+                                                                 BoundaryLocation::RIGHT}) const;
 
     /**
      * @brief Iterator over particles in boundary, which is the same region around the domain as the boundary cells in
@@ -584,10 +416,10 @@ class SimpleContainer : public std::vector<Particle> {
      *
      * @return Iterator to the first particle within the given boundary.
      */
-    [[nodiscard]] proximity_iterator boundaryBegin(const std::set<BoundaryLocation>& locations = {
-                                                       BoundaryLocation::UPPER, BoundaryLocation::LOWER,
-                                                       BoundaryLocation::FRONT, BoundaryLocation::BACK,
-                                                       BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+    [[nodiscard]] proximity_iterator<Particle> boundaryBegin(const std::set<BoundaryLocation>& locations = {
+                                                                 BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                                 BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                                 BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
 
     /**
      * @brief Const Iterator over particles in boundary, which is the same region around the domain as the boundary
@@ -597,10 +429,11 @@ class SimpleContainer : public std::vector<Particle> {
      *
      * @return Const iterator to the first particle within the given boundary.
      */
-    [[nodiscard]] const_proximity_iterator boundaryBegin(const std::set<BoundaryLocation>& locations = {
-                                                             BoundaryLocation::UPPER, BoundaryLocation::LOWER,
-                                                             BoundaryLocation::FRONT, BoundaryLocation::BACK,
-                                                             BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
+    [[nodiscard]] proximity_iterator<const Particle> boundaryBegin(const std::set<BoundaryLocation>& locations = {
+                                                                       BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                                       BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                                       BoundaryLocation::LEFT,
+                                                                       BoundaryLocation::RIGHT}) const;
 
     /**
      * @brief Iterator over particles in boundary, which is the same region around the domain as the boundary
@@ -610,10 +443,10 @@ class SimpleContainer : public std::vector<Particle> {
      *
      * @return Iterator after the last particle within the given boundary.
      */
-    [[nodiscard]] proximity_iterator boundaryEnd(const std::set<BoundaryLocation>& locations = {
-                                                     BoundaryLocation::UPPER, BoundaryLocation::LOWER,
-                                                     BoundaryLocation::FRONT, BoundaryLocation::BACK,
-                                                     BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+    [[nodiscard]] proximity_iterator<Particle> boundaryEnd(const std::set<BoundaryLocation>& locations = {
+                                                               BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                               BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                               BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
 
     /**
      * @brief Const Iterator over particles in boundary, which is the same region around the domain as the boundary
@@ -623,10 +456,11 @@ class SimpleContainer : public std::vector<Particle> {
      *
      * @return Const iterator after the last particle within the given boundary.
      */
-    [[nodiscard]] const_proximity_iterator boundaryEnd(const std::set<BoundaryLocation>& locations = {
-                                                           BoundaryLocation::UPPER, BoundaryLocation::LOWER,
-                                                           BoundaryLocation::FRONT, BoundaryLocation::BACK,
-                                                           BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
+    [[nodiscard]] proximity_iterator<const Particle> boundaryEnd(const std::set<BoundaryLocation>& locations = {
+                                                                     BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                                     BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                                     BoundaryLocation::LEFT,
+                                                                     BoundaryLocation::RIGHT}) const;
 };
 static_assert(ParticleContainer<SimpleContainer>);
 

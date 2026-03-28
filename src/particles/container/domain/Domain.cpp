@@ -2,8 +2,6 @@
 
 #include <spdlog/spdlog.h>
 
-#include <stdexcept>
-
 #include "exceptions/BoundaryException.h"
 #include "particles/boundaries/Outflow.h"
 
@@ -52,8 +50,6 @@ Domain::Domain(Domain&& other) noexcept : dimension(other.dimension), boundaries
 Domain::Domain(R3 dimension, std::array<std::unique_ptr<Boundary>, 6> boundaries)
     : dimension(dimension), boundaries(std::move(boundaries)) {}
 
-R3 Domain::getDimension() const noexcept { return dimension; }
-
 Boundary& Domain::getBoundary(BoundaryLocation location) {
     auto& boundary = boundaries[locationToIndex(location)];
     if (!boundary) {
@@ -72,12 +68,15 @@ const Boundary& Domain::getBoundary(BoundaryLocation location) const {
     return *boundary;
 }
 
-void Domain::applyBoundary(Particle& p, const ForceSource& force) const noexcept {
+std::vector<Particle> Domain::applyBoundary(Particle& p, const ForceSource& force) const noexcept {  // NOLINT
+    std::vector<Particle> particles;
     for (const auto& boundary : boundaries) {
         if (boundary) {
-            boundary->applyBoundary(p, force);
+            auto new_particles = boundary->applyBoundary(p, force).value_or(std::vector<Particle>());
+            particles.insert(particles.end(), new_particles.begin(), new_particles.end());
         }
     }
+    return particles;
 }
 
 Domain& Domain::operator=(Domain&& other) noexcept {

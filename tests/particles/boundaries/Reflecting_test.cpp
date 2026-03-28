@@ -6,11 +6,13 @@
 #include <limits>
 #include <memory>
 
+#include "io/checkpointWriter/XVMWriterCP.h"
 #include "io/outputWriter/XYZWriter.h"
 #include "particles/Particle.h"
 #include "particles/boundaries/Boundary.h"
 #include "particles/container/domain/Domain.h"
 #include "physics/LennardJonesForce.h"
+#include "testingUtils.h"
 #include "utils/Settings.h"
 #include "utils/Simulation.h"
 
@@ -61,12 +63,7 @@ class ReflectingTest : public testing::Test {
         settings.cutoff = std::numeric_limits<double>::infinity();
     }
 };
-// NOLINTNEXTLINE(readability-identifier-naming)
-void EXPECT_DOUBLE_VEC_EQ(R3 val1, R3 val2) {
-    EXPECT_DOUBLE_EQ(val1[0], val2[0]);
-    EXPECT_DOUBLE_EQ(val1[1], val2[1]);
-    EXPECT_DOUBLE_EQ(val1[2], val2[2]);
-}
+
 /**
  * @brief Tests that particles are correctly reflected on a x-boundary in a LinkedCellContainer.
  * */
@@ -79,10 +76,11 @@ TEST_F(ReflectingTest, X_reflecting_linked) {
 
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer);
+    auto cp_writer = std::make_unique<XVMWriterCP>();
+    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
     simulation.run();
     R3 expected = {6.2, 5.0, 5.0};
-    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
+    EXPECT_R3_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that particles are correctly reflected on a x-boundary in a SimpleContainer.
@@ -96,10 +94,11 @@ TEST_F(ReflectingTest, X_reflecting_simple) {
 
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
+    auto cp_writer = std::make_unique<XVMWriterCP>();
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
     simulation.run();
     R3 expected = {3.8, 5.0, 5.0};
-    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
+    EXPECT_R3_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that particles are correctly reflected on a y-boundary in a LinkedCellContainer.
@@ -113,10 +112,11 @@ TEST_F(ReflectingTest, Y_reflecting_linked) {
 
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer);
+    auto cp_writer = std::make_unique<XVMWriterCP>();
+    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
     simulation.run();
     R3 expected = {5.0, 6.2, 5.0};
-    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
+    EXPECT_R3_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that particles are correctly reflected on a y-boundary in a SimpleContainer.
@@ -130,10 +130,11 @@ TEST_F(ReflectingTest, Y_reflecting_simple) {
 
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
+    auto cp_writer = std::make_unique<XVMWriterCP>();
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
     simulation.run();
     R3 expected = {5.0, 3.8, 5.0};
-    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
+    EXPECT_R3_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that particles are correctly reflected on a z-boundary in a LinkedCellContainer.
@@ -147,10 +148,11 @@ TEST_F(ReflectingTest, Z_reflecting_linked) {
 
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer);
+    auto cp_writer = std::make_unique<XVMWriterCP>();
+    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
     simulation.run();
     R3 expected = {5.0, 5.0, 6.2};
-    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
+    EXPECT_R3_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that particles are correctly reflected on a z-boundary in a SimpleContainer.
@@ -164,10 +166,11 @@ TEST_F(ReflectingTest, Z_reflecting_simple) {
 
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
+    auto cp_writer = std::make_unique<XVMWriterCP>();
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
     simulation.run();
     R3 expected = {5.0, 5.0, 3.8};
-    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
+    EXPECT_R3_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that reflecting particles at a corner of two boundaries works in a LinkedCellContainer.
@@ -181,10 +184,11 @@ TEST_F(ReflectingTest, Reflecting_two_sided_corner_linked) {
 
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer);
+    auto cp_writer = std::make_unique<XVMWriterCP>();
+    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
     simulation.run();
     R3 expected = {3.8, 5.0, 3.8};
-    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
+    EXPECT_R3_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that reflecting particles at a corner of three boundaries works in a LinkedCellContainer.
@@ -198,10 +202,11 @@ TEST_F(ReflectingTest, Reflecting_three_sided_corner_linked) {
 
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer);
+    auto cp_writer = std::make_unique<XVMWriterCP>();
+    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
     simulation.run();
     R3 expected = {3.8, 3.8, 3.8};
-    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
+    EXPECT_R3_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that reflecting a particle that approaches a boundary at an angular trajectory
@@ -216,10 +221,11 @@ TEST_F(ReflectingTest, Reflecting_Angular_trajectory_linked) {
 
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer);
+    auto cp_writer = std::make_unique<XVMWriterCP>();
+    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
     simulation.run();
     R3 expected = {3.8, 5.0, 5.0};
-    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
+    EXPECT_R3_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that reflecting a particle with a boundary taking in either the sigma or
@@ -247,10 +253,11 @@ TEST_F(ReflectingTest, Reflecting_particle_sigma_epsilon_linked) {
 
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer);
+    auto cp_writer = std::make_unique<XVMWriterCP>();
+    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
     simulation.run();
     R3 expected = {5.0, 5.0, 3.8};
-    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
+    EXPECT_R3_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that reflecting a particle while spawning ghost particles directly on the boundary
@@ -279,10 +286,11 @@ TEST_F(ReflectingTest, Reflecting_with_ghost_on_boundary_linked) {
 
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer);
+    auto cp_writer = std::make_unique<XVMWriterCP>();
+    Simulation<LinkedCellContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
     simulation.run();
     R3 expected = {5.0, 5.0, 4.3};
-    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
+    EXPECT_R3_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that reflecting particles at a corner of two boundaries works in a SimpleContainer.
@@ -296,10 +304,11 @@ TEST_F(ReflectingTest, Reflecting_two_sided_corner_simple) {
 
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
+    auto cp_writer = std::make_unique<XVMWriterCP>();
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
     simulation.run();
     R3 expected = {3.8, 5.0, 3.8};
-    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
+    EXPECT_R3_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that reflecting particles at a corner of three boundaries works in a SimpleContainer.
@@ -313,10 +322,11 @@ TEST_F(ReflectingTest, Reflecting_three_sided_corner_simple) {
 
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
+    auto cp_writer = std::make_unique<XVMWriterCP>();
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
     simulation.run();
     R3 expected = {3.8, 3.8, 3.8};
-    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
+    EXPECT_R3_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that reflecting a particle that approaches a boundary at an angular trajectory
@@ -331,10 +341,11 @@ TEST_F(ReflectingTest, Reflecting_Angular_trajectory_simple) {
 
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
+    auto cp_writer = std::make_unique<XVMWriterCP>();
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
     simulation.run();
     R3 expected = {3.8, 5.0, 5.0};
-    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
+    EXPECT_R3_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that reflecting a particle with a boundary taking in either the sigma or
@@ -361,10 +372,11 @@ TEST_F(ReflectingTest, Reflecting_particle_sigma_epsilon_simple) {
 
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
+    auto cp_writer = std::make_unique<XVMWriterCP>();
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
     simulation.run();
     R3 expected = {5.0, 5.0, 3.8};
-    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
+    EXPECT_R3_EQ(particles[0].getX(), expected);
 }
 /**
  * @brief Tests that reflecting a particle while spawning ghost particles directly on the boundary
@@ -393,10 +405,11 @@ TEST_F(ReflectingTest, Reflecting_with_ghost_on_boundary_simple) {
 
     auto force_source = std::make_unique<LennardJonesForce>();
     auto writer = std::make_unique<XYZWriter>();
-    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer);
+    auto cp_writer = std::make_unique<XVMWriterCP>();
+    Simulation<SimpleContainer> simulation(particles, *force_source, settings, *writer, *cp_writer);
     simulation.run();
     R3 expected = {5.0, 5.0, 4.3};
-    EXPECT_DOUBLE_VEC_EQ(particles[0].getX(), expected);
+    EXPECT_R3_EQ(particles[0].getX(), expected);
 }
 
 }  // namespace mol_sim

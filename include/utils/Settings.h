@@ -44,12 +44,35 @@ class SettingsParam {
     /**
      * @brief Default write frequency of the simulation.
      */
-    static constexpr size_t FREQUENCY_DEFAULT = 10;
+    static constexpr size_t FREQUENCY_OUTPUT_DEFAULT = 10;
+    /**
+     * @brief Default checkpoint frequency of the simulation.
+     */
+    static constexpr size_t FREQUENCY_CHECKPOINT_DEFAULT = 5000;
     /**
      * @brief Default cutoff radius for the linked cells.
      */
     static constexpr double CUTOFF_DEFAULT = std::numeric_limits<double>::infinity();
-
+    /**
+     * @brief Default initial temperature for the system.
+     */
+    static constexpr double INIT_TEMP_DEFAULT = 40.;
+    /**
+     * @brief Default delta temperature of the simulation.
+     */
+    static constexpr double DELTA_TEMP_DEFAULT = std::numeric_limits<double>::infinity();
+    /**
+     * @brief Default thermostat frequency of the simulation.
+     */
+    static constexpr size_t THERMOSTAT_FREQ_DEFAULT = 1000;
+    /**
+     * @brief Default dimensions of the simulation..
+     */
+    static constexpr size_t DIMENSIONS_DEFAULT = 3;
+    /**
+     * @brief Default value for g_grav used to simulate gravitational pull in simulation.
+     */
+    static constexpr double G_GRAV_DEFAULT = 0.0;
     /**
      * @brief delta_t of the simulation.
      */
@@ -82,7 +105,17 @@ class SettingsParam {
      * @brief Frequency of output files being written.
      * Output is written every *frequency* iterations.
      */
-    size_t frequency = FREQUENCY_DEFAULT;
+    size_t frequency_output = FREQUENCY_OUTPUT_DEFAULT;
+    /**
+     * @brief Frequency of checkpoint files being written.
+     * Checkpoints are written every *frequency* iterations.
+     */
+    size_t frequency_checkpoint = FREQUENCY_CHECKPOINT_DEFAULT;
+    /**
+     * @brief Dimensions of the simulation.
+     * TODO: use this for 2D optimizations.
+     */
+    size_t dimensions = DIMENSIONS_DEFAULT;
     /**
      * @brief Cutoff radius for the linked cells algorithm.
      */
@@ -93,11 +126,38 @@ class SettingsParam {
      * SIMPLE = SimpleContainer
      * LINKED = LinkedCellContainer
      */
-    std::string container_type = "SIMPLE";
+    std::string container_type = "LINKED";
     /**
      * @brief The domain of the simulation.
      */
     Domain domain;
+
+    /**
+     * @brief Toggles if thermostat is enabled for this simulation.
+     *
+     */
+    bool thermo = false;
+
+    /**
+     * @brief Target initial temperature of the system.
+     */
+    double init_temp = INIT_TEMP_DEFAULT;
+    /**
+     * @brief General target temperature of the system.
+     */
+    double target_temp = init_temp;
+    /**
+     * @brief Frequency with which the thermostat gets applied.
+     */
+    size_t thermostat_freq = THERMOSTAT_FREQ_DEFAULT;
+    /**
+     * @brief Maximum allowed temperature change of the system with one thermostat application.
+     */
+    double delta_temp = DELTA_TEMP_DEFAULT;
+    /**
+     * @brief Used to simulate of gravitational pull in simulation.
+     */
+    double g_grav = G_GRAV_DEFAULT;
 
     /**
      * @brief Construct new SettingsParam with default values.

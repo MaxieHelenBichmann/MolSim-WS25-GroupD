@@ -5,6 +5,7 @@
 
 #include <array>
 #include <set>
+#include <span>
 #include <vector>
 
 #include "particles/Particle.h"
@@ -95,6 +96,8 @@ class LinkedCellContainerExplicit {
     void addParticle(const Particle& value);
     void addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg);
     void addParticle(R3 x_arg, R3 v_arg, double m_arg, double epsilon_arg, double sigma_arg, int type);
+    void addParticle(R3 x_arg, R3 old_x_arg, R3 v_arg, R3 f_arg, R3 old_f_arg, double m_arg, double epsilon_arg,
+                     double sigma_arg, int type);
     std::vector<Particle>::iterator eraseParticle(std::vector<Particle>::iterator p);
     std::vector<Particle>::iterator updateParticlePosition(std::vector<Particle>::iterator p, R3 new_x);
 
@@ -105,12 +108,15 @@ class LinkedCellContainerExplicit {
      *
      * Requires indirection over storage.
      */
+    template <typename P, typename C>
+        requires((std::is_same_v<P, Particle> && std::is_same_v<C, CellExplicit>) ||
+                 (std::is_same_v<P, const Particle> && std::is_same_v<C, const CellExplicit>))
     class proximity_iterator {
-        std::vector<size_t>::iterator cur;
-        std::vector<size_t>::iterator end;
-        std::vector<size_t>::iterator cell_end;
-        std::vector<CellExplicit*> cells;
-        std::vector<Particle>* container_data;
+        std::vector<size_t>::const_iterator cur;
+        std::vector<size_t>::const_iterator end;
+        std::vector<size_t>::const_iterator cell_end;
+        std::vector<C*> cells;
+        std::span<P> container_data;
         double radius;
         R3 center;
 
@@ -128,21 +134,21 @@ class LinkedCellContainerExplicit {
 
         void satisfy() {
             while (cur != end &&
-                   (cur == cell_end || !((center - (*container_data)[*cur].getX()).euclidNorm() <= radius))) {
+                   (cur == cell_end || !((center - container_data[*cur].getX()).euclidNorm() <= radius))) {
                 inc();
             }
         }
 
        public:
         using iterator_category = std::forward_iterator_tag;
-        using value_type = Particle;
+        using value_type = P;
         using difference_type = std::ptrdiff_t;
-        using pointer = Particle*;
-        using reference = Particle&;
+        using pointer = P*;
+        using reference = P&;
 
         proximity_iterator() noexcept : container_data(nullptr), radius(0.0) {}
-        proximity_iterator(R3 center, double radius, std::vector<size_t>::iterator cur,
-                           std::vector<CellExplicit*> cells, std::vector<Particle>* data)
+        proximity_iterator(R3 center, double radius, std::vector<size_t>::const_iterator cur, std::vector<C*> cells,
+                           std::span<P> data)
             : cur(cur),
               end(cells.back()->particles().end()),
               cell_end(cells.front()->particles().end()),
@@ -153,105 +159,30 @@ class LinkedCellContainerExplicit {
             satisfy();
         }
 
-        reference operator*() const { return (*container_data)[*cur]; }
-        pointer operator->() const { return &(*container_data)[*cur]; }
+        reference operator*() const { return container_data[*cur]; }
+        pointer operator->() const { return &container_data[*cur]; }
 
-        proximity_iterator& operator++() {
+        proximity_iterator<P, C>& operator++() {
             inc();
             satisfy();
             return *this;
         }
 
-        proximity_iterator operator++(int) {
-            proximity_iterator tmp = *this;
+        proximity_iterator<P, C> operator++(int) {
+            proximity_iterator<P, C> tmp = *this;
             ++(*this);
             return tmp;
         }
 
-        friend bool operator==(const proximity_iterator& a, const proximity_iterator& b) { return a.cur == b.cur; }
-        friend bool operator!=(const proximity_iterator& a, const proximity_iterator& b) { return !(a == b); }
-    };
-    static_assert(std::forward_iterator<proximity_iterator>);
-
-    /**
-     * @brief Const Iterator that iterates over all particles that apply a force on a given particle.
-     *
-     * Requires indirection over storage.
-     */
-    class const_proximity_iterator {
-        std::vector<size_t>::const_iterator cur;
-        std::vector<size_t>::const_iterator end;
-        std::vector<size_t>::const_iterator cell_end;
-        std::vector<const CellExplicit*> cells;
-        const std::vector<Particle>* container_data;
-        double radius;
-        R3 center;
-
-        void inc() {
-            SPDLOG_DEBUG("Incrementing const proximity iterator");
-            if (cur != cell_end) {
-                ++cur;
-            }
-            while (cur == cell_end && cells.size() > 1) {  // reached end of current cell
-                cells.erase(cells.begin());
-                cur = cells.front()->particles().begin();
-                cell_end = cells.front()->particles().end();
-            }
-        }
-
-        void satisfy() {
-            if (std::isinf(radius)) {
-                return;
-            }
-            while (cur != end &&
-                   (cur == cell_end || !((center - (*container_data)[*cur].getX()).euclidNorm() <= radius))) {
-                inc();
-            }
-        }
-
-       public:
-        using iterator_category = std::forward_iterator_tag;
-        using value_type = const Particle;
-        using difference_type = std::ptrdiff_t;
-        using pointer = const Particle*;
-        using reference = const Particle&;
-
-        const_proximity_iterator() noexcept : container_data(nullptr), radius(0.0) {}
-        const_proximity_iterator(R3 center, double radius, std::vector<size_t>::const_iterator cur,
-                                 std::vector<const CellExplicit*> cells, const std::vector<Particle>* container_data)
-            : cur(cur),
-              end(cells.back()->particles().end()),
-              cell_end(cells.front()->particles().end()),
-              cells(cells),
-              container_data(container_data),
-              radius(radius),
-              center(center) {
-            satisfy();
-        }
-
-        reference operator*() const { return (*container_data)[*cur]; }
-        pointer operator->() const { return &(*container_data)[*cur]; }
-
-        const_proximity_iterator& operator++() {
-            inc();
-            satisfy();
-            return *this;
-        }
-
-        const_proximity_iterator operator++(int) {
-            const_proximity_iterator tmp = *this;
-            ++(*this);
-            return tmp;
-        }
-
-        friend bool operator==(const const_proximity_iterator& a, const const_proximity_iterator& b) {
+        friend bool operator==(const proximity_iterator<P, C>& a, const proximity_iterator<P, C>& b) {
             return a.cur == b.cur;
         }
-        friend bool operator!=(const const_proximity_iterator& a, const const_proximity_iterator& b) {
+        friend bool operator!=(const proximity_iterator<P, C>& a, const proximity_iterator<P, C>& b) {
             return !(a == b);
         }
     };
-    static_assert(std::forward_iterator<const_proximity_iterator>);
+    static_assert(std::forward_iterator<proximity_iterator<Particle, CellExplicit>>);
+    static_assert(std::forward_iterator<proximity_iterator<const Particle, const CellExplicit>>);
 
     std::vector<Particle>::iterator begin();
     [[nodiscard]] std::vector<Particle>::const_iterator begin() const;
@@ -260,46 +191,47 @@ class LinkedCellContainerExplicit {
     [[nodiscard]] std::vector<Particle>::const_iterator end() const;
     [[nodiscard]] std::vector<Particle>::const_iterator cend() const;
 
-    [[nodiscard]] proximity_iterator proximityBegin(R3 center, size_t offset = 0);
-    [[nodiscard]] proximity_iterator proximityEnd(R3 center);
-    [[nodiscard]] const_proximity_iterator proximityBegin(R3 center, size_t offset = 0) const;
-    [[nodiscard]] const_proximity_iterator proximityEnd(R3 center) const;
+    [[nodiscard]] proximity_iterator<Particle, CellExplicit> proximityBegin(R3 center, size_t offset = 0);
+    [[nodiscard]] proximity_iterator<Particle, CellExplicit> proximityEnd(R3 center);
+    [[nodiscard]] proximity_iterator<const Particle, const CellExplicit> proximityBegin(R3 center,
+                                                                                        size_t offset = 0) const;
+    [[nodiscard]] proximity_iterator<const Particle, const CellExplicit> proximityEnd(R3 center) const;
 
     // boundary and halo iterators
 
-    [[nodiscard]] proximity_iterator haloBegin(const std::set<BoundaryLocation>& boundary_types = {
-                                                   BoundaryLocation::UPPER, BoundaryLocation::LOWER,
-                                                   BoundaryLocation::FRONT, BoundaryLocation::BACK,
-                                                   BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
-    [[nodiscard]] const_proximity_iterator haloBegin(const std::set<BoundaryLocation>& boundary_types = {
-                                                         BoundaryLocation::UPPER, BoundaryLocation::LOWER,
-                                                         BoundaryLocation::FRONT, BoundaryLocation::BACK,
-                                                         BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
-    [[nodiscard]] proximity_iterator haloEnd(const std::set<BoundaryLocation>& boundary_types = {
-                                                 BoundaryLocation::UPPER, BoundaryLocation::LOWER,
-                                                 BoundaryLocation::FRONT, BoundaryLocation::BACK,
-                                                 BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
-    [[nodiscard]] const_proximity_iterator haloEnd(const std::set<BoundaryLocation>& boundary_types = {
-                                                       BoundaryLocation::UPPER, BoundaryLocation::LOWER,
-                                                       BoundaryLocation::FRONT, BoundaryLocation::BACK,
-                                                       BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
+    [[nodiscard]] proximity_iterator<Particle, CellExplicit> haloBegin(
+        const std::set<BoundaryLocation>& boundary_types = {BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                            BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                            BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+    [[nodiscard]] proximity_iterator<const Particle, const CellExplicit> haloBegin(
+        const std::set<BoundaryLocation>& boundary_types = {BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                            BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                            BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
+    [[nodiscard]] proximity_iterator<Particle, CellExplicit> haloEnd(
+        const std::set<BoundaryLocation>& boundary_types = {BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                            BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                            BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+    [[nodiscard]] proximity_iterator<const Particle, const CellExplicit> haloEnd(
+        const std::set<BoundaryLocation>& boundary_types = {BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                            BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                            BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
 
-    [[nodiscard]] proximity_iterator boundaryBegin(const std::set<BoundaryLocation>& boundary_types = {
-                                                       BoundaryLocation::UPPER, BoundaryLocation::LOWER,
-                                                       BoundaryLocation::FRONT, BoundaryLocation::BACK,
-                                                       BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
-    [[nodiscard]] const_proximity_iterator boundaryBegin(const std::set<BoundaryLocation>& boundary_types = {
-                                                             BoundaryLocation::UPPER, BoundaryLocation::LOWER,
-                                                             BoundaryLocation::FRONT, BoundaryLocation::BACK,
-                                                             BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
-    [[nodiscard]] proximity_iterator boundaryEnd(const std::set<BoundaryLocation>& boundary_types = {
-                                                     BoundaryLocation::UPPER, BoundaryLocation::LOWER,
-                                                     BoundaryLocation::FRONT, BoundaryLocation::BACK,
-                                                     BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
-    [[nodiscard]] const_proximity_iterator boundaryEnd(const std::set<BoundaryLocation>& boundary_types = {
-                                                           BoundaryLocation::UPPER, BoundaryLocation::LOWER,
-                                                           BoundaryLocation::FRONT, BoundaryLocation::BACK,
-                                                           BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
+    [[nodiscard]] proximity_iterator<Particle, CellExplicit> boundaryBegin(
+        const std::set<BoundaryLocation>& boundary_types = {BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                            BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                            BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+    [[nodiscard]] proximity_iterator<const Particle, const CellExplicit> boundaryBegin(
+        const std::set<BoundaryLocation>& boundary_types = {BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                            BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                            BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
+    [[nodiscard]] proximity_iterator<Particle, CellExplicit> boundaryEnd(
+        const std::set<BoundaryLocation>& boundary_types = {BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                            BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                            BoundaryLocation::LEFT, BoundaryLocation::RIGHT});
+    [[nodiscard]] proximity_iterator<const Particle, const CellExplicit> boundaryEnd(
+        const std::set<BoundaryLocation>& boundary_types = {BoundaryLocation::UPPER, BoundaryLocation::LOWER,
+                                                            BoundaryLocation::FRONT, BoundaryLocation::BACK,
+                                                            BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
 
     [[nodiscard]] R3 getDomainSize();
 };

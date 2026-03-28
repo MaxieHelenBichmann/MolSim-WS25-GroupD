@@ -4,6 +4,7 @@
 #include <spdlog/spdlog.h>
 
 #include <cstdint>
+#include <optional>
 #include <string>
 
 #include "particles/Particle.h"
@@ -29,8 +30,10 @@ enum class BoundaryLocation : std::uint8_t { UPPER, LOWER, FRONT, BACK, LEFT, RI
  *
  * OUTFLOW: Outflow boundary condition: delete particles in halo cells
  * REFLECTING: Reflecting boundary condition: add ghost particles if particle gets too close to boundary
+ * VELOCITYREFLECT: Reflecting boundary condition: reflect particle like a ball that flew against a flat surface
+ * PERIODIC: Periodic boundary condition: imagine portals (like those in the Portal games) on each boundary.
  */
-enum class BoundaryType : std::uint8_t { OUTFLOW, REFLECTING, VELOCITYREFLECT };
+enum class BoundaryType : std::uint8_t { OUTFLOW, REFLECTING, VELOCITYREFLECT, PERIODIC };
 
 class Boundary {
    protected:
@@ -58,8 +61,10 @@ class Boundary {
      * Computes a ghost particle if this boundary requires one for the given particle.
      * @param p The particle to check.
      * @param force The force source to use for ghost particle interactions.
+     * @return Newly generated particles that need further processing beyond the scope of
+     * this / an implementing class.
      */
-    virtual void applyBoundary(Particle& p, const ForceSource& force) const noexcept = 0;
+    virtual std::optional<std::vector<Particle>> applyBoundary(Particle& p, const ForceSource& force) noexcept = 0;
 
     /**
      * @brief Returns the type of the boundary.
@@ -129,6 +134,34 @@ class Boundary {
         int sign = getSign();
         return (sign < 0) ? 0.0 : domain_size[axis];
     }
+
+    /**
+     * @brief Returns the index of a BoundaryLocation.
+     *
+     * @return Index of the boundary location.
+     * LEFT = 0, RIGHT = 1, FRONT = 2, BACK = 3, UPPER = 4, LOWER = 5
+     *
+     * @note This is needed in Periodic. Do not change this order.
+     * We could also make BoundaryLocation into a non-class enum but that's bad practice (I think).
+     */
+    [[nodiscard]] inline size_t getBoundaryLocationIdx() const noexcept {
+        switch (location) {  // could also make BoundaryLocation a non class enum but that's bad practice
+            case BoundaryLocation::LEFT:
+                return 0;
+            case BoundaryLocation::RIGHT:
+                return 1;
+            case BoundaryLocation::FRONT:
+                return 2;
+            case BoundaryLocation::BACK:
+                return 3;
+            case BoundaryLocation::UPPER:
+                return 4;
+            case BoundaryLocation::LOWER:
+                return 5;
+            default:
+                SPDLOG_ERROR("Unrecognized boundary location!");
+        }
+    }
 };
 
 /**
@@ -146,6 +179,9 @@ inline BoundaryType parseBoundaryType(const std::string& type_str) {
     }
     if (type_str == "VELOCITYREFLECT" || type_str == "velocityreflect" || type_str == "VelocityReflect") {
         return BoundaryType::VELOCITYREFLECT;
+    }
+    if (type_str == "PERIODIC" || type_str == "periodic" || type_str == "Periodic") {
+        return BoundaryType::PERIODIC;
     }
     return BoundaryType::OUTFLOW;
 }

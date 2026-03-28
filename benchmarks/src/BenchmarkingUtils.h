@@ -13,12 +13,8 @@ inline std::mt19937& getGenerator() {
 }
 
 inline double randomBounded(double lower, double upper) {
-    std::normal_distribution<double> dist{};
-    double res;
-    do {
-        res = dist(getGenerator());
-    } while (res < lower || res > upper);
-    return res;
+    std::uniform_real_distribution<double> dist{lower, upper};
+    return dist(getGenerator());
 }
 /**
  * @brief Creates a random R3 Vector

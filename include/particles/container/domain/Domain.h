@@ -65,7 +65,7 @@ class Domain {
      *
      * @return R3 The dimensions of the domain.
      */
-    [[nodiscard]] R3 getDimension() const noexcept;
+    [[nodiscard]] R3 getDimension() const noexcept { return dimension; };
 
     /**
      * @brief Applies boundary conditions to a particle. Also (if needed) computes ghost particles
@@ -74,7 +74,7 @@ class Domain {
      * @param p The particle to apply boundaries to / compute ghost particles for.
      * @param force The force source for ghost particle interactions.
      */
-    void applyBoundary(Particle& p, const ForceSource& force) const noexcept;
+    std::vector<Particle> applyBoundary(Particle& p, const ForceSource& force) const noexcept;
 
     Domain& operator=(const Domain& other) = delete;
     Domain& operator=(Domain&& other) noexcept;

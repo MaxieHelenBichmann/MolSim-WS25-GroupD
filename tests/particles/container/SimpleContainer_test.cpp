@@ -6,18 +6,15 @@
 
 namespace mol_sim {
 
+// Note: Basic ParticleContainer interface tests are in ParticleContainer_test.cpp
+// This file contains SimpleContainer-specific tests only.
+
 static_assert(ParticleContainer<SimpleContainer>, "SimpleContainer must satisfy ParticleContainer concept");
 
 /**
- * @brief Test Fixture for testing the SimpleContainer.
- *
- * Base Config/Data of the container is as follow:
- *
- * particles_empty = empty SimpleContainer
- * particles_full = SimpleContainer storing 4 Particles (content unimportant)
- *
+ * @brief Test Fixture for SimpleContainer-specific tests.
  */
-class SimpleContainerTest : public testing::Test {
+class SimpleContainerSpecificTest : public testing::Test {
    protected:
     SimpleContainer particles_empty;
     SimpleContainer particles_full;
@@ -26,8 +23,13 @@ class SimpleContainerTest : public testing::Test {
     Particle p2;
     Particle p3;
 
-    SimpleContainerTest()
-        : particles_empty(), particles_full(), p0(Particle(0)), p1(Particle(1)), p2(Particle(2)), p3(Particle(3)) {}
+    SimpleContainerSpecificTest()
+        : particles_empty({10.0, 10.0, 10.0}, 2.5),
+          particles_full({10.0, 10.0, 10.0}, 2.5),
+          p0(Particle(0)),
+          p1(Particle(1)),
+          p2(Particle(2)),
+          p3(Particle(3)) {}
 
     void SetUp() override {
         particles_empty.clear();
@@ -39,183 +41,99 @@ class SimpleContainerTest : public testing::Test {
     }
 };
 
-// retrieve data
+// ============================================================================
+// SimpleContainer-specific tests (vector-based behavior)
+// ============================================================================
 
 /**
- * @brief Tests correct access with the subscript operator.
+ * @brief Tests that reserve increases capacity.
  */
-TEST_F(SimpleContainerTest, testAccessSubscript) {
+TEST_F(SimpleContainerSpecificTest, ReserveIncreasesCapacity) {
+    particles_empty.reserve(64);
+    EXPECT_GE(particles_empty.capacity(), 64U);
+    EXPECT_EQ(particles_empty.size(), 0U);
+}
+
+/**
+ * @brief Tests that subscript access returns particles in order.
+ */
+TEST_F(SimpleContainerSpecificTest, SubscriptOrderPreserved) {
     EXPECT_TRUE(particles_full[0] == p0);
+    EXPECT_TRUE(particles_full[1] == p1);
     EXPECT_TRUE(particles_full[2] == p2);
     EXPECT_TRUE(particles_full[3] == p3);
 }
 
 /**
- * @brief Tests correct behaviour of method size().
+ * @brief Tests that erase maintains order for remaining elements.
  */
-TEST_F(SimpleContainerTest, testSize) {
-    EXPECT_EQ(particles_empty.size(), static_cast<size_t>(0));
-    particles_empty.addParticle(Particle(5));
-    EXPECT_EQ(particles_empty.size(), static_cast<size_t>(1));
-    EXPECT_EQ(particles_full.size(), static_cast<size_t>(4));
-}
-
-/**
- * @brief Tests correct behaviour of method empty().
- */
-TEST_F(SimpleContainerTest, testEmpty) {
-    EXPECT_FALSE(particles_full.empty());
-    EXPECT_TRUE(particles_empty.empty());
-    particles_empty.addParticle(Particle(4));
-    EXPECT_FALSE(particles_empty.empty());
-}
-
-// modify
-
-/**
- * @brief Tests correct behaviour of method clear().
- */
-TEST_F(SimpleContainerTest, testClear) {
-    ASSERT_EQ(particles_full.size(), static_cast<size_t>(4));
-    particles_full.clear();
-    EXPECT_TRUE(particles_full.empty());
-    EXPECT_EQ(particles_full.size(), static_cast<size_t>(0));
-}
-
-/**
- * @brief Tests correct behaviour of method reserve(size_t n).
- */
-TEST_F(SimpleContainerTest, testReserve) {
-    particles_empty.reserve(64);
-    EXPECT_GE(particles_empty.capacity(), static_cast<size_t>(64));
-    EXPECT_EQ(particles_empty.size(), static_cast<size_t>(0));
-}
-
-/**
- * @brief Tests correct behaviour of the method overload addParticle(Particle&& value).
- */
-TEST_F(SimpleContainerTest, testAddParticleRval) {
-    Particle tmp(6);
-    particles_empty.addParticle(std::move(tmp));
-    EXPECT_EQ(particles_empty.size(), static_cast<size_t>(1));
-}
-
-/**
- * @brief Tests correct behaviour of the method overload addParticle(const Particle& value).
- */
-TEST_F(SimpleContainerTest, testAddParticleConstLval) {
-    const Particle tmp(7);
-    particles_empty.addParticle(tmp);
-    particles_full.addParticle(tmp);
-    EXPECT_EQ(particles_empty.size(), static_cast<size_t>(1));
-    EXPECT_EQ(particles_full.size(), static_cast<size_t>(5));
-    EXPECT_TRUE(particles_empty[0] == tmp);
-    EXPECT_TRUE(particles_full[4] == tmp);
-}
-
-/**
- * @brief Tests correct behaviour of the method overload addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg,
- * double m_arg).
- */
-TEST_F(SimpleContainerTest, testAddParticleEmplaceNoType) {
-    particles_empty.addParticle({1., 2., 3.}, {4., 5., 6.}, 3.14, 5., 1.);
-    EXPECT_EQ(particles_empty.size(), static_cast<size_t>(1));
-}
-
-/**
- * @brief Tests correct behaviour of the method overload
- * addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, int type).
- */
-TEST_F(SimpleContainerTest, testAddParticleEmplace) {
-    particles_empty.addParticle({1., 2., 3.}, {4., 5., 6.}, 3.14, 8., 7., 69);
-    EXPECT_EQ(particles_empty.size(), static_cast<size_t>(1));
-}
-
-/**
- * @brief Tests correct behaviour of the method eraseParticle(std::vector<Particle>::iterator p).)
- */
-TEST_F(SimpleContainerTest, testEraseParticleIterator) {
+TEST_F(SimpleContainerSpecificTest, ErasePreservesOrder) {
     auto it = particles_full.begin();
     ++it;  // points to p1
     particles_full.eraseParticle(it);
-    EXPECT_EQ(particles_full.size(), static_cast<size_t>(3));
+    EXPECT_EQ(particles_full.size(), 3U);
     EXPECT_TRUE(particles_full[0] == p0);
     EXPECT_TRUE(particles_full[1] == p2);
     EXPECT_TRUE(particles_full[2] == p3);
 }
 
 /**
- * @brief Tests correct behaviour of the method updateParticlePosition.
+ * @brief Tests data() method returns pointer to first element.
  */
-TEST_F(SimpleContainerTest, testUpdateParticlePosition) {
-    R3 new_x = {9.0, 8.0, 7.0};
-    auto it = particles_full.begin();
-    particles_full.updateParticlePosition(it, new_x);
-    EXPECT_EQ(particles_full[0].getX(), new_x);
-}
-
-// iterators
-
-/**
- * @brief Tests correct behaviour of required non-const iterator begin().
- */
-TEST_F(SimpleContainerTest, testBeginIterator) {
+TEST_F(SimpleContainerSpecificTest, DataPointer) {
     auto full_it = particles_full.begin();
-    auto full_it_end = particles_full.end();
-    EXPECT_NE(full_it, full_it_end);
     EXPECT_EQ(&*full_it, particles_full.data());
-
-    auto empty_it = particles_empty.begin();
-    auto empty_it_end = particles_empty.end();
-    EXPECT_EQ(empty_it, empty_it_end);
 }
 
 /**
- * @brief Tests correct behaviour of required non-const iterator end().
+ * @brief Tests end iterator arithmetic.
  */
-TEST_F(SimpleContainerTest, testEndIterator) {
+TEST_F(SimpleContainerSpecificTest, EndIteratorArithmetic) {
     auto n = static_cast<std::ptrdiff_t>(particles_full.size());
     EXPECT_EQ(&*(particles_full.end() - 1), particles_full.data() + (n - 1));  // NOLINT
 }
 
 /**
- * @brief Tests correct behaviour of required const iterators begin() and cbegin().
+ * @brief Tests const data pointer.
  */
-TEST_F(SimpleContainerTest, testBeginConstInterator) {
-    // begin()
+TEST_F(SimpleContainerSpecificTest, ConstDataPointer) {
     const SimpleContainer& cc = particles_full;
     auto cc_it = cc.begin();
-    auto cc_it_end = cc.end();
-    EXPECT_NE(cc_it, cc_it_end);
     EXPECT_EQ(&*cc_it, cc.data());
 
-    // cbegin()
     auto it = particles_full.cbegin();
-    auto it_end = particles_full.cend();
-    EXPECT_NE(it, it_end);
     EXPECT_EQ(&*it, particles_full.data());
 }
 
 /**
- * @brief Tests correct behaviour of required const iterators end() and cend().
+ * @brief Tests const end iterator arithmetic.
  */
-TEST_F(SimpleContainerTest, testEndConstInterator) {
-    // end()
+TEST_F(SimpleContainerSpecificTest, ConstEndIteratorArithmetic) {
     const SimpleContainer& cc = particles_full;
     auto n = static_cast<std::ptrdiff_t>(cc.size());
     EXPECT_EQ(&*(cc.end() - 1), cc.data() + (n - 1));  // NOLINT
 
-    // cend()
     auto nc = static_cast<std::ptrdiff_t>(particles_full.size());
     EXPECT_EQ(&*(particles_full.cend() - 1), particles_full.data() + (nc - 1));  // NOLINT
 }
 
-// proximity iterators
+/**
+ * @brief When we reserve a large amount of memory, we do not want to reallocate.
+ */
+TEST(SimpleContainerSpecific, NoUnnecessaryReallocation) {
+    SimpleContainer c({10.0, 10.0, 10.0}, 2.5);
+    c.reserve(128);
+    auto* old_data = c.data();
+    for (int i = 0; i < 10; ++i) {
+        c.addParticle(Particle(i));
+    }
+    EXPECT_EQ(old_data, c.data());
+}
 
 /**
- * @brief Tests correct behaviour of proximity iterator with infinite radius.
+ * @brief Tests proximity iterator with infinite radius returns all particles.
  */
-TEST_F(SimpleContainerTest, testProximityIteratorInfiniteRadius) {
+TEST(SimpleContainerSpecific, ProximityIteratorInfiniteRadius) {
     SimpleContainer particles_inf({10.0, 10.0, 10.0}, std::numeric_limits<double>::infinity());
     R3 v{0.0, 0.0, 0.0};
     particles_inf.addParticle(R3{2.0, 2.0, 2.0}, v, 1.0, 1.0, 1.0);
@@ -230,111 +148,7 @@ TEST_F(SimpleContainerTest, testProximityIteratorInfiniteRadius) {
         ++it;
         ++count;
     }
-    EXPECT_EQ(count, 3);  // Assuming only three particles are within the radius
-}
-
-/**
- * @brief Tests correct behaviour of proximity iterator with finite radius.
- */
-TEST_F(SimpleContainerTest, testProximityIterator) {
-    SimpleContainer particles_one({10.0, 10.0, 10.0}, 1.0);
-    R3 v{0.0, 0.0, 0.0};
-    particles_one.addParticle(R3{2.5, 3.0, 3.0}, v, 1.0, 1.0, 1.0);
-    particles_one.addParticle(R3{5.0, 5.0, 5.0}, v, 1.0, 1.0, 1.0);
-    particles_one.addParticle(R3{6.0, 6.0, 6.0}, v, 1.0, 1.0, 1.0);
-    R3 center{3.0, 3.0, 3.0};
-
-    auto it = particles_one.proximityBegin(center, particles_one.size());
-    auto end = particles_one.proximityEnd(center);
-
-    size_t count = 0;
-    while (it != end) {
-        EXPECT_LE((it->getX() - center).euclidNorm(), 1.0);
-        ++it;
-        ++count;
-    }
-    EXPECT_EQ(count, 1);  // Assuming only one particle is within the radius
-}
-
-/**
- * @brief Tests correct behaviour of boundary iterator.
- */
-TEST_F(SimpleContainerTest, testBoundaryIterator) {
-    SimpleContainer particles_boundary({10.0, 10.0, 10.0}, 1.0);
-    R3 v{0.0, 0.0, 0.0};
-    particles_boundary.addParticle(R3{2.5, 3.0, 3.0}, v, 1.0, 1.0, 1.0);
-    particles_boundary.addParticle(R3{5.0, 5.0, 5.0}, v, 1.0, 1.0, 1.0);
-    particles_boundary.addParticle(R3{0.2, 6.0, 6.0}, v, 1.0, 1.0, 1.0);  // boundary
-    particles_boundary.addParticle(R3{6.0, 9.2, 6.0}, v, 1.0, 1.0, 1.0);  // boundary
-    particles_boundary.addParticle(R3{9.2, 9.3, 9.8}, v, 1.0, 1.0, 1.0);  // boundary
-
-    auto it = particles_boundary.boundaryBegin();
-    auto end = particles_boundary.boundaryEnd();
-    size_t count = 0;
-    while (it != end) {
-        ++it;
-        ++count;
-    }
-    EXPECT_EQ(count, 3);  // Assuming only three particles are within the boundary
-}
-
-/**
- * @brief Tests correct behaviour of halo iterator.
- */
-TEST_F(SimpleContainerTest, testHaloIterator) {
-    SimpleContainer particles_halo({10.0, 10.0, 10.0}, 1.0);
-    R3 v{0.0, 0.0, 0.0};
-    particles_halo.addParticle(R3{-0.5, 3.0, 3.0}, v, 1.0, 1.0, 1.0);  // halo
-    particles_halo.addParticle(R3{5.0, 5.0, 5.0}, v, 1.0, 1.0, 1.0);
-    particles_halo.addParticle(R3{10.2, 6.0, 6.0}, v, 1.0, 1.0, 1.0);  // halo
-    particles_halo.addParticle(R3{6.0, 10.0, 6.0}, v, 1.0, 1.0, 1.0);
-    particles_halo.addParticle(R3{9.2, 9.3, 10.8}, v, 1.0, 1.0, 1.0);    // halo
-    particles_halo.addParticle(R3{11.0, 11.0, 11.0}, v, 1.0, 1.0, 1.0);  // halo
-
-    auto it = particles_halo.haloBegin();
-    auto end = particles_halo.haloEnd();
-    size_t count = 0;
-    while (it != end) {
-        ++it;
-        ++count;
-    }
-    EXPECT_EQ(count, 4);  // Assuming only four particles are within the boundary
-}
-
-// ParticleContainer: complex tests
-
-/**
- * @brief Tests a sequence of read and write operations on a SimpleContainer.
- */
-TEST(SimpleContainer, testSizeEmptyClearReserve) {
-    SimpleContainer c;
-    EXPECT_TRUE(c.empty());
-    EXPECT_EQ(c.size(), static_cast<size_t>(0));
-
-    c.reserve(64);
-    EXPECT_GE(c.capacity(), static_cast<size_t>(64));
-
-    c.addParticle(Particle(42));
-    c.addParticle({1., 2., 3.}, {4., 5., 6.}, 1.0, 5., 1.);
-    ASSERT_EQ(c.size(), static_cast<size_t>(2));
-
-    c.clear();
-    EXPECT_TRUE(c.empty());
-    EXPECT_EQ(c.size(), static_cast<size_t>(0));
-    EXPECT_EQ(c.begin(), c.end());
-}
-
-/**
- * @brief When we reserve a large amount of memory, we do not want to reallocate.
- */
-TEST(SimpleContainer, testNoUnnecessaryReallocation) {
-    SimpleContainer c;
-    c.reserve(128);
-    auto* old_data = c.data();
-    for (int i = 0; i < 10; ++i) {
-        c.addParticle(Particle(i));
-    }
-    EXPECT_EQ(old_data, c.data());
+    EXPECT_EQ(count, 3U);
 }
 
 }  // namespace mol_sim

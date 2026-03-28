@@ -37,7 +37,9 @@
 .cache/
 *.DS_Store
 *sublime*
+.gdbinit
 .github/*copilot*
+CMakePresets.json
 
 # Build folders.
 # This rule ignores any folder in the project root that contains "build"
@@ -51,3 +53,14 @@ doxys_documentation/
 
 #data
 benchmark_data/
+
+# Intel Profiling Results
+profiling-results/
+profiling-results.tar.gz
+vtune/
+advisor/
+perf.data
+perf.data.old
+*.vtune
+*.advixeproj
+valgrind/

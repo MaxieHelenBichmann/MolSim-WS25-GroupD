@@ -9,11 +9,13 @@ list(FILTER SRCS EXCLUDE REGEX ".*\/MolSim\.cpp")
 add_library(LibMolSim STATIC ${SRCS})
 target_link_libraries(LibMolSim PUBLIC yaml-cpp::yaml-cpp spdlog::spdlog CLI11::CLI11)
 target_compile_options(LibMolSim PRIVATE -Wextra -Wall -Werror)
+add_clang_tidy_support(LibMolSim)
 include(vtk)
 
 add_executable(MolSim MolSim.cpp)
 
 target_link_libraries(MolSim PRIVATE LibMolSim)
+add_clang_tidy_support(MolSim)
 
 
 target_compile_options(MolSim
@@ -25,6 +27,13 @@ target_compile_options(MolSim
 
 include(profiling)
 
+if(ENABLE_IO)
+    target_compile_definitions(MolSim PRIVATE ENABLE_IO)
+endif()
+if(ENABLE_CHECKPOINTS)
+    target_compile_definitions(MolSim PRIVATE ENABLE_CHECKPOINTING)
+endif()
+
 
 if(COVERAGE)
     include(GenerateCoverage)
@@ -35,4 +44,16 @@ endif()
 if(ENABLE_PROFILING)
     add_perf_targets(MolSim)
     add_valgrind_targets(MolSim)
+endif()
+
+if(ENABLE_INTEL_VTUNE)
+    add_vtune_targets(MolSim)
+endif()
+
+if(ENABLE_INTEL_ADVISOR)
+    add_advisor_targets(MolSim)
+endif()
+
+if(ENABLE_INTEL_VTUNE OR ENABLE_INTEL_ADVISOR)
+    add_intel_batch_targets(MolSim)
 endif()

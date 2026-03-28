@@ -11,15 +11,15 @@
 
 namespace mol_sim {
 
+// Note: Basic ParticleContainer interface tests are in ParticleContainer_test.cpp
+// This file contains LinkedCellContainer-specific tests only.
+
 static_assert(ParticleContainer<LinkedCellContainer>, "LinkedCellContainer must satisfy ParticleContainer concept");
 
 /**
- * @brief Test Fixture for testing the LinkedCellContainer.
- *
- * Base Config/Data of the container is as follow:
- *
+ * @brief Test Fixture for LinkedCellContainer-specific tests.
  */
-class LinkedCellContainerTest : public testing::Test {
+class LinkedCellContainerSpecificTest : public testing::Test {
    protected:
     R3 domain_size;
     LinkedCellContainer particles_empty;
@@ -30,7 +30,7 @@ class LinkedCellContainerTest : public testing::Test {
     Particle p3;
     double cutoff_radius_even = 2.5;
 
-    LinkedCellContainerTest()
+    LinkedCellContainerSpecificTest()
         : domain_size(R3{10.0, 10.0, 10.0}),
           particles_empty(LinkedCellContainer(domain_size, 2.5)),
           particles_full(LinkedCellContainer(domain_size, 2.5)),
@@ -49,186 +49,14 @@ class LinkedCellContainerTest : public testing::Test {
     }
 };
 
-// retrieve data
-
-/**
- * @brief Tests correct access with the subscript operator.
- */
-TEST_F(LinkedCellContainerTest, testAccessSubscript) {
-    EXPECT_TRUE(particles_full[0] == p0 || particles_full[0] == p1 || particles_full[0] == p2 ||
-                particles_full[0] == p3);
-    EXPECT_TRUE(particles_full[2] == p0 || particles_full[2] == p1 || particles_full[2] == p2 ||
-                particles_full[2] == p3);
-}
-
-/**
- * @brief Tests correct behaviour of method size().
- */
-TEST_F(LinkedCellContainerTest, testSize) {
-    EXPECT_EQ(particles_empty.size(), static_cast<size_t>(0));
-    particles_empty.addParticle(Particle(5));
-    EXPECT_EQ(particles_empty.size(), static_cast<size_t>(1));
-    EXPECT_EQ(particles_full.size(), static_cast<size_t>(4));
-}
-
-/**
- * @brief Tests correct behaviour of method empty().
- */
-TEST_F(LinkedCellContainerTest, testEmpty) {
-    EXPECT_FALSE(particles_full.empty());
-    EXPECT_TRUE(particles_empty.empty());
-    particles_empty.addParticle(Particle(4));
-    EXPECT_FALSE(particles_empty.empty());
-}
-
-// modify
-
-/**
- * @brief Tests correct behaviour of method clear().
- */
-TEST_F(LinkedCellContainerTest, testClear) {
-    ASSERT_EQ(particles_full.size(), static_cast<size_t>(4));
-    particles_full.clear();
-    EXPECT_TRUE(particles_full.empty());
-    EXPECT_EQ(particles_full.size(), static_cast<size_t>(0));
-    EXPECT_EQ(particles_full.begin(), particles_full.end());
-}
-
-/**
- * @brief Tests correct behaviour of method reserve(size_t n).
- */
-TEST_F(LinkedCellContainerTest, testReserve) {
-    particles_empty.reserve(64);
-    EXPECT_EQ(particles_empty.size(), static_cast<size_t>(0));
-}
-
-/**
- * @brief Tests correct behaviour of the method overload addParticle(Particle&& value).
- */
-TEST_F(LinkedCellContainerTest, testAddParticleRval) {
-    Particle tmp(6);
-    particles_empty.addParticle(std::move(tmp));
-    EXPECT_EQ(particles_empty.size(), static_cast<size_t>(1));
-}
-
-/**
- * @brief Tests correct behaviour of the method overload addParticle(const Particle& value).
- */
-TEST_F(LinkedCellContainerTest, testAddParticleConstLval) {
-    const Particle tmp(7);
-    particles_empty.addParticle(tmp);
-    particles_full.addParticle(tmp);
-    EXPECT_EQ(particles_empty.size(), static_cast<size_t>(1));
-    EXPECT_EQ(particles_full.size(), static_cast<size_t>(5));
-    EXPECT_TRUE(particles_empty[0] == tmp);
-    EXPECT_TRUE(particles_full[4] == tmp);
-}
-
-/**
- * @brief Tests correct behaviour of the method overload addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg,
- * double m_arg).
- */
-TEST_F(LinkedCellContainerTest, testAddParticleEmplaceNoType) {
-    particles_empty.addParticle({1., 2., 3.}, {4., 5., 6.}, 3.14, 5., 1.);
-    EXPECT_EQ(particles_empty.size(), static_cast<size_t>(1));
-}
-
-/**
- * @brief Tests correct behaviour of the method overload
- * addParticle(Vector<double, 3> x_arg, Vector<double, 3> v_arg, double m_arg, int type).
- */
-TEST_F(LinkedCellContainerTest, testAddParticleEmplace) {
-    particles_empty.addParticle({1., 2., 3.}, {4., 5., 6.}, 3.14, 8., 9., 69);
-    EXPECT_EQ(particles_empty.size(), static_cast<size_t>(1));
-}
-
-/**
- * @brief Tests correct behaviour of the method eraseParticle(std::vector<Particle>::iterator p).
- */
-TEST_F(LinkedCellContainerTest, testEraseParticle) {
-    EXPECT_EQ(particles_full.size(), static_cast<size_t>(4));
-    particles_full.eraseParticle(particles_full.begin() + 2);
-    EXPECT_EQ(particles_full.size(), static_cast<size_t>(3));
-}
-
-// normal iterators
-
-/**
- * @brief Tests correct behaviour of required non-const iterator begin().
- */
-TEST_F(LinkedCellContainerTest, testBeginIterator) {
-    EXPECT_NE(particles_full.begin(), particles_full.end());
-    EXPECT_EQ(particles_empty.begin(), particles_empty.end());
-}
-
-/**
- * @brief Tests correct behaviour of required const iterators begin() and cbegin().
- */
-TEST_F(LinkedCellContainerTest, testBeginConstInterator) {
-    // begin()
-    const LinkedCellContainer& cc = particles_full;
-    EXPECT_NE(cc.begin(), cc.end());
-
-    // cbegin()
-    EXPECT_NE(particles_full.cbegin(), particles_full.cend());
-}
-
-// proximity iterators
-
-/**
- * @brief Tests correct behaviour of proximity iterator with finite radius.
- */
-TEST_F(LinkedCellContainerTest, testProximityIterator) {
-    LinkedCellContainer particles_one({10.0, 10.0, 10.0}, 1.0);
-
-    R3 v{0.0, 0.0, 0.0};
-    particles_one.addParticle(R3{2.5, 3.1, 3.1}, v, 1.0, 1.0, 1.0);
-    particles_one.addParticle(R3{5.0, 5.0, 5.0}, v, 1.0, 1.0, 1.0);
-    particles_one.addParticle(R3{6.0, 6.0, 6.0}, v, 1.0, 1.0, 1.0);
-    R3 center{3.1, 3.1, 3.1};
-
-    auto it = particles_one.proximityBegin(center, particles_one.size());
-    auto end = particles_one.proximityEnd(center);
-
-    size_t count = 0;
-    while (it != end) {
-        EXPECT_LE((it->getX() - center).euclidNorm(), 1.0);
-        ++it;
-        ++count;
-    }
-    // only one particle is within the radius AND considered with the Newton's third law optimization
-    EXPECT_EQ(count, 1);
-}
-
-// ParticleContainer: complex tests
-
-/**
- * @brief Tests a sequence of read and write operations on a LinkedCellContainer.
- */
-TEST(LinkedCellContainer, testSizeEmptyClearReserve) {
-    LinkedCellContainer c({15., 10., 10.}, 2.);
-    EXPECT_TRUE(c.empty());
-    EXPECT_EQ(c.size(), static_cast<size_t>(0));
-
-    c.reserve(64);
-    EXPECT_EQ(c.size(), static_cast<size_t>(0));
-
-    c.addParticle(Particle(42));
-    c.addParticle({1., 2., 3.}, {4., 5., 6.}, 1.0, 5., 1.);
-    ASSERT_EQ(c.size(), static_cast<size_t>(2));
-
-    c.clear();
-    EXPECT_TRUE(c.empty());
-    EXPECT_EQ(c.size(), static_cast<size_t>(0));
-    EXPECT_EQ(c.begin(), c.end());
-}
-
-// LinkedCellContainer: specific tests
+// ============================================================================
+// LinkedCellContainer-specific tests (spatial grid behavior)
+// ============================================================================
 
 /**
  * @brief Tests correct behaviour of method fitsDomain.
  */
-TEST_F(LinkedCellContainerTest, testFitDomain) {
+TEST_F(LinkedCellContainerSpecificTest, FitsDomain) {
     R3 inside{5.0, 5.0, 5.0};
     EXPECT_TRUE(particles_empty.fitsDomain(inside));
 
@@ -257,7 +85,7 @@ TEST_F(LinkedCellContainerTest, testFitDomain) {
 /**
  * @brief Tests correct behaviour of method fitsContainer, which also considers halo cells.
  */
-TEST_F(LinkedCellContainerTest, testFitContainer) {
+TEST_F(LinkedCellContainerSpecificTest, FitsContainer) {
     R3 inside{5.0, 5.0, 5.0};
     EXPECT_TRUE(particles_empty.fitsContainer(inside));
 
@@ -277,7 +105,7 @@ TEST_F(LinkedCellContainerTest, testFitContainer) {
 /**
  * @brief Tests correct behaviour of the method updateParticlePosition, with different scenarios.
  */
-TEST_F(LinkedCellContainerTest, testUpdateParticlePosition) {
+TEST_F(LinkedCellContainerSpecificTest, UpdateParticlePositionScenarios) {
     R3 v{0.0, 0.0, 0.0};
 
     Particle p_inside{R3{5.0, 5.0, 5.0}, v, 1.0, 1.0, 1.0};
@@ -288,7 +116,7 @@ TEST_F(LinkedCellContainerTest, testUpdateParticlePosition) {
     particles_empty.addParticle(p_move_outside);
     particles_empty.addParticle(p_move_halo);
 
-    ASSERT_EQ(particles_empty.size(), 3);
+    ASSERT_EQ(particles_empty.size(), 3U);
 
     // Move inside -> inside
     particles_empty.updateParticlePosition(particles_empty.begin(), R3{6.0, 6.0, 6.0});
@@ -296,7 +124,7 @@ TEST_F(LinkedCellContainerTest, testUpdateParticlePosition) {
 
     // Move inside -> outside
     particles_empty.updateParticlePosition(particles_empty.begin() + 1, R3{15.0, 15.0, 15.0});
-    EXPECT_EQ(particles_empty.size(), 2);
+    EXPECT_EQ(particles_empty.size(), 2U);
 
     // Move inside -> halo
     particles_empty.updateParticlePosition(particles_empty.begin() + 1, R3{-1.0, -1.0, -1.0});
@@ -306,7 +134,7 @@ TEST_F(LinkedCellContainerTest, testUpdateParticlePosition) {
 /**
  * @brief Tests correct behaviour of the boundary iterator for all and a specific side.
  */
-TEST_F(LinkedCellContainerTest, testBoundaryIterator) {  // NOLINT
+TEST_F(LinkedCellContainerSpecificTest, BoundaryIteratorDetailed) {  // NOLINT
     R3 v{0.0, 0.0, 0.0};
 
     Particle par_inside{R3{5.0, 5.0, 5.0}, v, 1.0, 1.0, 1.0};
@@ -317,7 +145,7 @@ TEST_F(LinkedCellContainerTest, testBoundaryIterator) {  // NOLINT
     particles_empty.addParticle(par_boundary_left);
     particles_empty.addParticle(par_boundary_right);
 
-    ASSERT_EQ(particles_empty.size(), 3);
+    ASSERT_EQ(particles_empty.size(), 3U);
 
     // All boundary sides
     std::vector<Particle> boundary_all;
@@ -327,7 +155,7 @@ TEST_F(LinkedCellContainerTest, testBoundaryIterator) {  // NOLINT
         boundary_all.push_back(*it);
     }
 
-    EXPECT_EQ(boundary_all.size(), 2);
+    EXPECT_EQ(boundary_all.size(), 2U);
     EXPECT_TRUE(std::count(boundary_all.begin(), boundary_all.end(), par_boundary_left) > 0);
     EXPECT_TRUE(std::count(boundary_all.begin(), boundary_all.end(), par_boundary_right) > 0);
     EXPECT_FALSE(std::count(boundary_all.begin(), boundary_all.end(), par_inside) > 0);
@@ -339,7 +167,7 @@ TEST_F(LinkedCellContainerTest, testBoundaryIterator) {  // NOLINT
         boundary_right.push_back(*it);
     }
 
-    EXPECT_EQ(boundary_right.size(), 1);
+    EXPECT_EQ(boundary_right.size(), 1U);
     EXPECT_FALSE(std::count(boundary_right.begin(), boundary_right.end(), par_boundary_left) > 0);
     EXPECT_TRUE(std::count(boundary_right.begin(), boundary_right.end(), par_boundary_right) > 0);
     EXPECT_FALSE(std::count(boundary_right.begin(), boundary_right.end(), par_inside) > 0);
@@ -348,7 +176,7 @@ TEST_F(LinkedCellContainerTest, testBoundaryIterator) {  // NOLINT
 /**
  * @brief Tests correct behaviour of the halo iterator for all and a specific side.
  */
-TEST_F(LinkedCellContainerTest, testHaloIterator) {  // NOLINT
+TEST_F(LinkedCellContainerSpecificTest, HaloIteratorDetailed) {  // NOLINT
     R3 v{0.0, 0.0, 0.0};
 
     Particle par_inside{R3{5.0, 5.0, 5.0}, v, 1.0, 1.0, 1.0};
@@ -361,7 +189,7 @@ TEST_F(LinkedCellContainerTest, testHaloIterator) {  // NOLINT
     particles_empty.addParticle(par_halo_left);
     particles_empty.addParticle(par_halo_right);
 
-    ASSERT_EQ(particles_empty.size(), 4);
+    ASSERT_EQ(particles_empty.size(), 4U);
 
     // All boundary sides
     std::vector<Particle> halo_all;
@@ -371,11 +199,12 @@ TEST_F(LinkedCellContainerTest, testHaloIterator) {  // NOLINT
         halo_all.push_back(*it);
     }
 
-    EXPECT_EQ(halo_all.size(), 2);
+    EXPECT_EQ(halo_all.size(), 2U);
     EXPECT_TRUE(std::count(halo_all.begin(), halo_all.end(), par_halo_left) > 0);
     EXPECT_TRUE(std::count(halo_all.begin(), halo_all.end(), par_halo_right) > 0);
     EXPECT_FALSE(std::count(halo_all.begin(), halo_all.end(), par_inside) > 0);
     EXPECT_FALSE(std::count(halo_all.begin(), halo_all.end(), par_boundary) > 0);
+
     // Only RIGHT boundary
     std::vector<Particle> halo_right;
     for (auto it = particles_empty.haloBegin({BoundaryLocation::RIGHT});
@@ -383,11 +212,36 @@ TEST_F(LinkedCellContainerTest, testHaloIterator) {  // NOLINT
         halo_right.push_back(*it);
     }
 
-    EXPECT_EQ(halo_right.size(), 1);
+    EXPECT_EQ(halo_right.size(), 1U);
     EXPECT_FALSE(std::count(halo_right.begin(), halo_right.end(), par_halo_left) > 0);
     EXPECT_TRUE(std::count(halo_right.begin(), halo_right.end(), par_halo_right) > 0);
     EXPECT_FALSE(std::count(halo_right.begin(), halo_right.end(), par_inside) > 0);
     EXPECT_FALSE(std::count(halo_right.begin(), halo_right.end(), par_boundary) > 0);
+}
+
+/**
+ * @brief Tests proximity iterator with Newton's third law optimization.
+ */
+TEST_F(LinkedCellContainerSpecificTest, ProximityIteratorN3L) {
+    LinkedCellContainer particles_one({10.0, 10.0, 10.0}, 1.0);
+
+    R3 v{0.0, 0.0, 0.0};
+    particles_one.addParticle(R3{2.5, 3.1, 3.1}, v, 1.0, 1.0, 1.0);
+    particles_one.addParticle(R3{5.0, 5.0, 5.0}, v, 1.0, 1.0, 1.0);
+    particles_one.addParticle(R3{6.0, 6.0, 6.0}, v, 1.0, 1.0, 1.0);
+    R3 center{3.1, 3.1, 3.1};
+
+    auto it = particles_one.proximityBegin(center, particles_one.size());
+    auto end = particles_one.proximityEnd(center);
+
+    size_t count = 0;
+    while (it != end) {
+        EXPECT_LE((it->getX() - center).euclidNorm(), 1.0);
+        ++it;
+        ++count;
+    }
+    // only one particle is within the radius AND considered with the Newton's third law optimization
+    EXPECT_EQ(count, 1U);
 }
 
 }  // namespace mol_sim

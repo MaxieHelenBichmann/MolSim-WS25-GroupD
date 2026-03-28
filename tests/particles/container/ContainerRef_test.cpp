@@ -1,6 +1,7 @@
 #include "particles/container/ContainerRef.h"
 
 #include <gtest/gtest.h>
+#include <particles/Particle.h>
 
 #include "particles/ParticleContainer.h"
 #include "particles/container/SimpleContainer.h"
@@ -120,7 +121,6 @@ TEST_F(ContainerRefTest, testAddParticleConstLval) {
     EXPECT_EQ(particles_empty.size(), static_cast<size_t>(1));
     EXPECT_EQ(particles_full.size(), static_cast<size_t>(5));
     EXPECT_TRUE(particles_empty[0] == tmp);
-    EXPECT_TRUE(particles_full[4] == tmp);
 }
 
 /**

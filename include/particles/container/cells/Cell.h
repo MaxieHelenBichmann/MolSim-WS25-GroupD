@@ -3,7 +3,8 @@
 
 #include <array>
 #include <cstdint>
-#include <set>
+#include <unordered_set>
+#include <vector>
 
 #include "utils/Vector.h"
 
@@ -21,10 +22,10 @@ enum class CellType : std::uint8_t { INNER, BOUNDARY, HALO };
  */
 class Cell {
     /**
-     * std::set storing the indices (of the std::vector data from the LinkedCellContainer) to all Particles in
-     * the cell. Not std::unordered_set to have stable iteration order for proximity iterators.
+     * std::unordered_set storing the indices (of the std::vector data from the LinkedCellContainer) to all Particles in
+     * the cell.
      */
-    std::set<size_t> indices;
+    std::unordered_set<size_t> indices;
     /**
      * Type of the cell. [INNER, BOUNDARY, HALO]
      */
@@ -33,6 +34,20 @@ class Cell {
      * Boundaries of the cell. [xmin, xmax, ymin, ymax, zmin, zmax]
      */
     std::array<double, 6> bounds;
+
+    /**
+     * Cache for sorted particle indices to provide stable iteration.
+     */
+    std::vector<size_t> sorted_cache;
+    /**
+     * Flag indicating whether the cache is dirty and needs to be updated.
+     */
+    bool cache_dirty = true;
+
+    /**
+     * @brief Update the sorted cache if it is dirty.
+     */
+    void updateCache();
 
    public:
     /**
@@ -69,14 +84,42 @@ class Cell {
      *
      * @return Reference to the set of Particle indices.
      */
-    std::set<size_t>& particles() noexcept;
+    std::unordered_set<size_t>& particles() noexcept { return indices; };
 
     /**
      * @brief Access the const set of Particle indices in the cell.
      *
      * @return Reference to the set of Particle indices.
      */
-    [[nodiscard]] const std::set<size_t>& particles() const noexcept;
+    [[nodiscard]] const std::unordered_set<size_t>& particles() const noexcept { return indices; };
+
+    /**
+     * @brief Stable iterator to the beginning of the sorted particle indices.
+     *
+     * @return Iterator to the beginning of the sorted particle indices.
+     */
+    std::vector<size_t>::iterator stableIteratorBegin();
+
+    /**
+     * @brief Stable iterator to the end of the sorted particle indices.
+     *
+     * @return Iterator to the end of the sorted particle indices.
+     */
+    std::vector<size_t>::iterator stableIteratorEnd();
+
+    /**
+     * @brief Stable iterator to the beginning of the sorted particle indices.
+     *
+     * @return Iterator to the beginning of the sorted particle indices.
+     */
+    [[nodiscard]] std::vector<size_t>::const_iterator stableIteratorBegin() const;
+
+    /**
+     * @brief Stable iterator to the end of the sorted particle indices.
+     *
+     * @return Iterator to the end of the sorted particle indices.
+     */
+    [[nodiscard]] std::vector<size_t>::const_iterator stableIteratorEnd() const;
 
     /**
      * @brief Check whether a Particle fits into the cell boundaries.
@@ -97,7 +140,7 @@ class Cell {
      *
      * @return CellType the type of the cell.
      */
-    [[nodiscard]] CellType getType() const noexcept;
+    [[nodiscard]] CellType getType() const noexcept { return type; };
 };
 
 }  // namespace mol_sim

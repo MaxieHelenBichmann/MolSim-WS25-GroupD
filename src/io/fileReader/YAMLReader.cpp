@@ -15,6 +15,7 @@
 #include "exceptions/YAMLReaderException.h"
 #include "particles/boundaries/Boundary.h"
 #include "particles/boundaries/Outflow.h"
+#include "particles/boundaries/Periodic.h"
 #include "particles/boundaries/Reflecting.h"
 #include "particles/boundaries/VelocityReflect.h"
 #include "particles/container/domain/Domain.h"
@@ -22,6 +23,7 @@
 #include "particles/generators/DiscGenerator.h"
 #include "physics/ForceSource.h"
 #include "utils/Settings.h"
+#include "utils/Vector.h"
 
 namespace mol_sim {
 
@@ -37,13 +39,31 @@ void validateSettings(const SettingsParam& settings) {
         SPDLOG_ERROR("delta_t must be positive, got: " + std::to_string(settings.delta_t));
         throw ValidationException("delta_t must be positive, got: " + std::to_string(settings.delta_t));
     }
-    if (settings.end_time <= settings.start_time) {
+    if (settings.end_time < settings.start_time) {
         SPDLOG_ERROR("end_time must be greater than start_time");
         throw ValidationException("end_time must be greater than start_time");
     }
     if (settings.cutoff < 0) {
         SPDLOG_ERROR("cutoff must be non-negative, got: " + std::to_string(settings.cutoff));
         throw ValidationException("cutoff must be non-negative, got: " + std::to_string(settings.cutoff));
+    }
+    if (settings.delta_temp <= 0) {
+        SPDLOG_ERROR("delta_temp must be greater then 0, got: " + std::to_string(settings.delta_temp));
+        throw ValidationException("delta_temp must be greater then 0, got: " + std::to_string(settings.delta_temp));
+    }
+    if (settings.frequency_output <= 0) {
+        SPDLOG_ERROR("frequency must be non-negative, got: " + std::to_string(settings.frequency_output));
+        throw ValidationException("frequency must be non-negative, got: " + std::to_string(settings.frequency_output));
+    }
+    if (settings.frequency_checkpoint <= 0) {
+        SPDLOG_ERROR("checkpoint must be non-negative, got: " + std::to_string(settings.frequency_checkpoint));
+        throw ValidationException("checkpoint must be non-negative, got: " +
+                                  std::to_string(settings.frequency_checkpoint));
+    }
+    if (settings.thermostat_freq <= 0) {
+        SPDLOG_ERROR("thermostat_freq must be non-negative, got: " + std::to_string(settings.thermostat_freq));
+        throw ValidationException("thermostat_freq must be non-negative, got: " +
+                                  std::to_string(settings.thermostat_freq));
     }
 }
 /**
@@ -71,7 +91,7 @@ void validateParticleParams(double mass, double epsilon, double sigma, const std
 YAMLReader::YAMLReader() = default;
 
 YAMLReader::~YAMLReader() = default;
-
+// NOLINTNEXTLINE
 void YAMLReader::readSettings(SettingsParam& settings, const std::string& filename) {
     try {
         YAML::Node root = YAML::LoadFile(filename);
@@ -118,11 +138,35 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
             settings.container_type = container_str;
         }
         if (node["frequency"]) {
-            settings.frequency = node["frequency"].as<size_t>();
+            settings.frequency_output = node["frequency"].as<size_t>();
+        }
+        if (node["checkpoint"]) {
+            settings.frequency_checkpoint = node["checkpoint"].as<size_t>();
         }
         if (node["cutoff"]) {
             settings.cutoff = node["cutoff"].as<double>();
         }
+        if (node["thermostat"]) {
+            settings.thermo = true;
+            YAML::Node t_node = node["thermostat"];
+            if (t_node["initial_temp"]) {
+                settings.init_temp = t_node["initial_temp"].as<double>();
+            }
+            if (t_node["target_temp"]) {
+                settings.target_temp = t_node["target_temp"].as<double>();
+            } else {
+                settings.target_temp = settings.init_temp;
+            }
+            if (t_node["n_thermostat"]) {
+                settings.thermostat_freq = t_node["n_thermostat"].as<size_t>();
+            }
+            if (t_node["delta_temp"]) {
+                settings.delta_temp = t_node["delta_temp"].as<double>();
+            }
+        } else {
+            settings.thermo = false;
+        }
+
         if (node["domain"]) {
             parseDomain(settings, node["domain"]);
         }
@@ -136,7 +180,7 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
     }
 }
 
-void YAMLReader::readParticles(ContainerRef particles, const std::string& filename) {
+void YAMLReader::readParticles(ContainerRef particles, const SettingsParam& settings, const std::string& filename) {
     try {
         YAML::Node root = YAML::LoadFile(filename);
 
@@ -161,10 +205,10 @@ void YAMLReader::readParticles(ContainerRef particles, const std::string& filena
                 readXVM(particles, node);
             } else if (format == "Cuboid") {
                 has_particle_definition = true;
-                readCube(particles, node);
+                readCube(particles, settings, node);
             } else if (format == "Disc") {
                 has_particle_definition = true;
-                readDisc(particles, node);
+                readDisc(particles, settings, node);
             }
             // Skip Settings and unknown formats silently in phase 2
         }
@@ -191,11 +235,35 @@ void YAMLReader::readXVM(ContainerRef particles, const YAML::Node& node) {
                 position[1] = coordinates["y"].as<double>();
                 position[2] = coordinates["z"].as<double>();
 
+                R3 old_position = R3{0., 0., 0.};
+                if (curr["old_coordinates"]) {
+                    const YAML::Node& old_coordinates_node = curr["old_coordinates"];
+                    old_position[0] = old_coordinates_node["ox"].as<double>();
+                    old_position[1] = old_coordinates_node["oy"].as<double>();
+                    old_position[2] = old_coordinates_node["oz"].as<double>();
+                }
+
                 R3 velocity;
                 const YAML::Node& velocity_node = curr["velocity"];
                 velocity[0] = velocity_node["vx"].as<double>();
                 velocity[1] = velocity_node["vy"].as<double>();
                 velocity[2] = velocity_node["vz"].as<double>();
+
+                R3 force = R3{0., 0., 0.};
+                if (curr["force"]) {
+                    const YAML::Node& force_node = curr["force"];
+                    force[0] = force_node["fx"].as<double>();
+                    force[1] = force_node["fy"].as<double>();
+                    force[2] = force_node["fz"].as<double>();
+                }
+
+                R3 old_force = R3{0., 0., 0.};
+                if (curr["old_force"]) {
+                    const YAML::Node& old_force_node = curr["old_force"];
+                    old_force[0] = old_force_node["ofx"].as<double>();
+                    old_force[1] = old_force_node["ofy"].as<double>();
+                    old_force[2] = old_force_node["ofz"].as<double>();
+                }
 
                 auto mass = curr["mass"].as<double>();
 
@@ -207,8 +275,12 @@ void YAMLReader::readXVM(ContainerRef particles, const YAML::Node& node) {
                 if (curr["sigma"]) {
                     sigma = curr["sigma"].as<double>();
                 }
+                int type = 0;
+                if (curr["type"]) {
+                    type = curr["type"].as<int>();
+                }
                 validateParticleParams(mass, epsilon, sigma, "XVM particle " + std::to_string(particle_idx));
-                particles.addParticle(position, velocity, mass, epsilon, sigma);
+                particles.addParticle(position, old_position, velocity, force, old_force, mass, epsilon, sigma, type);
                 particle_idx++;
             }
             SPDLOG_DEBUG("Parsed {} XVM particles", particle_idx);
@@ -241,7 +313,9 @@ std::vector<YAMLReader::CuboidData> YAMLReader::parseCuboids(const YAML::Node& n
 
         data.mass = node["mass"].as<double>();
         data.distance = node["distance"].as<double>();
-        data.avg_velo = node["mean_velo"].as<double>();
+        if (node["mean_velo"]) {
+            data.avg_velo = node["mean_velo"].as<double>();
+        }
         data.epsilon = node["epsilon"].as<double>();
         data.sigma = node["sigma"].as<double>();
 
@@ -282,7 +356,9 @@ std::vector<YAMLReader::DiscData> YAMLReader::parseDiscs(const YAML::Node& node)
         data.radius = node["radius"].as<size_t>();
         data.mass = node["mass"].as<double>();
         data.distance = node["distance"].as<double>();
-        data.avg_velo = node["mean_velo"].as<double>();
+        if (node["mean_velo"]) {
+            data.avg_velo = node["mean_velo"].as<double>();
+        }
         data.epsilon = node["epsilon"].as<double>();
         data.sigma = node["sigma"].as<double>();
 
@@ -304,20 +380,20 @@ std::vector<YAMLReader::DiscData> YAMLReader::parseDiscs(const YAML::Node& node)
     return discs;
 }
 
-void YAMLReader::readCube(ContainerRef particles, const YAML::Node& node) {
+void YAMLReader::readCube(ContainerRef particles, const SettingsParam& settings, const YAML::Node& node) {
     auto cuboids = parseCuboids(node);
     for (const auto& data : cuboids) {
         CuboidGenerator generator(data.position, data.velocity, data.num_particles, data.mass, data.distance,
-                                  data.avg_velo, data.epsilon, data.sigma);
+                                  data.avg_velo, data.epsilon, data.sigma, settings.init_temp);
         generator.generateParticles(particles);
     }
 }
 
-void YAMLReader::readDisc(ContainerRef particles, const YAML::Node& node) {
+void YAMLReader::readDisc(ContainerRef particles, const SettingsParam& settings, const YAML::Node& node) {
     auto discs = parseDiscs(node);
     for (const auto& data : discs) {
         DiscGenerator generator(data.position, data.velocity, data.radius, data.mass, data.distance, data.avg_velo,
-                                data.epsilon, data.sigma);
+                                data.epsilon, data.sigma, settings.init_temp);
         generator.generateParticles(particles);
     }
 }
@@ -325,6 +401,14 @@ void YAMLReader::readDisc(ContainerRef particles, const YAML::Node& node) {
 void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
     try {
         R3 dimension = {node["x"].as<double>(), node["y"].as<double>(), node["z"].as<double>()};
+        const YAML::Node& g_grav_node = node["g_grav"];
+        if (g_grav_node) {
+            settings.g_grav = g_grav_node.as<double>();
+        }
+        const YAML::Node& dimensions_node = node["dimensions"];  // NOLINT
+        if (dimensions_node) {
+            settings.dimensions = dimensions_node.as<size_t>();  // NOLINT
+        }
 
         // Define boundary locations and their YAML keys
         static const std::array<std::pair<BoundaryLocation, std::string>, 6> boundary_mappings = {{
@@ -362,6 +446,11 @@ void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
                     case BoundaryType::VELOCITYREFLECT:
                         boundary = std::make_unique<VelocityReflect>(location, dimension);
                         break;
+                    case BoundaryType::PERIODIC: {
+                        boundary =
+                            std::make_unique<Periodic>(location, dimension, settings.cutoff, settings.dimensions);
+                        break;
+                    }
                     case BoundaryType::OUTFLOW:
                     default:
                         boundary = std::make_unique<Outflow>(location, dimension);

@@ -218,6 +218,15 @@ ctest -V --test-dir ./build/tests
 ./build/benchmarks/MolSimBench --benchmark_filter=Boundary/
 ```
 
+### Python Analysis
+You can use the analyse_data.py file in benchmarks/data to quickly get an overview of the data produced by the benchmarks. MatPlotLib and Pandas are required for this -> see benchmarks/data/requirements.txt
+```bash
+pip install requirements.txt
+
+./build/benchmarks/MolSimBench --benchmark_filter=<filter> --benchmark_out_format=json --benchmark_out=<path/to/outputfile>
+
+python benchmarks/data/analyse_data.py <path/to/outputfile>
+```
 ---
 
 ## Optional Tools
@@ -235,6 +244,8 @@ Output location: `doxys_documentation/`
 ### Clang-Tidy
 
 When enabled, clang-tidy automatically runs checks from `.clang-tidy` during build.
+
+You can enable treating clang-tidy warnings as errors by configuring CMake with `-DCLANG_TIDY_WARNINGS_AS_ERRORS=ON` (default: `OFF`). The CI `lint` job enables this option.
 
 **Apply automatic fixes:**
 ```bash

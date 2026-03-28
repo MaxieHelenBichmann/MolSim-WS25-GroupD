@@ -55,6 +55,10 @@ class CuboidGenerator : public Generator {
      *
      */
     double sigma;
+    /**
+     * @brief Target initial temperature of the system.
+     */
+    double init_temp;
 
    public:
     /**
@@ -62,7 +66,7 @@ class CuboidGenerator : public Generator {
      *
      * @param particles Container to place Particles in.
      */
-    void generateParticles(ContainerRef particles) override;
+    void generateParticles(ContainerRef particles, bool use_init_temp = false) override;
     /**
      * @brief Construct a new Cuboid Generator object, setting all necessary parameters for generation.
      *
@@ -76,7 +80,7 @@ class CuboidGenerator : public Generator {
      * @param sigma Sigma value of the generated particles.
      */
     CuboidGenerator(R3 position, R3 velocity, N3 num_particles, double mass, double distance, double avg_velo,
-                    double epsilon, double sigma)
+                    double epsilon, double sigma, double init_temp)
         : position(position),
           velocity(velocity),
           num_particles(num_particles),
@@ -84,7 +88,8 @@ class CuboidGenerator : public Generator {
           distance(distance),
           avg_velo(avg_velo),
           epsilon(epsilon),
-          sigma(sigma){};
+          sigma(sigma),
+          init_temp(init_temp){};
 };
 }  // namespace mol_sim
 

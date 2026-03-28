@@ -1,36 +1,51 @@
-option(ENABLE_CLANG_TIDY "Enable clang-tidy checks" ON)
+option(ENABLE_CLANG_TIDY "Enable clang-tidy static analysis during build" OFF)
+option(CLANG_TIDY_WARNINGS_AS_ERRORS "Treat clang-tidy warnings as errors (applies to clang-tidy and run-clang-tidy)" OFF)
 
 if(ENABLE_CLANG_TIDY)
-    message(STATUS "clang-tidy checks enabled")
-    
-    find_program(CLANG_TIDY_EXE clang-tidy)
-    if(CLANG_TIDY_EXE)
-        #For other options like automatic fixes add --fix at the end
-        set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_EXE} -p ${CMAKE_BINARY_DIR})
-        message(STATUS "clang-tidy found and enabled: ${CLANG_TIDY_EXE}")
+find_program(CLANG_TIDY_EXE clang-tidy REQUIRED)
 
-        file(GLOB_RECURSE ALL_CXX_SOURCES CONFIGURE_DEPENDS
-            "${CMAKE_SOURCE_DIR}/src/*.cpp"
-            "${CMAKE_SOURCE_DIR}/include/*.h"
-            "${CMAKE_SOURCE_DIR}/tests/*.cpp"
-            "${CMAKE_SOURCE_DIR}/benchmarks/*.cpp"
-            "${CMAKE_SOURCE_DIR}/benchmarks/*.h)"
+    set(CLANG_TIDY_COMMAND
+        ${CLANG_TIDY_EXE}
+        --config-file=${CMAKE_SOURCE_DIR}/.clang-tidy
+        --header-filter=${CMAKE_SOURCE_DIR}/include/.*
+    )
 
-        )
-
-        add_custom_target(
-            fix
-            COMMAND ${CLANG_TIDY_EXE}
-            --fix
-            --fix-errors
-            --fix-notes
-            -p=${CMAKE_BINARY_DIR}
-            --config-file=${CMAKE_SOURCE_DIR}/.clang-tidy
-            ${ALL_CXX_SOURCES}
-            COMMENT "Running clang-tidy with fixes"
-        )
-        message(STATUS "clang-tidy fix target created. Build it with 'make fix'.")
-    else ()
-        message(WARNING "clang-tidy not found, no static analysis")
-    endif ()
+    message(STATUS "clang-tidy enabled: ${CLANG_TIDY_EXE}")
 endif()
+
+function(add_clang_tidy_support target)
+    if(ENABLE_CLANG_TIDY)
+        set_target_properties(${target} PROPERTIES
+            CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}"
+        )
+    endif()
+endfunction()
+
+
+find_program(RUN_CLANG_TIDY_EXE run-clang-tidy)
+
+set(RUN_CLANG_TIDY_CMD
+    ${RUN_CLANG_TIDY_EXE}
+    -clang-tidy-binary=${CLANG_TIDY_EXE}
+    -p=${CMAKE_BINARY_DIR}
+    -quiet
+    -config-file=${CMAKE_SOURCE_DIR}/.clang-tidy
+    -header-filter=${CMAKE_SOURCE_DIR}/include/.*
+    -source-filter=${CMAKE_SOURCE_DIR}/src/.*
+)
+
+if (CLANG_TIDY_WARNINGS_AS_ERRORS)
+    list(APPEND CLANG_TIDY_COMMAND "--warnings-as-errors=*")
+    list(APPEND RUN_CLANG_TIDY_CMD "-warnings-as-errors=*")
+endif()
+
+# add fix and lint targets that runs run-clang-tidy
+add_custom_target(lint COMMAND ${RUN_CLANG_TIDY_CMD} 
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Running clang-tidy analysis"
+)
+
+add_custom_target(fix COMMAND ${RUN_CLANG_TIDY_CMD} -fix
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Running clang-tidy and applying fixes"
+)

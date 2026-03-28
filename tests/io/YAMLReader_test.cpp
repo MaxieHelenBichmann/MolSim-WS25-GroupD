@@ -74,7 +74,7 @@ std::mutex YAMLReaderTest::mtx;
  */
 TEST_F(YAMLReaderTest, ReadSimpleXVM) {
     YAMLReader reader;
-    reader.readParticles(particles, test_data_dir + "/simple_XVM.yaml");
+    reader.readParticles(particles, settings, test_data_dir + "/simple_XVM.yaml");
     std::string output = log_stream->str();
     R3 expected_pos = {0., 0., 0.};
     R3 expected_velo = {0., 0., 0.};
@@ -144,7 +144,8 @@ TEST_F(YAMLReaderTest, ReadSettingsNonExistentFile) {
 TEST_F(YAMLReaderTest, ReadWrongFileFormat) {
     YAMLReader reader;
     // File with unknown format has no valid particle definitions
-    EXPECT_THROW(reader.readParticles(particles, test_data_dir + "/unknown_format.yaml"), YAMLReaderException);
+    EXPECT_THROW(reader.readParticles(particles, settings, test_data_dir + "/unknown_format.yaml"),
+                 YAMLReaderException);
 }
 
 /**
@@ -162,7 +163,8 @@ TEST_F(YAMLReaderTest, ReadSettingsMalformedFile) {
  */
 TEST_F(YAMLReaderTest, ReadParticleMissingFields) {
     YAMLReader reader;
-    EXPECT_THROW(reader.readParticles(particles, test_data_dir + "/missing_fields.yaml"), YAMLReaderException);
+    EXPECT_THROW(reader.readParticles(particles, settings, test_data_dir + "/missing_fields.yaml"),
+                 YAMLReaderException);
 }
 
 /**
@@ -181,7 +183,7 @@ TEST_F(YAMLReaderTest, ReadSettingsEmptyFile) {
 TEST_F(YAMLReaderTest, ReadMultipleObjects) {
     YAMLReader reader;
     reader.readSettings(settings, test_data_dir + "/multiple_objects.yaml");
-    reader.readParticles(particles, test_data_dir + "/multiple_objects.yaml");
+    reader.readParticles(particles, settings, test_data_dir + "/multiple_objects.yaml");
     std::string output = log_stream->str();
     EXPECT_EQ(particles.size(), 5);
     EXPECT_EQ(output.find("Error"), std::string::npos);
@@ -193,7 +195,7 @@ TEST_F(YAMLReaderTest, ReadMultipleObjects) {
  */
 TEST_F(YAMLReaderTest, ReadFileWithOnlySettings) {
     YAMLReader reader;
-    EXPECT_THROW(reader.readParticles(particles, test_data_dir + "/only_settings.yaml"), YAMLReaderException);
+    EXPECT_THROW(reader.readParticles(particles, settings, test_data_dir + "/only_settings.yaml"), YAMLReaderException);
 }
 
 /**
@@ -211,7 +213,7 @@ TEST_F(YAMLReaderTest, ReadFileWithNoSettings) {
 TEST_F(YAMLReaderTest, ReadFullConfigFile) {
     YAMLReader reader;
     reader.readSettings(settings, test_data_dir + "/full_config.yaml");
-    reader.readParticles(particles, test_data_dir + "/full_config.yaml");
+    reader.readParticles(particles, settings, test_data_dir + "/full_config.yaml");
     std::string output = log_stream->str();
     EXPECT_EQ(particles.size(), 1);
 
@@ -225,9 +227,21 @@ TEST_F(YAMLReaderTest, ReadFullConfigFile) {
 
     EXPECT_EQ(settings.force, LENNARDJONES);
 
-    EXPECT_EQ(settings.frequency, 10);
+    EXPECT_EQ(settings.frequency_output, 10);
+
+    EXPECT_EQ(settings.frequency_checkpoint, 100);
 
     EXPECT_DOUBLE_EQ(settings.cutoff, 1.);
+
+    EXPECT_EQ(settings.container_type, "LINKED");
+
+    EXPECT_DOUBLE_EQ(settings.target_temp, 10.);
+
+    EXPECT_DOUBLE_EQ(settings.init_temp, 7.);
+
+    EXPECT_DOUBLE_EQ(settings.delta_temp, 1.);
+
+    EXPECT_EQ(settings.thermostat_freq, 5);
 
     EXPECT_EQ(output.find("Error"), std::string::npos);
 }
@@ -254,7 +268,7 @@ TEST_F(YAMLReaderTest, ReadSettingsOnly) {
  */
 TEST_F(YAMLReaderTest, ReadParticlesOnly) {
     YAMLReader reader;
-    reader.readParticles(particles, test_data_dir + "/full_config.yaml");
+    reader.readParticles(particles, settings, test_data_dir + "/full_config.yaml");
 
     // Particles should be populated
     EXPECT_EQ(particles.size(), 1);
@@ -276,7 +290,7 @@ TEST_F(YAMLReaderTest, TwoStepReading) {
     EXPECT_EQ(particles.size(), 0);
 
     // Step 2: Read particles
-    reader.readParticles(particles, test_data_dir + "/full_config.yaml");
+    reader.readParticles(particles, settings, test_data_dir + "/full_config.yaml");
     EXPECT_EQ(particles.size(), 1);
 
     // Both should now be populated
@@ -301,7 +315,7 @@ TEST_F(YAMLReaderTest, ReadSettingsFromOnlySettingsFile) {
  */
 TEST_F(YAMLReaderTest, ReadParticlesFromNoSettingsFile) {
     YAMLReader reader;
-    reader.readParticles(particles, test_data_dir + "/no_settings.yaml");
+    reader.readParticles(particles, settings, test_data_dir + "/no_settings.yaml");
 
     ASSERT_EQ(particles.size(), 1);
     R3 expected_pos = {0., 0., 0.};
@@ -316,7 +330,7 @@ TEST_F(YAMLReaderTest, ReadParticlesFromNoSettingsFile) {
  */
 TEST_F(YAMLReaderTest, ReadParticlesEmptyFile) {
     YAMLReader reader;
-    EXPECT_THROW(reader.readParticles(particles, test_data_dir + "/empty.yaml"), YAMLReaderException);
+    EXPECT_THROW(reader.readParticles(particles, settings, test_data_dir + "/empty.yaml"), YAMLReaderException);
 }
 
 /**
@@ -324,7 +338,7 @@ TEST_F(YAMLReaderTest, ReadParticlesEmptyFile) {
  */
 TEST_F(YAMLReaderTest, ReadParticlesNonExistentFile) {
     YAMLReader reader;
-    EXPECT_THROW(reader.readParticles(particles, test_data_dir + "/bogus_file.yaml"), YAMLReaderException);
+    EXPECT_THROW(reader.readParticles(particles, settings, test_data_dir + "/bogus_file.yaml"), YAMLReaderException);
 }
 
 /**
@@ -346,9 +360,9 @@ TEST_F(YAMLReaderTest, ReadDomainAndBoundaries) {
     const auto* left_reflecting = dynamic_cast<const Reflecting*>(&left);
     ASSERT_NE(left_reflecting, nullptr);
     ASSERT_TRUE(left_reflecting->getBoundarySigma().has_value());
-    EXPECT_DOUBLE_EQ(left_reflecting->getBoundarySigma().value(), 1.2);
+    EXPECT_DOUBLE_EQ(left_reflecting->getBoundarySigma().value(), 1.2); //NOLINT
     ASSERT_TRUE(left_reflecting->getBoundaryEpsilon().has_value());
-    EXPECT_DOUBLE_EQ(left_reflecting->getBoundaryEpsilon().value(), 5.0);
+    EXPECT_DOUBLE_EQ(left_reflecting->getBoundaryEpsilon().value(), 5.0); //NOLINT
 
     // Verify RIGHT boundary (REFLECTING without custom sigma/epsilon)
     const Boundary& right = settings.domain.getBoundary(BoundaryLocation::RIGHT);
@@ -368,13 +382,80 @@ TEST_F(YAMLReaderTest, ReadDomainAndBoundaries) {
     const auto* upper_reflecting = dynamic_cast<const Reflecting*>(&upper);
     ASSERT_NE(upper_reflecting, nullptr);
     ASSERT_TRUE(upper_reflecting->getBoundarySigma().has_value());
-    EXPECT_DOUBLE_EQ(upper_reflecting->getBoundarySigma().value(), 2.0);
+    EXPECT_DOUBLE_EQ(upper_reflecting->getBoundarySigma().value(), 2.0); //NOLINT
     ASSERT_TRUE(upper_reflecting->getBoundaryEpsilon().has_value());
-    EXPECT_DOUBLE_EQ(upper_reflecting->getBoundaryEpsilon().value(), 10.0);
+    EXPECT_DOUBLE_EQ(upper_reflecting->getBoundaryEpsilon().value(), 10.0); //NOLINT
 
     // Verify LOWER boundary (OUTFLOW)
     const Boundary& lower = settings.domain.getBoundary(BoundaryLocation::LOWER);
     EXPECT_EQ(lower.getType(), BoundaryType::OUTFLOW);
+
+    EXPECT_EQ(output.find("Error"), std::string::npos);
+}
+
+/**
+ * @brief Tests the YAML Readers ability to read a checkpoint file with full settings and particle data
+ *
+ */
+TEST_F(YAMLReaderTest, ReadCheckpointFile) {
+    YAMLReader reader;
+    reader.readSettings(settings, test_data_dir + "/checkpoint.yaml");
+    reader.readParticles(particles, settings, test_data_dir + "/checkpoint.yaml");
+    std::string output = log_stream->str();
+
+    // Verify settings
+    EXPECT_EQ(settings.delta_t, 0.005);
+    EXPECT_DOUBLE_EQ(settings.end_time, 500.0);
+    EXPECT_DOUBLE_EQ(settings.start_time, 0.0);
+    EXPECT_EQ(settings.base_name, "MD");
+    EXPECT_EQ(settings.force, LENNARDJONES);
+    EXPECT_EQ(settings.frequency_output, 10);
+    EXPECT_EQ(settings.frequency_checkpoint, 100);
+    EXPECT_DOUBLE_EQ(settings.target_temp, 10.);
+    EXPECT_EQ(settings.thermostat_freq, 5);
+    EXPECT_DOUBLE_EQ(settings.delta_temp, 0.2);
+
+    R3 expected_domain = {10., 10., 10.};
+    const Boundary& upper = settings.domain.getBoundary(BoundaryLocation::UPPER);
+    const Boundary& lower = settings.domain.getBoundary(BoundaryLocation::LOWER);
+    const Boundary& left = settings.domain.getBoundary(BoundaryLocation::LEFT);
+    const Boundary& right = settings.domain.getBoundary(BoundaryLocation::RIGHT);
+    const Boundary& front = settings.domain.getBoundary(BoundaryLocation::FRONT);
+    const Boundary& back = settings.domain.getBoundary(BoundaryLocation::BACK);
+
+    EXPECT_R3_EQ(settings.domain.getDimension(), expected_domain);
+    EXPECT_EQ(upper.getType(), BoundaryType::OUTFLOW);
+    EXPECT_EQ(lower.getType(), BoundaryType::REFLECTING);
+    EXPECT_EQ(left.getType(), BoundaryType::REFLECTING);
+    EXPECT_EQ(right.getType(), BoundaryType::REFLECTING);
+    EXPECT_EQ(front.getType(), BoundaryType::PERIODIC);
+    EXPECT_EQ(back.getType(), BoundaryType::PERIODIC);
+
+    const auto* lower_reflecting = dynamic_cast<const Reflecting*>(&lower);
+    ASSERT_NE(lower_reflecting, nullptr);
+    ASSERT_TRUE(lower_reflecting->getBoundarySigma().has_value());
+    EXPECT_DOUBLE_EQ(lower_reflecting->getBoundarySigma().value(), 1.2); //NOLINT
+    ASSERT_TRUE(lower_reflecting->getBoundaryEpsilon().has_value());
+    EXPECT_DOUBLE_EQ(lower_reflecting->getBoundaryEpsilon().value(), 5.0); //NOLINT
+
+    // Verify particle data
+    EXPECT_EQ(particles.size(), 1);
+
+    R3 expected_pos = {0.5, 6., 2.3};
+    R3 expected_old_pos = {1., 1., 1.};
+    R3 expected_velo = {-2., 7., 0.8};
+    R3 expected_force = {6., 6., 7.};
+    R3 expected_old_force = {4., 5.5, 1.2};
+
+    EXPECT_R3_EQ(particles[0].getX(), expected_pos);
+    EXPECT_R3_EQ(particles[0].getOldX(), expected_old_pos);
+    EXPECT_R3_EQ(particles[0].getV(), expected_velo);
+    EXPECT_R3_EQ(particles[0].getF(), expected_force);
+    EXPECT_R3_EQ(particles[0].getOldF(), expected_old_force);
+    EXPECT_EQ(particles[0].getM(), 69.0);
+    EXPECT_EQ(particles[0].getEpsilon(), 420.0);
+    EXPECT_EQ(particles[0].getSigma(), 1337.0);
+    EXPECT_EQ(particles[0].getType(), 42);
 
     EXPECT_EQ(output.find("Error"), std::string::npos);
 }

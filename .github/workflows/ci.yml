@@ -1,10 +1,10 @@
-name: CI MolSim
+name: MolSim Build and Test
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [main]
   pull_request:
-    branches: [ "main" ]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -13,109 +13,136 @@ permissions:
   id-token: write
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    container:
-      image: mbichmann/molsim-vtk
+  test:
+    runs-on: self-hosted
+    strategy:
+      matrix:
+        build_type: [Debug, Release]
+        compiler: [g++, clang++]
+        sanitize: [no-san, asan-ubsan, tsan]
+        exclude:
+          - build_type: Release
+            sanitize: asan-ubsan
+          - build_type: Release
+            sanitize: tsan
+          - compiler: g++
+            sanitize: tsan
+        include:
+          - build_type: Debug
+            compiler: clang++
+            sanitize: no-san
+            coverage: true
     env:
-      BUILD_TYPE: Release
-      BUILD_DIR: build
+      BUILD_DIR: build-${{ matrix.compiler }}-${{ matrix.build_type }}-${{ matrix.sanitize }}
+      CXX_FLAGS: ${{ matrix.sanitize != 'no-san' && format('-O1 -fsanitize={0} -fno-omit-frame-pointer', matrix.sanitize == 'asan-ubsan' && 'address,undefined' || matrix.sanitize == 'tsan' && 'thread' || '') || '' }}
+      LLVM_PROFILE_FILE: 'build-${{ matrix.compiler }}-${{ matrix.build_type }}-${{ matrix.sanitize }}/%p-%m.profraw'
+      ASAN_OPTIONS: 'halt_on_error=1'
+      UBSAN_OPTIONS: 'halt_on_error=1:print_stacktrace=1'
+      TSAN_OPTIONS: 'halt_on_error=1'
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Configure CMake
-      run: cmake -G Ninja -S . -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" -DENABLE_VTK_OUTPUT=ON -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCOVERAGE=ON -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
+    - name: Cache CMake build
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.BUILD_DIR }}
+        key: cmake-${{ matrix.compiler }}-${{ matrix.build_type }}-${{ matrix.sanitize }}-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt') }}
+        restore-keys: |
+          cmake-${{ matrix.compiler }}-${{ matrix.build_type }}-${{ matrix.sanitize }}-
+
+    - name: Configure
+      run: |
+        cmake -G Ninja -S . -B "$BUILD_DIR" \
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type}} \
+          -DCMAKE_CXX_COMPILER=${{ matrix.compiler }} \
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+          -DCMAKE_CXX_FLAGS="$CXX_FLAGS" \
+          -DENABLE_VTK_OUTPUT=ON \
+          -DCMAKE_COMPILE_WARNING_AS_ERROR=ON \
+          -DENABLE_CLANG_TIDY=OFF \
+          ${{ matrix.coverage && '-DCOVERAGE=ON' || '' }}
 
     - name: Build
-      run: cmake --build "$BUILD_DIR" --config "${BUILD_TYPE}"
+      run: cmake --build "$BUILD_DIR"
 
     - name: Test
       run: ctest --test-dir "$BUILD_DIR/tests" --output-on-failure
-      env:
-        LLVM_PROFILE_FILE: ${{ env.BUILD_DIR }}/%p-%m.profraw
-    
-    - name: Generate coverage report
-      if: ${{ always() }}
+
+    - name: Coverage report
+      if: matrix.coverage
       run: cmake --build "$BUILD_DIR" --target coverage_report
 
-    - name: Upload coverage artifact
-      if: ${{ always() }}
+    - name: Upload coverage
+      if: matrix.coverage
       uses: actions/upload-artifact@v4
       with:
         name: coverage-report
         path: ${{ env.BUILD_DIR }}/coverage
         if-no-files-found: ignore
-
-  sanitizer:
-    runs-on: ubuntu-latest
-    container:
-      image: mbichmann/molsim-vtk
+      
+  lint:
+    runs-on: self-hosted
+    needs: test
     env:
-      BUILD_DIR: build-asan
-      BUILD_TYPE: Debug
-
+      BUILD_DIR: build-lint
     steps:
     - uses: actions/checkout@v4
 
-    - name: Configure (ASan, Clang)
-      run: cmake -G Ninja -S . -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -fsanitize=address -fno-omit-frame-pointer" -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DENABLE_VTK_OUTPUT=ON -DCMAKE_COMPILE_WARNING_AS_ERROR=ON
-
-    - name: Build
-      run: cmake --build "$BUILD_DIR" --config "${BUILD_TYPE}"
-
-    - name: Run MolSim with ASan
-      run: ./"$BUILD_DIR"/project/MolSim ./input/particles.yaml # don't run for too long or create too many files
-      env:
-        ASAN_OPTIONS: halt_on_error=1
-
-  documentation:
-    runs-on: ubuntu-latest
-    container:
-      image: mbichmann/molsim-vtk
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Setup Pages
-      uses: actions/configure-pages@v5
+    - name: Cache lint build
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.BUILD_DIR }}
+        key: lint-${{ hashFiles('CMakeLists.txt', 'cmake/**', 'src/**/CMakeLists.txt', 'src/**/*.cpp', 'src/**/*.h', 'include/**/*.h', 'tests/**/*.cpp', 'benchmarks/**/*.cpp', '.clang-tidy') }}
+        restore-keys: |
+          lint-
 
     - name: Configure
-      run: cmake -G Ninja -S . -B build
-      
-    - name: Build Documentation
-      run: cmake --build build --target doc_doxygen
+      run: |
+        cmake -G Ninja -S . -B "$BUILD_DIR" \
+          -DCMAKE_BUILD_TYPE=Debug \
+          -DCMAKE_CXX_COMPILER=clang++ \
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+          -DENABLE_CLANG_TIDY=ON \
+          -DCLANG_TIDY_WARNINGS_AS_ERRORS=ON
 
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: './doxys_documentation/html'
+    - name: Build with clang-tidy
+      run: cmake --build "$BUILD_DIR"
   
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
-
-  upload-codecov:
-    runs-on: ubuntu-latest
-    container:
-      image: mbichmann/molsim-vtk
-    # disable conditional execution until workflow is merged into main, so that gh actually renders the button
+  codecov:
+    runs-on: self-hosted
+    needs: lint
     if: github.event_name == 'workflow_dispatch'
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
       with:
-        fetch-depth: 0 
+        fetch-depth: 0
 
-    - name: Download sanitizer coverage artifact
-      uses: actions/download-artifact@v5
+    - uses: actions/download-artifact@v4
       with:
         name: coverage-report
 
-    - name: Upload to Codecov
-      uses: codecov/codecov-action@v4
+    - uses: codecov/codecov-action@v4
       with:
-        files: coverage-artifact/coverage/coverage.lcov
-        flags: coverage
-        verbose: true
+        files: coverage/coverage.lcov
         token: ${{ secrets.CODECOV_TOKEN }}
+
+  docs:
+    runs-on: self-hosted
+    needs: lint
+    steps:
+    - uses: actions/checkout@v4
+    
+    - uses: actions/configure-pages@v5
+
+    - name: Configure Docs
+      run: cmake -G Ninja -S . -B build
+    
+    - name: Build Docs 
+      run: cmake --build build --target doc_doxygen
+
+    - uses: actions/upload-pages-artifact@v3
+      with:
+        path: ./doxys_documentation/html
+    
+    - uses: actions/deploy-pages@v4
