@@ -53,29 +53,6 @@ class CheckpointWriterMock : public CheckpointWriter {
                 (const, override));
 };
 
-using ContainerTypes = testing::Types<SimpleContainer, LinkedCellContainer>;
-TYPED_TEST_SUITE(SimulationTestBase, ContainerTypes);
-
-template <typename Container>
-class CalculateXTest : public SimulationTestBase<Container> {};
-TYPED_TEST_SUITE(CalculateXTest, ContainerTypes);
-
-template <typename Container>
-class CalculateVTest : public SimulationTestBase<Container> {};
-TYPED_TEST_SUITE(CalculateVTest, ContainerTypes);
-
-template <typename Container>
-class CalculateFTest : public SimulationTestBase<Container> {};
-TYPED_TEST_SUITE(CalculateFTest, ContainerTypes);
-
-template <typename Container>
-class CalculateThermostatTest : public SimulationTestBase<Container> {};
-TYPED_TEST_SUITE(CalculateThermostatTest, ContainerTypes);
-
-template <typename Container>
-class SimulationRunTest : public SimulationTestBase<Container> {};
-TYPED_TEST_SUITE(SimulationRunTest, ContainerTypes);
-
 /**
  * @brief Mocks StatsWriter for testing without file I/O.
  *

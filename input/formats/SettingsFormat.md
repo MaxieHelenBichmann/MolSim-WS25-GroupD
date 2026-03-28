@@ -294,7 +294,6 @@ settings:
       x: 50.0
       y: 50.0
       z: 50.0
-      g_grav: -9.81
       boundaries:
         left:
           type: REFLECTING

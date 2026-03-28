@@ -139,6 +139,7 @@ class SettingsParam {
      * Output is written every *frequency* iterations.
      */
     size_t frequency_output = FREQUENCY_OUTPUT_DEFAULT;
+
     /**
      * @brief Frequency of checkpoint files being written.
      * Checkpoints are written every *frequency* iterations.

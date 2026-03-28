@@ -121,7 +121,7 @@ void validateParticleParams(double mass, double epsilon, double sigma, const std
 YAMLReader::YAMLReader() = default;
 
 YAMLReader::~YAMLReader() = default;
-// NOLINTNEXTLINE
+
 void YAMLReader::readSettings(SettingsParam& settings, const std::string& filename) {
     try {
         YAML::Node root = YAML::LoadFile(filename);
@@ -418,14 +418,6 @@ void YAMLReader::readXVM(ContainerRef particles, const YAML::Node& node) {
                     }
                 }
 
-                R3 old_position = R3{0., 0., 0.};
-                if (curr["old_coordinates"]) {
-                    const YAML::Node& old_coordinates_node = curr["old_coordinates"];
-                    old_position[0] = old_coordinates_node["ox"].as<double>();
-                    old_position[1] = old_coordinates_node["oy"].as<double>();
-                    old_position[2] = old_coordinates_node["oz"].as<double>();
-                }
-
                 R3 velocity;
                 const YAML::Node& velocity_node = curr["velocity"];
                 if (velocity_node.IsSequence() && velocity_node.size() == 3) {
@@ -455,22 +447,6 @@ void YAMLReader::readXVM(ContainerRef particles, const YAML::Node& node) {
                         old_force[1] = old_force_node[1].as<double>();
                         old_force[2] = old_force_node[2].as<double>();
                     }
-                }
-
-                R3 force = R3{0., 0., 0.};
-                if (curr["force"]) {
-                    const YAML::Node& force_node = curr["force"];
-                    force[0] = force_node["fx"].as<double>();
-                    force[1] = force_node["fy"].as<double>();
-                    force[2] = force_node["fz"].as<double>();
-                }
-
-                R3 old_force = R3{0., 0., 0.};
-                if (curr["old_force"]) {
-                    const YAML::Node& old_force_node = curr["old_force"];
-                    old_force[0] = old_force_node["ofx"].as<double>();
-                    old_force[1] = old_force_node["ofy"].as<double>();
-                    old_force[2] = old_force_node["ofz"].as<double>();
                 }
 
                 auto mass = curr["mass"].as<double>();

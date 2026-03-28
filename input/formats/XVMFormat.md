@@ -34,24 +34,6 @@ When creating a checkpoint file, the whole state of each particle has to be defi
 - `force`: Force acting on the particle as `[fx, fy, fz]`.
 - `old_force`: Previous force acting on the particle as `[ofx, ofy, ofz]`.
 
-## Particle in a Checkpoint File
-
-When creating a checkpoint file, the whole state of each particle has to be defined and has the following **additional** keys:
-
-- `old_coordinates`: A map defining the previous coordinates of the particle.
-  - `ox`: The old x-coordinate of the particle.
-  - `oy`: The old y-coordinate of the particle.
-  - `oz`: The old z-coordinate of the particle.
-- `force`: A map defining the force acting on a particle.
-  - `fx`: The x-component of the current force.
-  - `fy`: The y-component of the current force.
-  - `fz`: The z-component of the current force.
-- `old_force`: A map defining the previous force acting on a particle.
-  - `ofx`: The x-component of the old force.
-  - `ofy`: The y-component of the old force.
-  - `ofz`: The z-component of the old force.
-- `type`: The type of the particle. 
-
 ## Example
 
 ```yaml

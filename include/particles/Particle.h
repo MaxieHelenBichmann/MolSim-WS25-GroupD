@@ -181,12 +181,6 @@ class Particle {
     Particle(R3 x_arg, R3 old_x_arg, R3 v_arg, R3 f_arg, R3 old_f_arg, double m_arg, double epsilon_arg,
              double sigma_arg, int type_arg);
 
-    Particle(
-        // for visualization, we need always 3 coordinates
-        // -> in case of 2d, we use only the first and the second
-        R3 x_arg, R3 old_x_arg, R3 v_arg, R3 f_arg, R3 old_f_arg, double m_arg, double epsilon_arg, double sigma_arg,
-        int type_arg);
-
     ~Particle();
 
     /**

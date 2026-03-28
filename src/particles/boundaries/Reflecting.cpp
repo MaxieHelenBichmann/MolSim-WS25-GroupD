@@ -55,8 +55,6 @@ void Reflecting::applyBoundary(Particle& p, const PairwiseForceSource& force) no
         p.getF() = p.getF() + force.applyForce(
                                   p, Particle(ghost_pos, {0.0, 0.0, 0.0}, p.getM(), epsilon, sigma_ghost, p.getType()));
     }
-
-    return std::nullopt;
 }
 
 }  // namespace mol_sim

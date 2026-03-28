@@ -19,7 +19,6 @@
 #include "io/StatsWriter.h"
 #include "particles/Particle.h"
 #include "particles/ParticleContainer.h"
-#include "particles/container/LinkedCellContainer.h"
 #include "particles/container/domain/Domain.h"
 #include "physics/pairwiseforces/PairwiseForceSource.h"
 #include "physics/singleforces/HarmonicForce.h"
@@ -74,10 +73,6 @@ class Simulation {
      * @brief Single Force applied in particle interactions.
      */
     std::vector<SingleForce> single_forces;
-    /**
-     * @brief Force type, used in checkpointing.
-     */
-    Force force;
     /**
      * @brief Writer used for output.
      */
@@ -158,6 +153,7 @@ class Simulation {
      * @brief Frequency with which the thermostat is applied.
      */
     size_t thermostat_freq;
+
     /**
      * @brief Flag if thermostat is enabled for this simulation.
      */
@@ -496,37 +492,6 @@ class Simulation {
                 }
             }
         }
-        // Calculate forces from mirrored/ghost particles
-        for (const Particle& p1 : new_particles) {
-            R3 lookup_pos = p1.getX();
-
-            // For mirrored particles from periodic boundaries (type==1), their position is slightly
-            // outside the domain. We need to clamp it to just inside the boundary region to find
-            // the correct neighbors while preserving the actual position for force calculation.
-            if (p1.getType() == 1) {  // Mirrored particle from periodic boundary
-                R3 domain_size = domain.getDimension();
-                constexpr double epsilon = 1e-6;  // Small offset to stay inside domain
-                for (size_t dim = 0; dim < 3; ++dim) {
-                    // Mirror slightly left of domain (x < 0) → clamp to just inside left boundary
-                    if (lookup_pos[dim] < 0) {
-                        lookup_pos[dim] = epsilon;
-                    }
-                    // Mirror slightly right of domain (x > domain) → clamp to just inside right boundary
-                    else if (lookup_pos[dim] > domain_size[dim]) {
-                        lookup_pos[dim] = domain_size[dim] - epsilon;
-                    }
-                }
-            }
-
-            auto it_prox = particles.proximityBegin(lookup_pos, particles.size());
-            auto it_prox_end = particles.proximityEnd(lookup_pos);
-            for (; it_prox != it_prox_end; ++it_prox) {
-                Particle& p2 = *it_prox;
-                Vector<double, 3> force = force_source.applyForce(p2, p1);
-                p2.getF() = p2.getF() + force;
-            }
-        }
-        new_particles.clear();
     }
 #endif
     /**
@@ -578,20 +543,6 @@ class Simulation {
     }
 
     /**
-     * @brief      Calculates the thermostat factor used to modulate velocity.
-     *
-     * @return     The thermostat factor.
-     */
-    double calculateThermostatFactor() {
-        double curr_temp = (2.0 * total_energy) / (dimensions * particles.size());
-        if (curr_temp == 0) {
-            return 1;
-        }
-        double clamped_target = curr_temp + std::clamp((target_temp - curr_temp), -delta_temp, delta_temp);
-        return sqrt(clamped_target / curr_temp);
-    }
-
-    /**
      * @brief Performs a full simulation run.
      * @throws SimulationException if an error occurs during output writing.
      */
@@ -636,30 +587,6 @@ class Simulation {
             cp_settings.target_force_magnitude = target_force.getMagnitude();
             cp_settings.target_force_max_iterations = target_force.getMaxIterations();
         }
-        auto cp_n = static_cast<size_t>(std::ceil((end_time - start_time) / delta_t));
-#endif
-
-#ifdef ENABLE_CHECKPOINTING
-        SettingsParam cp_settings;
-        cp_settings.delta_t = delta_t;
-        cp_settings.end_time = end_time;
-        cp_settings.start_time = current_time;
-        cp_settings.base_name = base_name;
-        cp_settings.force = force;
-        if constexpr (std::is_same_v<std::remove_cvref_t<containerType>, LinkedCellContainer>) {
-            cp_settings.container_type = "LINKED";
-        } else {
-            cp_settings.container_type = "SIMPLE";
-        }
-        cp_settings.frequency_output = frequency_output;
-        cp_settings.frequency_checkpoint = frequency_checkpoint;
-        cp_settings.cutoff = cutoff_radius;
-        cp_settings.target_temp = target_temp;
-        cp_settings.delta_temp = delta_temp;
-        cp_settings.thermostat_freq = thermostat_freq;
-        cp_settings.dimensions = dimensions;
-        cp_settings.g_grav = g_grav;
-        cp_settings.thermo = thermo;
         auto cp_n = static_cast<size_t>(std::ceil((end_time - start_time) / delta_t));
 #endif
 

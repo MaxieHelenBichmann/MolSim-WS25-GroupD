@@ -14,8 +14,6 @@ void VelocityReflect::applyBoundary(Particle& p, [[maybe_unused]] const Pairwise
         p.getX()[axis] -= 2 * (p.getX()[axis] - domain_size[axis]);
         p.getV()[axis] *= -1;
     }
-
-    return std::nullopt;
 }
 
 }  // namespace mol_sim
