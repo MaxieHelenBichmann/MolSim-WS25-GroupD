@@ -4,6 +4,7 @@
 #include <yaml-cpp/exceptions.h>
 #include <yaml-cpp/node/node.h>
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstdlib>
@@ -21,7 +22,8 @@
 #include "particles/container/domain/Domain.h"
 #include "particles/generators/CuboidGenerator.h"
 #include "particles/generators/DiscGenerator.h"
-#include "physics/ForceSource.h"
+#include "particles/generators/MembraneGenerator.h"
+#include "physics/pairwiseforces/PairwiseForceSource.h"
 #include "utils/Settings.h"
 #include "utils/Vector.h"
 
@@ -34,7 +36,7 @@ namespace {
  * @param[in]  settings
  * @throws ValidationException when bad values are read.
  */
-void validateSettings(const SettingsParam& settings) {
+void validateSettings(SettingsParam& settings) {
     if (settings.delta_t <= 0) {
         SPDLOG_ERROR("delta_t must be positive, got: " + std::to_string(settings.delta_t));
         throw ValidationException("delta_t must be positive, got: " + std::to_string(settings.delta_t));
@@ -46,6 +48,19 @@ void validateSettings(const SettingsParam& settings) {
     if (settings.cutoff < 0) {
         SPDLOG_ERROR("cutoff must be non-negative, got: " + std::to_string(settings.cutoff));
         throw ValidationException("cutoff must be non-negative, got: " + std::to_string(settings.cutoff));
+    }
+    if (settings.smoothing < 0) {
+        SPDLOG_ERROR("smoothing must be non-negative, got: " + std::to_string(settings.smoothing));
+        throw ValidationException("smoothing must be non-negative, got: " + std::to_string(settings.smoothing));
+    }
+    // Check if smooth LJ is used, then smoothing must be <= cutoff
+    if (std::ranges::find(settings.pairwise_forces, S_LENNARDJONES) != settings.pairwise_forces.end()) {
+        if (settings.smoothing > settings.cutoff) {
+            SPDLOG_ERROR(
+                "For SMOOTHLENNARDJONES: smoothing radius must be <= cutoff radius, got smoothing={}, cutoff={}",
+                settings.smoothing, settings.cutoff);
+            throw ValidationException("For SMOOTHLENNARDJONES: smoothing radius must be <= cutoff radius");
+        }
     }
     if (settings.delta_temp <= 0) {
         SPDLOG_ERROR("delta_temp must be greater then 0, got: " + std::to_string(settings.delta_temp));
@@ -64,6 +79,21 @@ void validateSettings(const SettingsParam& settings) {
         SPDLOG_ERROR("thermostat_freq must be non-negative, got: " + std::to_string(settings.thermostat_freq));
         throw ValidationException("thermostat_freq must be non-negative, got: " +
                                   std::to_string(settings.thermostat_freq));
+    }
+    if (settings.pairwise_forces.empty()) {
+        SPDLOG_ERROR("At least one pairwise force has to be specified");
+        throw ValidationException("At least one pairwise force has to be specified");
+    }
+    if (settings.strategy == ParallelizationStrategy::COLORING) {
+#ifndef _OPENMP
+        SPDLOG_WARN("COLORING strategy requires OpenMP, falling back to NAIVE");
+        settings.strategy = ParallelizationStrategy::NAIVE;
+#else
+        if (settings.container_type != "LINKED") {
+            SPDLOG_WARN("COLORING strategy only works with LINKED container, falling back to NAIVE");
+            settings.strategy = ParallelizationStrategy::NAIVE;
+        }
+#endif
     }
 }
 /**
@@ -91,12 +121,13 @@ void validateParticleParams(double mass, double epsilon, double sigma, const std
 YAMLReader::YAMLReader() = default;
 
 YAMLReader::~YAMLReader() = default;
-// NOLINTNEXTLINE
+
 void YAMLReader::readSettings(SettingsParam& settings, const std::string& filename) {
     try {
         YAML::Node root = YAML::LoadFile(filename);
 
         if (root.size() == 0) {
+            SPDLOG_ERROR("Empty YAML file");
             throw YAMLReaderException("Empty YAML file");
         }
 
@@ -105,6 +136,7 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
         YAML::Node node = first_it->second;
 
         if (!node["format"] || node["format"].as<std::string>() != "Settings") {
+            SPDLOG_ERROR("First block must be 'Settings' format");
             throw YAMLReaderException("First block must be 'Settings' format");
         }
 
@@ -120,22 +152,23 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
         if (node["base_name"]) {
             settings.base_name = node["base_name"].as<std::string>();
         }
-        if (node["force"]) {
-            auto force_str = node["force"].as<std::string>();
-            if (force_str == "Lennard Jones") {
-                settings.force = LENNARDJONES;
-            } else if (force_str == "Gravitational") {
-                settings.force = GRAVITATIONAL;
-            } else {
-                throw ValidationException("Unknown force type: " + force_str);
-            }
-        }
         if (node["container"]) {
             auto container_str = node["container"].as<std::string>();
             if (container_str != "SIMPLE" && container_str != "LINKED") {
                 throw ValidationException("Unknown container type: " + container_str + " (expected SIMPLE or LINKED)");
             }
             settings.container_type = container_str;
+        }
+        if (node["strategy"]) {
+            auto strategy_str = node["strategy"].as<std::string>();
+            if (strategy_str == "NAIVE") {
+                settings.strategy = ParallelizationStrategy::NAIVE;
+            } else if (strategy_str == "COLORING") {
+                settings.strategy = ParallelizationStrategy::COLORING;
+            } else {
+                throw ValidationException("Unknown parallelization strategy: " + strategy_str +
+                                          " (expected NAIVE or COLORING)");
+            }
         }
         if (node["frequency"]) {
             settings.frequency_output = node["frequency"].as<size_t>();
@@ -146,6 +179,104 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
         if (node["cutoff"]) {
             settings.cutoff = node["cutoff"].as<double>();
         }
+        if (node["smooth"]) {
+            settings.smoothing = node["smooth"].as<double>();
+        }
+        if (node["enable_brownian"]) {
+            settings.brownian = node["enable_brownian"].as<bool>();
+        }
+        if (node["pairwise_forces"]) {
+            settings.pairwise_forces.clear();
+            YAML::Node pairwise_node = node["pairwise_forces"];
+            if (pairwise_node.IsSequence()) {
+                for (const auto& force_item : pairwise_node) {
+                    auto force_str = force_item.as<std::string>();
+                    if (force_str == "GRAVITATIONAL") {
+                        settings.pairwise_forces.push_back(PairwiseForce::GRAVITATIONAL);
+                    } else if (force_str == "LENNARDJONES") {
+                        settings.pairwise_forces.push_back(PairwiseForce::LENNARDJONES);
+                    } else if (force_str == "TRUNCLENNARDJONES") {
+                        settings.pairwise_forces.push_back(PairwiseForce::TRUNCLENNARDJONES);
+                    } else if (force_str == "SMOOTHLENNARDJONES") {
+                        settings.pairwise_forces.push_back(PairwiseForce::S_LENNARDJONES);
+                    } else {
+                        SPDLOG_ERROR("Unknown pairwise force type: " + force_str);
+                        throw ValidationException("Unknown pairwise force type: " + force_str);
+                    }
+                }
+            } else {
+                SPDLOG_ERROR("pairwise_forces must be a sequence");
+                throw ValidationException("pairwise_forces must be a sequence");
+            }
+        }
+        if (node["single_forces"]) {
+            settings.single_forces.clear();
+            YAML::Node single_node = node["single_forces"];
+            if (single_node.IsSequence()) {
+                for (const auto& force_item : single_node) {
+                    if (force_item.IsMap() && force_item["type"]) {
+                        // New object-based format
+                        auto force_type = force_item["type"].as<std::string>();
+                        if (force_type == "GRAV") {
+                            settings.single_forces.push_back(SingleForce::GRAV);
+                            if (force_item["g_grav"]) {
+                                const YAML::Node& g_grav_node = force_item["g_grav"];
+                                if (g_grav_node.IsSequence() && g_grav_node.size() == 3) {
+                                    settings.g_grav_vec[0] = g_grav_node[0].as<double>();
+                                    settings.g_grav_vec[1] = g_grav_node[1].as<double>();
+                                    settings.g_grav_vec[2] = g_grav_node[2].as<double>();
+                                } else {
+                                    SPDLOG_ERROR("GRAV force: g_grav must be [gx, gy, gz]");
+                                    throw ValidationException("GRAV force: g_grav must be [gx, gy, gz]");
+                                }
+                            }
+                        } else if (force_type == "HARMONIC") {
+                            settings.single_forces.push_back(SingleForce::HARMONIC);
+                            if (force_item["k"]) {
+                                settings.k = force_item["k"].as<double>();
+                            }
+                            if (force_item["r_0"]) {
+                                settings.r_0 = force_item["r_0"].as<double>();
+                            }
+                        } else {
+                            SPDLOG_ERROR("Unknown single force type: " + force_type);
+                            throw ValidationException("Unknown single force type: " + force_type);
+                        }
+                    } else {
+                        SPDLOG_ERROR("single_forces items must be objects with 'type' field or strings");
+                        throw ValidationException("single_forces items must be objects with 'type' field or strings");
+                    }
+                }
+            } else {
+                SPDLOG_ERROR("single_forces must be a sequence");
+                throw ValidationException("single_forces must be a sequence");
+            }
+        }
+
+        if (node["target_force"]) {
+            settings.target_force_enabled = true;
+            YAML::Node target_node = node["target_force"];
+            if (target_node["direction"]) {
+                const YAML::Node& dir_node = target_node["direction"];
+                if (dir_node.IsSequence() && dir_node.size() == 3) {
+                    settings.target_force_direction[0] = dir_node[0].as<double>();
+                    settings.target_force_direction[1] = dir_node[1].as<double>();
+                    settings.target_force_direction[2] = dir_node[2].as<double>();
+                } else {
+                    SPDLOG_ERROR("target_force: direction must be [dx, dy, dz]");
+                    throw ValidationException("target_force: direction must be [dx, dy, dz]");
+                }
+            }
+            if (target_node["magnitude"]) {
+                settings.target_force_magnitude = target_node["magnitude"].as<double>();
+            }
+            if (target_node["max_iterations"]) {
+                settings.target_force_max_iterations = target_node["max_iterations"].as<size_t>();
+            }
+        } else {
+            settings.target_force_enabled = false;
+        }
+
         if (node["thermostat"]) {
             settings.thermo = true;
             YAML::Node t_node = node["thermostat"];
@@ -166,6 +297,37 @@ void YAMLReader::readSettings(SettingsParam& settings, const std::string& filena
         } else {
             settings.thermo = false;
         }
+        if (node["statistics"]) {
+            YAML::Node t_node = node["statistics"];
+            if (t_node["data"]) {
+                settings.stats_freq_diffusion = t_node["data"].as<size_t>();
+                settings.diff = true;
+            } else {
+                settings.diff = false;
+            }
+            if (t_node["rdf"]) {
+                settings.stats_freq_rdf = t_node["rdf"].as<size_t>();
+                settings.rdf = true;
+            } else {
+                settings.rdf = false;
+            }
+            if (t_node["sample_r"]) {
+                if (!settings.rdf) {
+                    throw ValidationException(
+                        "Sample radius can only be set if data collection for the RDF is enabled");
+                }
+                settings.sample_radius = t_node["sample_r"].as<double>();
+            }
+            if (t_node["window_size"]) {
+                if (!settings.rdf) {
+                    throw ValidationException("Window size can only be set if data collection for the RDF is enabled");
+                }
+                settings.window_size = t_node["window_size"].as<double>();
+            }
+        } else {
+            settings.rdf = false;
+            settings.diff = false;
+        }
 
         if (node["domain"]) {
             parseDomain(settings, node["domain"]);
@@ -185,6 +347,7 @@ void YAMLReader::readParticles(ContainerRef particles, const SettingsParam& sett
         YAML::Node root = YAML::LoadFile(filename);
 
         if (root.size() == 0) {
+            SPDLOG_ERROR("Empty YAML file");
             throw YAMLReaderException("Empty YAML file");
         }
 
@@ -209,11 +372,16 @@ void YAMLReader::readParticles(ContainerRef particles, const SettingsParam& sett
             } else if (format == "Disc") {
                 has_particle_definition = true;
                 readDisc(particles, settings, node);
+            } else if (format == "Membrane") {
+                has_particle_definition = true;
+                readMembrane(particles, settings, node);
             }
             // Skip Settings and unknown formats silently in phase 2
         }
 
-        if (!has_particle_definition) {
+        // this assumes that all files that contain particles (namely in the case of checkpoint files) have already been
+        // parsed before this one.
+        if (!has_particle_definition && particles.empty()) {
             throw YAMLReaderException("No particle definitions (XVM, Cuboid, or Disc) found in the input file");
         }
     } catch (const YAML::Exception& e) {
@@ -231,38 +399,54 @@ void YAMLReader::readXVM(ContainerRef particles, const YAML::Node& node) {
             for (const auto& curr : node["particles"]) {
                 R3 position;
                 const YAML::Node& coordinates = curr["coordinates"];
-                position[0] = coordinates["x"].as<double>();
-                position[1] = coordinates["y"].as<double>();
-                position[2] = coordinates["z"].as<double>();
+                if (coordinates.IsSequence() && coordinates.size() == 3) {
+                    position[0] = coordinates[0].as<double>();
+                    position[1] = coordinates[1].as<double>();
+                    position[2] = coordinates[2].as<double>();
+                } else {
+                    SPDLOG_ERROR("XVM: coordinates must be [x, y, z]");
+                    throw ValidationException("XVM: coordinates must be [x, y, z]");
+                }
 
                 R3 old_position = R3{0., 0., 0.};
                 if (curr["old_coordinates"]) {
                     const YAML::Node& old_coordinates_node = curr["old_coordinates"];
-                    old_position[0] = old_coordinates_node["ox"].as<double>();
-                    old_position[1] = old_coordinates_node["oy"].as<double>();
-                    old_position[2] = old_coordinates_node["oz"].as<double>();
+                    if (old_coordinates_node.IsSequence() && old_coordinates_node.size() == 3) {
+                        old_position[0] = old_coordinates_node[0].as<double>();
+                        old_position[1] = old_coordinates_node[1].as<double>();
+                        old_position[2] = old_coordinates_node[2].as<double>();
+                    }
                 }
 
                 R3 velocity;
                 const YAML::Node& velocity_node = curr["velocity"];
-                velocity[0] = velocity_node["vx"].as<double>();
-                velocity[1] = velocity_node["vy"].as<double>();
-                velocity[2] = velocity_node["vz"].as<double>();
+                if (velocity_node.IsSequence() && velocity_node.size() == 3) {
+                    velocity[0] = velocity_node[0].as<double>();
+                    velocity[1] = velocity_node[1].as<double>();
+                    velocity[2] = velocity_node[2].as<double>();
+                } else {
+                    SPDLOG_ERROR("XVM: velocity must be [vx, vy, vz]");
+                    throw ValidationException("XVM: velocity must be [vx, vy, vz]");
+                }
 
                 R3 force = R3{0., 0., 0.};
                 if (curr["force"]) {
                     const YAML::Node& force_node = curr["force"];
-                    force[0] = force_node["fx"].as<double>();
-                    force[1] = force_node["fy"].as<double>();
-                    force[2] = force_node["fz"].as<double>();
+                    if (force_node.IsSequence() && force_node.size() == 3) {
+                        force[0] = force_node[0].as<double>();
+                        force[1] = force_node[1].as<double>();
+                        force[2] = force_node[2].as<double>();
+                    }
                 }
 
                 R3 old_force = R3{0., 0., 0.};
                 if (curr["old_force"]) {
                     const YAML::Node& old_force_node = curr["old_force"];
-                    old_force[0] = old_force_node["ofx"].as<double>();
-                    old_force[1] = old_force_node["ofy"].as<double>();
-                    old_force[2] = old_force_node["ofz"].as<double>();
+                    if (old_force_node.IsSequence() && old_force_node.size() == 3) {
+                        old_force[0] = old_force_node[0].as<double>();
+                        old_force[1] = old_force_node[1].as<double>();
+                        old_force[2] = old_force_node[2].as<double>();
+                    }
                 }
 
                 auto mass = curr["mass"].as<double>();
@@ -297,19 +481,34 @@ std::vector<YAMLReader::CuboidData> YAMLReader::parseCuboids(const YAML::Node& n
         CuboidData data;
 
         const YAML::Node& coordinates = node["coordinates"];
-        data.position[0] = coordinates["x"].as<double>();
-        data.position[1] = coordinates["y"].as<double>();
-        data.position[2] = coordinates["z"].as<double>();
+        if (coordinates.IsSequence() && coordinates.size() == 3) {
+            data.position[0] = coordinates[0].as<double>();
+            data.position[1] = coordinates[1].as<double>();
+            data.position[2] = coordinates[2].as<double>();
+        } else {
+            SPDLOG_ERROR("Cuboid: coordinates must be [x, y, z]");
+            throw ValidationException("Cuboid: coordinates must be [x, y, z]");
+        }
 
         const YAML::Node& velocity_node = node["velocity"];
-        data.velocity[0] = velocity_node["vx"].as<double>();
-        data.velocity[1] = velocity_node["vy"].as<double>();
-        data.velocity[2] = velocity_node["vz"].as<double>();
+        if (velocity_node.IsSequence() && velocity_node.size() == 3) {
+            data.velocity[0] = velocity_node[0].as<double>();
+            data.velocity[1] = velocity_node[1].as<double>();
+            data.velocity[2] = velocity_node[2].as<double>();
+        } else {
+            SPDLOG_ERROR("Cuboid: velocity must be [vx, vy, vz]");
+            throw ValidationException("Cuboid: velocity must be [vx, vy, vz]");
+        }
 
         const YAML::Node& count_node = node["particleNum"];
-        data.num_particles[0] = count_node["nx"].as<size_t>();
-        data.num_particles[1] = count_node["ny"].as<size_t>();
-        data.num_particles[2] = count_node["nz"].as<size_t>();
+        if (count_node.IsSequence() && count_node.size() == 3) {
+            data.num_particles[0] = count_node[0].as<size_t>();
+            data.num_particles[1] = count_node[1].as<size_t>();
+            data.num_particles[2] = count_node[2].as<size_t>();
+        } else {
+            SPDLOG_ERROR("Cuboid: particleNum must be [nx, ny, nz]");
+            throw ValidationException("Cuboid: particleNum must be [nx, ny, nz]");
+        }
 
         data.mass = node["mass"].as<double>();
         data.distance = node["distance"].as<double>();
@@ -318,6 +517,22 @@ std::vector<YAMLReader::CuboidData> YAMLReader::parseCuboids(const YAML::Node& n
         }
         data.epsilon = node["epsilon"].as<double>();
         data.sigma = node["sigma"].as<double>();
+
+        if (node["targets"] && node["targets"].IsSequence()) {
+            for (const auto& target : node["targets"]) {
+                if (target.IsSequence() && target.size() == 3) {
+                    N3 target_pos;
+                    target_pos[0] = target[0].as<size_t>();
+                    target_pos[1] = target[1].as<size_t>();
+                    target_pos[2] = target[2].as<size_t>();
+                    data.targets.push_back(target_pos);
+                } else {
+                    SPDLOG_ERROR("Cuboid: target must be a sequence of 3 integers [x, y, z]");
+                    throw ValidationException("Cuboid: target must be a sequence of 3 integers [x, y, z]");
+                }
+            }
+            SPDLOG_DEBUG("Parsed {} target particles for cuboid", data.targets.size());
+        }
 
         validateParticleParams(data.mass, data.epsilon, data.sigma, "Cuboid");
         if (data.distance <= 0) {
@@ -344,14 +559,24 @@ std::vector<YAMLReader::DiscData> YAMLReader::parseDiscs(const YAML::Node& node)
         DiscData data;
 
         const YAML::Node& coordinates = node["coordinates"];
-        data.position[0] = coordinates["x"].as<double>();
-        data.position[1] = coordinates["y"].as<double>();
-        data.position[2] = coordinates["z"].as<double>();
+        if (coordinates.IsSequence() && coordinates.size() == 3) {
+            data.position[0] = coordinates[0].as<double>();
+            data.position[1] = coordinates[1].as<double>();
+            data.position[2] = coordinates[2].as<double>();
+        } else {
+            SPDLOG_ERROR("Disc: coordinates must be [x, y, z]");
+            throw ValidationException("Disc: coordinates must be [x, y, z]");
+        }
 
         const YAML::Node& velocity_node = node["velocity"];
-        data.velocity[0] = velocity_node["vx"].as<double>();
-        data.velocity[1] = velocity_node["vy"].as<double>();
-        data.velocity[2] = velocity_node["vz"].as<double>();
+        if (velocity_node.IsSequence() && velocity_node.size() == 3) {
+            data.velocity[0] = velocity_node[0].as<double>();
+            data.velocity[1] = velocity_node[1].as<double>();
+            data.velocity[2] = velocity_node[2].as<double>();
+        } else {
+            SPDLOG_ERROR("Disc: velocity must be [vx, vy, vz]");
+            throw ValidationException("Disc: velocity must be [vx, vy, vz]");
+        }
 
         data.radius = node["radius"].as<size_t>();
         data.mass = node["mass"].as<double>();
@@ -361,6 +586,22 @@ std::vector<YAMLReader::DiscData> YAMLReader::parseDiscs(const YAML::Node& node)
         }
         data.epsilon = node["epsilon"].as<double>();
         data.sigma = node["sigma"].as<double>();
+
+        if (node["targets"] && node["targets"].IsSequence()) {
+            for (const auto& target : node["targets"]) {
+                if (target.IsSequence() && target.size() == 3) {
+                    N3 target_pos;
+                    target_pos[0] = target[0].as<size_t>();
+                    target_pos[1] = target[1].as<size_t>();
+                    target_pos[2] = target[2].as<size_t>();
+                    data.targets.push_back(target_pos);
+                } else {
+                    SPDLOG_ERROR("Disc: target must be a sequence of 3 integers [x, y, z]");
+                    throw ValidationException("Disc: target must be a sequence of 3 integers [x, y, z]");
+                }
+            }
+            SPDLOG_DEBUG("Parsed {} target particles for disc", data.targets.size());
+        }
 
         validateParticleParams(data.mass, data.epsilon, data.sigma, "Disc");
         if (data.distance <= 0) {
@@ -383,9 +624,9 @@ std::vector<YAMLReader::DiscData> YAMLReader::parseDiscs(const YAML::Node& node)
 void YAMLReader::readCube(ContainerRef particles, const SettingsParam& settings, const YAML::Node& node) {
     auto cuboids = parseCuboids(node);
     for (const auto& data : cuboids) {
-        CuboidGenerator generator(data.position, data.velocity, data.num_particles, data.mass, data.distance,
-                                  data.avg_velo, data.epsilon, data.sigma, settings.init_temp);
-        generator.generateParticles(particles);
+        CuboidGenerator generator(data.position, data.velocity, data.num_particles, data.targets, data.mass,
+                                  data.distance, data.avg_velo, data.epsilon, data.sigma, settings.init_temp);
+        generator.generateParticles(particles, settings.brownian, settings.thermo);
     }
 }
 
@@ -394,17 +635,21 @@ void YAMLReader::readDisc(ContainerRef particles, const SettingsParam& settings,
     for (const auto& data : discs) {
         DiscGenerator generator(data.position, data.velocity, data.radius, data.mass, data.distance, data.avg_velo,
                                 data.epsilon, data.sigma, settings.init_temp);
-        generator.generateParticles(particles);
+        generator.generateParticles(particles, settings.brownian, settings.thermo);
     }
 }
 
 void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
     try {
-        R3 dimension = {node["x"].as<double>(), node["y"].as<double>(), node["z"].as<double>()};
-        const YAML::Node& g_grav_node = node["g_grav"];
-        if (g_grav_node) {
-            settings.g_grav = g_grav_node.as<double>();
+        R3 dimension;
+        auto coordinates = node["coordinates"];
+        if (coordinates && coordinates.IsSequence() && coordinates.size() == 3) {
+            dimension = {coordinates[0].as<double>(), coordinates[1].as<double>(), coordinates[2].as<double>()};
+        } else {
+            SPDLOG_ERROR("Domain: coordinates must be [x, y, z]");
+            throw ValidationException("Domain: coordinates must be [x, y, z]");
         }
+
         const YAML::Node& dimensions_node = node["dimensions"];  // NOLINT
         if (dimensions_node) {
             settings.dimensions = dimensions_node.as<size_t>();  // NOLINT
@@ -464,6 +709,87 @@ void YAMLReader::parseDomain(SettingsParam& settings, const YAML::Node& node) {
     } catch (YAML::Exception& e) {
         SPDLOG_ERROR("Error parsing domain: {}", e.what());
         throw YAMLReaderException(e.what());
+    }
+}
+
+std::vector<YAMLReader::MembraneData> YAMLReader::parseMembranes(const YAML::Node& node) {
+    std::vector<MembraneData> membranes;
+    try {
+        MembraneData data;
+
+        const YAML::Node& coordinates = node["coordinates"];
+        if (!coordinates.IsSequence() || coordinates.size() != 3) {
+            SPDLOG_ERROR("Membrane: coordinates must be [x, y, z]");
+            throw ValidationException("Membrane: coordinates must be [x, y, z]");
+        }
+        data.position[0] = coordinates[0].as<double>();
+        data.position[1] = coordinates[1].as<double>();
+        data.position[2] = coordinates[2].as<double>();
+
+        const YAML::Node& velocity_node = node["velocity"];
+        if (!velocity_node.IsSequence() || velocity_node.size() != 3) {
+            SPDLOG_ERROR("Membrane: velocity must be [vx, vy, vz]");
+            throw ValidationException("Membrane: velocity must be [vx, vy, vz]");
+        }
+        data.velocity[0] = velocity_node[0].as<double>();
+        data.velocity[1] = velocity_node[1].as<double>();
+        data.velocity[2] = velocity_node[2].as<double>();
+
+        const YAML::Node& count_node = node["particleNum"];
+        if (!count_node.IsSequence() || count_node.size() != 2) {
+            SPDLOG_ERROR("Membrane: particleNum must be [nx, ny]");
+            throw ValidationException("Membrane: particleNum must be [nx, ny]");
+        }
+        data.num_particles[0] = count_node[0].as<size_t>();
+        data.num_particles[1] = count_node[1].as<size_t>();
+
+        data.mass = node["mass"].as<double>();
+        data.distance = node["distance"].as<double>();
+        if (node["mean_velo"]) {
+            data.avg_velo = node["mean_velo"].as<double>();
+        }
+        data.epsilon = node["epsilon"].as<double>();
+        data.sigma = node["sigma"].as<double>();
+
+        if (node["targets"] && node["targets"].IsSequence()) {
+            for (const auto& target : node["targets"]) {
+                if (target.IsSequence() && target.size() == 2) {
+                    Vector<size_t, 2> target_pos;
+                    target_pos[0] = target[0].as<size_t>();
+                    target_pos[1] = target[1].as<size_t>();
+                    data.targets.push_back(target_pos);
+                } else {
+                    SPDLOG_ERROR("Membrane: target must be a sequence of 2 integers [x, y]");
+                    throw ValidationException("Membrane: target must be a sequence of 2 integers [x, y]");
+                }
+            }
+            SPDLOG_DEBUG("Parsed {} target particles for membrane", data.targets.size());
+        }
+
+        validateParticleParams(data.mass, data.epsilon, data.sigma, "Membrane");
+        if (data.distance <= 0) {
+            SPDLOG_ERROR("Membrane: distance must be positive, got: " + std::to_string(data.distance));
+            throw ValidationException("Membrane: distance must be positive, got: " + std::to_string(data.distance));
+        }
+
+        SPDLOG_DEBUG("Parsed membrane: {}x{} particles at ({}, {}, {})", data.num_particles[0], data.num_particles[1],
+                     data.position[0], data.position[1], data.position[2]);
+
+        membranes.push_back(data);
+
+    } catch (const YAML::Exception& e) {
+        SPDLOG_ERROR("Error parsing membranes: {}", e.what());
+        throw YAMLReaderException(e.what());
+    }
+    return membranes;
+}
+
+void YAMLReader::readMembrane(ContainerRef particles, const SettingsParam& settings, const YAML::Node& node) {
+    auto membranes = parseMembranes(node);
+    for (const auto& data : membranes) {
+        MembraneGenerator generator(data.position, data.velocity, data.num_particles, data.targets, data.mass,
+                                    data.distance, data.avg_velo, data.epsilon, data.sigma, settings.init_temp);
+        generator.generateParticles(particles, settings.brownian, settings.thermo);
     }
 }
 

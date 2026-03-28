@@ -21,6 +21,7 @@
 - [Documentation](#documentation)
 - [Testing the Project](#testing-the-project)
 - [Benchmarking the Project](#benchmarking-the-project)
+- [Analyzing the Project](#analyzing-the-project)
 - [Optional Tools](#optional-tools)
 - [Profiling](#profiling)
 
@@ -31,17 +32,23 @@
 MolSim is a molecular dynamics simulation framework developed as part of the PSE Molekulardynamik course. The application simulates the physical behavior of particle systems using numerical integration methods and various force models.
 
 **Key Features:**
-- Multiple force implementations (Gravitational, Lennard-Jones)
+- Multiple force implementations (Gravitational, Lennard-Jones, Harmonic)
+- Single particle forces (Target forces for membrane simulations)
 - Efficient particle containers (Direct Sum, Linked Cell)
-- Boundary condition support (Reflecting, Outflow, VelocityReflect)
-- Particle generators utilities (Cuboid, Disc) with Brownian Motion
+- Boundary condition support (Reflecting, Outflow, Periodic)
+- Particle generators (Cuboid, Disc, Membrane) with Brownian Motion
 - Output formats (VTK, XYZ)
+- Checkpointing support for long simulations
+- Statistical Analysis of the Simulation over its runtime
+- 2D Particle Membranes 
 - Configurable via YAML input files
 
 **Supported Simulations:**
 - Gravitational N-body problems (planetary systems, stellar dynamics)
 - Molecular dynamics with Lennard-Jones potentials (fluids, collisions)
+- Membrane simulations with harmonic spring forces
 - Large-scale particle systems using spatial optimization (Linked Cells)
+- Argon Crystallization simulations
 
 ---
 
@@ -83,6 +90,11 @@ MolSim-WS25-GroupD/
 ### Profiling
 - Perf
 - Valgrind
+- Intel oneAPI toolkit
+
+### Data Analysis
+- Python 3.9+
+- pip
 
 ---
 
@@ -107,6 +119,12 @@ ccmake ..
 | `ENABLE_BENCHMARK` | Enable benchmarking (requires `BENCHMARK_DOWNLOAD_DEPENDENCIES`) |
 | `ENABLE_DOXYGEN` | Enable Doxygen documentation generation |
 | `ENABLE_PROFILING` | Enable profiling tools (perf and valgrind) |
+| `ENABLE_INTEL_VTUNE` | Enable Intel VTune profiling targets |
+| `ENABLE_INTEL_ADVISOR` | Enable Intel Advisor profiling targets |
+| `ENABLE_IO` | Enable IO Output |
+| `ENABLE_CHECKPOINTS` | Enables Checkpoint writing at specified intervals |
+| `ENABLE_STATS` | Enables writing of simulation statistics at specified intervals |
+| `ENABLE_UBSAN` | Enables undefined behavior sanitizer (Debug only) |
 | `COVERAGE` | Enable code coverage reports |
 | `ENABLE_VTK_OUTPUT` | Enable output in VTK format |
 | `CMAKE_BUILD_TYPE` | Build type: `Debug`, `Release`, `RelWithDebInfo`, `MinSizeRel` |
@@ -200,10 +218,10 @@ ctest -V --test-dir ./build/tests
 | Filter Pattern | Description |
 |----------------|-------------|
 | `Simulation/Complexity/` | Compares O(n) LinkedCell vs O(n²) DirectSum scaling |
-| `Cell/` | Compares cell data structures (Vector, Set, UnorderedSet) |
+| `Cell/` | Compares cell data structures (Vector, Set, UnorderedSet) |  
 | `Boundary/` | Measures boundary condition overhead (Reflecting, VelocityReflect) |
-| `Simulation/` | Full end-to-end simulation benchmarks |(Do Not Work Currently)
-| `LinkedCell/` | LinkedCellContainer-specific operation benchmarks | (Do Not Work Currently)
+| `Simulation/Full` | Full end-to-end simulation benchmarks and the Contest 1 benchmark  |
+| `LinkedCell/` | LinkedCellContainer-specific operation benchmarks |
 
 ### Example Benchmark Commands
 
@@ -221,11 +239,51 @@ ctest -V --test-dir ./build/tests
 ### Python Analysis
 You can use the analyse_data.py file in benchmarks/data to quickly get an overview of the data produced by the benchmarks. MatPlotLib and Pandas are required for this -> see benchmarks/data/requirements.txt
 ```bash
-pip install requirements.txt
+cd benchmarks/data
 
-./build/benchmarks/MolSimBench --benchmark_filter=<filter> --benchmark_out_format=json --benchmark_out=<path/to/outputfile>
+# Optional but recommended: create a virtual environment
+python -m venv venv
+source venv/bin/activate
 
-python benchmarks/data/analyse_data.py <path/to/outputfile>
+# Install Requirements
+pip install -r requirements.txt
+
+# Run Benchmarks
+../../build/benchmarks/MolSimBench --benchmark_filter=<filter> --benchmark_out_format=json --benchmark_out=<path/to/outputfile>
+
+# Visualize Data
+python ./analyse_data.py <path/to/outputfile>
+```
+
+## Analyzing the Project
+
+> **Note:** Ensure `ENABLE_STATS` is enabled in CMake configuration.
+
+This project being a Molecular Dynamics Simulator, you can additionally collect thermodynamical statistics to further analyze the simulation.
+
+### Collecting Data
+There are three supported statistics - the Temperature, Diffusion and Radial Distribution Function. The required configurations can be seen in input/formats/SettingsFormat.md. While running, the Simulator will collect the necessary statistics in `diffusion.csv`,`temp.csv` or `rdf.csv` in the build directory.
+
+### Python Analysis
+You can use the plot_diffusion.py, plot_temperature.py or plot_rdf.py file in scripts/statistics to visualize the collected data. MatPlotLib is required for this -> see scripts/statistics/requirements.txt
+```bash
+cd scripts/statistics
+
+# Optional but recommended: create a virtual environment
+python -m venv venv
+source venv/bin/activate
+
+# Install Requirements
+pip install -r requirements.txt
+
+# Plot data collected for Temperature
+python plot_temperature.py <path/to/temp.csv> --delta-t <DELTA_T> --start-time <START_TIME> --out <FILE>.png
+
+# Plot data collected for Diffusion
+python plot_diffusion.py <path/to/diffusion.csv> --delta-t <DELTA_T> --start-time <START_TIME> --out <FILE>.png
+
+# Plot data of Radial Distribution Function
+python plot_rdf.py <path/to/rdf.csv> --delta-t <DELTA_T> --start-time <START_TIME> --out <FILE>.png
 ```
 ---
 
@@ -272,6 +330,8 @@ Output location: `build/coverage/`
 | `perf` | CPU profiling (requires Linux kernel support) |
 | `valgrind` | Memory debugging and profiling suite |
 | `ms_print` | View massif output (included with valgrind) |
+| `vtune` | Intel VTune Profiler (optional, requires Intel oneAPI) |
+| `advisor` | Intel Advisor (optional, requires Intel oneAPI) |
 
 
 ### Build Configuration for Profiling
@@ -360,6 +420,35 @@ cat build/valgrind/memcheck.log  # Review findings
 make valgrind-massif
 ms_print build/valgrind/massif.out | less
 ```
+
+---
+
+### Intel VTune and Advisor
+
+> **Note:** Requires `ENABLE_INTEL_VTUNE` and/or `ENABLE_INTEL_ADVISOR` in CMake configuration and Intel oneAPI toolkit installed.
+
+**VTune Profiler targets:**
+```bash
+make vtune-hotspots    # CPU hotspot analysis
+make vtune-memory      # Memory access patterns
+make vtune-uarch       # Microarchitecture exploration
+make vtune-all         # Run all VTune analyses
+```
+
+**Advisor targets:**
+```bash
+make advisor-survey       # Vectorization opportunities
+make advisor-tripcounts   # Loop iteration counts
+make advisor-roofline     # Roofline performance model
+make advisor-all          # Run all Advisor analyses
+```
+
+**Combined Intel profiling:**
+```bash
+make intel-profile-all  # Run all analyses and create archive
+```
+
+Results saved to `build/vtune/`, `build/advisor/`, or `build/profiling-results/`.
 
 ---
 

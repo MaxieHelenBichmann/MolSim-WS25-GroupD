@@ -1,34 +1,22 @@
 settings:
-    format: Settings
-    delta_t: 0.005
-    end_time: 500.0
-    start_time: 0.0
-    base_name: "MD"
-    force: "Lennard Jones"
-    frequency: 10
-    checkpoint: 100
-    cutoff: 1.
-    container: "LINKED"
-    thermostat:
-      initial_temp: 7.
-      target_temp: 10.
-      n_thermostat: 5
-      delta_temp: 1.
-    domain:
-      x: 1.
-      y: 1.
-      z: 1.
-
+  format: Settings
+  delta_t: 0.005
+  end_time: 500.0
+  start_time: 0.0
+  base_name: MD
+  frequency: 10
+  checkpoint: 100
+  cutoff: 1.0
+  container: LINKED
+  thermostat:
+    initial_temp: 7.0
+    target_temp: 10.0
+    n_thermostat: 5
+    delta_temp: 1.0
+  domain:
+    coordinates: [1.0, 1.0, 1.0]
+  pairwise_forces: [LENNARDJONES]
 xvm_1:
-    format: XVM
-    num_particles: 1
-    particles:
-        - coordinates:
-            x: 10.0
-            y: 10.0
-            z: 10.0
-          velocity:
-            vx: 0.0
-            vy: 0.0
-            vz: 0.0
-          mass: 2.0
+  format: XVM
+  num_particles: 1
+  particles: [{coordinates: [10.0, 10.0, 10.0], velocity: [0.0, 0.0, 0.0], mass: 2.0}]

@@ -13,6 +13,7 @@
 #include "particles/ParticleContainer.h"
 #include "particles/container/cells/Cell.h"
 #include "utils/Vector.h"
+
 namespace mol_sim {
 
 /**
@@ -20,6 +21,9 @@ namespace mol_sim {
  *
  * Implemented with std::vector to be comparable with CellExplicit.
  * Implements all methods of the Cell (so documentation is analogous), but only used for benchmarking.
+ *
+ * @note Certain optimizations and additions (dated after Worksheet 3) that were being made to the real
+ * LinkedCellContainer NOT included.
  */
 class CellDirect {
     /**
@@ -352,6 +356,12 @@ class LinkedCellContainerDirect {
                                                                                       size_t offset = 0) const;
     [[nodiscard]] proximity_iterator<const Particle, const CellDirect> proximityEnd(R3 center) const;
 
+    [[nodiscard]] proximity_iterator<Particle, CellDirect> proximityBegin_no_N3L(R3 center);   // NOLINT
+    [[nodiscard]] proximity_iterator<Particle, CellDirect> proximityEnd_no_N3L(R3 center);     // NOLINT
+    [[nodiscard]] proximity_iterator<const Particle, const CellDirect> proximityBegin_no_N3L(  // NOLINT
+        R3 center) const;
+    [[nodiscard]] proximity_iterator<const Particle, const CellDirect> proximityEnd_no_N3L(R3 center) const;  // NOLINT
+
     // boundary and halo iterators
 
     [[nodiscard]] proximity_iterator<Particle, CellDirect> haloBegin(
@@ -388,6 +398,8 @@ class LinkedCellContainerDirect {
         const std::set<BoundaryLocation>& boundary_types = {BoundaryLocation::UPPER, BoundaryLocation::LOWER,
                                                             BoundaryLocation::FRONT, BoundaryLocation::BACK,
                                                             BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
+
+    void prepareForParallelIteration() const {}  // No-op for benchmark container
 
     [[nodiscard]] R3 getDomainSize();
 };

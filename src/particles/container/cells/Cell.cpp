@@ -1,6 +1,9 @@
 #include "particles/container/cells/Cell.h"
 
 #include <spdlog/spdlog.h>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 using namespace mol_sim;
 
@@ -20,7 +23,9 @@ void Cell::addParticle(size_t idx) {
     auto [_, inserted] = indices.insert(idx);
     cache_dirty = inserted || cache_dirty;
 }
+
 void Cell::removeParticle(size_t idx) noexcept { cache_dirty = indices.erase(idx) != 0 || cache_dirty; }
+
 void Cell::updateParticleIndex(size_t old_idx, size_t new_idx) {
     auto it = indices.find(old_idx);
     if (it != indices.end()) {
@@ -28,22 +33,6 @@ void Cell::updateParticleIndex(size_t old_idx, size_t new_idx) {
         indices.insert(new_idx);
         cache_dirty = true;
     }
-}
-std::vector<size_t>::iterator Cell::stableIteratorBegin() {
-    updateCache();
-    return sorted_cache.begin();
-}
-std::vector<size_t>::iterator Cell::stableIteratorEnd() {
-    updateCache();
-    return sorted_cache.end();
-}
-std::vector<size_t>::const_iterator Cell::stableIteratorBegin() const {
-    const_cast<Cell*>(this)->updateCache();
-    return sorted_cache.begin();
-}
-std::vector<size_t>::const_iterator Cell::stableIteratorEnd() const {
-    const_cast<Cell*>(this)->updateCache();
-    return sorted_cache.end();
 }
 
 void Cell::clear() noexcept { indices.clear(); }

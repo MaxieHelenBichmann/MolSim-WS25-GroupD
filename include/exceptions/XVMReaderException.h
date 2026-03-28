@@ -8,12 +8,12 @@
 namespace mol_sim {
 
 /**
- * @brief Exception thrown by the XVMReader;
+ * @brief Exception thrown by the XVMReader.
  *
  */
 class XVMReaderException : public InputException {
    public:
-    explicit XVMReaderException(const std::string& message) : InputException(message){};
+    explicit XVMReaderException(const std::string& message) : InputException(message) {};
 };
 }  // namespace mol_sim
 

@@ -2,17 +2,10 @@ settings:
   format: Settings
   end_time: 40
   container: LINKED
-
 drop:
   format: Disc
-  coordinates:
-      x: 150
-      y: 150
-      z: 0.0
-  velocity:
-      vx: 0.0
-      vy: 0.0
-      vz: 0.0
+  coordinates: [150, 150, 0.0]
+  velocity: [0.0, 0.0, 0.0]
   radius: 20
   mass: 1.0
   distance: 1.2

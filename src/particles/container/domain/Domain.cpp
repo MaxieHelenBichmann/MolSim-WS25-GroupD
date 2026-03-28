@@ -4,6 +4,8 @@
 
 #include "exceptions/BoundaryException.h"
 #include "particles/boundaries/Outflow.h"
+#include "particles/boundaries/Periodic.h"
+#include "physics/pairwiseforces/LennardJonesForce.h"
 
 namespace mol_sim {
 
@@ -68,15 +70,27 @@ const Boundary& Domain::getBoundary(BoundaryLocation location) const {
     return *boundary;
 }
 
-std::vector<Particle> Domain::applyBoundary(Particle& p, const ForceSource& force) const noexcept {  // NOLINT
-    std::vector<Particle> particles;
+void Domain::applyBoundary(Particle& p) const noexcept {  // NOLINT
+    const LennardJonesForce force;
     for (const auto& boundary : boundaries) {
         if (boundary) {
-            auto new_particles = boundary->applyBoundary(p, force).value_or(std::vector<Particle>());
-            particles.insert(particles.end(), new_particles.begin(), new_particles.end());
+            boundary->applyBoundary(p, force);
         }
     }
-    return particles;
+
+    // handle edge case (which can potentially cause instabilities relating to periodic boundaries)
+    if (typeid(boundaries[0]) == typeid(std::unique_ptr<Periodic>) &&
+        typeid(boundaries[1]) == typeid(std::unique_ptr<Periodic>)) {
+        boundaries[0]->applyBoundary(p, force);
+    }
+    if (typeid(boundaries[2]) == typeid(std::unique_ptr<Periodic>) &&
+        typeid(boundaries[3]) == typeid(std::unique_ptr<Periodic>)) {
+        boundaries[2]->applyBoundary(p, force);
+    }
+    if (typeid(boundaries[4]) == typeid(std::unique_ptr<Periodic>) &&
+        typeid(boundaries[5]) == typeid(std::unique_ptr<Periodic>)) {
+        boundaries[4]->applyBoundary(p, force);
+    }
 }
 
 Domain& Domain::operator=(Domain&& other) noexcept {

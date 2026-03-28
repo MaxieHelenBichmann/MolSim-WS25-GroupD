@@ -28,8 +28,6 @@ namespace mol_sim {
  * Do not take References of a ContainerRef object, as it is a reference itself, and trivially copyable.
  * Alway pass-by-value (copy) - similar to std::span.
  *
- * @note maybe will get erased later, if IO functions will be templated as well and compile time and code size
- * acceptable
  *
  */
 using CONTAINER_REF = std::variant<SimpleContainer*, LinkedCellContainer*>;
@@ -323,6 +321,42 @@ class ContainerRef {
      */
     [[nodiscard]] proximity_iterator<const Particle, const Cell> proximityEnd(R3 center) const;
 
+    /**
+     * @brief Mutable Iterator over particles in proximity, but does not use the N3L optimization.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     *
+     * @return Mutable iterator to the first particle within the given radius of the center.
+     */
+    [[nodiscard]] proximity_iterator<Particle, Cell> proximityBegin_no_N3L(R3 center);  // NOLINT
+
+    /**
+     * @brief Mutable Iterator over particles in proximity, but does not use the N3L optimization.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     *
+     * @return Mutable iterator after the last particle within the given radius of the center.
+     */
+    [[nodiscard]] proximity_iterator<Particle, Cell> proximityEnd_no_N3L(R3 center);  // NOLINT
+
+    /**
+     * @brief Const Iterator over particles in proximity, but does not use the N3L optimization.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     *
+     * @return Const iterator to the first particle within the given radius of the center.
+     */
+    [[nodiscard]] proximity_iterator<const Particle, const Cell> proximityBegin_no_N3L(R3 center) const;  // NOLINT
+
+    /**
+     * @brief Const Iterator over particles in proximity, but does not use the N3L optimization.
+     *
+     * @param center Center point to check proximity from (position of the particle).
+     *
+     * @return Const iterator after the last particle within the given radius of the center.
+     */
+    [[nodiscard]] proximity_iterator<const Particle, const Cell> proximityEnd_no_N3L(R3 center) const;  // NOLINT
+
     // boundary and halo iterators
 
     /**
@@ -421,6 +455,20 @@ class ContainerRef {
         const std::set<BoundaryLocation>& locations = {BoundaryLocation::UPPER, BoundaryLocation::LOWER,
                                                        BoundaryLocation::FRONT, BoundaryLocation::BACK,
                                                        BoundaryLocation::LEFT, BoundaryLocation::RIGHT}) const;
+
+    /**
+     * @brief Prepare all container caches for thread-safe parallel iteration.
+     *
+     * Delegates to the underlying container's prepareForParallelIteration method.
+     */
+    void prepareForParallelIteration();
+
+    /**
+     * @brief Prepare all container caches for thread-safe parallel iteration (const version).
+     *
+     * Delegates to the underlying container's prepareForParallelIteration method.
+     */
+    void prepareForParallelIteration() const;
 };
 static_assert(ParticleContainer<ContainerRef>);
 

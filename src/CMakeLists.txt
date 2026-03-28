@@ -13,6 +13,7 @@ add_clang_tidy_support(LibMolSim)
 include(vtk)
 
 add_executable(MolSim MolSim.cpp)
+include(openmp)
 
 target_link_libraries(MolSim PRIVATE LibMolSim)
 add_clang_tidy_support(MolSim)
@@ -33,7 +34,9 @@ endif()
 if(ENABLE_CHECKPOINTS)
     target_compile_definitions(MolSim PRIVATE ENABLE_CHECKPOINTING)
 endif()
-
+if(ENABLE_STATS)
+    target_compile_definitions(MolSim PRIVATE ENABLE_STATS)
+endif()
 
 if(COVERAGE)
     include(GenerateCoverage)

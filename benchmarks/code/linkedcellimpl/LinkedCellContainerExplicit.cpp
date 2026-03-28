@@ -508,6 +508,25 @@ LinkedCellContainerExplicit::proximityEnd(R3 center) const {
         {static_cast<const Particle*>(data.data()), data.size()}};
 }
 
+LinkedCellContainerExplicit::proximity_iterator<Particle, CellExplicit>
+LinkedCellContainerExplicit::proximityBegin_no_N3L(R3 center) {
+    return proximityBegin(center);
+}
+
+LinkedCellContainerExplicit::proximity_iterator<Particle, CellExplicit>
+LinkedCellContainerExplicit::proximityEnd_no_N3L(R3 center) {
+    return proximityEnd(center);
+}
+
+LinkedCellContainerExplicit::proximity_iterator<const Particle, const CellExplicit>
+LinkedCellContainerExplicit::proximityBegin_no_N3L(R3 center) const {
+    return proximityBegin(center);
+}
+LinkedCellContainerExplicit::proximity_iterator<const Particle, const CellExplicit>
+LinkedCellContainerExplicit::proximityEnd_no_N3L(R3 center) const {
+    return proximityEnd(center);
+}
+
 // boundary and halo iterators
 LinkedCellContainerExplicit::proximity_iterator<Particle, CellExplicit> LinkedCellContainerExplicit::haloBegin(
     const std::set<BoundaryLocation>& boundary_types) {

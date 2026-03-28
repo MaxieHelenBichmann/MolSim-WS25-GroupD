@@ -12,7 +12,7 @@
 #include "../code/simulationimpl/ForceCalcMethods.h"
 #include "BenchmarkingUtils.h"
 #include "particles/container/SimpleContainer.h"
-#include "physics/LennardJonesForce.h"
+#include "physics/pairwiseforces/LennardJonesForce.h"
 
 namespace mol_sim {
 /**

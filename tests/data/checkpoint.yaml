@@ -1,65 +1,39 @@
 settings:
-    format: Settings
-    delta_t: 0.005
-    end_time: 500.0
-    start_time: 0.0
-    base_name: "MD"
-    force: "Lennard Jones"
-    container: "SIMPLE"
-    frequency: 10
-    checkpoint: 100
-    cutoff: 1.
-    thermostat:
-      target_temp: 10.
-      n_thermostat: 5
-      delta_temp: 0.2
-    domain:
-      x: 10.
-      y: 10.
-      z: 10.
-      g_grav: -9.81
-      dimensions: 3
-      boundaries:
-        upper:
-          type: OUTFLOW
-        lower:
-          type: REFLECTING
-          sigma: 1.2
-          epsilon: 5.0
-        left:
-          type: REFLECTING
-        right:
-          type: REFLECTING
-        front:
-          type: PERIODIC
-        back:
-          type: PERIODIC
-
+  format: Settings
+  delta_t: 0.005
+  end_time: 500.0
+  start_time: 0.0
+  base_name: MD
+  container: SIMPLE
+  strategy: NAIVE
+  frequency: 10
+  checkpoint: 100
+  cutoff: 1.0
+  thermostat:
+    target_temp: 10.0
+    n_thermostat: 5
+    delta_temp: 0.2
+  domain:
+    coordinates: [10.0, 10.0, 10.0]
+    dimensions: 3
+    boundaries:
+      upper:
+        type: OUTFLOW
+      lower:
+        type: REFLECTING
+        sigma: 1.2
+        epsilon: 5.0
+      left:
+        type: REFLECTING
+      right:
+        type: REFLECTING
+      front:
+        type: PERIODIC
+      back:
+        type: PERIODIC
+  pairwise_forces: [LENNARDJONES]
+  single_forces: [{type: GRAV, g_grav: [0.0, -9.81, 0.0]}]
 xvm_data:
-    format: XVM
-    num_particles: 1
-    particles:
-      - coordinates:
-          x: 0.5
-          y: 6.0
-          z: 2.3
-        old_coordinates:
-          ox: 1.0
-          oy: 1.0
-          oz: 1.0
-        velocity:
-          vx: -2.0
-          vy: 7.0
-          vz: 0.8
-        force:
-          fx: 6.0
-          fy: 6.0
-          fz: 7.0
-        old_force:
-          ofx: 4.0
-          ofy: 5.5
-          ofz: 1.2
-        mass: 69.0
-        epsilon: 420.0
-        sigma: 1337.0
-        type: 42
+  format: XVM
+  num_particles: 1
+  particles: [{coordinates: [0.5, 6.0, 2.3], old_coordinates: [1.0, 1.0, 1.0], velocity: [-2.0, 7.0, 0.8], force: [6.0, 6.0, 7.0], old_force: [4.0, 5.5, 1.2], mass: 69.0, epsilon: 420.0, sigma: 1337.0, type: 42}]

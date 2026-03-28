@@ -62,11 +62,16 @@ concept ParticleContainer = requires(C c) {
     { (*static_cast<const C*>(&c)).end() } -> std::random_access_iterator;
     { c.cend() } -> std::random_access_iterator;
 
-    // iterators particles in proximity
+    // iterators particles in proximity (with and without N3L optimization)
     { c.proximityBegin(R3(), size_t()) } -> std::forward_iterator;
     { (*static_cast<const C*>(&c)).proximityBegin(R3(), size_t()) } -> std::forward_iterator;
     { c.proximityEnd(R3()) } -> std::forward_iterator;
     { (*static_cast<const C*>(&c)).proximityEnd(R3()) } -> std::forward_iterator;
+
+    { c.proximityBegin_no_N3L(R3()) } -> std::forward_iterator;
+    { (*static_cast<const C*>(&c)).proximityBegin_no_N3L(R3()) } -> std::forward_iterator;
+    { c.proximityEnd_no_N3L(R3()) } -> std::forward_iterator;
+    { (*static_cast<const C*>(&c)).proximityEnd_no_N3L(R3()) } -> std::forward_iterator;
 
     // halo and boundary iterators
     { c.haloBegin(std::set<BoundaryLocation>{}) } -> std::forward_iterator;
@@ -78,6 +83,10 @@ concept ParticleContainer = requires(C c) {
     { (*static_cast<const C*>(&c)).boundaryBegin(std::set<BoundaryLocation>{}) } -> std::forward_iterator;
     { c.boundaryEnd(std::set<BoundaryLocation>{}) } -> std::forward_iterator;
     { (*static_cast<const C*>(&c)).boundaryEnd(std::set<BoundaryLocation>{}) } -> std::forward_iterator;
+
+    // parallel iteration preparation
+    { c.prepareForParallelIteration() };
+    { (*static_cast<const C*>(&c)).prepareForParallelIteration() };
 };
 
 }  // namespace mol_sim

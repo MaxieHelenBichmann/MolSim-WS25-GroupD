@@ -8,7 +8,7 @@
 namespace mol_sim {
 
 /**
- * @brief Exception thrown by the CLI;
+ * @brief Exception thrown by the CLI.
  *
  */
 class CLIException : public InputException {

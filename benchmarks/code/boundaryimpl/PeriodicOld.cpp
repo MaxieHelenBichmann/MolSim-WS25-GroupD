@@ -9,7 +9,7 @@ std::unique_ptr<LinkedCellContainer> PeriodicOld::checker;
 PeriodicOld::PeriodicOld(BoundaryLocation location, R3 domain_size, double cutoff, size_t dimensions) noexcept
     : Boundary(location, BoundaryType::PERIODIC, domain_size) {
     /**
-     * TODO: Optimization possible
+     * @note: Optimization possible
      *
      * Doing it this way introduces additional performance overhead
      * if used with a SimpleContainer if the domain_size is not divisible
@@ -24,7 +24,7 @@ PeriodicOld::PeriodicOld(BoundaryLocation location, R3 domain_size, double cutof
 }
 
 /**
- * TODO: Edge case:
+ * @note: Edge case:
  * Imagine a situation where we have say a 2D simulation where LEFT and RIGHT are periodic
  * and the other boundaries aren't. Inside the iteration in Domain.cpp:applyBoundary either the left
  * boundary or the right boundary will execute their applyBoundary() before the other. I.e. either
@@ -34,24 +34,20 @@ PeriodicOld::PeriodicOld(BoundaryLocation location, R3 domain_size, double cutof
  * However, the same does NOT hold for the right boundary. That is: in general particles that are teleported
  * from the right halo to the left boundary will NOT be mirrored in that same timestep (unless the particle
  * is in an edge or a corner). They will be mirrored (if necessary) in the next timestep.
- * This *could* lead to instabilitiees in the simulation. Assuming reasonably sized simulation parameters
+ * This *could* lead to instabilities in the simulation. Assuming reasonably sized simulation parameters
  * in particular delta_t, sigma and epsilon of the relevant particles, the missing of these mirror particles
  * in the one timestep may not be critical. In th interest of not entangling this code even more
  * (we would need to pass in a SettingsParam& to the constructor here + have to check for the
  * types of the other boundaries) and not overcomplicating this code (unless really necessary)
  * I will leave this behavior in for now.
  */
-std::optional<std::vector<Particle>> PeriodicOld::applyBoundary(  // NOLINT
-    Particle& p, [[maybe_unused]] const ForceSource& force) noexcept {
+void PeriodicOld::applyBoundary(  // NOLINT
+    Particle& p, [[maybe_unused]] const PairwiseForceSource& force) noexcept {
     teleportParticleIfOOB(p);
     if (!isOnBoundary(p.getX(), getAxis(), getSign())) {  // only mirror particles in correct boundary region
-        return std::nullopt;
+        return;
     }
-    auto mirrored_particles = mirrorParticle(p);
-    if (mirrored_particles.empty()) {
-        return std::nullopt;
-    }
-    return mirrored_particles;
+    mirrorParticle(p);
 }
 
 void PeriodicOld::teleportParticleIfOOB(Particle& p) {
@@ -72,7 +68,7 @@ void PeriodicOld::teleportParticleIfOOB(Particle& p) {
 }
 
 /**
- * TODO: Optimization possible
+ * @note: Optimization possible
  * e.g. via checking if domain_size > haloDimension (rules out half
  * of the possible locations)
  * Could also reserve vector or not use a vector for memory efficiency
@@ -89,9 +85,7 @@ std::vector<Particle> PeriodicOld::mirrorParticle(Particle& p) {
         // add mirror particle if necessary
         if (i != 13 && isInHalo(p.getX() + offset) && (p.getMirrorLocations() & (1 << i)) == 0) {
             Particle p_prime(p);
-            p_prime.getX() = p.getX() + offset;
-            p_prime.getType() = 1;
-            mirrored_particles.push_back(p_prime);
+            p.getMirrorPositions().emplace_back(p.getX() + offset);
             p.getMirrorLocations() |= (1 << i);
         }
 
@@ -134,7 +128,7 @@ bool PeriodicOld::isInHalo(R3 x) const noexcept {
            || (sign != 0 && isOnBoundary(x, axis, sign));            // the boundary itself
 }
 /**
- * TODO: Does this need to be recalculated or could we store a static array of all possible offsets to optimize this a
+ * @note: Does this need to be recalculated or could we store a static array of all possible offsets to optimize this a
  * bit?
  */
 void PeriodicOld::updateOffset(R3& offset, size_t i) {
